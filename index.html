@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSA Site Factory — Dashboard Leads / Trafic / Funnel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">P</span> PSA Site Factory</div>
+    <div class="nav-label">Sites</div>
+    <nav class="site-nav" id="siteTabs"></nav>
+    <div class="sidebar-footer">
+      <div class="period-card">
+        <p>Avril → Juillet 2026</p>
+        <p class="sub">Lancement V2 : 22/07/2026</p>
+        <p class="sub">Comparaisons en moyenne / jour</p>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb">Analytics <span>/</span> <strong id="crumbSite">—</strong></div>
+      <div class="month-tabs" id="monthTabs"></div>
+    </header>
+
+    <main class="content">
+      <div class="content-header">
+        <div>
+          <h1 id="pageTitle">Overview</h1>
+          <p class="page-sub" id="pageSub">Leads, trafic et parcours de reprise</p>
+        </div>
+        <div class="section-tabs" id="sectionTabs">
+          <button class="section-tab active" data-section="leads">Leads</button>
+          <button class="section-tab" data-section="trafic">Trafic</button>
+          <button class="section-tab" data-section="funnel">Funnel</button>
+        </div>
+      </div>
+
+      <div class="notice notice-warn" id="partialNotice" hidden>
+        <span class="notice-icon">!</span>
+        <p>Juillet ne couvre que <strong>28 jours</strong> (trafic site jusqu'au 27/07). Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.</p>
+      </div>
+
+      <!-- ==================== LEADS ==================== -->
+      <section id="panel-leads" class="panel active">
+        <div class="hero-row" id="leadsHero"></div>
+        <div class="kpi-row" id="leadsKpis"></div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Leads par jour</h3>
+                <p class="card-sub" id="leadsDailySub">—</p>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-sm"><canvas id="leadsDailyChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Tendance sur 4 mois</h3>
+                <p class="card-sub">Leads / jour et taux de conversion</p>
+              </div>
+              <div class="card-legend">
+                <div class="legend-item"><span class="swatch" style="background:#0e6f56"></span><span class="lname">Leads / jour</span></div>
+                <div class="legend-item"><span class="swatch" style="background:#e8892e"></span><span class="lname">Conversion</span></div>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-sm"><canvas id="leadsTrendChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="split-main">
+          <div class="card card-flush">
+            <div class="card-head card-head-pad">
+              <div>
+                <h3>Analyse des leads</h3>
+                <p class="card-sub" id="dimSub">—</p>
+              </div>
+              <div class="dim-tabs" id="dimTabs"></div>
+            </div>
+            <div class="rank-head">
+              <span class="rh-name">Valeur</span>
+              <span class="rh-share">Part</span>
+              <span class="rh-value">Leads</span>
+            </div>
+            <div class="rank-list" id="dimList"></div>
+            <div class="rank-foot" id="dimFoot"></div>
+          </div>
+
+          <div class="side-stack">
+            <div class="card">
+              <h3>Mode d'entrée</h3>
+              <p class="card-sub">Comment le lead démarre son estimation</p>
+              <div class="donut-block">
+                <div class="chart-wrap chart-wrap-donut">
+                  <canvas id="entryChart"></canvas>
+                  <div class="donut-center"><div class="dc-value" id="entryCenter">—</div><div class="dc-label">leads</div></div>
+                </div>
+                <div class="donut-legend" id="entryLegend"></div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Projet d'achat</h3>
+              <p class="card-sub">Intention déclarée</p>
+              <div class="donut-block">
+                <div class="chart-wrap chart-wrap-donut">
+                  <canvas id="projectChart"></canvas>
+                  <div class="donut-center"><div class="dc-value" id="projectCenter">—</div><div class="dc-label">leads</div></div>
+                </div>
+                <div class="donut-legend" id="projectLegend"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TRAFIC ==================== -->
+      <section id="panel-trafic" class="panel">
+        <div class="kpi-row" id="trafficKpis"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Sessions quotidiennes</h3>
+              <p class="card-sub" id="trafficDailySub">—</p>
+            </div>
+            <div class="card-legend" id="trafficLegend"></div>
+          </div>
+          <div class="chart-wrap"><canvas id="trafficChart"></canvas></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Tendance sur 4 mois</h3>
+                <p class="card-sub">Sessions / jour · site parent vs outil de reprise</p>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-sm"><canvas id="trafficTrendChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <h3>Nouveaux utilisateurs &amp; engagement</h3>
+                <p class="card-sub" id="engSub">—</p>
+              </div>
+            </div>
+            <div class="chart-wrap chart-wrap-sm"><canvas id="engChart"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== FUNNEL ==================== -->
+      <section id="panel-funnel" class="panel">
+        <div class="notice">
+          <span class="notice-icon">i</span>
+          <p>Le funnel est mesuré en <strong>utilisateurs actifs</strong>, pas en sessions : l'exploration de funnel GA4 ne propose pas la métrique « sessions ». Les volumes ne sont donc pas comparables à ceux de l'onglet Trafic.</p>
+        </div>
+
+        <div class="hero-row" id="funnelHero"></div>
+        <div class="kpi-row" id="funnelKpis"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Taux de complétion du funnel</h3>
+              <p class="card-sub">Avril → juillet, avec le détail pré / post lancement V2</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="funnelTrendChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Parcours étape par étape</h3>
+              <p class="card-sub" id="funnelVizSub">—</p>
+            </div>
+            <div class="card-legend" id="funnelVizLegend"></div>
+          </div>
+          <div id="funnelViz"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Entrées du funnel par canal</h3>
+              <p class="card-sub" id="channelSub">—</p>
+            </div>
+          </div>
+          <table class="simple" id="channelTable"><thead></thead><tbody></tbody></table>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">Données : extraction PSA Site Factory (back-office) &amp; Google Analytics 4 · Trafic et reprise en sessions, funnel en utilisateurs actifs</footer>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
