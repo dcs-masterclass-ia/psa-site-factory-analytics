@@ -1,0 +1,382 @@
+let SITES = [], cache = {}, charts = {};
+let curSite = null, curMonth = "2026-07", activeDim = "brand";
+
+const C = { teal:"#0e6f56", orange:"#e8892e", blue:"#5b7fd4", slate:"#c7cbc8", red:"#d9534f" };
+const PALETTE = [C.teal, C.orange, C.blue, "#8b6fd6", "#3fb6c9", "#c9a227", C.red, "#9aa39c"];
+
+const BRAND_DOMAINS = {
+  "OPEL":"opel.com","PEUGEOT":"peugeot.com","RENAULT":"renault.com","CITROEN":"citroen.com",
+  "VOLKSWAGEN":"volkswagen.com","BMW":"bmw.com","MERCEDES":"mercedes-benz.com","FORD":"ford.com",
+  "DACIA":"dacia.com","NISSAN":"nissan.com","SEAT":"seat.com","FIAT":"fiat.com","AUDI":"audi.com",
+  "TOYOTA":"toyota.com","SKODA":"skoda-auto.com","DS AUTOMOBILES":"dsautomobiles.com",
+  "HYUNDAI":"hyundai.com","KIA":"kia.com","VOLVO":"volvocars.com","MINI":"mini.com",
+  "SUZUKI":"suzuki.com","MAZDA":"mazda.com","HONDA":"honda.com","JEEP":"jeep.com",
+  "LAND ROVER":"landrover.com","PORSCHE":"porsche.com"
+};
+function logo(n){ const d = BRAND_DOMAINS[(n||"").trim().toUpperCase()]; return d ? "https://logo.clearbit.com/"+d+"?size=64" : null; }
+
+const ICONS = {
+  droplet:'<path d="M12 2.69s5.66 5.86 5.66 10a5.66 5.66 0 0 1-11.32 0C6.34 8.55 12 2.69 12 2.69Z"/>',
+  fuel:'<line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
+  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  wind:'<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>'
+};
+function fuelKey(n){ const f=(n||"").toUpperCase();
+  if(f.includes("HIBRIDO")||f.includes("HYBRIDE"))return"leaf";
+  if(f.includes("ELECTRI"))return"zap";
+  if(f.includes("GASOLEO")||f.includes("DIESEL"))return"droplet";
+  if(f.includes("GPL")||f.includes("GNV"))return"wind";
+  return"fuel"; }
+function icon(k,c){ return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||ICONS.fuel)+'</svg>'; }
+
+function kill(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
+function fmt(n){ return (n==null||isNaN(n)) ? "—" : Number(n).toLocaleString("fr-FR",{maximumFractionDigits:1}); }
+function pct(n){ return fmt(n)+" %"; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
+function badge(v,unit){ const c=v>=0?"up":"down", a=v>=0?"↑":"↓";
+  return '<span class="badge '+c+'">'+a+" "+fmt(Math.abs(v))+" "+unit+"</span>"; }
+function prevMonth(m){ const i=(cache[curSite].months||[]).indexOf(m); return i>0 ? cache[curSite].months[i-1] : null; }
+
+/* ==================== INIT ==================== */
+async function init(){
+  SITES = (await (await fetch("data/index.json")).json()).sites;
+  document.getElementById("siteTabs").innerHTML = SITES.map((s,i)=>
+    '<button class="site-tab'+(i===0?" active":"")+'" data-site="'+esc(s)+'"><span class="dot"></span>'+esc(s)+'</button>').join("");
+  document.querySelectorAll(".site-tab").forEach(b=>b.addEventListener("click",async()=>{
+    document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); await load(b.dataset.site);
+  }));
+  document.querySelectorAll(".section-tab").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll(".section-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    document.getElementById("panel-"+b.dataset.section).classList.add("active");
+  }));
+  await load(SITES[0]);
+}
+
+async function load(site){
+  curSite = site;
+  document.getElementById("pageTitle").textContent = site;
+  document.getElementById("crumbSite").textContent = site;
+  if(!cache[site]) cache[site] = await (await fetch("data/"+slug(site)+".json")).json();
+  const d = cache[site];
+  if(d.months.indexOf(curMonth)<0) curMonth = d.months[d.months.length-1];
+  document.getElementById("monthTabs").innerHTML = d.months.map(m=>
+    '<button class="month-tab'+(m===curMonth?" active":"")+'" data-m="'+m+'">'+
+    d.meta[m].label.replace(" 2026","")+'</button>').join("");
+  document.querySelectorAll(".month-tab").forEach(b=>b.addEventListener("click",()=>{
+    curMonth = b.dataset.m;
+    document.querySelectorAll(".month-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); render();
+  }));
+  render();
+}
+
+function render(){
+  const d = cache[curSite];
+  document.getElementById("pageSub").textContent = d.meta[curMonth].label + " · leads, trafic et parcours de reprise";
+  document.getElementById("partialNotice").hidden = !d.meta[curMonth].partial;
+  renderLeads(d); renderTraffic(d); renderFunnel(d);
+}
+
+/* helpers periode */
+function monthIdx(d,mk){ const r=[]; d.daily.d.forEach((x,i)=>{ if("2026-"+x.slice(0,2)===mk) r.push(i); }); return r; }
+function leadsPerDay(d,mk){ const L=d.leads[mk]; return L ? L.total/d.meta[mk].days : null; }
+function convOf(d,mk){ const L=d.leads[mk], R=d.repriseMonth[mk];
+  return (L&&R&&R.sessions) ? L.total/R.sessions*100 : null; }
+
+/* ==================== LEADS ==================== */
+function renderLeads(d){
+  const mk=curMonth, L=d.leads[mk], meta=d.meta[mk], R=d.repriseMonth[mk];
+  const pm=prevMonth(mk);
+  const conv=convOf(d,mk), convPrev=pm?convOf(d,pm):null;
+  const lpd=leadsPerDay(d,mk), lpdPrev=pm?leadsPerDay(d,pm):null;
+
+  document.getElementById("leadsHero").innerHTML =
+    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
+    '<p class="hero-label">Taux de conversion — sessions outil de reprise → leads</p>'+
+    '<p class="hero-value">'+pct(conv)+'<span class="hero-sub">'+meta.label+'</span>'+
+    (convPrev!=null ? '<span class="hero-badge">'+(conv-convPrev>=0?"↑":"↓")+" "+fmt(Math.abs(conv-convPrev))+' pts vs '+d.meta[pm].label.replace(" 2026","")+'</span>' : '')+
+    '</p><p class="hero-note">'+fmt(L.total)+' leads pour '+fmt(R.sessions)+' sessions sur l\'outil de reprise · '+
+    fmt(lpd)+' leads / jour sur '+meta.days+' jours</p></div></div>';
+
+  document.getElementById("leadsKpis").innerHTML =
+    kpi("Leads du mois", fmt(L.total), meta.days+" jours de données") +
+    kpi("Leads / jour", fmt(lpd), null, lpdPrev!=null?badge((lpd-lpdPrev)/lpdPrev*100,"%"):null) +
+    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(R.sessions/R.rdays)+" / jour") +
+    kpi("Conversion", pct(conv), null, convPrev!=null?badge(conv-convPrev,"pts"):null);
+
+  // graphe quotidien du mois
+  document.getElementById("leadsDailySub").textContent = meta.label;
+  kill("ld");
+  charts.ld=new Chart(document.getElementById("leadsDailyChart"),{type:"line",
+    data:{labels:L.daily.map((_,i)=>String(i+1)),datasets:[{label:"Leads",data:L.daily,
+      borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.35,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
+    options:lineOpt(14)});
+
+  // tendance 4 mois
+  const ms=d.months.filter(m=>d.leads[m]);
+  kill("lt");
+  charts.lt=new Chart(document.getElementById("leadsTrendChart"),{
+    data:{labels:ms.map(m=>d.meta[m].label.replace(" 2026","")),
+      datasets:[
+        {type:"bar",label:"Leads / jour",data:ms.map(m=>leadsPerDay(d,m)),
+         backgroundColor:ms.map(m=>m===mk?C.teal:"#cfdbd6"),borderRadius:6,maxBarThickness:46,yAxisID:"y"},
+        {type:"line",label:"Conversion (%)",data:ms.map(m=>convOf(d,m)),borderColor:C.orange,
+         backgroundColor:"transparent",tension:.3,pointRadius:4,pointBackgroundColor:C.orange,borderWidth:2.4,yAxisID:"y1"}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:tip()},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
+        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk(),title:{display:true,text:"Leads / jour",color:"#949a94",font:{size:10.5}}},
+        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},
+            ticks:{...tk(),callback:v=>v+" %"}}}}});
+
+  buildDims(d,L);
+  donut("entryChart","dEntry","entryLegend","entryCenter",Object.entries(L.entry).sort((a,b)=>b[1]-a[1]));
+  donut("projectChart","dProj","projectLegend","projectCenter",L.project);
+}
+
+function kpi(label,val,sub,extra){
+  return '<div class="kpi"><p class="label">'+label+'</p><p class="value">'+val+'</p>'+
+    '<div class="kpi-foot">'+(extra||"")+(sub?'<span class="sub">'+sub+'</span>':"")+'</div></div>';
+}
+
+const DIMS=[
+  {k:"brand",l:"Marque reprise",g:L=>L.brand,logo:true},
+  {k:"fuel",l:"Carburant",g:L=>L.fuel,fuel:true},
+  {k:"source",l:"Source",g:L=>L.source},
+  {k:"code",l:"Code marketing",g:L=>L.code}
+];
+function buildDims(d,L){
+  document.getElementById("dimSub").textContent="Répartition par dimension · "+d.meta[curMonth].label;
+  const el=document.getElementById("dimTabs");
+  el.innerHTML=DIMS.map(x=>'<button class="dim-tab'+(x.k===activeDim?" active":"")+'" data-d="'+x.k+'">'+x.l+'</button>').join("");
+  el.querySelectorAll(".dim-tab").forEach(b=>b.addEventListener("click",()=>{
+    activeDim=b.dataset.d;
+    el.querySelectorAll(".dim-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); dimList(L);
+  }));
+  dimList(L);
+}
+function dimList(L){
+  const dim=DIMS.find(x=>x.k===activeDim)||DIMS[0];
+  const pairs=(dim.g(L)||[]).slice();
+  const total=pairs.reduce((s,p)=>s+p[1],0)||1;
+  const top=pairs.slice(0,8), max=top.length?top[0][1]:1;
+  document.getElementById("dimList").innerHTML=top.map((p,i)=>{
+    const col=PALETTE[i%PALETTE.length], ini=(p[0]||"?").trim().charAt(0).toUpperCase();
+    let b;
+    if(dim.logo&&logo(p[0])) b='<span class="rank-badge" style="background:#fff;border:1px solid var(--border)"><img src="'+logo(p[0])+'" alt="" loading="lazy" onerror="this.parentElement.style.background=\''+col+'\';this.parentElement.style.border=\'none\';this.parentElement.textContent=\''+ini+'\';"></span>';
+    else if(dim.fuel) b='<span class="rank-badge" style="background:'+col+'22">'+icon(fuelKey(p[0]),col)+'</span>';
+    else b='<span class="rank-badge" style="background:'+col+'">'+ini+'</span>';
+    return '<div class="rank-row"><div class="rank-name"><span class="rank-idx">'+(i+1)+'</span>'+b+
+      '<span class="rank-label" title="'+esc(p[0])+'">'+esc(p[0])+'</span></div>'+
+      '<div class="rank-share"><span class="rank-track"><span class="rank-fill" style="width:'+(p[1]/max*100).toFixed(1)+'%;background:'+col+'"></span></span>'+
+      '<span class="rank-pct">'+fmt(p[1]/total*100)+' %</span></div>'+
+      '<div class="rank-value">'+fmt(p[1])+'</div></div>';
+  }).join("");
+  const shown=top.reduce((s,p)=>s+p[1],0), rest=pairs.length-top.length;
+  document.getElementById("dimFoot").textContent=
+    fmt(shown)+" leads affichés sur "+fmt(total)+" ("+fmt(shown/total*100)+" %)"+
+    (rest>0?" · "+rest+" autre"+(rest>1?"s":"")+" valeur"+(rest>1?"s":""):"");
+}
+function donut(canvas,key,legendId,centerId,pairs){
+  const top=pairs.slice(0,5), total=pairs.reduce((s,p)=>s+p[1],0);
+  kill(key);
+  charts[key]=new Chart(document.getElementById(canvas),{type:"doughnut",
+    data:{labels:top.map(p=>p[0]),datasets:[{data:top.map(p=>p[1]),backgroundColor:PALETTE,borderColor:"#fff",borderWidth:3,hoverOffset:5}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false},tooltip:tip()}}});
+  document.getElementById(centerId).textContent=fmt(total);
+  document.getElementById(legendId).innerHTML=top.map((p,i)=>
+    '<div class="dl-row"><span class="dl-dot" style="background:'+PALETTE[i%PALETTE.length]+'"></span>'+
+    '<span class="dl-name" title="'+esc(p[0])+'">'+esc(p[0])+'</span>'+
+    '<span class="dl-value">'+fmt(p[1])+'</span><span class="dl-pct">'+fmt(p[1]/(total||1)*100)+' %</span></div>').join("");
+}
+
+/* ==================== TRAFIC ==================== */
+function renderTraffic(d){
+  const mk=curMonth, T=d.trafficMonth[mk], R=d.repriseMonth[mk], meta=d.meta[mk];
+  const pm=prevMonth(mk);
+  const spd=T.tdays?T.sessions/T.tdays:0, spdPrev=pm&&d.trafficMonth[pm].tdays?d.trafficMonth[pm].sessions/d.trafficMonth[pm].tdays:null;
+  const rpd=R.rdays?R.sessions/R.rdays:0, rpdPrev=pm&&d.repriseMonth[pm].rdays?d.repriseMonth[pm].sessions/d.repriseMonth[pm].rdays:null;
+
+  document.getElementById("trafficKpis").innerHTML =
+    kpi("Sessions site parent", fmt(T.sessions), fmt(spd)+" / jour", spdPrev!=null?badge((spd-spdPrev)/spdPrev*100,"%"):null) +
+    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(rpd)+" / jour", rpdPrev!=null?badge((rpd-rpdPrev)/rpdPrev*100,"%"):null) +
+    kpi("Part vers la reprise", pct(T.sessions?R.sessions/T.sessions*100:0), "du trafic du site") +
+    kpi("Engagement moyen", fmt(T.eng)+" s", "par session");
+
+  const idx=monthIdx(d,mk), lab=idx.map(i=>d.daily.d[i].slice(3));
+  document.getElementById("trafficDailySub").textContent=meta.label+" · même échelle";
+  document.getElementById("trafficLegend").innerHTML=
+    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
+    '<div class="legend-item"><span class="swatch" style="background:'+C.orange+'"></span><span class="lname">Outil de reprise</span><span class="lvalue">'+fmt(R.sessions)+'</span></div>';
+  kill("tr");
+  charts.tr=new Chart(document.getElementById("trafficChart"),{type:"line",
+    data:{labels:lab,datasets:[
+      {label:"Site parent",data:idx.map(i=>d.daily.u[i]),borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
+      {label:"Outil de reprise",data:idx.map(i=>d.daily.rep[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
+    options:lineOpt(16)});
+
+  const ms=d.months;
+  kill("tt");
+  charts.tt=new Chart(document.getElementById("trafficTrendChart"),{type:"bar",
+    data:{labels:ms.map(m=>d.meta[m].label.replace(" 2026","")),datasets:[
+      {label:"Site parent / jour",data:ms.map(m=>d.trafficMonth[m].tdays?d.trafficMonth[m].sessions/d.trafficMonth[m].tdays:0),backgroundColor:C.teal,borderRadius:6,maxBarThickness:32},
+      {label:"Reprise / jour",data:ms.map(m=>d.repriseMonth[m].rdays?d.repriseMonth[m].sessions/d.repriseMonth[m].rdays:0),backgroundColor:C.orange,borderRadius:6,maxBarThickness:32}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:"top",align:"end",labels:leg()},tooltip:tip()},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
+        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()}}}});
+
+  document.getElementById("engSub").textContent=meta.label;
+  kill("en");
+  charts.en=new Chart(document.getElementById("engChart"),{
+    data:{labels:lab,datasets:[
+      {type:"bar",label:"Nouveaux utilisateurs",data:idx.map(i=>d.daily.n[i]),backgroundColor:C.blue,borderRadius:4,maxBarThickness:12,yAxisID:"y"},
+      {type:"line",label:"Engagement (s)",data:idx.map(i=>d.daily.e[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.2,yAxisID:"y1"}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:"top",align:"end",labels:leg()},tooltip:tip()},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:tk(10)},
+        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()},
+        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},ticks:{...tk(),callback:v=>v+" s"}}}}});
+}
+
+/* ==================== FUNNEL ==================== */
+function renderFunnel(d){
+  const mk=curMonth, isJuly=(mk==="2026-07"&&d.v2), FM=d.funnelMonth[mk];
+
+  // tendance : avril, mai, juin, juillet pre-V2, juillet post-V2
+  const pts=[], vals=[], cols=[];
+  d.months.forEach(m=>{
+    if(m==="2026-07") return;
+    if(d.funnelMonth[m]){ pts.push(d.meta[m].label.replace(" 2026","")); vals.push(d.funnelMonth[m].conversion_pct); cols.push(mk===m?C.teal:"#cfdbd6"); }
+  });
+  if(d.v2){ pts.push("Juil. pré-V2"); vals.push(d.v2.pre_conversion_pct); cols.push(isJuly?"#b9beba":"#cfdbd6");
+            pts.push("Juil. post-V2"); vals.push(d.v2.post_conversion_pct); cols.push(isJuly?C.teal:"#cfdbd6"); }
+  kill("ft");
+  charts.ft=new Chart(document.getElementById("funnelTrendChart"),{type:"bar",
+    data:{labels:pts,datasets:[{label:"Taux de complétion",data:vals,backgroundColor:cols,borderRadius:6,maxBarThickness:52}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{...tip(),callbacks:{label:c=>pct(c.parsed.y)}}},
+      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
+        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:{...tk(),callback:v=>v+" %"}}}}});
+
+  if(isJuly){ funnelJuly(d); return; }
+  if(!FM){
+    document.getElementById("funnelHero").innerHTML="";
+    document.getElementById("funnelKpis").innerHTML='<div class="kpi"><p class="label">Information</p><p class="sub">Pas de funnel disponible pour ce mois.</p></div>';
+    document.getElementById("funnelViz").innerHTML="";
+    document.getElementById("funnelVizLegend").innerHTML="";
+    document.querySelector("#channelTable thead").innerHTML="";
+    document.querySelector("#channelTable tbody").innerHTML="";
+    return;
+  }
+
+  const pm=prevMonth(mk), prev=pm&&d.funnelMonth[pm]?d.funnelMonth[pm].conversion_pct:null;
+  const st=FM.steps, first=st[0].users, last=st[st.length-1].users;
+
+  document.getElementById("funnelHero").innerHTML=
+    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
+    '<p class="hero-label">Taux de complétion du funnel — utilisateurs actifs</p>'+
+    '<p class="hero-value">'+pct(FM.conversion_pct)+'<span class="hero-sub">'+d.meta[mk].label+'</span>'+
+    (prev!=null?'<span class="hero-badge">'+(FM.conversion_pct-prev>=0?"↑":"↓")+" "+fmt(Math.abs(FM.conversion_pct-prev))+' pts vs '+d.meta[pm].label.replace(" 2026","")+'</span>':'')+
+    '</p><p class="hero-note">'+fmt(last)+' estimations terminées sur '+fmt(first)+' entrées de funnel · '+fmt(FM.users_per_day)+' entrées / jour</p></div></div>';
+
+  document.getElementById("funnelKpis").innerHTML=
+    kpi("Entrées de funnel", fmt(first), fmt(FM.users_per_day)+" / jour") +
+    kpi("Estimations terminées", fmt(last), null) +
+    kpi("Taux de complétion", pct(FM.conversion_pct), null, prev!=null?badge(FM.conversion_pct-prev,"pts"):null) +
+    kpi("Perte étape 1 → 2", pct(first?(first-st[1].users)/first*100:0), "abandon le plus fort");
+
+  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · "+d.meta[mk].label;
+  document.getElementById("funnelVizLegend").innerHTML="";
+  let h='<div class="fn-head fn-head-1"><span>Étape</span><span>Utilisateurs actifs</span></div>';
+  st.forEach((s,i)=>{
+    const ret=s.users/first*100, w=Math.max(ret,9);
+    h+='<div class="fn-row fn-row-1"><div class="fn-step-label"><span class="fn-step-num">'+(i+1)+'</span>'+
+       '<span class="fn-step-name">'+esc(s.step.replace(/^\d+\.\s*/,""))+'</span></div>'+
+       '<div class="fn-cell"><div class="fn-bar post" style="width:'+w.toFixed(1)+'%">'+fmt(s.users)+'</div>'+
+       '<div class="fn-meta">'+fmt(ret)+' % de l\'étape 1</div></div></div>';
+    if(i<st.length-1){
+      const dr=s.users?(st[i+1].users-s.users)/s.users*100:0;
+      h+='<div class="fn-drop fn-drop-1"><span></span><span class="fn-drop-cell'+(dr>=0?" neutral":"")+'">↓ '+fmt(dr)+' %</span></div>';
+    }
+  });
+  document.getElementById("funnelViz").innerHTML=h;
+
+  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · "+d.meta[mk].label;
+  const ch=(FM.channels||[]).slice().sort((a,b)=>b.u-a.u);
+  const tot=ch.reduce((s,x)=>s+x.u,0)||1;
+  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
+  document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
+    '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
+}
+
+function funnelJuly(d){
+  const v2=d.v2, steps=d.v2steps;
+  document.getElementById("funnelHero").innerHTML=
+    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
+    '<p class="hero-label">Taux de complétion du funnel — utilisateurs actifs</p>'+
+    '<p class="hero-value">'+pct(v2.post_conversion_pct)+'<span class="hero-sub">post-V2, depuis le 22/07</span>'+
+    '<span class="hero-badge">'+(v2.delta_conversion_pts>=0?"↑":"↓")+" "+fmt(Math.abs(v2.delta_conversion_pts))+' pts vs pré-V2</span></p>'+
+    '<p class="hero-note">Pré-V2 : '+pct(v2.pre_conversion_pct)+' ('+fmt(v2.pre_final_users)+' / '+fmt(v2.pre_step1_total)+') · '+
+    'Post-V2 : '+pct(v2.post_conversion_pct)+' ('+fmt(v2.post_final_users)+' / '+fmt(v2.post_step1_total)+')</p></div></div>';
+
+  document.getElementById("funnelKpis").innerHTML=
+    kpi("Complétion pré-V2", pct(v2.pre_conversion_pct), v2.pre_days+" jours") +
+    kpi("Complétion post-V2", pct(v2.post_conversion_pct), null, badge(v2.delta_conversion_pts,"pts")) +
+    kpi("Entrées / jour pré-V2", fmt(v2.pre_users_per_day), null) +
+    kpi("Entrées / jour post-V2", fmt(v2.post_users_per_day), null, badge(v2.delta_users_per_day_pct,"%"));
+
+  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · largeur = rétention depuis l'étape 1";
+  document.getElementById("funnelVizLegend").innerHTML=
+    '<div class="legend-item"><span class="swatch" style="background:#b9beba"></span><span class="lname">Pré-V2</span></div>'+
+    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Post-V2</span></div>';
+  const pT=steps[0].a||1, qT=steps[0].b||1;
+  let h='<div class="fn-head"><span>Étape</span><span>Pré-V2</span><span>Post-V2</span></div>';
+  steps.forEach((s,i)=>{
+    const pr=s.a/pT*100, po=s.b/qT*100;
+    h+='<div class="fn-row"><div class="fn-step-label"><span class="fn-step-num">'+(i+1)+'</span>'+
+       '<span class="fn-step-name">'+esc(s.step.replace(/^\d+\.\s*/,""))+'</span></div>'+
+       '<div class="fn-cell"><div class="fn-bar pre" style="width:'+Math.max(pr,9).toFixed(1)+'%">'+fmt(s.a)+'</div><div class="fn-meta">'+fmt(pr)+' %</div></div>'+
+       '<div class="fn-cell"><div class="fn-bar post" style="width:'+Math.max(po,9).toFixed(1)+'%">'+fmt(s.b)+'</div><div class="fn-meta">'+fmt(po)+' %</div></div></div>';
+    if(i<steps.length-1){
+      const a=s.a?(steps[i+1].a-s.a)/s.a*100:0;
+      const b=s.b?(steps[i+1].b-s.b)/s.b*100:0;
+      h+='<div class="fn-drop"><span></span><span class="fn-drop-cell'+(a>=0?" neutral":"")+'">↓ '+fmt(a)+' %</span>'+
+         '<span class="fn-drop-cell'+(b>=0?" neutral":"")+'">↓ '+fmt(b)+' %</span></div>';
+    }
+  });
+  document.getElementById("funnelViz").innerHTML=h;
+
+  const rows=(d.v2channels||[]).filter(r=>r.c!=="Total");
+  const first=rows.map(r=>r.st).sort()[0];
+  const chans=[]; rows.forEach(r=>{ if(r.st===first&&!chans.includes(r.c)) chans.push(r.c); });
+  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · pré-V2 vs post-V2";
+  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Pré-V2</th><th class="num">Post-V2</th><th class="num">Évolution</th></tr>';
+  document.querySelector("#channelTable tbody").innerHTML=chans.map(c=>{
+    const p=rows.find(r=>r.p==="pre_v2"&&r.st===first&&r.c===c), q=rows.find(r=>r.p==="post_v2"&&r.st===first&&r.c===c);
+    const pu=p?p.u:0, qu=q?q.u:0, dl=pu?(qu-pu)/pu*100:0;
+    return '<tr><td>'+esc(c)+'</td><td class="num">'+fmt(pu)+'</td><td class="num">'+fmt(qu)+
+      '</td><td class="num" style="color:'+(dl>=0?C.teal:C.red)+'">'+(dl>=0?"+":"")+fmt(dl)+' %</td></tr>';
+  }).join("");
+}
+
+/* ==================== CHART HELPERS ==================== */
+function grad(c){ return ctx=>{ const a=ctx.chart.chartArea; if(!a) return c+"22";
+  const g=ctx.chart.ctx.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,c+"2e"); g.addColorStop(1,c+"02"); return g; }; }
+function tip(){ return {backgroundColor:"#141a17",padding:11,cornerRadius:9,titleFont:{weight:"700",size:12.5},bodyFont:{size:12.5},boxPadding:4,usePointStyle:true}; }
+function tk(max){ return {color:"#949a94",font:{size:10.5},maxRotation:0,autoSkip:true,maxTicksLimit:max||14,padding:6}; }
+function leg(){ return {boxWidth:8,usePointStyle:true,pointStyle:"circle",font:{size:11.5,weight:"600"},color:"#61675f"}; }
+function lineOpt(max){ return {responsive:true,maintainAspectRatio:false,
+  interaction:{mode:"index",intersect:false},
+  plugins:{legend:{display:false},tooltip:tip()},
+  scales:{x:{grid:{display:false},border:{display:false},ticks:tk(max)},
+    y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()}}}; }
+
+init();
