@@ -22,6 +22,14 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
   « sessions ». Les volumes des deux onglets ne sont donc pas comparables.
 - **Taux de conversion leads** = leads ÷ sessions de l'outil de reprise. C'est
   sur l'outil que le lead est capté ; le site parent ne fait qu'y renvoyer du trafic.
+- **Tout le trafic est en sessions**, extrait de GA4 via les onglets filtrés par
+  nom d'hôte (site parent d'un côté, outil de reprise de l'autre). Les données
+  antérieures en *utilisateurs actifs* ont été retirées, de même que les
+  indicateurs qui en dépendaient (nouveaux utilisateurs, durée d'engagement).
+- **Les libellés d'onglets GA4 ne sont pas fiables** : sur Citroën PT, l'onglet
+  nommé « Trafic V2 parent » contient en réalité l'outil de reprise et
+  « Analyse traffic » le site parent. L'identification se fait sur le filtre
+  hostname, jamais sur le nom.
 - **Juillet est partiel** : 28 jours pour les leads et la reprise, 27 pour le
   trafic site (export GA4 arrêté au 27/07). Toutes les comparaisons entre mois
   sont donc calculées **en moyenne par jour**.

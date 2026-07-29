@@ -134,8 +134,8 @@ function render(){
   pn.hidden = !d.meta[curMonth].partial;
   if(!pn.hidden){
     pn.querySelector("p").innerHTML = isTotal(curMonth)
-      ? "La période cumule <strong>119 jours</strong> (01/04 → 28/07), mais juillet s'arrête au 28 pour les leads et au 27 pour le trafic site. Le dernier mois pèse donc un peu moins que les autres dans les totaux."
-      : "Juillet ne couvre que <strong>28 jours</strong> (trafic site jusqu'au 27/07). Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
+      ? "La période cumule <strong>119 jours</strong> (01/04 → 28/07). Juillet n'en compte que 28 : ce mois pèse donc un peu moins que les autres dans les totaux."
+      : "Juillet ne couvre que <strong>28 jours</strong> au lieu de 30 ou 31. Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
   }
   const vd=document.getElementById("v2DateLabel");
   if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
@@ -265,16 +265,28 @@ function donut(canvas,key,legendId,centerId,pairs){
 function renderTraffic(d){
   const mk=curMonth, T=d.trafficMonth[mk], R=d.repriseMonth[mk], meta=d.meta[mk];
   const pm=prevMonth(mk);
-  const spd=T.tdays?T.sessions/T.tdays:0, spdPrev=pm&&d.trafficMonth[pm].tdays?d.trafficMonth[pm].sessions/d.trafficMonth[pm].tdays:null;
-  const rpd=R.rdays?R.sessions/R.rdays:0, rpdPrev=pm&&d.repriseMonth[pm].rdays?d.repriseMonth[pm].sessions/d.repriseMonth[pm].rdays:null;
+  const spd=T.tdays?T.sessions/T.tdays:0;
+  const rpd=R.rdays?R.sessions/R.rdays:0;
+  const part=T.sessions?R.sessions/T.sessions*100:0;
+  const L=d.leads[mk];
+  const spdP=pm&&d.trafficMonth[pm].tdays?d.trafficMonth[pm].sessions/d.trafficMonth[pm].tdays:null;
+  const rpdP=pm&&d.repriseMonth[pm].rdays?d.repriseMonth[pm].sessions/d.repriseMonth[pm].rdays:null;
+  const partP=pm&&d.trafficMonth[pm].sessions?d.repriseMonth[pm].sessions/d.trafficMonth[pm].sessions*100:null;
+  const per1k=T.sessions?L.total/T.sessions*1000:0;
+  const per1kP=pm&&d.trafficMonth[pm].sessions?d.leads[pm].total/d.trafficMonth[pm].sessions*1000:null;
 
   document.getElementById("trafficKpis").innerHTML =
-    kpi("Sessions site parent", fmt(T.sessions), fmt(spd)+" / jour", spdPrev!=null?badge((spd-spdPrev)/spdPrev*100,"%"):null) +
-    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(rpd)+" / jour", rpdPrev!=null?badge((rpd-rpdPrev)/rpdPrev*100,"%"):null) +
-    kpi("Part vers la reprise", pct(T.sessions?R.sessions/T.sessions*100:0), "du trafic du site") +
-    kpi("Engagement moyen", fmt(T.eng)+" s", "par session");
+    kpi("Sessions site parent", fmt(T.sessions), fmt(spd)+" / jour",
+        spdP!=null?badge((spd-spdP)/spdP*100,"%"):null) +
+    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(rpd)+" / jour",
+        rpdP!=null?badge((rpd-rpdP)/rpdP*100,"%"):null) +
+    kpi("Part vers la reprise", pct(part), "des sessions du site",
+        partP!=null?badge(part-partP,"pts"):null) +
+    kpi("Leads / 1 000 sessions site", fmt(per1k), "chaîne complète",
+        per1kP!=null?badge((per1k-per1kP)/per1kP*100,"%"):null);
 
-  const idx=monthIdx(d,mk), lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
+  const idx=monthIdx(d,mk);
+  const lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
   document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · même échelle";
   document.getElementById("trafficLegend").innerHTML=
     '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
@@ -292,23 +304,26 @@ function renderTraffic(d){
   charts.tt=new Chart(document.getElementById("trafficTrendChart"),{type:"bar",
     data:{labels:ms.map(m=>d.meta[m].label.replace(" 2026","")),datasets:[
       {label:"Site parent / jour",data:ms.map(m=>d.trafficMonth[m].tdays?d.trafficMonth[m].sessions/d.trafficMonth[m].tdays:0),backgroundColor:C.teal,borderRadius:6,maxBarThickness:32},
-      {label:"Reprise / jour",data:ms.map(m=>d.repriseMonth[m].rdays?d.repriseMonth[m].sessions/d.repriseMonth[m].rdays:0),backgroundColor:C.orange,borderRadius:6,maxBarThickness:32}]},
+      {label:"Reprise / jour",data:ms.map(m=>d.repriseMonth[m].rdays?d.repriseMonth[m].sessions/d.repriseMonth[m].rdays:0),backgroundColor:C.orange,borderRadius:6,maxBarThickness:32,yAxisID:"y1"}]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,position:"top",align:"end",labels:leg()},tooltip:tip()},
       scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
-        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()}}}});
-
-  document.getElementById("engSub").textContent=isTotal(mk)?"01/04 → 28/07":meta.label;
-  kill("en");
-  charts.en=new Chart(document.getElementById("engChart"),{
-    data:{labels:lab,datasets:[
-      {type:"bar",label:"Nouveaux utilisateurs",data:idx.map(i=>d.daily.n[i]),backgroundColor:C.blue,borderRadius:4,maxBarThickness:12,yAxisID:"y"},
-      {type:"line",label:"Engagement (s)",data:idx.map(i=>d.daily.e[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.2,yAxisID:"y1"}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:"top",align:"end",labels:leg()},tooltip:tip()},
-      scales:{x:{grid:{display:false},border:{display:false},ticks:tk(10)},
         y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()},
-        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},ticks:{...tk(),callback:v=>v+" s"}}}}});
+        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},ticks:tk()}}}});
+
+  // part quotidienne vers la reprise, entierement calculee a partir des deux series de sessions
+  document.getElementById("partSub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · moyenne "+pct(part);
+  const serie=idx.map(i=>{ const u=d.daily.u[i], r=d.daily.rep[i];
+    return (u&&u>0&&r!=null) ? r/u*100 : null; });
+  kill("pa");
+  charts.pa=new Chart(document.getElementById("partChart"),{type:"line",
+    data:{labels:lab,datasets:[{label:"Part vers la reprise",data:serie,
+      borderColor:C.blue,backgroundColor:grad(C.blue),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.2}]},
+    options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
+      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i]));
+      o.plugins.tooltip={...tip(),callbacks:{label:c=>pct(c.parsed.y)}};
+      o.scales.y.ticks={...tk(),callback:v=>v+" %"};
+      return o; })()});
 }
 
 /* ==================== FUNNEL ==================== */
