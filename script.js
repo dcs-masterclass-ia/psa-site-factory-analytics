@@ -299,62 +299,82 @@ function renderTraffic(d){
     options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
       o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i])); return o; })()});
 
-  const ms=d.months;
-  kill("tt");
-  charts.tt=new Chart(document.getElementById("trafficTrendChart"),{type:"bar",
-    data:{labels:ms.map(m=>d.meta[m].label.replace(" 2026","")),datasets:[
-      {label:"Site parent / jour",data:ms.map(m=>d.trafficMonth[m].tdays?d.trafficMonth[m].sessions/d.trafficMonth[m].tdays:0),backgroundColor:C.teal,borderRadius:6,maxBarThickness:32},
-      {label:"Reprise / jour",data:ms.map(m=>d.repriseMonth[m].rdays?d.repriseMonth[m].sessions/d.repriseMonth[m].rdays:0),backgroundColor:C.orange,borderRadius:6,maxBarThickness:32,yAxisID:"y1"}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:"top",align:"end",labels:leg()},tooltip:tip()},
-      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
-        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()},
-        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},ticks:tk()}}}});
+  renderSynth(d);
+}
 
-  // part quotidienne vers la reprise, entierement calculee a partir des deux series de sessions
-  document.getElementById("partSub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · moyenne "+pct(part);
-  const serie=idx.map(i=>{ const u=d.daily.u[i], r=d.daily.rep[i];
-    return (u&&u>0&&r!=null) ? r/u*100 : null; });
-  kill("pa");
-  charts.pa=new Chart(document.getElementById("partChart"),{type:"line",
-    data:{labels:lab,datasets:[{label:"Part vers la reprise",data:serie,
-      borderColor:C.blue,backgroundColor:grad(C.blue),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.2}]},
-    options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
-      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i]));
-      o.plugins.tooltip={...tip(),callbacks:{label:c=>pct(c.parsed.y)}};
-      o.scales.y.ticks={...tk(),callback:v=>v+" %"};
-      return o; })()});
+/* ---- tableau de synthese mensuelle : trafic -> reprise -> leads ---- */
+function renderSynth(d){
+  const ms = d.months, mk = curMonth;
+  const days = m => d.meta[m].days;
+  const site = m => d.trafficMonth[m].sessions;
+  const rep  = m => d.repriseMonth[m].sessions;
+  const lead = m => d.leads[m] ? d.leads[m].total : null;
+
+  const groups = [
+    { title:"Trafic", rows:[
+      { l:"Sessions site parent", v:site, perDay:true },
+      { l:"Sessions outil de reprise", v:rep, perDay:true },
+      { l:"Part du site allant vers la reprise", v:m=>site(m)?rep(m)/site(m)*100:null, kind:"pct", hi:true }
+    ]},
+    { title:"Leads", rows:[
+      { l:"Leads (extraction back-office)", v:lead, perDay:true },
+      { l:"Transformation reprise → leads", v:m=>rep(m)?lead(m)/rep(m)*100:null, kind:"pct", hi:true },
+      { l:"Leads pour 1 000 sessions du site", v:m=>site(m)?lead(m)/site(m)*1000:null, kind:"dec" }
+    ]}
+  ];
+
+  const head = '<tr><th class="mtx-lab">Indicateur</th>' +
+    ms.map(m=>'<th class="num'+(m===mk?" mtx-cur":"")+'">'+esc(d.meta[m].label.replace(" 2026",""))+'</th>').join("") +
+    '<th class="num mtx-end">Évolution avril → juillet</th></tr>';
+
+  let body = "";
+  groups.forEach(g=>{
+    body += '<tr class="mtx-group"><td colspan="'+(ms.length+2)+'">'+g.title+'</td></tr>';
+    g.rows.forEach(r=>{
+      const vals = ms.map(r.v);
+      const a = vals[0], z = vals[vals.length-1];
+      let evo = "—";
+      if(a!=null && z!=null){
+        if(r.kind==="pct"){
+          const pts = z-a;
+          evo = '<span class="mtx-evo '+(pts>=0?"pos":"neg")+'">'+(pts>=0?"+ ":"− ")+fmt(Math.abs(pts))+' pts</span>'+
+                (a?'<span class="mtx-evo-sub">× '+fmt(z/a)+'</span>':"");
+        } else {
+          // comparaison en moyenne / jour : juillet ne compte que 28 jours
+          const pa = a/days(ms[0]), pz = z/days(ms[ms.length-1]);
+          const dl = pa ? (pz-pa)/pa*100 : 0;
+          evo = '<span class="mtx-evo '+(dl>=0?"pos":"neg")+'">'+(dl>=0?"+ ":"− ")+fmt(Math.abs(dl))+' %</span>'+
+                '<span class="mtx-evo-sub">en moyenne / jour</span>';
+        }
+      }
+      body += '<tr class="'+(r.hi?"mtx-hi":"")+'"><td class="mtx-lab">'+r.l+'</td>' +
+        vals.map((v,i)=>{
+          const m = ms[i];
+          const main = v==null ? "—" : (r.kind==="pct" ? pct(v) : fmt(r.kind==="dec"? v : Math.round(v)));
+          const sub  = (v!=null && r.perDay) ? '<span class="mtx-sub">'+fmt(v/days(m))+' / j</span>' : "";
+          return '<td class="num'+(m===mk?" mtx-cur":"")+'"><span class="mtx-val">'+main+'</span>'+sub+'</td>';
+        }).join("") +
+        '<td class="num mtx-end">'+evo+'</td></tr>';
+    });
+  });
+
+  document.querySelector("#synthTable thead").innerHTML = head;
+  document.querySelector("#synthTable tbody").innerHTML = body;
+
+  const lastM = ms[ms.length-1];
+  const partA = site(ms[0])?rep(ms[0])/site(ms[0])*100:0, partZ = site(lastM)?rep(lastM)/site(lastM)*100:0;
+  const convA = rep(ms[0])?lead(ms[0])/rep(ms[0])*100:0, convZ = rep(lastM)?lead(lastM)/rep(lastM)*100:0;
+  document.getElementById("synthNote").innerHTML =
+    "Lecture : sur 1 000 sessions du site parent, <strong>"+fmt(partZ*10)+"</strong> arrivent sur l'outil de reprise en juillet (contre "+
+    fmt(partA*10)+" en avril), et <strong>"+fmt(convZ)+" %</strong> d'entre elles déposent un lead (contre "+fmt(convA)+" % en avril). " +
+    "Juillet ne couvre que 28 jours : les évolutions de volume sont donc calculées en moyenne par jour, les taux le sont sur la période complète.";
 }
 
 /* ==================== FUNNEL ==================== */
 function renderFunnel(d){
   const mk=curMonth, isJuly=(mk==="2026-07"&&d.v2), FM=d.funnelMonth[mk];
 
-  // tendance : avril, mai, juin, juillet pre-V2, juillet post-V2
-  const pts=[], vals=[], cols=[];
-  d.months.forEach(m=>{
-    if(m==="2026-07") return;
-    if(d.funnelMonth[m]){
-      pts.push(d.meta[m].label.replace(" 2026",""));
-      vals.push(d.funnelMonth[m].conversion_pct);
-      const post = d.v2_date && m >= d.v2_date.slice(0,7);
-      cols.push(mk===m ? C.teal : (post ? "#9dc4b6" : "#cfdbd6"));
-    }
-  });
-  if(d.v2){
-    const sv=d.v2.is_v2_split;
-    pts.push(sv?"Juil. pré-V2":"Juil. "+d.v2.pre_label);
-    vals.push(d.v2.pre_conversion_pct); cols.push(isJuly?"#b9beba":"#cfdbd6");
-    pts.push(sv?"Juil. post-V2":"Juil. "+d.v2.post_label);
-    vals.push(d.v2.post_conversion_pct); cols.push(isJuly?C.teal:"#cfdbd6");
-  }
-  kill("ft");
-  charts.ft=new Chart(document.getElementById("funnelTrendChart"),{type:"bar",
-    data:{labels:pts,datasets:[{label:"Taux de complétion",data:vals,backgroundColor:cols,borderRadius:6,maxBarThickness:52}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{...tip(),callbacks:{label:c=>pct(c.parsed.y)}}},
-      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
-        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:{...tk(),callback:v=>v+" %"}}}}});
+  renderSteps(d);
 
   const wn=document.getElementById("funnelV2Notice"); if(wn) wn.hidden=true;
   if(isTotal(mk)){ funnelTotal(d); return; }
@@ -407,6 +427,76 @@ function renderFunnel(d){
   document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
   document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
     '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
+}
+
+/* ---- tableau du parcours etape par etape, avril -> juillet ---- */
+const STEP_FR = ["Page d'accueil","Sélection de version","Kilométrage","Coordonnées","Choix du concessionnaire","Estimation de prix"];
+
+function stepUsers(d,m){
+  if(d.funnelMonth[m]) return d.funnelMonth[m].steps.map(s=>s.users);
+  if(m==="2026-07" && d.v2steps) return d.v2steps.map(s=>s.a+s.b);   // juillet = somme des deux exports
+  return null;
+}
+
+function renderSteps(d){
+  const ms = d.months, mk = curMonth;
+  const cols = ms.map(m=>({ m:m, label:d.meta[m].label.replace(" 2026",""), u:stepUsers(d,m) })).filter(c=>c.u);
+  const ref = cols.filter(c=>c.m!=="2026-07");     // avril -> juin, base de comparaison
+  const last = cols[cols.length-1];
+  if(!last){ document.querySelector("#stepTable thead").innerHTML=""; document.querySelector("#stepTable tbody").innerHTML=""; return; }
+  const n = last.u.length;
+
+  const rows = [];
+  for(let i=0;i<n-1;i++){
+    const vals = cols.map(c=> c.u[i] ? c.u[i+1]/c.u[i]*100 : null);
+    const sA = ref.reduce((s,c)=>s+c.u[i],0), sB = ref.reduce((s,c)=>s+c.u[i+1],0);
+    const moy = sA ? sB/sA*100 : null;
+    rows.push({ l:(STEP_FR[i]||("Étape "+(i+1)))+" → "+(STEP_FR[i+1]||("Étape "+(i+2))), vals:vals, moy:moy });
+  }
+  const conv = cols.map(c=> c.u[0] ? c.u[n-1]/c.u[0]*100 : null);
+  const cA = ref.reduce((s,c)=>s+c.u[0],0), cZ = ref.reduce((s,c)=>s+c.u[n-1],0);
+  const convMoy = cA ? cZ/cA*100 : null;
+
+  // etape la plus determinante : le plus gros ecart entre juillet et la moyenne avril-juin
+  let hi = -1, best = 0;
+  rows.forEach((r,i)=>{ const e = (r.moy!=null && r.vals[r.vals.length-1]!=null) ? Math.abs(r.vals[r.vals.length-1]-r.moy) : 0;
+    if(e>best){ best=e; hi=i; } });
+
+  const gap = (v,m) => {
+    if(v==null||m==null) return "—";
+    const e = v-m;
+    return '<span class="mtx-evo '+(e>=0?"pos":"neg")+'">'+(e>=0?"+":"−")+fmt(Math.abs(e))+' pts</span>';
+  };
+
+  document.querySelector("#stepTable thead").innerHTML =
+    '<tr><th class="mtx-lab">Étape du parcours</th>' +
+    cols.map(c=>'<th class="num'+(c.m===mk?" mtx-cur":"")+'">'+esc(c.label)+'</th>').join("") +
+    '<th class="num mtx-ref">Moyenne avril–juin</th><th class="num mtx-end">Écart</th></tr>';
+
+  let body = rows.map((r,i)=>
+    '<tr class="'+(i===hi?"mtx-hi":"")+'"><td class="mtx-lab">'+esc(r.l)+'</td>' +
+    r.vals.map((v,j)=>'<td class="num'+(cols[j].m===mk?" mtx-cur":"")+'">'+(v==null?"—":pct(v))+'</td>').join("") +
+    '<td class="num mtx-ref">'+(r.moy==null?"—":pct(r.moy))+'</td>' +
+    '<td class="num mtx-end">'+gap(r.vals[r.vals.length-1], r.moy)+'</td></tr>').join("");
+
+  const cz = conv[conv.length-1];
+  body += '<tr class="mtx-total"><td class="mtx-lab">Taux de complétion du parcours</td>' +
+    conv.map((v,j)=>'<td class="num'+(cols[j].m===mk?" mtx-cur":"")+'">'+(v==null?"—":pct(v))+'</td>').join("") +
+    '<td class="num mtx-ref">'+(convMoy==null?"—":pct(convMoy))+'</td>' +
+    '<td class="num mtx-end">'+gap(cz,convMoy)+
+      ((convMoy&&cz)?'<span class="mtx-evo-sub">× '+fmt(cz/convMoy)+'</span>':"")+'</td></tr>';
+
+  document.querySelector("#stepTable tbody").innerHTML = body;
+
+  document.getElementById("stepSub").textContent =
+    "Part des utilisateurs actifs franchissant chaque étape · avril → juillet 2026";
+  const dd = v2DateFR(d);
+  document.getElementById("stepNote").innerHTML =
+    (hi>=0 ? "L'étape qui bouge le plus est <strong>"+esc(rows[hi].l)+"</strong> ("+
+      fmt(Math.abs(rows[hi].vals[rows[hi].vals.length-1]-rows[hi].moy))+" pts d'écart avec la moyenne avril–juin). " : "") +
+    "La moyenne avril–juin est pondérée par les volumes de chaque mois. Lancement V2 le <strong>"+dd+"</strong>. " +
+    "Juillet est reconstitué en additionnant les deux exports de la période : GA4 dédoublonnant les utilisateurs actifs, " +
+    "les volumes de juillet peuvent être très légèrement surestimés, mais pas les taux.";
 }
 
 function funnelTotal(d){
