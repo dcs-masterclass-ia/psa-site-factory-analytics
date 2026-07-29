@@ -16,7 +16,7 @@
     <div class="sidebar-footer">
       <div class="period-card">
         <p>Avril → Juillet 2026</p>
-        <p class="sub">Lancement V2 : 22/07/2026</p>
+        <p class="sub" id="v2DateLabel">Lancement V2 : —</p>
         <p class="sub">Comparaisons en moyenne / jour</p>
       </div>
     </div>
@@ -165,6 +165,11 @@
           <p>Le funnel est mesuré en <strong>utilisateurs actifs</strong>, pas en sessions : l'exploration de funnel GA4 ne propose pas la métrique « sessions ». Les volumes ne sont donc pas comparables à ceux de l'onglet Trafic.</p>
         </div>
 
+        <div class="notice notice-warn" id="funnelV2Notice" hidden>
+          <span class="notice-icon">!</span>
+          <p></p>
+        </div>
+
         <div class="hero-row" id="funnelHero"></div>
         <div class="kpi-row" id="funnelKpis"></div>
 
@@ -172,7 +177,7 @@
           <div class="card-head">
             <div>
               <h3>Taux de complétion du funnel</h3>
-              <p class="card-sub">Avril → juillet, avec le détail pré / post lancement V2</p>
+              <p class="card-sub">Avril → juillet · les barres vertes correspondent aux périodes postérieures au lancement V2</p>
             </div>
           </div>
           <div class="chart-wrap chart-wrap-sm"><canvas id="funnelTrendChart"></canvas></div>
