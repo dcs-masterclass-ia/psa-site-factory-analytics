@@ -40,29 +40,72 @@ const V2_MARK = {
     const a = chart.chartArea, ctx = chart.ctx, xs = chart.scales.x;
     if(!a) return;
     ctx.save();
+    const soft = !!o.soft;
+    const col = soft ? "#e8892e" : "#0e6f56";
     const px = (o.index != null && xs) ? xs.getPixelForValue(o.index) : a.left;
-    ctx.fillStyle = "rgba(14,111,86,.07)";
+    ctx.fillStyle = soft ? "rgba(232,137,46,.06)" : "rgba(14,111,86,.07)";
     ctx.fillRect(px, a.top, a.right - px, a.bottom - a.top);
     if(o.index != null){
-      ctx.setLineDash([5,4]); ctx.lineWidth = 1.6; ctx.strokeStyle = "#0e6f56";
+      ctx.setLineDash([5,4]); ctx.lineWidth = 1.6; ctx.strokeStyle = col;
       ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
       ctx.setLineDash([]);
     }
     if(o.label){
-      ctx.font = '600 10.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
-      const w = ctx.measureText(o.label).width + 14;
-      let lx = (o.index != null) ? px + 6 : a.right - w - 2;
-      if(lx + w > a.right - 2) lx = a.right - w - 2;
-      if(lx < a.left) lx = a.left;
-      ctx.fillStyle = "#0e6f56";
-      ctx.fillRect(lx, a.top + 4, w, 18);
-      ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
-      ctx.fillText(o.label, lx + 7, a.top + 13);
+      ctx.font = '700 10.8px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+      if(soft){
+        // libelle discret, pose au-dessus de la zone de traçage
+        ctx.fillStyle = col; ctx.textBaseline = "bottom"; ctx.textAlign = "left";
+        const w = ctx.measureText(o.label).width;
+        let lx = px + 6; if(lx + w > a.right) lx = Math.max(a.left, a.right - w);
+        ctx.fillText(o.label, lx, a.top - 8);
+      } else {
+        const w = ctx.measureText(o.label).width + 14;
+        let lx = (o.index != null) ? px + 6 : a.right - w - 2;
+        if(lx + w > a.right - 2) lx = a.right - w - 2;
+        if(lx < a.left) lx = a.left;
+        ctx.fillStyle = col;
+        ctx.fillRect(lx, a.top + 4, w, 18);
+        ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+        ctx.fillText(o.label, lx + 7, a.top + 13);
+      }
     }
     ctx.restore();
   }
 };
 Chart.register(V2_MARK);
+
+/* ---- valeurs affichees directement sur les points ---- */
+const V_LABEL = {
+  id: "vlabel",
+  afterDatasetsDraw(chart){
+    const o = chart.options.plugins && chart.options.plugins.vlabel;
+    if(!o || !o.on) return;
+    const ctx = chart.ctx, a = chart.chartArea;
+    ctx.save();
+    ctx.font = '700 11.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+    ctx.textAlign = "center";
+    chart.data.datasets.forEach((ds,di)=>{
+      const meta = chart.getDatasetMeta(di);
+      if(meta.hidden) return;
+      ctx.fillStyle = ds.borderColor;
+      meta.data.forEach((pt,i)=>{
+        const v = ds.data[i]; if(v==null) return;
+        const above = di === 1;
+        ctx.textBaseline = above ? "bottom" : "top";
+        let y = above ? pt.y - 11 : pt.y + 11;
+        if(above && y < a.top + 10) y = pt.y + 22;
+        if(!above && y > a.bottom - 4) y = pt.y - 11;
+        let x = pt.x;
+        const w = ctx.measureText(fmt(v)).width / 2;
+        if(x - w < a.left) x = a.left + w;
+        if(x + w > a.right) x = a.right - w;
+        ctx.fillText(fmt(v), x, y);
+      });
+    });
+    ctx.restore();
+  }
+};
+Chart.register(V_LABEL);
 
 function v2DateFR(d){ const s = d.v2_date; return s ? s.slice(8,10)+"/"+s.slice(5,7) : ""; }
 /* axisDates : tableau "MM-DD" correspondant a l'axe X du graphe */
@@ -165,11 +208,7 @@ function renderLeads(d){
     '</p><p class="hero-note">'+fmt(L.total)+' leads pour '+fmt(R.sessions)+' sessions sur l\'outil de reprise · '+
     fmt(lpd)+' leads / jour sur '+meta.days+' jours</p></div></div>';
 
-  document.getElementById("leadsKpis").innerHTML =
-    kpi(isTotal(mk)?"Leads sur la période":"Leads du mois", fmt(L.total), meta.days+" jours de données") +
-    kpi("Leads / jour", fmt(lpd), null, lpdPrev!=null?badge((lpd-lpdPrev)/lpdPrev*100,"%"):null) +
-    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(R.sessions/R.rdays)+" / jour") +
-    kpi("Conversion", pct(conv), null, convPrev!=null?badge(conv-convPrev,"pts"):null);
+  renderEvo(d);
 
   // graphe quotidien du mois
   document.getElementById("leadsDailySub").textContent = isTotal(mk) ? "01/04 → 28/07 · 119 jours" : meta.label;
@@ -181,27 +220,82 @@ function renderLeads(d){
     options:(()=>{ const o=lineOpt(isTotal(mk)?12:14);
       o.plugins.v2mark=v2Mark(d, isTotal(mk)? d.daily.d : monthAxis(mk, meta.days)); return o; })()});
 
-  // tendance 4 mois
-  const ms=d.months.filter(m=>d.leads[m]);
-  kill("lt");
-  charts.lt=new Chart(document.getElementById("leadsTrendChart"),{
-    data:{labels:ms.map(m=>d.meta[m].label.replace(" 2026","")),
-      datasets:[
-        {type:"bar",label:"Leads / jour",data:ms.map(m=>leadsPerDay(d,m)),
-         backgroundColor:ms.map(m=>m===mk?C.teal:"#cfdbd6"),borderRadius:6,maxBarThickness:46,yAxisID:"y"},
-        {type:"line",label:"Conversion (%)",data:ms.map(m=>convOf(d,m)),borderColor:C.orange,
-         backgroundColor:"transparent",tension:.3,pointRadius:4,pointBackgroundColor:C.orange,borderWidth:2.4,yAxisID:"y1"}
-      ]},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:tip()},
-      scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
-        y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk(),title:{display:true,text:"Leads / jour",color:"#949a94",font:{size:10.5}}},
-        y1:{position:"right",beginAtZero:true,grid:{display:false},border:{display:false},
-            ticks:{...tk(),callback:v=>v+" %"}}}}});
-
   buildDims(d,L);
   donut("entryChart","dEntry","entryLegend","entryCenter",Object.entries(L.entry).sort((a,b)=>b[1]-a[1]));
   donut("projectChart","dProj","projectLegend","projectCenter",L.project);
+}
+
+/* ---- bloc principal : sessions reprise vs leads, mois par mois ---- */
+let evoScale = "day";
+
+function renderEvo(d){
+  const ms = d.months, mk = curMonth;
+  const ref = isTotal(mk) ? ms[ms.length-1] : mk;   // mois mis en avant dans les cartes
+  const base = ms[0];
+  const dv = evoScale === "day";
+  const days = m => d.meta[m].days;
+  const sess = m => d.repriseMonth[m].sessions / (dv ? days(m) : 1);
+  const lead = m => d.leads[m].total / (dv ? days(m) : 1);
+  const conv = m => d.repriseMonth[m].sessions ? d.leads[m].total / d.repriseMonth[m].sessions * 100 : null;
+
+  // segmented control
+  const seg = document.getElementById("evoScale");
+  seg.querySelectorAll(".seg-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.scale === evoScale);
+    b.onclick = () => { evoScale = b.dataset.scale; renderEvo(d); };
+  });
+
+  // marqueur V2 sur un axe mensuel
+  const vm = (() => {
+    if(!d.v2_date) return {on:false};
+    const i = ms.indexOf(d.v2_date.slice(0,7));
+    const lbl = "Nouvelle version · " + Number(d.v2_date.slice(8,10)) + " " +
+      ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][Number(d.v2_date.slice(5,7))-1];
+    return i>=0 ? {on:true, index:i, label:lbl, soft:true} : {on:false};
+  })();
+
+  kill("evo");
+  charts.evo = new Chart(document.getElementById("evoChart"), {
+    type:"line",
+    data:{ labels: ms.map(m=>d.meta[m].label.replace(" 2026","")),
+      datasets:[
+        {label:"Sessions outil de reprise", data: ms.map(sess), yAxisID:"y",
+         borderColor:C.teal, backgroundColor:"transparent", borderWidth:2.6, tension:.25,
+         pointRadius: ms.map(m=>m===ref?7:5.5), pointBackgroundColor:C.teal, pointBorderColor:"#fff", pointBorderWidth:2},
+        {label:"Leads", data: ms.map(lead), yAxisID:"y1",
+         borderColor:C.orange, backgroundColor:"transparent", borderWidth:2.6, tension:.25,
+         pointRadius: ms.map(m=>m===ref?7:5.5), pointBackgroundColor:C.orange, pointBorderColor:"#fff", pointBorderWidth:2}
+      ]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ top:26, right:8, left:4 } },
+      interaction:{ mode:"index", intersect:false },
+      plugins:{ legend:{display:false},
+        tooltip:{...tip(), callbacks:{ label:c=>c.dataset.label+" : "+fmt(c.parsed.y)+(dv?" / jour":"") }},
+        v2mark: vm, vlabel:{ on:true } },
+      scales:{
+        x:{ grid:{display:false}, border:{display:false},
+            ticks:{...tk(), font:{size:11.5}, color:"#61675f"} },
+        y:{ beginAtZero:true, grid:{color:"#eef0ee"}, border:{display:false},
+            ticks:{...tk(), color:C.teal},
+            title:{display:true, text: dv?"Sessions reprise / jour":"Sessions reprise", color:C.teal, font:{size:10.5, weight:"700"}} },
+        y1:{ position:"right", beginAtZero:true, grid:{display:false}, border:{display:false},
+            ticks:{...tk(), color:C.orange},
+            title:{display:true, text: dv?"Leads / jour":"Leads", color:C.orange, font:{size:10.5, weight:"700"}} }
+      }}
+  });
+
+  const unit = dv ? " / jour" : "";
+  const sB = sess(base), sR = sess(ref), lB = lead(base), lR = lead(ref);
+  const cB = conv(base), cR = conv(ref);
+  const nm = m => d.meta[m].label.replace(" 2026","").toLowerCase();
+  document.getElementById("evoKpis").innerHTML =
+    kpi("Sessions reprise — "+nm(ref), fmt(sR)+unit, nm(base)+" : "+fmt(sB)+unit,
+        sB?badge((sR-sB)/sB*100,"%"):null) +
+    kpi("Leads — "+nm(ref), fmt(lR)+unit, nm(base)+" : "+fmt(lB)+unit,
+        lB?badge((lR-lB)/lB*100,"%"):null) +
+    kpi("Transformation — "+nm(ref), pct(cR), nm(base)+" : "+pct(cB),
+        (cB!=null&&cR!=null)?badge(cR-cB,"pts"):null) +
+    kpi("Évolution "+nm(base)+" → "+nm(ref), (cB?"× "+fmt(cR/cB):"—"), "sur le taux de transformation");
 }
 
 function kpi(label,val,sub,extra){
