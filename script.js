@@ -84,23 +84,49 @@ const V_LABEL = {
     ctx.save();
     ctx.font = '700 11.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
     ctx.textAlign = "center";
-    chart.data.datasets.forEach((ds,di)=>{
-      const meta = chart.getDatasetMeta(di);
-      if(meta.hidden) return;
-      ctx.fillStyle = ds.borderColor;
-      meta.data.forEach((pt,i)=>{
-        const v = ds.data[i]; if(v==null) return;
-        const above = di === 1;
-        ctx.textBaseline = above ? "bottom" : "top";
-        let y = above ? pt.y - 11 : pt.y + 11;
-        if(above && y < a.top + 10) y = pt.y + 22;
-        if(!above && y > a.bottom - 4) y = pt.y - 11;
-        let x = pt.x;
-        const w = ctx.measureText(fmt(v)).width / 2;
-        if(x - w < a.left) x = a.left + w;
-        if(x + w > a.right) x = a.right - w;
-        ctx.fillText(fmt(v), x, y);
+    ctx.textBaseline = "middle";
+    ctx.lineJoin = "round";
+
+    const GAP = 15, OFF = 15;
+    const n = chart.data.labels.length;
+    const items = [];
+
+    for(let i=0;i<n;i++){
+      // les points de l'index i, du plus haut au plus bas a l'ecran
+      const col = [];
+      chart.data.datasets.forEach((ds,di)=>{
+        const meta = chart.getDatasetMeta(di);
+        if(meta.hidden) return;
+        const v = ds.data[i], pt = meta.data[i];
+        if(v==null || !pt) return;
+        col.push({ x:pt.x, py:pt.y, text:fmt(v), color:ds.borderColor });
       });
+      if(!col.length) continue;
+      col.sort((p,q)=>p.py-q.py);
+      // le plus haut prend l'espace au-dessus, les autres en dessous
+      col.forEach((p,k)=>{ p.y = (k===0 ? p.py - OFF : p.py + OFF); });
+      // on ecarte ce qui se chevauche encore, puis on recadre
+      col.sort((p,q)=>p.y-q.y);
+      for(let k=1;k<col.length;k++){
+        if(col[k].y - col[k-1].y < GAP) col[k].y = col[k-1].y + GAP;
+      }
+      const over = col[col.length-1].y - (a.bottom - 4);
+      if(over > 0) col.forEach(p=>{ p.y -= over; });
+      const under = (a.top + 4) - col[0].y;
+      if(under > 0) col.forEach(p=>{ p.y += under; });
+      col.forEach(p=>{
+        const w = ctx.measureText(p.text).width/2 + 2;
+        p.x = Math.min(Math.max(p.x, a.left + w), a.right - w);
+        items.push(p);
+      });
+    }
+
+    // halo blanc pour rester lisible par-dessus les courbes
+    items.forEach(p=>{
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 3.5;
+      ctx.strokeText(p.text, p.x, p.y);
+      ctx.fillStyle = p.color;
+      ctx.fillText(p.text, p.x, p.y);
     });
     ctx.restore();
   }
