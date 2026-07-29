@@ -49,31 +49,34 @@
       <!-- ==================== LEADS ==================== -->
       <section id="panel-leads" class="panel active">
         <div class="hero-row" id="leadsHero"></div>
-        <div class="kpi-row" id="leadsKpis"></div>
 
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>Leads par jour</h3>
-                <p class="card-sub" id="leadsDailySub">—</p>
-              </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Évolution des sessions de reprise et des leads</h3>
+              <p class="card-sub">Un point par mois. Les sessions de l'outil de reprise sont sur l'échelle de gauche, les leads du back-office sur celle de droite.</p>
             </div>
-            <div class="chart-wrap chart-wrap-sm"><canvas id="leadsDailyChart"></canvas></div>
-          </div>
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>Tendance sur 4 mois</h3>
-                <p class="card-sub">Leads / jour et taux de conversion</p>
-              </div>
-              <div class="card-legend">
-                <div class="legend-item"><span class="swatch" style="background:#0e6f56"></span><span class="lname">Leads / jour</span></div>
-                <div class="legend-item"><span class="swatch" style="background:#e8892e"></span><span class="lname">Conversion</span></div>
-              </div>
+            <div class="seg" id="evoScale">
+              <button class="seg-btn active" data-scale="day">Moyenne par jour</button>
+              <button class="seg-btn" data-scale="total">Total du mois</button>
             </div>
-            <div class="chart-wrap chart-wrap-sm"><canvas id="leadsTrendChart"></canvas></div>
           </div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="evoChart"></canvas></div>
+          <div class="card-legend legend-center">
+            <div class="legend-item"><span class="swatch" style="background:#0e6f56"></span><span class="lname">Sessions outil de reprise</span></div>
+            <div class="legend-item"><span class="swatch" style="background:#e8892e"></span><span class="lname">Leads</span></div>
+          </div>
+          <div class="kpi-row kpi-row-flat" id="evoKpis"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Leads par jour</h3>
+              <p class="card-sub" id="leadsDailySub">—</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="leadsDailyChart"></canvas></div>
         </div>
 
         <div class="split-main">
@@ -207,5 +210,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
-<!-- build 2026-07-29T13:45:57Z -->
