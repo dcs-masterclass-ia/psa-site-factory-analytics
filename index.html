@@ -43,7 +43,7 @@
 
       <div class="notice notice-warn" id="partialNotice" hidden>
         <span class="notice-icon">!</span>
-        <p>Juillet ne couvre que <strong>28 jours</strong> (trafic site jusqu'au 27/07). Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.</p>
+        <p>Juillet ne couvre que <strong>28 jours</strong> au lieu de 30 ou 31. Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.</p>
       </div>
 
       <!-- ==================== LEADS ==================== -->
@@ -134,7 +134,7 @@
             <div class="card-legend" id="trafficLegend"></div>
           </div>
           <div class="chart-wrap"><canvas id="trafficChart"></canvas></div>
-          <p class="card-note">Les deux séries sont des <strong>sessions</strong> GA4, filtrées par nom d'hôte : site parent d'un côté, outil de reprise de l'autre. Les nouveaux utilisateurs et la durée d'engagement ci-dessous proviennent d'une extraction antérieure et restent en utilisateurs actifs.</p>
+          <p class="card-note">Les deux séries sont des <strong>sessions</strong> GA4, filtrées par nom d'hôte : site parent d'un côté, outil de reprise de l'autre. L'onglet est identifié par son filtre et non par son libellé.</p>
         </div>
 
         <div class="grid-2">
@@ -150,11 +150,11 @@
           <div class="card">
             <div class="card-head">
               <div>
-                <h3>Nouveaux utilisateurs &amp; engagement</h3>
-                <p class="card-sub" id="engSub">—</p>
+                <h3>Part vers la reprise, par jour</h3>
+                <p class="card-sub" id="partSub">—</p>
               </div>
             </div>
-            <div class="chart-wrap chart-wrap-sm"><canvas id="engChart"></canvas></div>
+            <div class="chart-wrap chart-wrap-sm"><canvas id="partChart"></canvas></div>
           </div>
         </div>
       </section>
