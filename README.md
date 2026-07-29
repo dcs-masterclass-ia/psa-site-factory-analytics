@@ -25,10 +25,25 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
 - **Juillet est partiel** : 28 jours pour les leads et la reprise, 27 pour le
   trafic site (export GA4 arrêté au 27/07). Toutes les comparaisons entre mois
   sont donc calculées **en moyenne par jour**.
+- **Le lancement V2 n'a pas la même date selon les sites** :
+
+  | Site | Lancement V2 |
+  |---|---|
+  | OPEL PT | 02/06/2026 |
+  | OPEL FR | 16/07/2026 |
+  | PEUGEOT PT · DS PT · CITROEN PT | 22/07/2026 |
+
+  Les graphes quotidiens affichent un trait vertical daté à la bascule et
+  teintent la période postérieure.
 - **Filtre leads** : hors doublons, hors tests (`TEST` / `TEST_INTERNE`) et
   limité à `MODE_PRODUCTION`.
-- **Funnel juillet** : présenté en pré-V2 / post-V2 (lancement du 22/07) plutôt
-  qu'en total mensuel, les deux exports GA4 se chevauchant d'une journée.
+- **Funnel juillet** : présenté en deux sous-périodes plutôt qu'en total
+  mensuel, les deux exports GA4 se chevauchant d'une journée. Pour OPEL FR et
+  les trois sites PT, ces sous-périodes correspondent bien au pré/post V2. Pour
+  **OPEL PT en revanche, la V2 date du 02/06** : les deux sous-périodes de
+  juillet sont toutes deux postérieures au lancement, ce n'est donc pas une
+  comparaison avant/après (un avertissement le signale dans l'interface). Pour
+  ce site, l'effet V2 se lit en comparant avril–mai à juin–juillet.
 
 ## Structure
 

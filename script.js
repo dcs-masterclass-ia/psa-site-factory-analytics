@@ -30,6 +30,50 @@ function fuelKey(n){ const f=(n||"").toUpperCase();
   return"fuel"; }
 function icon(k,c){ return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||ICONS.fuel)+'</svg>'; }
 
+
+/* ---- marqueur de lancement V2 : trait vertical date + zone teintee ---- */
+const V2_MARK = {
+  id: "v2mark",
+  beforeDatasetsDraw(chart){
+    const o = chart.options.plugins && chart.options.plugins.v2mark;
+    if(!o || !o.on) return;
+    const a = chart.chartArea, ctx = chart.ctx, xs = chart.scales.x;
+    if(!a) return;
+    ctx.save();
+    const px = (o.index != null && xs) ? xs.getPixelForValue(o.index) : a.left;
+    ctx.fillStyle = "rgba(14,111,86,.07)";
+    ctx.fillRect(px, a.top, a.right - px, a.bottom - a.top);
+    if(o.index != null){
+      ctx.setLineDash([5,4]); ctx.lineWidth = 1.6; ctx.strokeStyle = "#0e6f56";
+      ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if(o.label){
+      ctx.font = '600 10.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+      const w = ctx.measureText(o.label).width + 14;
+      let lx = (o.index != null) ? px + 6 : a.right - w - 2;
+      if(lx + w > a.right - 2) lx = a.right - w - 2;
+      if(lx < a.left) lx = a.left;
+      ctx.fillStyle = "#0e6f56";
+      ctx.fillRect(lx, a.top + 4, w, 18);
+      ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+      ctx.fillText(o.label, lx + 7, a.top + 13);
+    }
+    ctx.restore();
+  }
+};
+Chart.register(V2_MARK);
+
+function v2DateFR(d){ const s = d.v2_date; return s ? s.slice(8,10)+"/"+s.slice(5,7) : ""; }
+/* dayIndexOf(jour) -> position sur l'axe X, ou null si le mois est deja post-V2 */
+function v2Mark(d, mk, dayIndexOf){
+  const iso = d.v2_date; if(!iso) return { on:false };
+  const lm = iso.slice(0,7), day = +iso.slice(8,10), dd = v2DateFR(d);
+  if(mk === lm){ const i = dayIndexOf(day); return { on:true, index:(i>=0?i:null), label:"V2 \u2014 "+dd }; }
+  if(mk > lm)  return { on:true, index:null, label:"Post-V2 (depuis le "+dd+")" };
+  return { on:false };
+}
+
 function kill(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
 function fmt(n){ return (n==null||isNaN(n)) ? "—" : Number(n).toLocaleString("fr-FR",{maximumFractionDigits:1}); }
 function pct(n){ return fmt(n)+" %"; }
@@ -79,6 +123,8 @@ function render(){
   const d = cache[curSite];
   document.getElementById("pageSub").textContent = d.meta[curMonth].label + " · leads, trafic et parcours de reprise";
   document.getElementById("partialNotice").hidden = !d.meta[curMonth].partial;
+  const vd=document.getElementById("v2DateLabel");
+  if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
   renderLeads(d); renderTraffic(d); renderFunnel(d);
 }
 
@@ -115,7 +161,7 @@ function renderLeads(d){
   charts.ld=new Chart(document.getElementById("leadsDailyChart"),{type:"line",
     data:{labels:L.daily.map((_,i)=>String(i+1)),datasets:[{label:"Leads",data:L.daily,
       borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.35,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:lineOpt(14)});
+    options:(()=>{ const o=lineOpt(14); o.plugins.v2mark=v2Mark(d,mk,day=>day-1); return o; })()});
 
   // tendance 4 mois
   const ms=d.months.filter(m=>d.leads[m]);
@@ -220,7 +266,8 @@ function renderTraffic(d){
     data:{labels:lab,datasets:[
       {label:"Site parent",data:idx.map(i=>d.daily.u[i]),borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
       {label:"Outil de reprise",data:idx.map(i=>d.daily.rep[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:lineOpt(16)});
+    options:(()=>{ const o=lineOpt(16);
+      o.plugins.v2mark=v2Mark(d,mk,day=>idx.findIndex(i=>+d.daily.d[i].slice(3)===day)); return o; })()});
 
   const ms=d.months;
   kill("tt");
@@ -254,10 +301,20 @@ function renderFunnel(d){
   const pts=[], vals=[], cols=[];
   d.months.forEach(m=>{
     if(m==="2026-07") return;
-    if(d.funnelMonth[m]){ pts.push(d.meta[m].label.replace(" 2026","")); vals.push(d.funnelMonth[m].conversion_pct); cols.push(mk===m?C.teal:"#cfdbd6"); }
+    if(d.funnelMonth[m]){
+      pts.push(d.meta[m].label.replace(" 2026",""));
+      vals.push(d.funnelMonth[m].conversion_pct);
+      const post = d.v2_date && m >= d.v2_date.slice(0,7);
+      cols.push(mk===m ? C.teal : (post ? "#9dc4b6" : "#cfdbd6"));
+    }
   });
-  if(d.v2){ pts.push("Juil. pré-V2"); vals.push(d.v2.pre_conversion_pct); cols.push(isJuly?"#b9beba":"#cfdbd6");
-            pts.push("Juil. post-V2"); vals.push(d.v2.post_conversion_pct); cols.push(isJuly?C.teal:"#cfdbd6"); }
+  if(d.v2){
+    const sv=d.v2.is_v2_split;
+    pts.push(sv?"Juil. pré-V2":"Juil. "+d.v2.pre_label);
+    vals.push(d.v2.pre_conversion_pct); cols.push(isJuly?"#b9beba":"#cfdbd6");
+    pts.push(sv?"Juil. post-V2":"Juil. "+d.v2.post_label);
+    vals.push(d.v2.post_conversion_pct); cols.push(isJuly?C.teal:"#cfdbd6");
+  }
   kill("ft");
   charts.ft=new Chart(document.getElementById("funnelTrendChart"),{type:"bar",
     data:{labels:pts,datasets:[{label:"Taux de complétion",data:vals,backgroundColor:cols,borderRadius:6,maxBarThickness:52}]},
@@ -266,6 +323,7 @@ function renderFunnel(d){
       scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
         y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:{...tk(),callback:v=>v+" %"}}}}});
 
+  const wn=document.getElementById("funnelV2Notice"); if(wn) wn.hidden=true;
   if(isJuly){ funnelJuly(d); return; }
   if(!FM){
     document.getElementById("funnelHero").innerHTML="";
@@ -318,27 +376,38 @@ function renderFunnel(d){
 }
 
 function funnelJuly(d){
-  const v2=d.v2, steps=d.v2steps;
+  const v2=d.v2, steps=d.v2steps, sv=v2.is_v2_split, dd=v2DateFR(d);
+  const A = sv ? "Pré-V2" : v2.pre_label, B = sv ? "Post-V2" : v2.post_label;
+  const warn = document.getElementById("funnelV2Notice");
+  if(sv){ warn.hidden = true; }
+  else {
+    warn.hidden = false;
+    warn.querySelector("p").innerHTML =
+      "La V2 de ce site a été lancée le <strong>"+dd+"</strong>. Les deux périodes de juillet ci-dessous ("+
+      "<strong>"+v2.pre_label+"</strong> et <strong>"+v2.post_label+"</strong>) sont donc <strong>toutes deux "+
+      "postérieures</strong> au lancement : ce n'est pas une comparaison avant/après. Pour mesurer l'effet de la V2, "+
+      "comparer avril–mai à juin–juillet sur le graphe de tendance ci-dessus.";
+  }
   document.getElementById("funnelHero").innerHTML=
     '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
     '<p class="hero-label">Taux de complétion du funnel — utilisateurs actifs</p>'+
-    '<p class="hero-value">'+pct(v2.post_conversion_pct)+'<span class="hero-sub">post-V2, depuis le 22/07</span>'+
-    '<span class="hero-badge">'+(v2.delta_conversion_pts>=0?"↑":"↓")+" "+fmt(Math.abs(v2.delta_conversion_pts))+' pts vs pré-V2</span></p>'+
-    '<p class="hero-note">Pré-V2 : '+pct(v2.pre_conversion_pct)+' ('+fmt(v2.pre_final_users)+' / '+fmt(v2.pre_step1_total)+') · '+
-    'Post-V2 : '+pct(v2.post_conversion_pct)+' ('+fmt(v2.post_final_users)+' / '+fmt(v2.post_step1_total)+')</p></div></div>';
+    '<p class="hero-value">'+pct(v2.post_conversion_pct)+'<span class="hero-sub">'+(sv ? "post-V2, depuis le "+dd : "période "+v2.post_label)+'</span>'+
+    '<span class="hero-badge">'+(v2.delta_conversion_pts>=0?"↑":"↓")+" "+fmt(Math.abs(v2.delta_conversion_pts))+' pts vs '+A+'</span></p>'+
+    '<p class="hero-note">'+A+' : '+pct(v2.pre_conversion_pct)+' ('+fmt(v2.pre_final_users)+' / '+fmt(v2.pre_step1_total)+') · '+
+    B+' : '+pct(v2.post_conversion_pct)+' ('+fmt(v2.post_final_users)+' / '+fmt(v2.post_step1_total)+')</p></div></div>';
 
   document.getElementById("funnelKpis").innerHTML=
-    kpi("Complétion pré-V2", pct(v2.pre_conversion_pct), v2.pre_days+" jours") +
-    kpi("Complétion post-V2", pct(v2.post_conversion_pct), null, badge(v2.delta_conversion_pts,"pts")) +
-    kpi("Entrées / jour pré-V2", fmt(v2.pre_users_per_day), null) +
-    kpi("Entrées / jour post-V2", fmt(v2.post_users_per_day), null, badge(v2.delta_users_per_day_pct,"%"));
+    kpi("Complétion "+A, pct(v2.pre_conversion_pct), v2.pre_days+" jours") +
+    kpi("Complétion "+B, pct(v2.post_conversion_pct), v2.post_days+" jours", badge(v2.delta_conversion_pts,"pts")) +
+    kpi("Entrées / jour "+A, fmt(v2.pre_users_per_day), null) +
+    kpi("Entrées / jour "+B, fmt(v2.post_users_per_day), null, badge(v2.delta_users_per_day_pct,"%"));
 
-  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · largeur = rétention depuis l'étape 1";
+  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · "+A+" vs "+B+" · largeur = rétention depuis l'étape 1";
   document.getElementById("funnelVizLegend").innerHTML=
-    '<div class="legend-item"><span class="swatch" style="background:#b9beba"></span><span class="lname">Pré-V2</span></div>'+
-    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Post-V2</span></div>';
+    '<div class="legend-item"><span class="swatch" style="background:#b9beba"></span><span class="lname">'+A+'</span></div>'+
+    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">'+B+'</span></div>';
   const pT=steps[0].a||1, qT=steps[0].b||1;
-  let h='<div class="fn-head"><span>Étape</span><span>Pré-V2</span><span>Post-V2</span></div>';
+  let h='<div class="fn-head"><span>Étape</span><span>'+A+'</span><span>'+B+'</span></div>';
   steps.forEach((s,i)=>{
     const pr=s.a/pT*100, po=s.b/qT*100;
     h+='<div class="fn-row"><div class="fn-step-label"><span class="fn-step-num">'+(i+1)+'</span>'+
@@ -357,8 +426,8 @@ function funnelJuly(d){
   const rows=(d.v2channels||[]).filter(r=>r.c!=="Total");
   const first=rows.map(r=>r.st).sort()[0];
   const chans=[]; rows.forEach(r=>{ if(r.st===first&&!chans.includes(r.c)) chans.push(r.c); });
-  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · pré-V2 vs post-V2";
-  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Pré-V2</th><th class="num">Post-V2</th><th class="num">Évolution</th></tr>';
+  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · "+A+" vs "+B;
+  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">'+A+'</th><th class="num">'+B+'</th><th class="num">Évolution</th></tr>';
   document.querySelector("#channelTable tbody").innerHTML=chans.map(c=>{
     const p=rows.find(r=>r.p==="pre_v2"&&r.st===first&&r.c===c), q=rows.find(r=>r.p==="post_v2"&&r.st===first&&r.c===c);
     const pu=p?p.u:0, qu=q?q.u:0, dl=pu?(qu-pu)/pu*100:0;
