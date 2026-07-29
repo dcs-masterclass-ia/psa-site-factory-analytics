@@ -45,6 +45,18 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
   comparaison avant/après (un avertissement le signale dans l'interface). Pour
   ce site, l'effet V2 se lit en comparant avril–mai à juin–juillet.
 
+## Vue cumulée
+
+Un bouton **Total** à droite du sélecteur de mois affiche la période complète
+(01/04 → 28/07, 119 jours) : totaux de leads, trafic et reprise, séries
+quotidiennes continues, et dimensions **recalculées depuis les CSV sources**
+(et non additionnées à partir des tops mensuels, ce qui aurait tronqué les
+valeurs sorties du top 8 certains mois).
+
+Le **funnel n'y est pas cumulé** : GA4 dédoublonne les utilisateurs actifs,
+additionner les mois compterait plusieurs fois une même personne. La vue Total
+affiche donc le détail période par période, avec la moyenne avant / après V2.
+
 ## Structure
 
 ```

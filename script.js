@@ -65,13 +65,19 @@ const V2_MARK = {
 Chart.register(V2_MARK);
 
 function v2DateFR(d){ const s = d.v2_date; return s ? s.slice(8,10)+"/"+s.slice(5,7) : ""; }
-/* dayIndexOf(jour) -> position sur l'axe X, ou null si le mois est deja post-V2 */
-function v2Mark(d, mk, dayIndexOf){
-  const iso = d.v2_date; if(!iso) return { on:false };
-  const lm = iso.slice(0,7), day = +iso.slice(8,10), dd = v2DateFR(d);
-  if(mk === lm){ const i = dayIndexOf(day); return { on:true, index:(i>=0?i:null), label:"V2 \u2014 "+dd }; }
-  if(mk > lm)  return { on:true, index:null, label:"Post-V2 (depuis le "+dd+")" };
+/* axisDates : tableau "MM-DD" correspondant a l'axe X du graphe */
+function v2Mark(d, axisDates){
+  const iso = d.v2_date; if(!iso || !axisDates.length) return { on:false };
+  const key = iso.slice(5,7)+"-"+iso.slice(8,10), dd = v2DateFR(d);
+  const i = axisDates.indexOf(key);
+  if(i >= 0) return { on:true, index:i, label:"V2 \u2014 "+dd };
+  if(axisDates[0] > key) return { on:true, index:null, label:"Post-V2 (depuis le "+dd+")" };
   return { on:false };
+}
+function monthAxis(mk, days){
+  const mm = mk.slice(5,7), a = [];
+  for(let i=1;i<=days;i++) a.push(mm+"-"+String(i).padStart(2,"0"));
+  return a;
 }
 
 function kill(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
@@ -81,7 +87,8 @@ function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
 function badge(v,unit){ const c=v>=0?"up":"down", a=v>=0?"↑":"↓";
   return '<span class="badge '+c+'">'+a+" "+fmt(Math.abs(v))+" "+unit+"</span>"; }
-function prevMonth(m){ const i=(cache[curSite].months||[]).indexOf(m); return i>0 ? cache[curSite].months[i-1] : null; }
+function prevMonth(m){ if(m==="total") return null;
+  const i=(cache[curSite].months||[]).indexOf(m); return i>0 ? cache[curSite].months[i-1] : null; }
 
 /* ==================== INIT ==================== */
 async function init(){
@@ -107,10 +114,11 @@ async function load(site){
   document.getElementById("crumbSite").textContent = site;
   if(!cache[site]) cache[site] = await (await fetch("data/"+slug(site)+".json")).json();
   const d = cache[site];
-  if(d.months.indexOf(curMonth)<0) curMonth = d.months[d.months.length-1];
-  document.getElementById("monthTabs").innerHTML = d.months.map(m=>
-    '<button class="month-tab'+(m===curMonth?" active":"")+'" data-m="'+m+'">'+
-    d.meta[m].label.replace(" 2026","")+'</button>').join("");
+  const per = d.periods || d.months;
+  if(per.indexOf(curMonth)<0) curMonth = per[per.length-1];
+  document.getElementById("monthTabs").innerHTML = per.map(m=>
+    '<button class="month-tab'+(m===curMonth?" active":"")+(m==="total"?" month-tab-total":"")+'" data-m="'+m+'">'+
+    (m==="total" ? "Total" : d.meta[m].label.replace(" 2026",""))+'</button>').join("");
   document.querySelectorAll(".month-tab").forEach(b=>b.addEventListener("click",()=>{
     curMonth = b.dataset.m;
     document.querySelectorAll(".month-tab").forEach(x=>x.classList.remove("active"));
@@ -121,15 +129,23 @@ async function load(site){
 
 function render(){
   const d = cache[curSite];
-  document.getElementById("pageSub").textContent = d.meta[curMonth].label + " · leads, trafic et parcours de reprise";
-  document.getElementById("partialNotice").hidden = !d.meta[curMonth].partial;
+  document.getElementById("pageSub").textContent = (isTotal(curMonth)? "Cumul avril → juillet 2026" : d.meta[curMonth].label) + " · leads, trafic et parcours de reprise";
+  const pn=document.getElementById("partialNotice");
+  pn.hidden = !d.meta[curMonth].partial;
+  if(!pn.hidden){
+    pn.querySelector("p").innerHTML = isTotal(curMonth)
+      ? "La période cumule <strong>119 jours</strong> (01/04 → 28/07), mais juillet s'arrête au 28 pour les leads et au 27 pour le trafic site. Le dernier mois pèse donc un peu moins que les autres dans les totaux."
+      : "Juillet ne couvre que <strong>28 jours</strong> (trafic site jusqu'au 27/07). Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
+  }
   const vd=document.getElementById("v2DateLabel");
   if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
   renderLeads(d); renderTraffic(d); renderFunnel(d);
 }
 
 /* helpers periode */
-function monthIdx(d,mk){ const r=[]; d.daily.d.forEach((x,i)=>{ if("2026-"+x.slice(0,2)===mk) r.push(i); }); return r; }
+function isTotal(mk){ return mk==="total"; }
+function monthIdx(d,mk){ if(isTotal(mk)) return d.daily.d.map((_,i)=>i);
+  const r=[]; d.daily.d.forEach((x,i)=>{ if("2026-"+x.slice(0,2)===mk) r.push(i); }); return r; }
 function leadsPerDay(d,mk){ const L=d.leads[mk]; return L ? L.total/d.meta[mk].days : null; }
 function convOf(d,mk){ const L=d.leads[mk], R=d.repriseMonth[mk];
   return (L&&R&&R.sessions) ? L.total/R.sessions*100 : null; }
@@ -150,18 +166,20 @@ function renderLeads(d){
     fmt(lpd)+' leads / jour sur '+meta.days+' jours</p></div></div>';
 
   document.getElementById("leadsKpis").innerHTML =
-    kpi("Leads du mois", fmt(L.total), meta.days+" jours de données") +
+    kpi(isTotal(mk)?"Leads sur la période":"Leads du mois", fmt(L.total), meta.days+" jours de données") +
     kpi("Leads / jour", fmt(lpd), null, lpdPrev!=null?badge((lpd-lpdPrev)/lpdPrev*100,"%"):null) +
     kpi("Sessions outil de reprise", fmt(R.sessions), fmt(R.sessions/R.rdays)+" / jour") +
     kpi("Conversion", pct(conv), null, convPrev!=null?badge(conv-convPrev,"pts"):null);
 
   // graphe quotidien du mois
-  document.getElementById("leadsDailySub").textContent = meta.label;
+  document.getElementById("leadsDailySub").textContent = isTotal(mk) ? "01/04 → 28/07 · 119 jours" : meta.label;
   kill("ld");
   charts.ld=new Chart(document.getElementById("leadsDailyChart"),{type:"line",
-    data:{labels:L.daily.map((_,i)=>String(i+1)),datasets:[{label:"Leads",data:L.daily,
+    data:{labels:(isTotal(mk)? d.daily.d.map(x=>x.slice(3)+"/"+x.slice(0,2)) : L.daily.map((_,i)=>String(i+1))),
+      datasets:[{label:"Leads",data:L.daily,
       borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.35,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:(()=>{ const o=lineOpt(14); o.plugins.v2mark=v2Mark(d,mk,day=>day-1); return o; })()});
+    options:(()=>{ const o=lineOpt(isTotal(mk)?12:14);
+      o.plugins.v2mark=v2Mark(d, isTotal(mk)? d.daily.d : monthAxis(mk, meta.days)); return o; })()});
 
   // tendance 4 mois
   const ms=d.months.filter(m=>d.leads[m]);
@@ -256,8 +274,8 @@ function renderTraffic(d){
     kpi("Part vers la reprise", pct(T.sessions?R.sessions/T.sessions*100:0), "du trafic du site") +
     kpi("Engagement moyen", fmt(T.eng)+" s", "par session");
 
-  const idx=monthIdx(d,mk), lab=idx.map(i=>d.daily.d[i].slice(3));
-  document.getElementById("trafficDailySub").textContent=meta.label+" · même échelle";
+  const idx=monthIdx(d,mk), lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
+  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · même échelle";
   document.getElementById("trafficLegend").innerHTML=
     '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
     '<div class="legend-item"><span class="swatch" style="background:'+C.orange+'"></span><span class="lname">Outil de reprise</span><span class="lvalue">'+fmt(R.sessions)+'</span></div>';
@@ -266,8 +284,8 @@ function renderTraffic(d){
     data:{labels:lab,datasets:[
       {label:"Site parent",data:idx.map(i=>d.daily.u[i]),borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
       {label:"Outil de reprise",data:idx.map(i=>d.daily.rep[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:(()=>{ const o=lineOpt(16);
-      o.plugins.v2mark=v2Mark(d,mk,day=>idx.findIndex(i=>+d.daily.d[i].slice(3)===day)); return o; })()});
+    options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
+      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i])); return o; })()});
 
   const ms=d.months;
   kill("tt");
@@ -280,7 +298,7 @@ function renderTraffic(d){
       scales:{x:{grid:{display:false},border:{display:false},ticks:tk()},
         y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()}}}});
 
-  document.getElementById("engSub").textContent=meta.label;
+  document.getElementById("engSub").textContent=isTotal(mk)?"01/04 → 28/07":meta.label;
   kill("en");
   charts.en=new Chart(document.getElementById("engChart"),{
     data:{labels:lab,datasets:[
@@ -324,6 +342,7 @@ function renderFunnel(d){
         y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:{...tk(),callback:v=>v+" %"}}}}});
 
   const wn=document.getElementById("funnelV2Notice"); if(wn) wn.hidden=true;
+  if(isTotal(mk)){ funnelTotal(d); return; }
   if(isJuly){ funnelJuly(d); return; }
   if(!FM){
     document.getElementById("funnelHero").innerHTML="";
@@ -373,6 +392,72 @@ function renderFunnel(d){
   document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
   document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
     '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
+}
+
+function funnelTotal(d){
+  const v2=d.v2, dd=v2DateFR(d);
+  const warn=document.getElementById("funnelV2Notice");
+  warn.hidden=false;
+  warn.querySelector("p").innerHTML =
+    "Le funnel <strong>ne peut pas être cumulé</strong> : GA4 dédoublonne les utilisateurs actifs, "+
+    "additionner les mois compterait plusieurs fois une même personne. Voici donc le détail période par période, "+
+    "avec le lancement V2 du <strong>"+dd+"</strong> comme repère.";
+
+  document.getElementById("funnelHero").innerHTML="";
+
+  const rows=[];
+  d.months.forEach(m=>{
+    const F=d.funnelMonth[m]; if(!F) return;
+    const st=F.steps;
+    rows.push({ nom:d.meta[m].label.replace(" 2026",""), post:(d.v2_date && m>=d.v2_date.slice(0,7)),
+                e1:st[0].users, fin:st[st.length-1].users, conv:F.conversion_pct, jour:F.users_per_day });
+  });
+  if(v2){
+    const sv=v2.is_v2_split;
+    rows.push({ nom:"Juil. "+(sv?"pré-V2":v2.pre_label), post:!sv,
+      e1:v2.pre_step1_total, fin:v2.pre_final_users, conv:v2.pre_conversion_pct, jour:v2.pre_users_per_day });
+    rows.push({ nom:"Juil. "+(sv?"post-V2":v2.post_label), post:true,
+      e1:v2.post_step1_total, fin:v2.post_final_users, conv:v2.post_conversion_pct, jour:v2.post_users_per_day });
+  }
+
+  const best=rows.reduce((a,b)=>b.conv>a.conv?b:a,rows[0]);
+  const pre=rows.filter(r=>!r.post), post=rows.filter(r=>r.post);
+  const moy=a=>a.length? a.reduce((s,r)=>s+r.conv,0)/a.length : null;
+  const mPre=moy(pre), mPost=moy(post);
+
+  document.getElementById("funnelKpis").innerHTML=
+    kpi("Complétion moyenne avant V2", mPre!=null?pct(mPre):"—", pre.length+" période"+(pre.length>1?"s":"")) +
+    kpi("Complétion moyenne après V2", mPost!=null?pct(mPost):"—", post.length+" période"+(post.length>1?"s":""),
+        (mPre!=null&&mPost!=null)?badge(mPost-mPre,"pts"):null) +
+    kpi("Meilleure période", pct(best.conv), best.nom) +
+    kpi("Lancement V2", dd, "bascule de référence");
+
+  document.getElementById("funnelVizSub").textContent="Détail par période · un funnel ne s’additionne pas";
+  document.getElementById("funnelVizLegend").innerHTML=
+    '<div class="legend-item"><span class="swatch" style="background:#c7cbc8"></span><span class="lname">Avant V2</span></div>'+
+    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Après V2</span></div>';
+
+  const max=Math.max.apply(null,rows.map(r=>r.conv))||1;
+  document.getElementById("funnelViz").innerHTML=
+    '<div class="rank-head" style="padding:0 0 9px"><span>Période</span><span class="rh-share">Complétion</span><span class="rh-value">Estimations</span></div>'+
+    rows.map(r=>{
+      const col=r.post?C.teal:"#c7cbc8";
+      return '<div class="rank-row" style="padding-left:0;padding-right:0">'+
+        '<div class="rank-name"><span class="rank-badge" style="background:'+col+'"></span>'+
+          '<span class="rank-label">'+esc(r.nom)+'</span>'+
+          '<span class="rank-pct" style="width:auto;color:var(--text-muted)">'+fmt(r.jour)+' entrées / j</span></div>'+
+        '<div class="rank-share"><span class="rank-track"><span class="rank-fill" style="width:'+(r.conv/max*100).toFixed(1)+'%;background:'+col+'"></span></span>'+
+          '<span class="rank-pct">'+pct(r.conv)+'</span></div>'+
+        '<div class="rank-value">'+fmt(r.fin)+' / '+fmt(r.e1)+'</div></div>';
+    }).join("");
+
+  document.getElementById("channelSub").textContent="Entrées de funnel par canal · juin 2026 (dernier mois complet)";
+  const FM=d.funnelMonth["2026-06"];
+  const ch=FM?(FM.channels||[]).slice().sort((a,b)=>b.u-a.u):[];
+  const tot=ch.reduce((s,x)=>s+x.u,0)||1;
+  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
+  document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
+    '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
 }
 
 function funnelJuly(d){
