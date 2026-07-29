@@ -280,6 +280,7 @@ function renderEvo(d){
     return i>=0 ? {on:true, index:i, label:lbl, soft:true} : {on:false};
   })();
 
+  const sc = dualScale(ms.map(sess), ms.map(lead));
   kill("evo");
   charts.evo = new Chart(document.getElementById("evoChart"), {
     type:"line",
@@ -301,10 +302,10 @@ function renderEvo(d){
       scales:{
         x:{ grid:{display:false}, border:{display:false},
             ticks:{...tk(), font:{size:11.5}, color:"#61675f"} },
-        y:{ beginAtZero:true, grid:{color:"#eef0ee"}, border:{display:false},
+        y:{ beginAtZero:true, max:sc.left, grid:{color:"#eef0ee"}, border:{display:false},
             ticks:{...tk(), color:C.teal},
             title:{display:true, text: dv?"Sessions reprise / jour":"Sessions reprise", color:C.teal, font:{size:10.5, weight:"700"}} },
-        y1:{ position:"right", beginAtZero:true, grid:{display:false}, border:{display:false},
+        y1:{ position:"right", beginAtZero:true, max:sc.right, grid:{display:false}, border:{display:false},
             ticks:{...tk(), color:C.orange},
             title:{display:true, text: dv?"Leads / jour":"Leads", color:C.orange, font:{size:10.5, weight:"700"}} }
       }}
@@ -407,17 +408,25 @@ function renderTraffic(d){
 
   const idx=monthIdx(d,mk);
   const lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
-  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · même échelle";
+  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · deux échelles";
   document.getElementById("trafficLegend").innerHTML=
     '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
     '<div class="legend-item"><span class="swatch" style="background:'+C.orange+'"></span><span class="lname">Outil de reprise</span><span class="lvalue">'+fmt(R.sessions)+'</span></div>';
+  const sPar=idx.map(i=>d.daily.u[i]), sRep=idx.map(i=>d.daily.rep[i]);
+  const sc=dualScale(sPar,sRep);
   kill("tr");
   charts.tr=new Chart(document.getElementById("trafficChart"),{type:"line",
     data:{labels:lab,datasets:[
-      {label:"Site parent",data:idx.map(i=>d.daily.u[i]),borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
-      {label:"Outil de reprise",data:idx.map(i=>d.daily.rep[i]),borderColor:C.orange,backgroundColor:"transparent",tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
+      {label:"Site parent",data:sPar,yAxisID:"y",borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
+      {label:"Outil de reprise",data:sRep,yAxisID:"y1",borderColor:C.orange,backgroundColor:grad(C.orange),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
     options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
-      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i])); return o; })()});
+      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i]));
+      o.scales.y={...o.scales.y, max:sc.left, ticks:{...tk(), color:C.teal},
+        title:{display:true,text:"Sessions site parent",color:C.teal,font:{size:10.5,weight:"700"}}};
+      o.scales.y1={position:"right",beginAtZero:true,max:sc.right,grid:{display:false},border:{display:false},
+        ticks:{...tk(), color:C.orange},
+        title:{display:true,text:"Sessions outil de reprise",color:C.orange,font:{size:10.5,weight:"700"}}};
+      return o; })()});
 
   renderSynth(d);
 }
@@ -747,6 +756,25 @@ function funnelJuly(d){
 }
 
 /* ==================== CHART HELPERS ==================== */
+/* arrondi "propre" superieur : 4 830 -> 5 000 */
+function niceMax(v){
+  if(!(v>0)) return 1;
+  const e = Math.pow(10, Math.floor(Math.log10(v))), r = v/e;
+  const s = [1,1.2,1.5,2,2.5,3,4,5,6,8,10].find(x=>x>=r) || 10;
+  return s*e;
+}
+/* deux echelles calibrees pour que la serie secondaire reste sous la principale */
+function dualScale(main, sec){
+  const A = main.filter(x=>x!=null&&!isNaN(x)), B = sec.filter(x=>x!=null&&!isNaN(x));
+  if(!A.length||!B.length) return { left:undefined, right:undefined };
+  const maxA = Math.max.apply(null,A), minA = Math.min.apply(null,A), maxB = Math.max.apply(null,B);
+  const left = niceMax(maxA*1.02);
+  // hauteur relative du creux de la courbe principale : la secondaire doit rester dessous
+  let frac = (minA/left)*0.9;
+  frac = Math.min(Math.max(frac, 0.30), 0.85);
+  return { left:left, right:niceMax(maxB/frac) };
+}
+
 function grad(c){ return ctx=>{ const a=ctx.chart.chartArea; if(!a) return c+"22";
   const g=ctx.chart.ctx.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,c+"2e"); g.addColorStop(1,c+"02"); return g; }; }
 function tip(){ return {backgroundColor:"#141a17",padding:11,cornerRadius:9,titleFont:{weight:"700",size:12.5},bodyFont:{size:12.5},boxPadding:4,usePointStyle:true}; }
