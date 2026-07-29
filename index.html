@@ -137,25 +137,15 @@
           <p class="card-note">Les deux séries sont des <strong>sessions</strong> GA4, filtrées par nom d'hôte : site parent d'un côté, outil de reprise de l'autre. L'onglet est identifié par son filtre et non par son libellé.</p>
         </div>
 
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>Tendance sur 4 mois</h3>
-                <p class="card-sub">Sessions / jour · site parent vs outil de reprise</p>
-              </div>
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Synthèse mensuelle — trafic, reprise et leads</h3>
+              <p class="card-sub">Du site parent au lead : chaque étage de la chaîne, mois par mois.</p>
             </div>
-            <div class="chart-wrap chart-wrap-sm"><canvas id="trafficTrendChart"></canvas></div>
           </div>
-          <div class="card">
-            <div class="card-head">
-              <div>
-                <h3>Part vers la reprise, par jour</h3>
-                <p class="card-sub" id="partSub">—</p>
-              </div>
-            </div>
-            <div class="chart-wrap chart-wrap-sm"><canvas id="partChart"></canvas></div>
-          </div>
+          <table class="mtx" id="synthTable"><thead></thead><tbody></tbody></table>
+          <p class="mtx-note" id="synthNote">—</p>
         </div>
       </section>
 
@@ -177,11 +167,12 @@
         <div class="card">
           <div class="card-head">
             <div>
-              <h3>Taux de complétion du funnel</h3>
-              <p class="card-sub">Avril → juillet · les barres vertes correspondent aux périodes postérieures au lancement V2</p>
+              <h3>Détail du parcours, étape par étape</h3>
+              <p class="card-sub" id="stepSub">—</p>
             </div>
           </div>
-          <div class="chart-wrap chart-wrap-sm"><canvas id="funnelTrendChart"></canvas></div>
+          <table class="mtx" id="stepTable"><thead></thead><tbody></tbody></table>
+          <p class="mtx-note" id="stepNote">—</p>
         </div>
 
         <div class="card">
