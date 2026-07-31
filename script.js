@@ -258,8 +258,6 @@ function renderOverview(){
     : d0.meta[lastM].label + " · " + d0.meta[lastM].days + " jours";
 
   document.getElementById("ovSub").textContent = periodLabel + " · classement par volume de leads";
-  const hb = document.getElementById("hbPeriod");
-  if(hb) hb.textContent = periodLabel + " · " + fmt(totLeads) + " leads, " + fmt(totSess) + " sessions de reprise";
   document.getElementById("ovKpis").innerHTML =
     kpi("Leads — " + (day ? "dernier jour" : "mois en cours"), fmt(totLeads),
         day ? "moyenne 7 j : " + fmt(ref) : "mois précédent : " + fmt(ref) + " / jour",
