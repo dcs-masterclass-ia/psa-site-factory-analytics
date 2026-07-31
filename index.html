@@ -11,6 +11,9 @@
 
   <aside class="sidebar">
     <div class="brand"><span class="logo">P</span> PSA Site Factory</div>
+    <nav class="site-nav">
+      <button class="site-tab overview-tab active" id="btnOverview"><span class="dot"></span>Vue d'ensemble</button>
+    </nav>
     <div class="nav-label">Sites</div>
     <nav class="site-nav" id="siteTabs"></nav>
     <div class="sidebar-footer">
@@ -46,6 +49,36 @@
         <p>Juillet ne couvre que <strong>30 jours</strong> au lieu de 31. Les totaux mensuels ne sont donc pas comparables tels quels — les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.</p>
       </div>
 
+      <!-- ==================== VUE D'ENSEMBLE ==================== -->
+      <section id="panel-overview" class="panel">
+        <div class="kpi-row" id="ovKpis"></div>
+
+        <div class="card card-flush">
+          <div class="card-head card-head-pad">
+            <div>
+              <h3>Les cinq sites</h3>
+              <p class="card-sub" id="ovSub">—</p>
+            </div>
+            <div class="seg" id="ovScope">
+              <button class="seg-btn active" data-scope="month">Mois en cours</button>
+              <button class="seg-btn" data-scope="day">Dernier jour</button>
+            </div>
+          </div>
+          <table class="mtx ov-table" id="ovTable"><thead></thead><tbody></tbody></table>
+          <p class="mtx-note" id="ovNote">—</p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Leads par jour, tous sites</h3>
+              <p class="card-sub" id="ovChartSub">—</p>
+            </div>
+          </div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="ovChart"></canvas></div>
+        </div>
+      </section>
+
       <!-- ==================== LEADS ==================== -->
       <section id="panel-leads" class="panel active">
         <div class="hero-row" id="leadsHero"></div>
@@ -79,6 +112,8 @@
           <div class="chart-wrap chart-wrap-sm"><canvas id="leadsDailyChart"></canvas></div>
         </div>
 
+        <details class="details-block">
+          <summary>Voir le détail des leads — marques, carburants, sources, projets</summary>
         <div class="split-main">
           <div class="card card-flush">
             <div class="card-head card-head-pad">
@@ -122,6 +157,7 @@
             </div>
           </div>
         </div>
+        </details>
       </section>
 
       <!-- ==================== TRAFIC ==================== -->
@@ -189,6 +225,8 @@
           <div id="funnelViz"></div>
         </div>
 
+        <details class="details-block">
+          <summary>Voir les entrées de funnel par canal</summary>
         <div class="card">
           <div class="card-head">
             <div>
@@ -198,6 +236,7 @@
           </div>
           <table class="simple" id="channelTable"><thead></thead><tbody></tbody></table>
         </div>
+        </details>
       </section>
 
     </main>
