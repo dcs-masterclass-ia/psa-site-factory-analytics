@@ -857,7 +857,6 @@ const STEP_FR = ["Page d'accueil","Sélection de version","Kilométrage","Coordo
 
 function stepUsers(d,m){
   if(d.funnelMonth[m]) return d.funnelMonth[m].steps.map(s=>s.users);
-  if(m==="2026-07" && d.v2steps) return d.v2steps.map(s=>s.a+s.b);   // juillet = somme des deux exports
   return null;
 }
 
@@ -918,8 +917,7 @@ function renderSteps(d){
     (hi>=0 ? "L'étape qui bouge le plus est <strong>"+esc(rows[hi].l)+"</strong> ("+
       fmt(Math.abs(rows[hi].vals[rows[hi].vals.length-1]-rows[hi].moy))+" pts d'écart avec la moyenne avril–juin). " : "") +
     "La moyenne avril–juin est pondérée par les volumes de chaque mois. Lancement V2 le <strong>"+dd+"</strong>. " +
-    "Juillet est reconstitué en additionnant les deux exports de la période : GA4 dédoublonnant les utilisateurs actifs, " +
-    "les volumes de juillet peuvent être très légèrement surestimés, mais pas les taux.";
+    "Chaque mois est extrait directement de GA4 sur le mois plein, en utilisateurs actifs.";
 }
 
 function funnelTotal(d){
