@@ -203,8 +203,8 @@ function render(){
   pn.hidden = !d.meta[curMonth].partial;
   if(!pn.hidden){
     pn.querySelector("p").innerHTML = isTotal(curMonth)
-      ? "La période cumule <strong>119 jours</strong> (01/04 → 28/07). Juillet n'en compte que 28 : ce mois pèse donc un peu moins que les autres dans les totaux."
-      : "Juillet ne couvre que <strong>28 jours</strong> au lieu de 30 ou 31. Les totaux mensuels ne sont donc pas comparables tels quels — toutes les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
+      ? "La période cumule <strong>121 jours</strong> (01/04 → 30/07). Juillet n'en compte que 28 : ce mois pèse donc un peu moins que les autres dans les totaux."
+      : "Juillet ne couvre que <strong>30 jours</strong> au lieu de 31. Les totaux mensuels ne sont donc pas comparables tels quels — les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
   }
   const vd=document.getElementById("v2DateLabel");
   if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
@@ -237,7 +237,7 @@ function renderLeads(d){
   renderEvo(d);
 
   // graphe quotidien du mois
-  document.getElementById("leadsDailySub").textContent = isTotal(mk) ? "01/04 → 28/07 · 119 jours" : meta.label;
+  document.getElementById("leadsDailySub").textContent = isTotal(mk) ? "01/04 → 30/07 · 121 jours" : meta.label;
   kill("ld");
   charts.ld=new Chart(document.getElementById("leadsDailyChart"),{type:"line",
     data:{labels:(isTotal(mk)? d.daily.d.map(x=>x.slice(3)+"/"+x.slice(0,2)) : L.daily.map((_,i)=>String(i+1))),
@@ -408,7 +408,7 @@ function renderTraffic(d){
 
   const idx=monthIdx(d,mk);
   const lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
-  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 28/07":meta.label)+" · deux échelles";
+  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 30/07":meta.label)+" · deux échelles";
   document.getElementById("trafficLegend").innerHTML=
     '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
     '<div class="legend-item"><span class="swatch" style="background:'+C.orange+'"></span><span class="lname">Outil de reprise</span><span class="lvalue">'+fmt(R.sessions)+'</span></div>';
