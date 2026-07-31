@@ -203,7 +203,7 @@ function render(){
   pn.hidden = !d.meta[curMonth].partial;
   if(!pn.hidden){
     pn.querySelector("p").innerHTML = isTotal(curMonth)
-      ? "La période cumule <strong>121 jours</strong> (01/04 → 30/07). Juillet n'en compte que 28 : ce mois pèse donc un peu moins que les autres dans les totaux."
+      ? "La période cumule <strong>121 jours</strong> (01/04 → 30/07). Juillet n'en compte que 30 : ce mois pèse donc un peu moins que les autres dans les totaux."
       : "Juillet ne couvre que <strong>30 jours</strong> au lieu de 31. Les totaux mensuels ne sont donc pas comparables tels quels — les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
   }
   const vd=document.getElementById("v2DateLabel");
