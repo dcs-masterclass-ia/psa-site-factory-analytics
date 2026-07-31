@@ -162,9 +162,10 @@ function prevMonth(m){ if(m==="total") return null;
 /* ==================== INIT ==================== */
 async function init(){
   SITES = (await (await fetch("data/index.json")).json()).sites;
-  document.getElementById("siteTabs").innerHTML = SITES.map((s,i)=>
-    '<button class="site-tab'+(i===0?" active":"")+'" data-site="'+esc(s)+'"><span class="dot"></span>'+esc(s)+'</button>').join("");
-  document.querySelectorAll(".site-tab").forEach(b=>b.addEventListener("click",async()=>{
+  document.getElementById("siteTabs").innerHTML = SITES.map(s=>
+    '<button class="site-tab" data-site="'+esc(s)+'"><span class="dot"></span>'+esc(s)+'</button>').join("");
+  document.getElementById("btnOverview").addEventListener("click", showOverview);
+  document.querySelectorAll("#siteTabs .site-tab").forEach(b=>b.addEventListener("click",async()=>{
     document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
     b.classList.add("active"); await load(b.dataset.site);
   }));
@@ -174,11 +175,160 @@ async function init(){
     document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
     document.getElementById("panel-"+b.dataset.section).classList.add("active");
   }));
-  await load(SITES[0]);
+  await showOverview();
+}
+
+/* ==================== VUE D'ENSEMBLE ==================== */
+let ovScope = "month";
+
+async function loadAll(){
+  await Promise.all(SITES.map(async s=>{
+    if(!cache[s]) cache[s] = await (await fetch("data/"+slug(s)+".json")).json();
+  }));
+}
+
+async function showOverview(){
+  await loadAll();
+  document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
+  document.getElementById("btnOverview").classList.add("active");
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-overview").classList.add("active");
+  document.getElementById("pageTitle").textContent = "Vue d'ensemble";
+  document.getElementById("pageSub").textContent = "Les cinq sites, du trafic au lead";
+  document.getElementById("crumbSite").textContent = "Vue d'ensemble";
+  document.getElementById("sectionTabs").hidden = true;
+  document.getElementById("monthTabs").hidden = true;
+  document.getElementById("partialNotice").hidden = true;
+  renderOverview();
+}
+
+/* Agrégats d'un site sur une période : m = clé de mois, ou "day" pour le dernier jour connu */
+function ovStats(d, mode){
+  const ms = d.months, m = ms[ms.length-1], pm = ms[ms.length-2];
+  if(mode === "day"){
+    const n = d.daily.d.length - 1;
+    const L = d.leads[m];
+    const li = L.daily.length - 1;
+    const last7 = L.daily.slice(-8, -1);
+    const moy7 = last7.length ? last7.reduce((a,b)=>a+b,0)/last7.length : null;
+    return { label: d.daily.d[n], sess: d.daily.rep[n], leads: L.daily[li],
+             conv: d.daily.rep[n] ? L.daily[li]/d.daily.rep[n]*100 : null,
+             ref: moy7, refLabel: "moyenne 7 jours", spark: L.daily.slice(-14) };
+  }
+  const T = d.trafficMonth[m], R = d.repriseMonth[m], L = d.leads[m], days = d.meta[m].days;
+  const Rp = d.repriseMonth[pm], Lp = d.leads[pm], daysP = d.meta[pm].days;
+  return { label: d.meta[m].label, sess: R.sessions, leads: L.total, parent: T.sessions,
+           part: T.sessions ? R.sessions/T.sessions*100 : null,
+           conv: R.sessions ? L.total/R.sessions*100 : null,
+           convPrev: Rp.sessions ? Lp.total/Rp.sessions*100 : null,
+           perDay: L.total/days, perDayPrev: Lp.total/daysP,
+           spark: L.daily.slice(-14) };
+}
+
+function sparkline(vals, color){
+  if(!vals || vals.length < 2) return "";
+  const w = 84, h = 22, mx = Math.max(...vals), mn = Math.min(...vals), sp = (mx-mn)||1;
+  const pts = vals.map((v,i)=>[i/(vals.length-1)*w, h - (v-mn)/sp*(h-4) - 2]);
+  const dd = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+  return '<svg class="spark-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
+         '<path d="'+dd+'" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linejoin="round"/>'+
+         '<circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="2.2" fill="'+color+'"/></svg>';
+}
+
+function renderOverview(){
+  const seg = document.getElementById("ovScope");
+  seg.querySelectorAll(".seg-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.scope === ovScope);
+    b.onclick = ()=>{ ovScope = b.dataset.scope; renderOverview(); };
+  });
+
+  const rows = SITES.map(s=>({ site:s, d:cache[s], st:ovStats(cache[s], ovScope) }))
+                    .sort((a,b)=> b.st.leads - a.st.leads);
+  const day = ovScope === "day";
+  const totLeads = rows.reduce((a,r)=>a+r.st.leads,0);
+  const totSess  = rows.reduce((a,r)=>a+r.st.sess,0);
+  const ref      = rows.reduce((a,r)=>a+(day ? (r.st.ref||0) : (r.st.perDayPrev||0)),0);
+  const conv     = totSess ? totLeads/totSess*100 : 0;
+
+  const d0 = rows[0].d, lastM = d0.months[d0.months.length-1];
+  const periodLabel = day
+    ? "Journée du " + rows[0].st.label.slice(3) + "/" + rows[0].st.label.slice(0,2)
+    : d0.meta[lastM].label + " · " + d0.meta[lastM].days + " jours";
+
+  document.getElementById("ovSub").textContent = periodLabel + " · classement par volume de leads";
+  document.getElementById("ovKpis").innerHTML =
+    kpi("Leads — " + (day ? "dernier jour" : "mois en cours"), fmt(totLeads),
+        day ? "moyenne 7 j : " + fmt(ref) : "mois précédent : " + fmt(ref) + " / jour",
+        ref ? badge(((day ? totLeads : totLeads/d0.meta[lastM].days) - ref)/ref*100, "%") : null) +
+    kpi("Sessions outil de reprise", fmt(totSess), day ? "sur la journée" : "sur le mois") +
+    kpi("Transformation moyenne", pct(conv), "sessions reprise → leads") +
+    kpi("Sites suivis", String(rows.length), "lancements V2 échelonnés");
+
+  const head = day
+    ? '<tr><th class="mtx-lab">Site</th><th class="num">Leads</th><th class="num">Moy. 7 j</th><th class="num">Sessions reprise</th><th class="num">Transformation</th><th class="num mtx-end">14 derniers jours</th></tr>'
+    : '<tr><th class="mtx-lab">Site</th><th class="num">Leads</th><th class="num">/ jour</th><th class="num">Sessions reprise</th><th class="num">Part du site</th><th class="num">Transformation</th><th class="num mtx-end">14 derniers jours</th></tr>';
+
+  const body = rows.map(r=>{
+    const st = r.st, v2 = r.d.v2_date ? r.d.v2_date.slice(8,10)+"/"+r.d.v2_date.slice(5,7) : "—";
+    const cells = day
+      ? '<td class="num"><span class="mtx-val">'+fmt(st.leads)+'</span></td>'+
+        '<td class="num mtx-ref">'+fmt(st.ref)+'</td>'+
+        '<td class="num">'+fmt(st.sess)+'</td>'+
+        '<td class="num">'+(st.conv==null?"—":pct(st.conv))+'</td>'
+      : '<td class="num"><span class="mtx-val">'+fmt(st.leads)+'</span>'+
+          (st.perDayPrev ? '<span class="mtx-sub">'+badge((st.perDay-st.perDayPrev)/st.perDayPrev*100,"%")+'</span>' : '')+'</td>'+
+        '<td class="num mtx-ref">'+fmt(st.perDay)+'</td>'+
+        '<td class="num">'+fmt(st.sess)+'</td>'+
+        '<td class="num">'+(st.part==null?"—":pct(st.part))+'</td>'+
+        '<td class="num"><span class="mtx-val">'+pct(st.conv)+'</span>'+
+          (st.convPrev!=null ? '<span class="mtx-sub">'+badge(st.conv-st.convPrev,"pts")+'</span>' : '')+'</td>';
+    return '<tr class="ov-row" data-site="'+esc(r.site)+'">'+
+      '<td class="mtx-lab"><span class="ov-name">'+esc(r.site)+'</span><span class="ov-v2">V2 le '+v2+'</span></td>'+
+      cells+'<td class="num mtx-end">'+sparkline(st.spark, C.teal)+'</td></tr>';
+  }).join("");
+
+  document.querySelector("#ovTable thead").innerHTML = head;
+  document.querySelector("#ovTable tbody").innerHTML = body;
+  document.querySelectorAll(".ov-row").forEach(tr=>tr.addEventListener("click", async ()=>{
+    document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
+    document.querySelector('#siteTabs [data-site="'+tr.dataset.site+'"]').classList.add("active");
+    await load(tr.dataset.site);
+  }));
+
+  // lecture automatique : meilleure et moins bonne transformation, plus forte variation
+  const best = rows.reduce((a,b)=> b.st.conv>a.st.conv?b:a);
+  const worst= rows.reduce((a,b)=> b.st.conv<a.st.conv?b:a);
+  let note = "Transformation la plus forte : <strong>"+esc(best.site)+"</strong> ("+pct(best.st.conv)+
+             "), la plus faible : <strong>"+esc(worst.site)+"</strong> ("+pct(worst.st.conv)+"). ";
+  if(!day){
+    const mv = rows.filter(r=>r.st.convPrev!=null)
+                   .reduce((a,b)=> Math.abs(b.st.conv-b.st.convPrev)>Math.abs(a.st.conv-a.st.convPrev)?b:a);
+    note += "Plus forte variation par rapport au mois précédent : <strong>"+esc(mv.site)+"</strong> ("+
+            (mv.st.conv-mv.st.convPrev>=0?"+":"−")+fmt(Math.abs(mv.st.conv-mv.st.convPrev))+" pts). ";
+  }
+  note += "Cliquer une ligne ouvre le détail du site.";
+  document.getElementById("ovNote").innerHTML = note;
+
+  // courbe : leads quotidiens cumulés des 5 sites sur le mois en cours
+  const n = Math.max(...rows.map(r=>r.d.leads[lastM].daily.length));
+  const labels = Array.from({length:n},(_,i)=>String(i+1));
+  const serie = labels.map((_,i)=> rows.reduce((a,r)=> a + (r.d.leads[lastM].daily[i]||0), 0));
+  document.getElementById("ovChartSub").textContent = d0.meta[lastM].label + " · somme des cinq sites";
+  kill("ov");
+  charts.ov = new Chart(document.getElementById("ovChart"), {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Leads", data:serie, borderColor:C.teal, backgroundColor:grad(C.teal),
+            fill:true, tension:.3, pointRadius:0, pointHoverRadius:5, borderWidth:2.4 }] },
+    options: lineOpt(16),
+  });
 }
 
 async function load(site){
   curSite = site;
+  document.getElementById("sectionTabs").hidden = false;
+  document.getElementById("monthTabs").hidden = false;
+  document.getElementById("panel-overview").classList.remove("active");
+  if(!document.querySelector(".panel.active")) document.getElementById("panel-leads").classList.add("active");
   document.getElementById("pageTitle").textContent = site;
   document.getElementById("crumbSite").textContent = site;
   if(!cache[site]) cache[site] = await (await fetch("data/"+slug(site)+".json")).json();

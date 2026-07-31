@@ -338,3 +338,28 @@ table.mtx tbody tr.mtx-group:first-child td { padding-top: 6px !important; }
   .content { padding: 8px 16px 32px; }
   .topbar { padding: 14px 16px 6px; }
 }
+
+/* ---------- VUE D'ENSEMBLE ---------- */
+.overview-tab { font-weight: 600; }
+.overview-tab.active { background: var(--teal); color: #fff; }
+.ov-table tbody tr { cursor: pointer; }
+.ov-table tbody tr:hover { background: var(--teal-light); }
+.ov-name { display: block; font-weight: 700; color: var(--text); }
+.ov-v2 { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.spark-svg { width: 84px; height: 22px; display: inline-block; vertical-align: middle; }
+.ov-table .mtx-sub .badge { font-size: 11px; }
+.ov-table td, .ov-table th { padding: 14px 10px; }
+
+/* ---------- BLOCS DE DÉTAIL REPLIABLES ---------- */
+.details-block { margin-top: 4px; }
+.details-block > summary {
+  list-style: none; cursor: pointer; user-select: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+  padding: 9px 18px; font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  box-shadow: var(--shadow); margin-bottom: 16px;
+}
+.details-block > summary::-webkit-details-marker { display: none; }
+.details-block > summary:hover { color: var(--text); }
+.details-block > summary::after { content: "▾"; font-size: 11px; }
+.details-block[open] > summary::after { content: "▴"; }
