@@ -363,3 +363,38 @@ table.mtx tbody tr.mtx-group:first-child td { padding-top: 6px !important; }
 .details-block > summary:hover { color: var(--text); }
 .details-block > summary::after { content: "▾"; font-size: 11px; }
 .details-block[open] > summary::after { content: "▴"; }
+
+/* ---------- CARTES DE MÉTRIQUES (pilotent le graphe) ---------- */
+.metric-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 14px; margin-bottom: 16px; }
+.metric-card {
+  text-align: left; font-family: inherit; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px 18px; box-shadow: var(--shadow); position: relative;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.metric-card:hover { border-color: var(--mc); transform: translateY(-1px); }
+.metric-card.active { border-color: var(--mc); box-shadow: 0 0 0 1px var(--mc), var(--shadow); }
+.metric-card.active::before {
+  content: ""; position: absolute; left: 18px; right: 18px; top: 0; height: 3px;
+  background: var(--mc); border-radius: 0 0 3px 3px;
+}
+.mc-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.mc-value { display: block; font-size: 24px; font-weight: 700; letter-spacing: -.02em; margin-top: 8px; white-space: nowrap; }
+.mc-foot  { display: block; margin-top: 9px; min-height: 22px; }
+.mc-none  { font-size: 11px; color: var(--text-muted); }
+
+.cmp-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.cmp-toggle input { accent-color: var(--teal); width: 15px; height: 15px; cursor: pointer; }
+
+/* ---------- BANDE DE PARCOURS ---------- */
+.funnel-strip { display: flex; flex-direction: column; gap: 0; padding-top: 4px; }
+.fs-step { position: relative; padding: 9px 0; }
+.fs-bar { height: 30px; background: linear-gradient(90deg, var(--teal), #16a37c); border-radius: 7px; min-width: 34px; }
+.fs-meta { display: flex; align-items: baseline; gap: 10px; margin-top: 5px; }
+.fs-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.fs-val  { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.fs-arrow { display: flex; align-items: center; gap: 8px; padding-left: 12px; height: 20px; }
+.fs-arrow span { font-size: 11.5px; font-weight: 700; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.fs-arrow::before { content: "↓"; font-size: 12px; color: var(--slate); }
+.fs-arrow.worst span { color: var(--orange); }
+.fs-arrow.worst::before { color: var(--orange); }
