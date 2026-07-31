@@ -1,5 +1,6 @@
 let SITES = [], cache = {}, charts = {};
 let curSite = null, curMonth = "2026-07", activeDim = "brand";
+let curMetric = "leads", curRange = "30", cmpOn = true;
 
 const C = { teal:"#0e6f56", orange:"#e8892e", blue:"#5b7fd4", slate:"#c7cbc8", red:"#d9534f" };
 const PALETTE = [C.teal, C.orange, C.blue, "#8b6fd6", "#3fb6c9", "#c9a227", C.red, "#9aa39c"];
@@ -169,12 +170,11 @@ async function init(){
     document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
     b.classList.add("active"); await load(b.dataset.site);
   }));
-  document.querySelectorAll(".section-tab").forEach(b=>b.addEventListener("click",()=>{
-    document.querySelectorAll(".section-tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-    document.getElementById("panel-"+b.dataset.section).classList.add("active");
+  document.querySelectorAll("#rangeTabs .section-tab").forEach(b=>b.addEventListener("click",()=>{
+    document.querySelectorAll("#rangeTabs .section-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); curRange = b.dataset.range; renderMain();
   }));
+  document.getElementById("cmpToggle").addEventListener("change", e=>{ cmpOn = e.target.checked; renderMain(); });
   await showOverview();
 }
 
@@ -196,8 +196,10 @@ async function showOverview(){
   document.getElementById("pageTitle").textContent = "Vue d'ensemble";
   document.getElementById("pageSub").textContent = "Les cinq sites, du trafic au lead";
   document.getElementById("crumbSite").textContent = "Vue d'ensemble";
-  document.getElementById("sectionTabs").hidden = true;
+  document.getElementById("rangeTabs").hidden = true;
   document.getElementById("monthTabs").hidden = true;
+  document.getElementById("panel-site").classList.remove("active");
+  ["leads","trafic","funnel"].forEach(p=>document.getElementById("panel-"+p).classList.remove("active"));
   document.getElementById("partialNotice").hidden = true;
   renderOverview();
 }
@@ -325,10 +327,11 @@ function renderOverview(){
 
 async function load(site){
   curSite = site;
-  document.getElementById("sectionTabs").hidden = false;
+  document.getElementById("rangeTabs").hidden = false;
   document.getElementById("monthTabs").hidden = false;
   document.getElementById("panel-overview").classList.remove("active");
-  if(!document.querySelector(".panel.active")) document.getElementById("panel-leads").classList.add("active");
+  document.getElementById("panel-site").classList.add("active");
+  ["leads","trafic","funnel"].forEach(p=>document.getElementById("panel-"+p).classList.add("active"));
   document.getElementById("pageTitle").textContent = site;
   document.getElementById("crumbSite").textContent = site;
   if(!cache[site]) cache[site] = await (await fetch("data/"+slug(site)+".json")).json();
@@ -358,7 +361,7 @@ function render(){
   }
   const vd=document.getElementById("v2DateLabel");
   if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
-  renderLeads(d); renderTraffic(d); renderFunnel(d);
+  renderMain(); renderLeads(d); renderTraffic(d); renderFunnel(d);
 }
 
 /* helpers periode */
@@ -368,6 +371,147 @@ function monthIdx(d,mk){ if(isTotal(mk)) return d.daily.d.map((_,i)=>i);
 function leadsPerDay(d,mk){ const L=d.leads[mk]; return L ? L.total/d.meta[mk].days : null; }
 function convOf(d,mk){ const L=d.leads[mk], R=d.repriseMonth[mk];
   return (L&&R&&R.sessions) ? L.total/R.sessions*100 : null; }
+
+
+/* ==================== BLOC ESSENTIEL ====================
+   Quatre métriques, une seule courbe : la carte sélectionnée pilote le graphe.
+   Fenêtre glissante (7 / 30 jours ou tout), comparaison avec la période
+   précédente de même longueur, repère vertical et infobulle détaillée.
+   ======================================================== */
+const METRICS = {
+  rep:   { label:"Sessions outil de reprise", color:C.teal,   unit:"",   fmt:v=>fmt(Math.round(v)) },
+  leads: { label:"Leads",                     color:C.orange, unit:"",   fmt:v=>fmt(Math.round(v)) },
+  conv:  { label:"Transformation",            color:C.blue,   unit:" %", fmt:v=>pct(v) },
+  part:  { label:"Part vers la reprise",      color:"#8b6fd6",unit:" %", fmt:v=>pct(v) },
+};
+
+/* Séries quotidiennes alignées sur daily.d, pour toute la période connue */
+function dailySeries(d){
+  const leads = d.months.reduce((a,m)=>a.concat(d.leads[m].daily||[]), []);
+  const n = d.daily.d.length;
+  const rep = d.daily.rep.slice(0,n), par = d.daily.u.slice(0,n);
+  return {
+    d: d.daily.d, rep, leads,
+    conv: rep.map((r,i)=> r ? (leads[i]||0)/r*100 : null),
+    part: par.map((u,i)=> u ? rep[i]/u*100 : null),
+  };
+}
+
+/* Repère vertical au survol, comme dans GA4 */
+const CROSSHAIR = {
+  id:"crosshair",
+  afterDatasetsDraw(chart){
+    const a = chart.chartArea, act = chart.tooltip?._active;
+    if(!act || !act.length || !a) return;
+    const x = act[0].element.x, ctx = chart.ctx;
+    ctx.save(); ctx.beginPath(); ctx.setLineDash([4,4]);
+    ctx.strokeStyle = "rgba(20,26,23,.28)"; ctx.lineWidth = 1;
+    ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke(); ctx.restore();
+  }
+};
+Chart.register(CROSSHAIR);
+
+function renderMain(){
+  const d = cache[curSite], S = dailySeries(d);
+  const n = S.d.length;
+  const win = curRange === "all" ? n : Math.min(parseInt(curRange,10), n);
+  const from = n - win;
+  const idx  = Array.from({length:win}, (_,i)=> from + i);
+  const prev = idx.map(i=> i - win).filter(i=> i >= 0);
+  const M = METRICS[curMetric];
+
+  const cur  = idx.map(i=> S[curMetric][i]);
+  const ref  = prev.length === win ? prev.map(i=> S[curMetric][i]) : null;
+  const avg  = arr => { const v = arr.filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
+  const sum  = arr => arr.reduce((a,b)=>a+(b||0),0);
+  const agg  = k => (k==="conv"||k==="part") ? avg(idx.map(i=>S[k][i])) : sum(idx.map(i=>S[k][i]));
+  const aggP = k => !ref ? null : ((k==="conv"||k==="part") ? avg(prev.map(i=>S[k][i])) : sum(prev.map(i=>S[k][i])));
+
+  // ── cartes de métriques ──
+  document.getElementById("metricCards").innerHTML = Object.entries(METRICS).map(([k,m])=>{
+    const v = agg(k), p = aggP(k);
+    const dl = (p!=null && p!==0) ? ((k==="conv"||k==="part") ? v-p : (v-p)/p*100) : null;
+    return '<button class="metric-card'+(k===curMetric?" active":"")+'" data-metric="'+k+'" style="--mc:'+m.color+'">'+
+      '<span class="mc-label">'+m.label+'</span>'+
+      '<span class="mc-value">'+m.fmt(v)+'</span>'+
+      '<span class="mc-foot">'+(dl==null?'<span class="mc-none">période précédente indisponible</span>'
+        : badge(dl, (k==="conv"||k==="part") ? "pts" : "%"))+'</span></button>';
+  }).join("");
+  document.querySelectorAll(".metric-card").forEach(b=>b.addEventListener("click",()=>{
+    curMetric = b.dataset.metric; renderMain();
+  }));
+
+  // ── graphe ──
+  const lab = idx.map(i=> S.d[i].slice(3)+"/"+S.d[i].slice(0,2));
+  const labP = ref ? prev.map(i=> S.d[i].slice(3)+"/"+S.d[i].slice(0,2)) : [];
+  document.getElementById("mainChartTitle").textContent = M.label;
+  document.getElementById("mainChartSub").textContent =
+    (curRange==="all" ? "Toute la période" : curRange+" derniers jours") +
+    " · du "+lab[0]+" au "+lab[lab.length-1] +
+    (ref && cmpOn ? " · comparé au "+labP[0]+" – "+labP[labP.length-1] : "");
+
+  const ds = [{ label:M.label, data:cur, borderColor:M.color, backgroundColor:grad(M.color),
+                fill:true, tension:.3, pointRadius:0, pointHoverRadius:5, borderWidth:2.6, order:1 }];
+  if(ref && cmpOn) ds.push({ label:"Période précédente", data:ref, borderColor:"#b9beba",
+                borderDash:[5,4], backgroundColor:"transparent", fill:false, tension:.3,
+                pointRadius:0, pointHoverRadius:4, borderWidth:1.8, order:2 });
+
+  kill("main");
+  charts.main = new Chart(document.getElementById("mainChart"), {
+    type:"line", data:{ labels:lab, datasets:ds },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:"index", intersect:false },
+      plugins:{
+        legend:{ display:ref && cmpOn, position:"top", align:"end", labels:leg() },
+        v2mark: v2Mark(d, idx.map(i=>S.d[i])),
+        tooltip:{ ...tip(), callbacks:{
+          title: items => items[0].label,
+          label: c => {
+            const v = c.parsed.y;
+            if(c.datasetIndex === 1) return "Période précédente : " + M.fmt(v) + (labP[c.dataIndex] ? "  ("+labP[c.dataIndex]+")" : "");
+            let out = M.label + " : " + M.fmt(v);
+            if(ref && cmpOn && ref[c.dataIndex] != null){
+              const p = ref[c.dataIndex];
+              const dl = (curMetric==="conv"||curMetric==="part") ? v-p : (p ? (v-p)/p*100 : null);
+              if(dl != null) out += "   " + (dl>=0?"▲ +":"▼ ") + fmt(Math.abs(dl)) + ((curMetric==="conv"||curMetric==="part")?" pts":" %");
+            }
+            return out;
+          }
+        }}
+      },
+      scales:{
+        x:{ grid:{display:false}, border:{display:false}, ticks:tk(curRange==="7"?7:12) },
+        y:{ beginAtZero:true, grid:{color:"#eef0ee"}, border:{display:false},
+            ticks:{...tk(), callback:v => M.unit ? v+M.unit : fmt(v)} }
+      }
+    }
+  });
+
+  renderFunnelStrip(d);
+}
+
+/* Le parcours en une bande : six étapes, le passage le plus coûteux surligné */
+function renderFunnelStrip(d){
+  const host = document.getElementById("funnelStrip");
+  const u = stepUsers(d, "2026-07") || stepUsers(d, "2026-06");
+  if(!u){ host.innerHTML = ""; document.getElementById("stripSub").textContent = "Aucun funnel disponible."; return; }
+  const rates = [];
+  for(let i=0;i<u.length-1;i++) rates.push({ i, r: u[i] ? u[i+1]/u[i]*100 : 0, loss: (u[i]-u[i+1])/u[0]*100 });
+  const worst = rates.reduce((a,b)=> b.loss>a.loss ? b : a);
+  document.getElementById("stripSub").textContent =
+    "Utilisateurs actifs · complétion " + pct(u[u.length-1]/u[0]*100) +
+    " · plus grosse perte : " + STEP_FR[worst.i] + " → " + STEP_FR[worst.i+1];
+
+  host.innerHTML = u.map((v,i)=>{
+    const w = Math.max(v/u[0]*100, 6);
+    const arrow = i < u.length-1
+      ? '<div class="fs-arrow'+(rates[i].i===worst.i?" worst":"")+'"><span>'+fmt(rates[i].r)+' %</span></div>' : '';
+    return '<div class="fs-step"><div class="fs-bar" style="width:'+w.toFixed(1)+'%"></div>'+
+           '<div class="fs-meta"><span class="fs-name">'+esc(STEP_FR[i]||("Étape "+(i+1)))+'</span>'+
+           '<span class="fs-val">'+fmt(v)+'</span></div></div>'+arrow;
+  }).join("");
+}
 
 /* ==================== LEADS ==================== */
 function renderLeads(d){

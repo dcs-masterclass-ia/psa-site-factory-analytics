@@ -37,10 +37,10 @@
           <h1 id="pageTitle">Overview</h1>
           <p class="page-sub" id="pageSub">Leads, trafic et parcours de reprise</p>
         </div>
-        <div class="section-tabs" id="sectionTabs">
-          <button class="section-tab active" data-section="leads">Leads</button>
-          <button class="section-tab" data-section="trafic">Trafic</button>
-          <button class="section-tab" data-section="funnel">Funnel</button>
+        <div class="section-tabs" id="rangeTabs" hidden>
+          <button class="section-tab" data-range="7">7 jours</button>
+          <button class="section-tab active" data-range="30">30 jours</button>
+          <button class="section-tab" data-range="all">Tout</button>
         </div>
       </div>
 
@@ -79,6 +79,34 @@
         </div>
       </section>
 
+      <!-- ==================== ESSENTIEL ==================== -->
+      <section id="panel-site" class="panel">
+        <div class="metric-row" id="metricCards"></div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3 id="mainChartTitle">—</h3>
+              <p class="card-sub" id="mainChartSub">—</p>
+            </div>
+            <label class="cmp-toggle"><input type="checkbox" id="cmpToggle" checked><span>Comparer à la période précédente</span></label>
+          </div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="mainChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Parcours de reprise</h3>
+              <p class="card-sub" id="stripSub">—</p>
+            </div>
+          </div>
+          <div class="funnel-strip" id="funnelStrip"></div>
+        </div>
+      </section>
+
+      <details class="details-block" id="detailLeads">
+        <summary>Détail des leads</summary>
       <!-- ==================== LEADS ==================== -->
       <section id="panel-leads" class="panel active">
         <div class="hero-row" id="leadsHero"></div>
@@ -160,6 +188,10 @@
         </details>
       </section>
 
+      </details>
+
+      <details class="details-block" id="detailTrafic">
+        <summary>Détail du trafic</summary>
       <!-- ==================== TRAFIC ==================== -->
       <section id="panel-trafic" class="panel">
         <div class="kpi-row" id="trafficKpis"></div>
@@ -188,6 +220,10 @@
         </div>
       </section>
 
+      </details>
+
+      <details class="details-block" id="detailFunnel">
+        <summary>Détail du funnel</summary>
       <!-- ==================== FUNNEL ==================== -->
       <section id="panel-funnel" class="panel">
         <div class="notice">
@@ -238,6 +274,8 @@
         </div>
         </details>
       </section>
+
+      </details>
 
     </main>
 
