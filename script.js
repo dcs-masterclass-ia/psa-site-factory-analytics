@@ -527,7 +527,7 @@ function renderOverview() {
       ${score({ label:"Sessions outil de reprise", value: sansGA4 ? "—" : fmt(tNet),
         sub: sansGA4 ? "relevé GA4 en attente" : fmt1(tNet / days) + " / jour",
         delta: cmp && !sansGA4 ? delta(tNet / days, rNet / daysRef) : "" })}
-      ${score({ label:"Transformation reprise → leads",
+      ${score({ label:"Leads BO / sessions reprise",
         value: sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null),
         sub: sansGA4 ? "relevé GA4 en attente" : "sur l'ensemble du parc",
         delta: cmp && rNet && !sansGA4 ? delta(tLeads / tNet * 100, rLeads / rNet * 100, "pts") : "" })}
