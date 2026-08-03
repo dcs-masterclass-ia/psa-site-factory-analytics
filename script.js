@@ -554,7 +554,7 @@ function renderOverview() {
         </div>
       </div>
       <div class="card-body flush"><table class="grid" id="ovTable"></table></div>
-      <div class="note">La <b>part vers la reprise</b> mesure combien de sessions du site parent atteignent l'outil. La <b>transformation</b> mesure combien de ces sessions produisent un lead.</div>
+      <div class="note">La <b>part vers la reprise</b> mesure combien de sessions du site parent atteignent l'outil. <b>Leads BO / sessions reprise</b> part des leads du back-office, qui les enregistre tous. Ce taux est donc structurellement supérieur au Conversion Rate de Looker, qui ne compte que les leads vus par GA4 — ceux des visiteurs ayant accepté les cookies. Sur OPEL FR, GA4 en a capté 34 % en avril, 30 % en mai et 57 % en juin : cette captation variant d'un mois sur l'autre, le taux de Looker ne se compare pas dans le temps. <b>Complétion parcours</b> est une mesure GA4 en utilisateurs actifs, de l'entrée jusqu'à l'estimation affichée. Les deux colonnes ne mesurent pas la même chose.</div>
     </div>
 
     <div class="card">
@@ -575,6 +575,7 @@ function renderOverview() {
       <td class="num">${fmt(r.st.leads)}</td>
       <td class="td-bar">${bar((r.st.leads || 0) / maxLeads, "k")}</td>
       <td class="num">${r.st.sansGA4 ? "—" : pct(r.st.conv)}</td>
+      <td class="num dim">${pct(((r.d.funnelMonth || {})[view.period] || {}).conversion_pct)}</td>
       <td>${spark(r.sparkLeads, C.ink4)}</td>
     </tr>`;
 
@@ -585,19 +586,19 @@ function renderOverview() {
       <td class="num">${sg ? "—" : fmt(t)}</td><td class="num">${sg ? "—" : fmt(n)}</td>
       <td class="num">${sg ? "—" : pct(t ? n / t * 100 : null)}</td>
       <td class="num">${fmt(l)}</td><td></td>
-      <td class="num">${sg ? "—" : pct(n ? l / n * 100 : null)}</td><td></td></tr>`;
+      <td class="num">${sg ? "—" : pct(n ? l / n * 100 : null)}</td><td></td><td></td></tr>`;
   };
 
   const table = $("#ovTable");
   table.innerHTML = `
     <thead><tr>
       <th>Site</th><th>Sessions site</th><th>Sessions reprise</th>
-      <th>Part vers la reprise</th><th>Leads</th><th></th><th>Transformation</th><th>Tendance</th>
+      <th>Part vers la reprise</th><th>Leads BO</th><th></th><th>Leads BO / sessions</th><th>Complétion parcours</th><th>Tendance</th>
     </tr></thead>
     <tbody>${["PSA", "FCA"].map(g => {
       const r = rows.filter(x => x.fam === g);
       if (!r.length) return "";
-      return `<tr class="grp"><td colspan="8">${esc(FAM_LABEL[g])}</td></tr>`
+      return `<tr class="grp"><td colspan="9">${esc(FAM_LABEL[g])}</td></tr>`
         + r.map(ligne).join("") + sousTotal(g, r);
     }).join("")}
       <tr class="total gt">
@@ -605,7 +606,7 @@ function renderOverview() {
         <td class="num">${sansGA4 ? "—" : fmt(tTraf)}</td><td class="num">${sansGA4 ? "—" : fmt(tNet)}</td>
         <td class="num">${sansGA4 ? "—" : pct(tTraf ? tNet / tTraf * 100 : null)}</td>
         <td class="num">${fmt(tLeads)}</td><td></td>
-        <td class="num">${sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null)}</td><td></td>
+        <td class="num">${sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null)}</td><td></td><td></td>
       </tr>
     </tbody>`;
   table.addEventListener("click", e => {
@@ -702,7 +703,7 @@ function renderAcquisition() {
         <div><h2>Mois par mois</h2><p>Du site parent au lead, chaque étage de la chaîne.</p></div>
       </div>
       <div class="card-body flush"><table class="grid" id="acqTable"></table></div>
-      <div class="note">Les colonnes <b>par jour</b> sont celles à comparer entre mois : juillet compte 31 jours, juin 30.</div>
+      <div class="note">Les colonnes <b>par jour</b> sont celles à comparer entre mois : juillet compte 31 jours, juin 30. <b>Leads BO / sessions reprise</b> part des leads du back-office, qui les enregistre tous. Ce taux est donc structurellement supérieur au Conversion Rate de Looker, qui ne compte que les leads vus par GA4 — ceux des visiteurs ayant accepté les cookies. Sur OPEL FR, GA4 en a capté 34 % en avril, 30 % en mai et 57 % en juin : cette captation variant d'un mois sur l'autre, le taux de Looker ne se compare pas dans le temps. <b>Complétion parcours</b> est une mesure GA4 en utilisateurs actifs, de l'entrée jusqu'à l'estimation affichée. Les deux colonnes ne mesurent pas la même chose.</div>
     </div>`;
 
   const opts = (showX, markIdx) => ({
@@ -734,7 +735,7 @@ function renderAcquisition() {
   $("#acqTable").innerHTML = `
     <thead><tr>
       <th>Mois</th><th>Jours</th><th>Sessions site</th><th>/ jour</th>
-      <th>Sessions reprise</th><th>/ jour</th><th>Part</th><th>Leads</th><th>Transformation</th>
+      <th>Sessions reprise</th><th>/ jour</th><th>Part</th><th>Leads BO</th><th>Leads BO / sessions</th><th>Complétion parcours</th>
     </tr></thead>
     <tbody>${ms.map(m => {
       const s = stats(d, m), on = m === p;
@@ -748,6 +749,7 @@ function renderAcquisition() {
         <td class="num">${pct(s.part)}</td>
         <td class="num">${fmt(s.leads)}</td>
         <td class="num">${pct(s.conv)}</td>
+        <td class="num dim">${pct(((d.funnelMonth || {})[m] || {}).conversion_pct)}</td>
       </tr>`;
     }).join("")}</tbody>`;
 }
@@ -798,8 +800,8 @@ function renderLeads() {
       ${score({ label:"Leads", value:fmt(st.leads),
         sub:fmt1(st.leadsPD) + " / jour",
         delta: ref ? delta(st.leadsPD, ref.leadsPD) : "", spark:spark(series, C.ink) })}
-      ${score({ label:"Transformation reprise → leads", value: st.sansGA4 ? "—" : pct(st.conv),
-        sub: st.sansGA4 ? "relevé GA4 en attente" : "des sessions de l'outil",
+      ${score({ label:"Leads BO / sessions reprise", value: st.sansGA4 ? "—" : pct(st.conv),
+        sub: st.sansGA4 ? "relevé GA4 en attente" : "leads du back-office",
         delta: ref && !st.sansGA4 ? delta(st.conv, ref.conv, "pts") : "" })}
       ${score({ label:"Reprises de la marque", value:pct(ownShare),
         sub:`${fmt(ownV)} véhicules ${esc(own || "")}`,
