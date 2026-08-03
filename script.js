@@ -1,1081 +1,1140 @@
-let SITES = [], cache = {}, charts = {};
-let curSite = null, curMonth = "2026-07", activeDim = "brand";
-let curMetric = "leads", curRange = "30", cmpOn = true;
+/* =========================================================================
+   PSA Site Factory — Analytics
+   Un rapport = une page. Un seul controle de periode, en topbar.
+   Les ecarts sont toujours calcules sur des moyennes par jour.
+   ========================================================================= */
 
-const C = { teal:"#0e6f56", orange:"#e8892e", blue:"#5b7fd4", slate:"#c7cbc8", red:"#d9534f" };
-const PALETTE = [C.teal, C.orange, C.blue, "#8b6fd6", "#3fb6c9", "#c9a227", C.red, "#9aa39c"];
-
-const BRAND_DOMAINS = {
-  "OPEL":"opel.com","PEUGEOT":"peugeot.com","RENAULT":"renault.com","CITROEN":"citroen.com",
-  "VOLKSWAGEN":"volkswagen.com","BMW":"bmw.com","MERCEDES":"mercedes-benz.com","FORD":"ford.com",
-  "DACIA":"dacia.com","NISSAN":"nissan.com","SEAT":"seat.com","FIAT":"fiat.com","AUDI":"audi.com",
-  "TOYOTA":"toyota.com","SKODA":"skoda-auto.com","DS AUTOMOBILES":"dsautomobiles.com",
-  "HYUNDAI":"hyundai.com","KIA":"kia.com","VOLVO":"volvocars.com","MINI":"mini.com",
-  "SUZUKI":"suzuki.com","MAZDA":"mazda.com","HONDA":"honda.com","JEEP":"jeep.com",
-  "LAND ROVER":"landrover.com","PORSCHE":"porsche.com"
-};
-function logo(n){ const d = BRAND_DOMAINS[(n||"").trim().toUpperCase()]; return d ? "https://logo.clearbit.com/"+d+"?size=64" : null; }
-
-const ICONS = {
-  droplet:'<path d="M12 2.69s5.66 5.86 5.66 10a5.66 5.66 0 0 1-11.32 0C6.34 8.55 12 2.69 12 2.69Z"/>',
-  fuel:'<line x1="3" x2="15" y1="22" y2="22"/><line x1="4" x2="14" y1="9" y2="9"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/>',
-  zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
-  leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
-  wind:'<path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8a2.5 2.5 0 1 1 2 4H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/>'
-};
-function fuelKey(n){ const f=(n||"").toUpperCase();
-  if(f.includes("HIBRIDO")||f.includes("HYBRIDE"))return"leaf";
-  if(f.includes("ELECTRI"))return"zap";
-  if(f.includes("GASOLEO")||f.includes("DIESEL"))return"droplet";
-  if(f.includes("GPL")||f.includes("GNV"))return"wind";
-  return"fuel"; }
-function icon(k,c){ return '<svg viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[k]||ICONS.fuel)+'</svg>'; }
-
-
-/* ---- marqueur de lancement V2 : trait vertical date + zone teintee ---- */
-const V2_MARK = {
-  id: "v2mark",
-  beforeDatasetsDraw(chart){
-    const o = chart.options.plugins && chart.options.plugins.v2mark;
-    if(!o || !o.on) return;
-    const a = chart.chartArea, ctx = chart.ctx, xs = chart.scales.x;
-    if(!a) return;
-    ctx.save();
-    const soft = !!o.soft;
-    const col = soft ? "#e8892e" : "#0e6f56";
-    const px = (o.index != null && xs) ? xs.getPixelForValue(o.index) : a.left;
-    ctx.fillStyle = soft ? "rgba(232,137,46,.06)" : "rgba(14,111,86,.07)";
-    ctx.fillRect(px, a.top, a.right - px, a.bottom - a.top);
-    if(o.index != null){
-      ctx.setLineDash([5,4]); ctx.lineWidth = 1.6; ctx.strokeStyle = col;
-      ctx.beginPath(); ctx.moveTo(px, a.top); ctx.lineTo(px, a.bottom); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    if(o.label){
-      ctx.font = '700 10.8px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
-      if(soft){
-        // libelle discret, pose au-dessus de la zone de traçage
-        ctx.fillStyle = col; ctx.textBaseline = "bottom"; ctx.textAlign = "left";
-        const w = ctx.measureText(o.label).width;
-        let lx = px + 6; if(lx + w > a.right) lx = Math.max(a.left, a.right - w);
-        ctx.fillText(o.label, lx, a.top - 8);
-      } else {
-        const w = ctx.measureText(o.label).width + 14;
-        let lx = (o.index != null) ? px + 6 : a.right - w - 2;
-        if(lx + w > a.right - 2) lx = a.right - w - 2;
-        if(lx < a.left) lx = a.left;
-        ctx.fillStyle = col;
-        ctx.fillRect(lx, a.top + 4, w, 18);
-        ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "left";
-        ctx.fillText(o.label, lx + 7, a.top + 13);
-      }
-    }
-    ctx.restore();
-  }
-};
-Chart.register(V2_MARK);
-
-/* ---- valeurs affichees directement sur les points ---- */
-const V_LABEL = {
-  id: "vlabel",
-  afterDatasetsDraw(chart){
-    const o = chart.options.plugins && chart.options.plugins.vlabel;
-    if(!o || !o.on) return;
-    const ctx = chart.ctx, a = chart.chartArea;
-    ctx.save();
-    ctx.font = '700 11.5px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.lineJoin = "round";
-
-    const GAP = 15, OFF = 15;
-    const n = chart.data.labels.length;
-    const items = [];
-
-    for(let i=0;i<n;i++){
-      // les points de l'index i, du plus haut au plus bas a l'ecran
-      const col = [];
-      chart.data.datasets.forEach((ds,di)=>{
-        const meta = chart.getDatasetMeta(di);
-        if(meta.hidden) return;
-        const v = ds.data[i], pt = meta.data[i];
-        if(v==null || !pt) return;
-        col.push({ x:pt.x, py:pt.y, text:fmt(v), color:ds.borderColor });
-      });
-      if(!col.length) continue;
-      col.sort((p,q)=>p.py-q.py);
-      // le plus haut prend l'espace au-dessus, les autres en dessous
-      col.forEach((p,k)=>{ p.y = (k===0 ? p.py - OFF : p.py + OFF); });
-      // on ecarte ce qui se chevauche encore, puis on recadre
-      col.sort((p,q)=>p.y-q.y);
-      for(let k=1;k<col.length;k++){
-        if(col[k].y - col[k-1].y < GAP) col[k].y = col[k-1].y + GAP;
-      }
-      const over = col[col.length-1].y - (a.bottom - 4);
-      if(over > 0) col.forEach(p=>{ p.y -= over; });
-      const under = (a.top + 4) - col[0].y;
-      if(under > 0) col.forEach(p=>{ p.y += under; });
-      col.forEach(p=>{
-        const w = ctx.measureText(p.text).width/2 + 2;
-        p.x = Math.min(Math.max(p.x, a.left + w), a.right - w);
-        items.push(p);
-      });
-    }
-
-    // halo blanc pour rester lisible par-dessus les courbes
-    items.forEach(p=>{
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 3.5;
-      ctx.strokeText(p.text, p.x, p.y);
-      ctx.fillStyle = p.color;
-      ctx.fillText(p.text, p.x, p.y);
-    });
-    ctx.restore();
-  }
-};
-Chart.register(V_LABEL);
-
-function v2DateFR(d){ const s = d.v2_date; return s ? s.slice(8,10)+"/"+s.slice(5,7) : ""; }
-/* axisDates : tableau "MM-DD" correspondant a l'axe X du graphe */
-function v2Mark(d, axisDates){
-  const iso = d.v2_date; if(!iso || !axisDates.length) return { on:false };
-  const key = iso.slice(5,7)+"-"+iso.slice(8,10), dd = v2DateFR(d);
-  const i = axisDates.indexOf(key);
-  if(i >= 0) return { on:true, index:i, label:"V2 \u2014 "+dd };
-  if(axisDates[0] > key) return { on:true, index:null, label:"Post-V2 (depuis le "+dd+")" };
-  return { on:false };
-}
-function monthAxis(mk, days){
-  const mm = mk.slice(5,7), a = [];
-  for(let i=1;i<=days;i++) a.push(mm+"-"+String(i).padStart(2,"0"));
-  return a;
-}
-
-function kill(k){ if(charts[k]){ charts[k].destroy(); delete charts[k]; } }
-function fmt(n){ return (n==null||isNaN(n)) ? "—" : Number(n).toLocaleString("fr-FR",{maximumFractionDigits:1}); }
-function pct(n){ return fmt(n)+" %"; }
-function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
-function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
-function badge(v,unit){ const c=v>=0?"up":"down", a=v>=0?"↑":"↓";
-  return '<span class="badge '+c+'">'+a+" "+fmt(Math.abs(v))+" "+unit+"</span>"; }
-function prevMonth(m){ if(m==="total") return null;
-  const i=(cache[curSite].months||[]).indexOf(m); return i>0 ? cache[curSite].months[i-1] : null; }
-
-/* ==================== INIT ==================== */
-async function init(){
-  SITES = (await (await fetch("data/index.json")).json()).sites;
-  document.getElementById("siteTabs").innerHTML = SITES.map(s=>
-    '<button class="site-tab" data-site="'+esc(s)+'"><span class="dot"></span>'+esc(s)+'</button>').join("");
-  document.getElementById("btnOverview").addEventListener("click", showOverview);
-  document.querySelectorAll("#siteTabs .site-tab").forEach(b=>b.addEventListener("click",async()=>{
-    document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); await load(b.dataset.site);
-  }));
-  document.querySelectorAll("#rangeTabs .section-tab").forEach(b=>b.addEventListener("click",()=>{
-    document.querySelectorAll("#rangeTabs .section-tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); curRange = b.dataset.range; renderMain();
-  }));
-  document.getElementById("cmpToggle").addEventListener("change", e=>{ cmpOn = e.target.checked; renderMain(); });
-  await showOverview();
-}
-
-/* ==================== VUE D'ENSEMBLE ==================== */
-let ovScope = "month";
-
-async function loadAll(){
-  await Promise.all(SITES.map(async s=>{
-    if(!cache[s]) cache[s] = await (await fetch("data/"+slug(s)+".json")).json();
-  }));
-}
-
-async function showOverview(){
-  await loadAll();
-  document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
-  document.getElementById("btnOverview").classList.add("active");
-  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
-  document.getElementById("panel-overview").classList.add("active");
-  document.getElementById("pageTitle").textContent = "Vue d'ensemble";
-  document.getElementById("pageSub").textContent = "Les cinq sites, du trafic au lead";
-  document.getElementById("crumbSite").textContent = "Vue d'ensemble";
-  document.getElementById("rangeTabs").hidden = true;
-  document.getElementById("monthTabs").hidden = true;
-  document.getElementById("panel-site").classList.remove("active");
-  ["leads","trafic","funnel"].forEach(p=>document.getElementById("panel-"+p).classList.remove("active"));
-  document.getElementById("partialNotice").hidden = true;
-  renderOverview();
-}
-
-/* Agrégats d'un site sur une période : m = clé de mois, ou "day" pour le dernier jour connu */
-function ovStats(d, mode){
-  const ms = d.months, m = ms[ms.length-1], pm = ms[ms.length-2];
-  if(mode === "day"){
-    const n = d.daily.d.length - 1;
-    const L = d.leads[m];
-    const li = L.daily.length - 1;
-    const last7 = L.daily.slice(-8, -1);
-    const moy7 = last7.length ? last7.reduce((a,b)=>a+b,0)/last7.length : null;
-    return { label: d.daily.d[n], sess: d.daily.rep[n], leads: L.daily[li],
-             conv: d.daily.rep[n] ? L.daily[li]/d.daily.rep[n]*100 : null,
-             ref: moy7, refLabel: "moyenne 7 jours", spark: L.daily.slice(-14) };
-  }
-  const T = d.trafficMonth[m], R = d.repriseMonth[m], L = d.leads[m], days = d.meta[m].days;
-  const Rp = d.repriseMonth[pm], Lp = d.leads[pm], daysP = d.meta[pm].days;
-  return { label: d.meta[m].label, sess: R.sessions, leads: L.total, parent: T.sessions,
-           part: T.sessions ? R.sessions/T.sessions*100 : null,
-           conv: R.sessions ? L.total/R.sessions*100 : null,
-           convPrev: Rp.sessions ? Lp.total/Rp.sessions*100 : null,
-           perDay: L.total/days, perDayPrev: Lp.total/daysP,
-           spark: L.daily.slice(-14) };
-}
-
-function sparkline(vals, color){
-  if(!vals || vals.length < 2) return "";
-  const w = 84, h = 22, mx = Math.max(...vals), mn = Math.min(...vals), sp = (mx-mn)||1;
-  const pts = vals.map((v,i)=>[i/(vals.length-1)*w, h - (v-mn)/sp*(h-4) - 2]);
-  const dd = pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
-  return '<svg class="spark-svg" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none">'+
-         '<path d="'+dd+'" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linejoin="round"/>'+
-         '<circle cx="'+pts[pts.length-1][0].toFixed(1)+'" cy="'+pts[pts.length-1][1].toFixed(1)+'" r="2.2" fill="'+color+'"/></svg>';
-}
-
-function renderOverview(){
-  const seg = document.getElementById("ovScope");
-  seg.querySelectorAll(".seg-btn").forEach(b=>{
-    b.classList.toggle("active", b.dataset.scope === ovScope);
-    b.onclick = ()=>{ ovScope = b.dataset.scope; renderOverview(); };
-  });
-
-  const rows = SITES.map(s=>({ site:s, d:cache[s], st:ovStats(cache[s], ovScope) }))
-                    .sort((a,b)=> b.st.leads - a.st.leads);
-  const day = ovScope === "day";
-  const totLeads = rows.reduce((a,r)=>a+r.st.leads,0);
-  const totSess  = rows.reduce((a,r)=>a+r.st.sess,0);
-  const ref      = rows.reduce((a,r)=>a+(day ? (r.st.ref||0) : (r.st.perDayPrev||0)),0);
-  const conv     = totSess ? totLeads/totSess*100 : 0;
-
-  const d0 = rows[0].d, lastM = d0.months[d0.months.length-1];
-  const periodLabel = day
-    ? "Journée du " + rows[0].st.label.slice(3) + "/" + rows[0].st.label.slice(0,2)
-    : d0.meta[lastM].label + " · " + d0.meta[lastM].days + " jours";
-
-  document.getElementById("ovSub").textContent = periodLabel + " · classement par volume de leads";
-  document.getElementById("ovKpis").innerHTML =
-    kpi("Leads — " + (day ? "dernier jour" : "mois en cours"), fmt(totLeads),
-        day ? "moyenne 7 j : " + fmt(ref) : "mois précédent : " + fmt(ref) + " / jour",
-        ref ? badge(((day ? totLeads : totLeads/d0.meta[lastM].days) - ref)/ref*100, "%") : null) +
-    kpi("Sessions outil de reprise", fmt(totSess), day ? "sur la journée" : "sur le mois") +
-    kpi("Transformation moyenne", pct(conv), "sessions reprise → leads") +
-    kpi("Sites suivis", String(rows.length), "lancements V2 échelonnés");
-
-  const head = day
-    ? '<tr><th class="mtx-lab">Site</th><th class="num">Leads</th><th class="num">Moy. 7 j</th><th class="num">Sessions reprise</th><th class="num">Transformation</th><th class="num mtx-end">14 derniers jours</th></tr>'
-    : '<tr><th class="mtx-lab">Site</th><th class="num">Leads</th><th class="num">/ jour</th><th class="num">Sessions reprise</th><th class="num">Part du site</th><th class="num">Transformation</th><th class="num mtx-end">14 derniers jours</th></tr>';
-
-  const body = rows.map(r=>{
-    const st = r.st, v2 = r.d.v2_date ? r.d.v2_date.slice(8,10)+"/"+r.d.v2_date.slice(5,7) : "—";
-    const cells = day
-      ? '<td class="num"><span class="mtx-val">'+fmt(st.leads)+'</span></td>'+
-        '<td class="num mtx-ref">'+fmt(st.ref)+'</td>'+
-        '<td class="num">'+fmt(st.sess)+'</td>'+
-        '<td class="num">'+(st.conv==null?"—":pct(st.conv))+'</td>'
-      : '<td class="num"><span class="mtx-val">'+fmt(st.leads)+'</span>'+
-          (st.perDayPrev ? '<span class="mtx-sub">'+badge((st.perDay-st.perDayPrev)/st.perDayPrev*100,"%")+'</span>' : '')+'</td>'+
-        '<td class="num mtx-ref">'+fmt(st.perDay)+'</td>'+
-        '<td class="num">'+fmt(st.sess)+'</td>'+
-        '<td class="num">'+(st.part==null?"—":pct(st.part))+'</td>'+
-        '<td class="num"><span class="mtx-val">'+pct(st.conv)+'</span>'+
-          (st.convPrev!=null ? '<span class="mtx-sub">'+badge(st.conv-st.convPrev,"pts")+'</span>' : '')+'</td>';
-    return '<tr class="ov-row" data-site="'+esc(r.site)+'">'+
-      '<td class="mtx-lab"><span class="ov-name">'+esc(r.site)+'</span><span class="ov-v2">V2 le '+v2+'</span></td>'+
-      cells+'<td class="num mtx-end">'+sparkline(st.spark, C.teal)+'</td></tr>';
-  }).join("");
-
-  document.querySelector("#ovTable thead").innerHTML = head;
-  document.querySelector("#ovTable tbody").innerHTML = body;
-  document.querySelectorAll(".ov-row").forEach(tr=>tr.addEventListener("click", async ()=>{
-    document.querySelectorAll(".site-tab").forEach(x=>x.classList.remove("active"));
-    document.querySelector('#siteTabs [data-site="'+tr.dataset.site+'"]').classList.add("active");
-    await load(tr.dataset.site);
-  }));
-
-  // lecture automatique : meilleure et moins bonne transformation, plus forte variation
-  const best = rows.reduce((a,b)=> b.st.conv>a.st.conv?b:a);
-  const worst= rows.reduce((a,b)=> b.st.conv<a.st.conv?b:a);
-  let note = "Transformation la plus forte : <strong>"+esc(best.site)+"</strong> ("+pct(best.st.conv)+
-             "), la plus faible : <strong>"+esc(worst.site)+"</strong> ("+pct(worst.st.conv)+"). ";
-  if(!day){
-    const mv = rows.filter(r=>r.st.convPrev!=null)
-                   .reduce((a,b)=> Math.abs(b.st.conv-b.st.convPrev)>Math.abs(a.st.conv-a.st.convPrev)?b:a);
-    note += "Plus forte variation par rapport au mois précédent : <strong>"+esc(mv.site)+"</strong> ("+
-            (mv.st.conv-mv.st.convPrev>=0?"+":"−")+fmt(Math.abs(mv.st.conv-mv.st.convPrev))+" pts). ";
-  }
-  note += "Cliquer une ligne ouvre le détail du site.";
-  document.getElementById("ovNote").innerHTML = note;
-
-  // courbe : leads quotidiens cumulés des 5 sites sur le mois en cours
-  const n = Math.max(...rows.map(r=>r.d.leads[lastM].daily.length));
-  const labels = Array.from({length:n},(_,i)=>String(i+1));
-  const serie = labels.map((_,i)=> rows.reduce((a,r)=> a + (r.d.leads[lastM].daily[i]||0), 0));
-  document.getElementById("ovChartSub").textContent = d0.meta[lastM].label + " · somme des cinq sites";
-  kill("ov");
-  charts.ov = new Chart(document.getElementById("ovChart"), {
-    type:"line",
-    data:{ labels, datasets:[{ label:"Leads", data:serie, borderColor:C.teal, backgroundColor:grad(C.teal),
-            fill:true, tension:.3, pointRadius:0, pointHoverRadius:5, borderWidth:2.4 }] },
-    options: lineOpt(16),
-  });
-}
-
-async function load(site){
-  curSite = site;
-  document.getElementById("rangeTabs").hidden = false;
-  document.getElementById("monthTabs").hidden = false;
-  document.getElementById("panel-overview").classList.remove("active");
-  document.getElementById("panel-site").classList.add("active");
-  ["leads","trafic","funnel"].forEach(p=>document.getElementById("panel-"+p).classList.add("active"));
-  document.getElementById("pageTitle").textContent = site;
-  document.getElementById("crumbSite").textContent = site;
-  if(!cache[site]) cache[site] = await (await fetch("data/"+slug(site)+".json")).json();
-  const d = cache[site];
-  const per = d.periods || d.months;
-  if(per.indexOf(curMonth)<0) curMonth = per[per.length-1];
-  document.getElementById("monthTabs").innerHTML = per.map(m=>
-    '<button class="month-tab'+(m===curMonth?" active":"")+(m==="total"?" month-tab-total":"")+'" data-m="'+m+'">'+
-    (m==="total" ? "Total" : d.meta[m].label.replace(" 2026",""))+'</button>').join("");
-  document.querySelectorAll(".month-tab").forEach(b=>b.addEventListener("click",()=>{
-    curMonth = b.dataset.m;
-    document.querySelectorAll(".month-tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); render();
-  }));
-  render();
-}
-
-function render(){
-  const d = cache[curSite];
-  document.getElementById("pageSub").textContent = (isTotal(curMonth)? "Cumul avril → juillet 2026" : d.meta[curMonth].label) + " · leads, trafic et parcours de reprise";
-  const pn=document.getElementById("partialNotice");
-  pn.hidden = !d.meta[curMonth].partial;
-  if(!pn.hidden){
-    pn.querySelector("p").innerHTML = isTotal(curMonth)
-      ? "La période cumule <strong>121 jours</strong> (01/04 → 30/07). Juillet n'en compte que 30 : ce mois pèse donc un peu moins que les autres dans les totaux."
-      : "Juillet ne couvre que <strong>30 jours</strong> au lieu de 31. Les totaux mensuels ne sont donc pas comparables tels quels — les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.";
-  }
-  const vd=document.getElementById("v2DateLabel");
-  if(vd) vd.textContent = "Lancement V2 : " + (d.v2_date ? d.v2_date.slice(8,10)+"/"+d.v2_date.slice(5,7)+"/"+d.v2_date.slice(0,4) : "—");
-  renderMain(); renderLeads(d); renderTraffic(d); renderFunnel(d);
-}
-
-/* helpers periode */
-function isTotal(mk){ return mk==="total"; }
-function monthIdx(d,mk){ if(isTotal(mk)) return d.daily.d.map((_,i)=>i);
-  const r=[]; d.daily.d.forEach((x,i)=>{ if("2026-"+x.slice(0,2)===mk) r.push(i); }); return r; }
-function leadsPerDay(d,mk){ const L=d.leads[mk]; return L ? L.total/d.meta[mk].days : null; }
-function convOf(d,mk){ const L=d.leads[mk], R=d.repriseMonth[mk];
-  return (L&&R&&R.sessions) ? L.total/R.sessions*100 : null; }
-
-
-/* ==================== BLOC ESSENTIEL ====================
-   Quatre métriques, une seule courbe : la carte sélectionnée pilote le graphe.
-   Fenêtre glissante (7 / 30 jours ou tout), comparaison avec la période
-   précédente de même longueur, repère vertical et infobulle détaillée.
-   ======================================================== */
-const METRICS = {
-  rep:   { label:"Sessions outil de reprise", color:C.teal,   unit:"",   fmt:v=>fmt(Math.round(v)) },
-  leads: { label:"Leads",                     color:C.orange, unit:"",   fmt:v=>fmt(Math.round(v)) },
-  conv:  { label:"Transformation",            color:C.blue,   unit:" %", fmt:v=>pct(v) },
-  part:  { label:"Part vers la reprise",      color:"#8b6fd6",unit:" %", fmt:v=>pct(v) },
+const CSS = getComputedStyle(document.documentElement);
+const C = {
+  ink:   CSS.getPropertyValue("--ink").trim()   || "#0E1116",
+  ink3:  CSS.getPropertyValue("--ink-3").trim() || "#8B94A1",
+  ink4:  CSS.getPropertyValue("--ink-4").trim() || "#B9C0C9",
+  eu:    CSS.getPropertyValue("--eu").trim()    || "#1B3FB8",
+  jade:  CSS.getPropertyValue("--jade").trim()  || "#0B7B6B",
+  tag:   CSS.getPropertyValue("--tag").trim()   || "#F5C518",
+  rust:  CSS.getPropertyValue("--rust").trim()  || "#C4462F",
+  line:  CSS.getPropertyValue("--line").trim()  || "#DCE1E7",
+  line2: CSS.getPropertyValue("--line-2").trim()|| "#EDF0F3",
 };
 
-/* Séries quotidiennes alignées sur daily.d, pour toute la période connue */
-function dailySeries(d){
-  const leads = d.months.reduce((a,m)=>a.concat(d.leads[m].daily||[]), []);
-  const n = d.daily.d.length;
-  const rep = d.daily.rep.slice(0,n), par = d.daily.u.slice(0,n);
-  return {
-    d: d.daily.d, rep, leads,
-    conv: rep.map((r,i)=> r ? (leads[i]||0)/r*100 : null),
-    part: par.map((u,i)=> u ? rep[i]/u*100 : null),
-  };
-}
-
-/* Repère vertical au survol, comme dans GA4 */
-const CROSSHAIR = {
-  id:"crosshair",
-  afterDatasetsDraw(chart){
-    const a = chart.chartArea, act = chart.tooltip?._active;
-    if(!act || !act.length || !a) return;
-    const x = act[0].element.x, ctx = chart.ctx;
-    ctx.save(); ctx.beginPath(); ctx.setLineDash([4,4]);
-    ctx.strokeStyle = "rgba(20,26,23,.28)"; ctx.lineWidth = 1;
-    ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke(); ctx.restore();
-  }
+/* hotes de reference, repris du perimetre du projet */
+const HOSTS = {
+  "OPEL FR":       { pays:"F", host:"reprise.opel.fr" },
+  "OPEL PT":       { pays:"P", host:"retoma.opel.pt" },
+  "CITROEN PT":    { pays:"P", host:"retoma-citroen.pt" },
+  "PEUGEOT PT":    { pays:"P", host:"retoma.peugeot.pt" },
+  "DS PT":         { pays:"P", host:"retoma.dsautomobiles.pt" },
+  "FIAT PT":       { pays:"P", host:"retoma.fiat.pt" },
+  "JEEP PT":       { pays:"P", host:"retoma.jeep.pt" },
+  "ALFA ROMEO PT": { pays:"P", host:"retoma.alfaromeo.pt" },
 };
-Chart.register(CROSSHAIR);
 
-function renderMain(){
-  const d = cache[curSite], S = dailySeries(d);
-  const n = S.d.length;
-  const win = curRange === "all" ? n : Math.min(parseInt(curRange,10), n);
-  const from = n - win;
-  const idx  = Array.from({length:win}, (_,i)=> from + i);
-  const prev = idx.map(i=> i - win).filter(i=> i >= 0);
-  const M = METRICS[curMetric];
+/* deux familles de marques : historique PSA et ex-FCA */
+const FAMILLE = {
+  "OPEL FR":"PSA", "OPEL PT":"PSA", "CITROEN PT":"PSA", "PEUGEOT PT":"PSA", "DS PT":"PSA",
+  "FIAT PT":"FCA", "JEEP PT":"FCA", "ALFA ROMEO PT":"FCA",
+};
+const FAM_LABEL = { PSA:"Marques PSA", FCA:"Marques ex-FCA" };
 
-  const cur  = idx.map(i=> S[curMetric][i]);
-  const ref  = prev.length === win ? prev.map(i=> S[curMetric][i]) : null;
-  const avg  = arr => { const v = arr.filter(x=>x!=null); return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null; };
-  const sum  = arr => arr.reduce((a,b)=>a+(b||0),0);
-  const agg  = k => (k==="conv"||k==="part") ? avg(idx.map(i=>S[k][i])) : sum(idx.map(i=>S[k][i]));
-  const aggP = k => !ref ? null : ((k==="conv"||k==="part") ? avg(prev.map(i=>S[k][i])) : sum(prev.map(i=>S[k][i])));
+/* la marque du site, pour isoler les reprises "dans la marque" */
+const OWN_BRAND = {
+  "OPEL FR":"OPEL", "OPEL PT":"OPEL", "CITROEN PT":"CITROEN",
+  "PEUGEOT PT":"PEUGEOT", "DS PT":"DS AUTOMOBILES",
+  "FIAT PT":"FIAT", "JEEP PT":"JEEP", "ALFA ROMEO PT":"ALFA ROMEO",
+};
 
-  // ── cartes de métriques ──
-  document.getElementById("metricCards").innerHTML = Object.entries(METRICS).map(([k,m])=>{
-    const v = agg(k), p = aggP(k);
-    const dl = (p!=null && p!==0) ? ((k==="conv"||k==="part") ? v-p : (v-p)/p*100) : null;
-    return '<button class="metric-card'+(k===curMetric?" active":"")+'" data-metric="'+k+'" style="--mc:'+m.color+'">'+
-      '<span class="mc-label">'+m.label+'</span>'+
-      '<span class="mc-value">'+m.fmt(v)+'</span>'+
-      '<span class="mc-foot">'+(dl==null?'<span class="mc-none">période précédente indisponible</span>'
-        : badge(dl, (k==="conv"||k==="part") ? "pts" : "%"))+'</span></button>';
-  }).join("");
-  document.querySelectorAll(".metric-card").forEach(b=>b.addEventListener("click",()=>{
-    curMetric = b.dataset.metric; renderMain();
-  }));
-
-  // ── graphe ──
-  const lab = idx.map(i=> S.d[i].slice(3)+"/"+S.d[i].slice(0,2));
-  const labP = ref ? prev.map(i=> S.d[i].slice(3)+"/"+S.d[i].slice(0,2)) : [];
-  document.getElementById("mainChartTitle").textContent = M.label;
-  document.getElementById("mainChartSub").textContent =
-    (curRange==="all" ? "Toute la période" : curRange+" derniers jours") +
-    " · du "+lab[0]+" au "+lab[lab.length-1] +
-    (ref && cmpOn ? " · comparé au "+labP[0]+" – "+labP[labP.length-1] : "");
-
-  const ds = [{ label:M.label, data:cur, borderColor:M.color, backgroundColor:grad(M.color),
-                fill:true, tension:.3, pointRadius:0, pointHoverRadius:5, borderWidth:2.6, order:1 }];
-  if(ref && cmpOn) ds.push({ label:"Période précédente", data:ref, borderColor:"#b9beba",
-                borderDash:[5,4], backgroundColor:"transparent", fill:false, tension:.3,
-                pointRadius:0, pointHoverRadius:4, borderWidth:1.8, order:2 });
-
-  kill("main");
-  charts.main = new Chart(document.getElementById("mainChart"), {
-    type:"line", data:{ labels:lab, datasets:ds },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      interaction:{ mode:"index", intersect:false },
-      plugins:{
-        legend:{ display:ref && cmpOn, position:"top", align:"end", labels:leg() },
-        v2mark: v2Mark(d, idx.map(i=>S.d[i])),
-        tooltip:{ ...tip(), callbacks:{
-          title: items => items[0].label,
-          label: c => {
-            const v = c.parsed.y;
-            if(c.datasetIndex === 1) return "Période précédente : " + M.fmt(v) + (labP[c.dataIndex] ? "  ("+labP[c.dataIndex]+")" : "");
-            let out = M.label + " : " + M.fmt(v);
-            if(ref && cmpOn && ref[c.dataIndex] != null){
-              const p = ref[c.dataIndex];
-              const dl = (curMetric==="conv"||curMetric==="part") ? v-p : (p ? (v-p)/p*100 : null);
-              if(dl != null) out += "   " + (dl>=0?"▲ +":"▼ ") + fmt(Math.abs(dl)) + ((curMetric==="conv"||curMetric==="part")?" pts":" %");
-            }
-            return out;
-          }
-        }}
-      },
-      scales:{
-        x:{ grid:{display:false}, border:{display:false}, ticks:tk(curRange==="7"?7:12) },
-        y:{ beginAtZero:true, grid:{color:"#eef0ee"}, border:{display:false},
-            ticks:{...tk(), callback:v => M.unit ? v+M.unit : fmt(v)} }
-      }
-    }
-  });
-
-  renderFunnelStrip(d);
-}
-
-/* Le parcours en une bande : six étapes, le passage le plus coûteux surligné */
-function renderFunnelStrip(d){
-  const host = document.getElementById("funnelStrip");
-  const u = stepUsers(d, "2026-07") || stepUsers(d, "2026-06");
-  if(!u){ host.innerHTML = ""; document.getElementById("stripSub").textContent = "Aucun funnel disponible."; return; }
-  const rates = [];
-  for(let i=0;i<u.length-1;i++) rates.push({ i, r: u[i] ? u[i+1]/u[i]*100 : 0, loss: (u[i]-u[i+1])/u[0]*100 });
-  const worst = rates.reduce((a,b)=> b.loss>a.loss ? b : a);
-  document.getElementById("stripSub").textContent =
-    "Utilisateurs actifs · complétion " + pct(u[u.length-1]/u[0]*100) +
-    " · plus grosse perte : " + STEP_FR[worst.i] + " → " + STEP_FR[worst.i+1];
-
-  host.innerHTML = u.map((v,i)=>{
-    const w = Math.max(v/u[0]*100, 6);
-    const arrow = i < u.length-1
-      ? '<div class="fs-arrow'+(rates[i].i===worst.i?" worst":"")+'"><span>'+fmt(rates[i].r)+' %</span></div>' : '';
-    return '<div class="fs-step"><div class="fs-bar" style="width:'+w.toFixed(1)+'%"></div>'+
-           '<div class="fs-meta"><span class="fs-name">'+esc(STEP_FR[i]||("Étape "+(i+1)))+'</span>'+
-           '<span class="fs-val">'+fmt(v)+'</span></div></div>'+arrow;
-  }).join("");
-}
-
-/* ==================== LEADS ==================== */
-function renderLeads(d){
-  const mk=curMonth, L=d.leads[mk], meta=d.meta[mk], R=d.repriseMonth[mk];
-  const pm=prevMonth(mk);
-  const conv=convOf(d,mk), convPrev=pm?convOf(d,pm):null;
-  const lpd=leadsPerDay(d,mk), lpdPrev=pm?leadsPerDay(d,pm):null;
-
-  document.getElementById("leadsHero").innerHTML =
-    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
-    '<p class="hero-label">Taux de conversion — sessions outil de reprise → leads</p>'+
-    '<p class="hero-value">'+pct(conv)+'<span class="hero-sub">'+meta.label+'</span>'+
-    (convPrev!=null ? '<span class="hero-badge">'+(conv-convPrev>=0?"↑":"↓")+" "+fmt(Math.abs(conv-convPrev))+' pts vs '+d.meta[pm].label.replace(" 2026","")+'</span>' : '')+
-    '</p><p class="hero-note">'+fmt(L.total)+' leads pour '+fmt(R.sessions)+' sessions sur l\'outil de reprise · '+
-    fmt(lpd)+' leads / jour sur '+meta.days+' jours</p></div></div>';
-
-  renderEvo(d);
-
-  // graphe quotidien du mois
-  document.getElementById("leadsDailySub").textContent = isTotal(mk) ? "01/04 → 30/07 · 121 jours" : meta.label;
-  kill("ld");
-  charts.ld=new Chart(document.getElementById("leadsDailyChart"),{type:"line",
-    data:{labels:(isTotal(mk)? d.daily.d.map(x=>x.slice(3)+"/"+x.slice(0,2)) : L.daily.map((_,i)=>String(i+1))),
-      datasets:[{label:"Leads",data:L.daily,
-      borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.35,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:(()=>{ const o=lineOpt(isTotal(mk)?12:14);
-      o.plugins.v2mark=v2Mark(d, isTotal(mk)? d.daily.d : monthAxis(mk, meta.days)); return o; })()});
-
-  buildDims(d,L);
-  donut("entryChart","dEntry","entryLegend","entryCenter",Object.entries(L.entry).sort((a,b)=>b[1]-a[1]));
-  donut("projectChart","dProj","projectLegend","projectCenter",L.project);
-}
-
-/* ---- bloc principal : sessions reprise vs leads, mois par mois ---- */
-let evoScale = "day";
-
-function renderEvo(d){
-  const ms = d.months, mk = curMonth;
-  const ref = isTotal(mk) ? ms[ms.length-1] : mk;   // mois mis en avant dans les cartes
-  const base = ms[0];
-  const dv = evoScale === "day";
-  const days = m => d.meta[m].days;
-  const sess = m => d.repriseMonth[m].sessions / (dv ? days(m) : 1);
-  const lead = m => d.leads[m].total / (dv ? days(m) : 1);
-  const conv = m => d.repriseMonth[m].sessions ? d.leads[m].total / d.repriseMonth[m].sessions * 100 : null;
-
-  // segmented control
-  const seg = document.getElementById("evoScale");
-  seg.querySelectorAll(".seg-btn").forEach(b=>{
-    b.classList.toggle("active", b.dataset.scale === evoScale);
-    b.onclick = () => { evoScale = b.dataset.scale; renderEvo(d); };
-  });
-
-  // marqueur V2 sur un axe mensuel
-  const vm = (() => {
-    if(!d.v2_date) return {on:false};
-    const i = ms.indexOf(d.v2_date.slice(0,7));
-    const lbl = "Nouvelle version · " + Number(d.v2_date.slice(8,10)) + " " +
-      ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"][Number(d.v2_date.slice(5,7))-1];
-    return i>=0 ? {on:true, index:i, label:lbl, soft:true} : {on:false};
-  })();
-
-  const sc = dualScale(ms.map(sess), ms.map(lead));
-  kill("evo");
-  charts.evo = new Chart(document.getElementById("evoChart"), {
-    type:"line",
-    data:{ labels: ms.map(m=>d.meta[m].label.replace(" 2026","")),
-      datasets:[
-        {label:"Sessions outil de reprise", data: ms.map(sess), yAxisID:"y",
-         borderColor:C.teal, backgroundColor:"transparent", borderWidth:2.6, tension:.25,
-         pointRadius: ms.map(m=>m===ref?7:5.5), pointBackgroundColor:C.teal, pointBorderColor:"#fff", pointBorderWidth:2},
-        {label:"Leads", data: ms.map(lead), yAxisID:"y1",
-         borderColor:C.orange, backgroundColor:"transparent", borderWidth:2.6, tension:.25,
-         pointRadius: ms.map(m=>m===ref?7:5.5), pointBackgroundColor:C.orange, pointBorderColor:"#fff", pointBorderWidth:2}
-      ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      layout:{ padding:{ top:26, right:8, left:4 } },
-      interaction:{ mode:"index", intersect:false },
-      plugins:{ legend:{display:false},
-        tooltip:{...tip(), callbacks:{ label:c=>c.dataset.label+" : "+fmt(c.parsed.y)+(dv?" / jour":"") }},
-        v2mark: vm, vlabel:{ on:true } },
-      scales:{
-        x:{ grid:{display:false}, border:{display:false},
-            ticks:{...tk(), font:{size:11.5}, color:"#61675f"} },
-        y:{ beginAtZero:true, max:sc.left, grid:{color:"#eef0ee"}, border:{display:false},
-            ticks:{...tk(), color:C.teal},
-            title:{display:true, text: dv?"Sessions reprise / jour":"Sessions reprise", color:C.teal, font:{size:10.5, weight:"700"}} },
-        y1:{ position:"right", beginAtZero:true, max:sc.right, grid:{display:false}, border:{display:false},
-            ticks:{...tk(), color:C.orange},
-            title:{display:true, text: dv?"Leads / jour":"Leads", color:C.orange, font:{size:10.5, weight:"700"}} }
-      }}
-  });
-
-  const unit = dv ? " / jour" : "";
-  const sB = sess(base), sR = sess(ref), lB = lead(base), lR = lead(ref);
-  const cB = conv(base), cR = conv(ref);
-  const nm = m => d.meta[m].label.replace(" 2026","").toLowerCase();
-  document.getElementById("evoKpis").innerHTML =
-    kpi("Sessions reprise — "+nm(ref), fmt(sR)+unit, nm(base)+" : "+fmt(sB)+unit,
-        sB?badge((sR-sB)/sB*100,"%"):null) +
-    kpi("Leads — "+nm(ref), fmt(lR)+unit, nm(base)+" : "+fmt(lB)+unit,
-        lB?badge((lR-lB)/lB*100,"%"):null) +
-    kpi("Transformation — "+nm(ref), pct(cR), nm(base)+" : "+pct(cB),
-        (cB!=null&&cR!=null)?badge(cR-cB,"pts"):null) +
-    kpi("Évolution "+nm(base)+" → "+nm(ref), (cB?"× "+fmt(cR/cB):"—"), "sur le taux de transformation");
-}
-
-function kpi(label,val,sub,extra){
-  return '<div class="kpi"><p class="label">'+label+'</p><p class="value">'+val+'</p>'+
-    '<div class="kpi-foot">'+(extra||"")+(sub?'<span class="sub">'+sub+'</span>':"")+'</div></div>';
-}
-
-const DIMS=[
-  {k:"brand",l:"Marque reprise",g:L=>L.brand,logo:true},
-  {k:"fuel",l:"Carburant",g:L=>L.fuel,fuel:true},
-  {k:"source",l:"Source",g:L=>L.source},
-  {k:"code",l:"Code marketing",g:L=>L.code}
+const DIMS = [
+  { k:"brand",   t:"Marque reprise",   h:"Marque du véhicule que le visiteur fait estimer." },
+  { k:"fuel",    t:"Carburant",        h:"Énergie du véhicule repris." },
+  { k:"project",  t:"Projet d'achat",  h:"Intention déclarée par le visiteur." },
+  { k:"source",  t:"Source",           h:"Origine d'acquisition transmise par le back-office." },
+  { k:"code",    t:"Code marketing",   h:"Code de campagne rattaché au lead." },
 ];
-function buildDims(d,L){
-  document.getElementById("dimSub").textContent="Répartition par dimension · "+d.meta[curMonth].label;
-  const el=document.getElementById("dimTabs");
-  el.innerHTML=DIMS.map(x=>'<button class="dim-tab'+(x.k===activeDim?" active":"")+'" data-d="'+x.k+'">'+x.l+'</button>').join("");
-  el.querySelectorAll(".dim-tab").forEach(b=>b.addEventListener("click",()=>{
-    activeDim=b.dataset.d;
-    el.querySelectorAll(".dim-tab").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active"); dimList(L);
-  }));
-  dimList(L);
+
+/* harmonisation des libelles — les 5 sites ne parlent pas la meme langue */
+const STEP_MAP = {
+  "homepage":"Page d'accueil", "hp":"Page d'accueil",
+  "version":"Version",
+  "mileage":"Kilométrage", "kilométrage":"Kilométrage",
+  "contact details":"Coordonnées", "contact":"Coordonnées",
+  "dealer choice":"Point de vente", "pdv":"Point de vente",
+  "price estimation":"Estimation", "estimation":"Estimation",
+};
+const VALUE_MAP = {
+  "NO PURCHASE PROJECT":"Aucun projet",
+  "VN":"Véhicule neuf",
+  "VO":"Véhicule d'occasion",
+};
+
+/* ============================== etat ============================== */
+
+let SITES = [];
+const DATA = {};
+const CHARTS = {};
+
+const view = {
+  scope: "overview",   // "overview" | "site"
+  site: null,
+  report: "acquisition",
+  period: null,
+  compare: null,       // null = aucune comparaison
+  dim: "brand",
+  sort: null,
+};
+
+/* ============================ utilitaires ============================ */
+
+const $  = (s, r) => (r || document).querySelector(s);
+const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+const nf0 = new Intl.NumberFormat("fr-FR", { maximumFractionDigits:0 });
+const nf1 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 });
+
+const fmt  = n => (n == null || !isFinite(n)) ? "—" : nf0.format(Math.round(n));
+const fmt1 = n => (n == null || !isFinite(n)) ? "—" : nf1.format(n);
+const pct  = n => (n == null || !isFinite(n)) ? "—" : nf1.format(n) + " %";
+
+const MONTHS = ["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const shortP = p => p === "total" ? "cumul" : MONTHS[+p.slice(5, 7) - 1];
+
+function tidy(s) {
+  const u = String(s || "").trim().toUpperCase();
+  if (VALUE_MAP[u]) return VALUE_MAP[u];
+  return String(s || "").trim();
 }
-function dimList(L){
-  const dim=DIMS.find(x=>x.k===activeDim)||DIMS[0];
-  const pairs=(dim.g(L)||[]).slice();
-  const total=pairs.reduce((s,p)=>s+p[1],0)||1;
-  const top=pairs.slice(0,8), max=top.length?top[0][1]:1;
-  document.getElementById("dimList").innerHTML=top.map((p,i)=>{
-    const col=PALETTE[i%PALETTE.length], ini=(p[0]||"?").trim().charAt(0).toUpperCase();
-    let b;
-    if(dim.logo&&logo(p[0])) b='<span class="rank-badge" style="background:#fff;border:1px solid var(--border)"><img src="'+logo(p[0])+'" alt="" loading="lazy" onerror="this.parentElement.style.background=\''+col+'\';this.parentElement.style.border=\'none\';this.parentElement.textContent=\''+ini+'\';"></span>';
-    else if(dim.fuel) b='<span class="rank-badge" style="background:'+col+'22">'+icon(fuelKey(p[0]),col)+'</span>';
-    else b='<span class="rank-badge" style="background:'+col+'">'+ini+'</span>';
-    return '<div class="rank-row"><div class="rank-name"><span class="rank-idx">'+(i+1)+'</span>'+b+
-      '<span class="rank-label" title="'+esc(p[0])+'">'+esc(p[0])+'</span></div>'+
-      '<div class="rank-share"><span class="rank-track"><span class="rank-fill" style="width:'+(p[1]/max*100).toFixed(1)+'%;background:'+col+'"></span></span>'+
-      '<span class="rank-pct">'+fmt(p[1]/total*100)+' %</span></div>'+
-      '<div class="rank-value">'+fmt(p[1])+'</div></div>';
-  }).join("");
-  const shown=top.reduce((s,p)=>s+p[1],0), rest=pairs.length-top.length;
-  document.getElementById("dimFoot").textContent=
-    fmt(shown)+" leads affichés sur "+fmt(total)+" ("+fmt(shown/total*100)+" %)"+
-    (rest>0?" · "+rest+" autre"+(rest>1?"s":"")+" valeur"+(rest>1?"s":""):"");
-}
-function donut(canvas,key,legendId,centerId,pairs){
-  const top=pairs.slice(0,5), total=pairs.reduce((s,p)=>s+p[1],0);
-  kill(key);
-  charts[key]=new Chart(document.getElementById(canvas),{type:"doughnut",
-    data:{labels:top.map(p=>p[0]),datasets:[{data:top.map(p=>p[1]),backgroundColor:PALETTE,borderColor:"#fff",borderWidth:3,hoverOffset:5}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false},tooltip:tip()}}});
-  document.getElementById(centerId).textContent=fmt(total);
-  document.getElementById(legendId).innerHTML=top.map((p,i)=>
-    '<div class="dl-row"><span class="dl-dot" style="background:'+PALETTE[i%PALETTE.length]+'"></span>'+
-    '<span class="dl-name" title="'+esc(p[0])+'">'+esc(p[0])+'</span>'+
-    '<span class="dl-value">'+fmt(p[1])+'</span><span class="dl-pct">'+fmt(p[1]/(total||1)*100)+' %</span></div>').join("");
-}
-
-/* ==================== TRAFIC ==================== */
-function renderTraffic(d){
-  const mk=curMonth, T=d.trafficMonth[mk], R=d.repriseMonth[mk], meta=d.meta[mk];
-  const pm=prevMonth(mk);
-  const spd=T.tdays?T.sessions/T.tdays:0;
-  const rpd=R.rdays?R.sessions/R.rdays:0;
-  const part=T.sessions?R.sessions/T.sessions*100:0;
-  const L=d.leads[mk];
-  const spdP=pm&&d.trafficMonth[pm].tdays?d.trafficMonth[pm].sessions/d.trafficMonth[pm].tdays:null;
-  const rpdP=pm&&d.repriseMonth[pm].rdays?d.repriseMonth[pm].sessions/d.repriseMonth[pm].rdays:null;
-  const partP=pm&&d.trafficMonth[pm].sessions?d.repriseMonth[pm].sessions/d.trafficMonth[pm].sessions*100:null;
-  const per1k=T.sessions?L.total/T.sessions*1000:0;
-  const per1kP=pm&&d.trafficMonth[pm].sessions?d.leads[pm].total/d.trafficMonth[pm].sessions*1000:null;
-
-  document.getElementById("trafficKpis").innerHTML =
-    kpi("Sessions site parent", fmt(T.sessions), fmt(spd)+" / jour",
-        spdP!=null?badge((spd-spdP)/spdP*100,"%"):null) +
-    kpi("Sessions outil de reprise", fmt(R.sessions), fmt(rpd)+" / jour",
-        rpdP!=null?badge((rpd-rpdP)/rpdP*100,"%"):null) +
-    kpi("Part vers la reprise", pct(part), "des sessions du site",
-        partP!=null?badge(part-partP,"pts"):null) +
-    kpi("Leads / 1 000 sessions site", fmt(per1k), "chaîne complète",
-        per1kP!=null?badge((per1k-per1kP)/per1kP*100,"%"):null);
-
-  const idx=monthIdx(d,mk);
-  const lab=idx.map(i=> isTotal(mk) ? d.daily.d[i].slice(3)+"/"+d.daily.d[i].slice(0,2) : d.daily.d[i].slice(3));
-  document.getElementById("trafficDailySub").textContent=(isTotal(mk)?"01/04 → 30/07":meta.label)+" · deux échelles";
-  document.getElementById("trafficLegend").innerHTML=
-    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Site parent</span><span class="lvalue">'+fmt(T.sessions)+'</span></div>'+
-    '<div class="legend-item"><span class="swatch" style="background:'+C.orange+'"></span><span class="lname">Outil de reprise</span><span class="lvalue">'+fmt(R.sessions)+'</span></div>';
-  const sPar=idx.map(i=>d.daily.u[i]), sRep=idx.map(i=>d.daily.rep[i]);
-  const sc=dualScale(sPar,sRep);
-  kill("tr");
-  charts.tr=new Chart(document.getElementById("trafficChart"),{type:"line",
-    data:{labels:lab,datasets:[
-      {label:"Site parent",data:sPar,yAxisID:"y",borderColor:C.teal,backgroundColor:grad(C.teal),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4},
-      {label:"Outil de reprise",data:sRep,yAxisID:"y1",borderColor:C.orange,backgroundColor:grad(C.orange),fill:true,tension:.3,pointRadius:0,pointHoverRadius:5,borderWidth:2.4}]},
-    options:(()=>{ const o=lineOpt(isTotal(mk)?12:16);
-      o.plugins.v2mark=v2Mark(d, idx.map(i=>d.daily.d[i]));
-      o.scales.y={...o.scales.y, max:sc.left, ticks:{...tk(), color:C.teal},
-        title:{display:true,text:"Sessions site parent",color:C.teal,font:{size:10.5,weight:"700"}}};
-      o.scales.y1={position:"right",beginAtZero:true,max:sc.right,grid:{display:false},border:{display:false},
-        ticks:{...tk(), color:C.orange},
-        title:{display:true,text:"Sessions outil de reprise",color:C.orange,font:{size:10.5,weight:"700"}}};
-      return o; })()});
-
-  renderSynth(d);
+function stepLabel(s) {
+  const raw = String(s || "").replace(/^\s*\d+\s*[.)]\s*/, "").trim();
+  return STEP_MAP[raw.toLowerCase()] || (raw.charAt(0).toUpperCase() + raw.slice(1));
 }
 
-/* ---- tableau de synthese mensuelle : trafic -> reprise -> leads ---- */
-function renderSynth(d){
-  const ms = d.months, mk = curMonth;
-  const days = m => d.meta[m].days;
-  const site = m => d.trafficMonth[m].sessions;
-  const rep  = m => d.repriseMonth[m].sessions;
-  const lead = m => d.leads[m] ? d.leads[m].total : null;
-
-  const groups = [
-    { title:"Trafic", rows:[
-      { l:"Sessions site parent", v:site, perDay:true },
-      { l:"Sessions outil de reprise", v:rep, perDay:true },
-      { l:"Part du site allant vers la reprise", v:m=>site(m)?rep(m)/site(m)*100:null, kind:"pct", hi:true }
-    ]},
-    { title:"Leads", rows:[
-      { l:"Leads (extraction back-office)", v:lead, perDay:true },
-      { l:"Transformation reprise → leads", v:m=>rep(m)?lead(m)/rep(m)*100:null, kind:"pct", hi:true },
-      { l:"Leads pour 1 000 sessions du site", v:m=>site(m)?lead(m)/site(m)*1000:null, kind:"dec" }
-    ]}
-  ];
-
-  const head = '<tr><th class="mtx-lab">Indicateur</th>' +
-    ms.map(m=>'<th class="num'+(m===mk?" mtx-cur":"")+'">'+esc(d.meta[m].label.replace(" 2026",""))+'</th>').join("") +
-    '<th class="num mtx-end">Évolution avril → juillet</th></tr>';
-
-  let body = "";
-  groups.forEach(g=>{
-    body += '<tr class="mtx-group"><td colspan="'+(ms.length+2)+'">'+g.title+'</td></tr>';
-    g.rows.forEach(r=>{
-      const vals = ms.map(r.v);
-      const a = vals[0], z = vals[vals.length-1];
-      let evo = "—";
-      if(a!=null && z!=null){
-        if(r.kind==="pct"){
-          const pts = z-a;
-          evo = '<span class="mtx-evo '+(pts>=0?"pos":"neg")+'">'+(pts>=0?"+ ":"− ")+fmt(Math.abs(pts))+' pts</span>'+
-                (a?'<span class="mtx-evo-sub">× '+fmt(z/a)+'</span>':"");
-        } else {
-          // comparaison en moyenne / jour : juillet ne compte que 28 jours
-          const pa = a/days(ms[0]), pz = z/days(ms[ms.length-1]);
-          const dl = pa ? (pz-pa)/pa*100 : 0;
-          evo = '<span class="mtx-evo '+(dl>=0?"pos":"neg")+'">'+(dl>=0?"+ ":"− ")+fmt(Math.abs(dl))+' %</span>'+
-                '<span class="mtx-evo-sub">en moyenne / jour</span>';
-        }
-      }
-      body += '<tr class="'+(r.hi?"mtx-hi":"")+'"><td class="mtx-lab">'+r.l+'</td>' +
-        vals.map((v,i)=>{
-          const m = ms[i];
-          const main = v==null ? "—" : (r.kind==="pct" ? pct(v) : fmt(r.kind==="dec"? v : Math.round(v)));
-          const sub  = (v!=null && r.perDay) ? '<span class="mtx-sub">'+fmt(v/days(m))+' / j</span>' : "";
-          return '<td class="num'+(m===mk?" mtx-cur":"")+'"><span class="mtx-val">'+main+'</span>'+sub+'</td>';
-        }).join("") +
-        '<td class="num mtx-end">'+evo+'</td></tr>';
-    });
-  });
-
-  document.querySelector("#synthTable thead").innerHTML = head;
-  document.querySelector("#synthTable tbody").innerHTML = body;
-
-  const lastM = ms[ms.length-1];
-  const partA = site(ms[0])?rep(ms[0])/site(ms[0])*100:0, partZ = site(lastM)?rep(lastM)/site(lastM)*100:0;
-  const convA = rep(ms[0])?lead(ms[0])/rep(ms[0])*100:0, convZ = rep(lastM)?lead(lastM)/rep(lastM)*100:0;
-  document.getElementById("synthNote").innerHTML =
-    "Lecture : sur 1 000 sessions du site parent, <strong>"+fmt(partZ*10)+"</strong> arrivent sur l'outil de reprise en juillet (contre "+
-    fmt(partA*10)+" en avril), et <strong>"+fmt(convZ)+" %</strong> d'entre elles déposent un lead (contre "+fmt(convA)+" % en avril). " +
-    "Juillet ne couvre que 28 jours : les évolutions de volume sont donc calculées en moyenne par jour, les taux le sont sur la période complète.";
-}
-
-/* ==================== FUNNEL ==================== */
-function renderFunnel(d){
-  const mk=curMonth, isJuly=(mk==="2026-07"&&d.v2), FM=d.funnelMonth[mk];
-
-  renderSteps(d);
-
-  const wn=document.getElementById("funnelV2Notice"); if(wn) wn.hidden=true;
-  if(isTotal(mk)){ funnelTotal(d); return; }
-  if(isJuly){ funnelJuly(d); return; }
-  if(!FM){
-    document.getElementById("funnelHero").innerHTML="";
-    document.getElementById("funnelKpis").innerHTML='<div class="kpi"><p class="label">Information</p><p class="sub">Pas de funnel disponible pour ce mois.</p></div>';
-    document.getElementById("funnelViz").innerHTML="";
-    document.getElementById("funnelVizLegend").innerHTML="";
-    document.querySelector("#channelTable thead").innerHTML="";
-    document.querySelector("#channelTable tbody").innerHTML="";
-    return;
+/* regroupe les paires en fusionnant les variantes de casse */
+function pairs(x) {
+  const src = Array.isArray(x) ? x : Object.entries(x || {});
+  const acc = new Map();
+  for (const [name, v] of src) {
+    const key = String(name).trim().toUpperCase();
+    const cur = acc.get(key);
+    if (cur) { cur.v += v; if (v > cur.top) { cur.top = v; cur.name = name; } }
+    else acc.set(key, { name, v, top: v });
   }
-
-  const pm=prevMonth(mk), prev=pm&&d.funnelMonth[pm]?d.funnelMonth[pm].conversion_pct:null;
-  const st=FM.steps, first=st[0].users, last=st[st.length-1].users;
-
-  document.getElementById("funnelHero").innerHTML=
-    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
-    '<p class="hero-label">Taux de complétion du funnel — utilisateurs actifs</p>'+
-    '<p class="hero-value">'+pct(FM.conversion_pct)+'<span class="hero-sub">'+d.meta[mk].label+'</span>'+
-    (prev!=null?'<span class="hero-badge">'+(FM.conversion_pct-prev>=0?"↑":"↓")+" "+fmt(Math.abs(FM.conversion_pct-prev))+' pts vs '+d.meta[pm].label.replace(" 2026","")+'</span>':'')+
-    '</p><p class="hero-note">'+fmt(last)+' estimations terminées sur '+fmt(first)+' entrées de funnel · '+fmt(FM.users_per_day)+' entrées / jour</p></div></div>';
-
-  document.getElementById("funnelKpis").innerHTML=
-    kpi("Entrées de funnel", fmt(first), fmt(FM.users_per_day)+" / jour") +
-    kpi("Estimations terminées", fmt(last), null) +
-    kpi("Taux de complétion", pct(FM.conversion_pct), null, prev!=null?badge(FM.conversion_pct-prev,"pts"):null) +
-    kpi("Perte étape 1 → 2", pct(first?(first-st[1].users)/first*100:0), "abandon le plus fort");
-
-  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · "+d.meta[mk].label;
-  document.getElementById("funnelVizLegend").innerHTML="";
-  let h='<div class="fn-head fn-head-1"><span>Étape</span><span>Utilisateurs actifs</span></div>';
-  st.forEach((s,i)=>{
-    const ret=s.users/first*100, w=Math.max(ret,9);
-    h+='<div class="fn-row fn-row-1"><div class="fn-step-label"><span class="fn-step-num">'+(i+1)+'</span>'+
-       '<span class="fn-step-name">'+esc(s.step.replace(/^\d+\.\s*/,""))+'</span></div>'+
-       '<div class="fn-cell"><div class="fn-bar post" style="width:'+w.toFixed(1)+'%">'+fmt(s.users)+'</div>'+
-       '<div class="fn-meta">'+fmt(ret)+' % de l\'étape 1</div></div></div>';
-    if(i<st.length-1){
-      const dr=s.users?(st[i+1].users-s.users)/s.users*100:0;
-      h+='<div class="fn-drop fn-drop-1"><span></span><span class="fn-drop-cell'+(dr>=0?" neutral":"")+'">↓ '+fmt(dr)+' %</span></div>';
-    }
-  });
-  document.getElementById("funnelViz").innerHTML=h;
-
-  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · "+d.meta[mk].label;
-  const ch=(FM.channels||[]).slice().sort((a,b)=>b.u-a.u);
-  const tot=ch.reduce((s,x)=>s+x.u,0)||1;
-  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
-  document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
-    '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
+  return [...acc.values()].map(o => [tidy(o.name), o.v]).sort((a, b) => b[1] - a[1]);
 }
 
-/* ---- tableau du parcours etape par etape, avril -> juillet ---- */
-const STEP_FR = ["Page d'accueil","Sélection de version","Kilométrage","Coordonnées","Choix du concessionnaire","Estimation de prix"];
+/* ============================ acces donnees ============================ */
 
-function stepUsers(d,m){
-  if(d.funnelMonth[m]) return d.funnelMonth[m].steps.map(s=>s.users);
+const months = d => d.months.filter(m => m !== "total");
+
+/* periode d'ouverture : le dernier mois consolide.
+   Atterrir sur un mois provisoire de 2 jours sans trafic n'aurait aucun sens. */
+function defaultPeriod(d) {
+  const ms = months(d).filter(m => !provisoire(d, m));
+  return (ms.length ? ms : months(d))[(ms.length ? ms : months(d)).length - 1];
+}
+
+function prevPeriod(d, p) {
+  const ms = months(d), i = ms.indexOf(p);
+  for (let k = i - 1; k >= 0; k--) {
+    if (!(d.meta[ms[k]] || {}).provisional) return ms[k];
+  }
   return null;
 }
 
-function renderSteps(d){
-  const ms = d.months, mk = curMonth;
-  const cols = ms.map(m=>({ m:m, label:d.meta[m].label.replace(" 2026",""), u:stepUsers(d,m) })).filter(c=>c.u);
-  const ref = cols.filter(c=>c.m!=="2026-07");     // avril -> juin, base de comparaison
-  const last = cols[cols.length-1];
-  if(!last){ document.querySelector("#stepTable thead").innerHTML=""; document.querySelector("#stepTable tbody").innerHTML=""; return; }
-  const n = last.u.length;
+const provisoire = (d, m) => !!(d.meta[m] && d.meta[m].provisional);
 
-  const rows = [];
-  for(let i=0;i<n-1;i++){
-    const vals = cols.map(c=> c.u[i] ? c.u[i+1]/c.u[i]*100 : null);
-    const sA = ref.reduce((s,c)=>s+c.u[i],0), sB = ref.reduce((s,c)=>s+c.u[i+1],0);
-    const moy = sA ? sB/sA*100 : null;
-    rows.push({ l:(STEP_FR[i]||("Étape "+(i+1)))+" → "+(STEP_FR[i+1]||("Étape "+(i+2))), vals:vals, moy:moy });
+/* indices de D.daily correspondant a la periode.
+   Le cumul ne prend que les mois consolides : un mois provisoire n'a pas
+   encore ses releves GA4, l'inclure faussrait le rapport leads/sessions. */
+function idx(d, p) {
+  const all = d.daily.d.map((_, i) => i);
+  if (p === "total") {
+    const ok = new Set(months(d).filter(m => !provisoire(d, m)).map(m => m.slice(5, 7)));
+    return all.filter(i => ok.has(d.daily.d[i].slice(0, 2)));
   }
-  const conv = cols.map(c=> c.u[0] ? c.u[n-1]/c.u[0]*100 : null);
-  const cA = ref.reduce((s,c)=>s+c.u[0],0), cZ = ref.reduce((s,c)=>s+c.u[n-1],0);
-  const convMoy = cA ? cZ/cA*100 : null;
+  const mm = p.slice(5, 7);
+  return all.filter(i => d.daily.d[i].slice(0, 2) === mm);
+}
 
-  // etape la plus determinante : le plus gros ecart entre juillet et la moyenne avril-juin
-  let hi = -1, best = 0;
-  rows.forEach((r,i)=>{ const e = (r.moy!=null && r.vals[r.vals.length-1]!=null) ? Math.abs(r.vals[r.vals.length-1]-r.moy) : 0;
-    if(e>best){ best=e; hi=i; } });
+/* leads par date, reconstruits mois par mois */
+function leadsByDate(d) {
+  if (d.__lbd) return d.__lbd;
+  const m = {};
+  for (const p of months(d)) {
+    const arr = (d.leads[p] && d.leads[p].daily) || [];
+    const mm = p.slice(5, 7);
+    arr.forEach((v, i) => { m[mm + "-" + String(i + 1).padStart(2, "0")] = v; });
+  }
+  d.__lbd = m;
+  return m;
+}
 
-  const gap = (v,m) => {
-    if(v==null||m==null) return "—";
-    const e = v-m;
-    return '<span class="mtx-evo '+(e>=0?"pos":"neg")+'">'+(e>=0?"+":"−")+fmt(Math.abs(e))+' pts</span>';
+/* bloc de metriques d'une periode */
+function stats(d, p) {
+  if (!p || !d.meta[p]) return null;
+  const days = d.meta[p].days;
+  const traffic = (d.trafficMonth[p] || {}).sessions ?? null;
+  const reprise = (d.repriseMonth[p] || {}).sessions ?? null;
+  const leads = (d.leads[p] || {}).total;
+  const sansGA4 = traffic == null || reprise == null;
+  /* trafic automatise identifie : on garde le brut, on calcule sur le net */
+  const an = (d.anomaly || {})[p] || null;
+  const net = an ? an.reprise_nette : reprise;
+  return {
+    p, days, partial: !!d.meta[p].partial, label: d.meta[p].label,
+    provisional: !!d.meta[p].provisional, note: d.meta[p].note || "", sansGA4,
+    traffic, reprise, leads,
+    bot: an ? an.sessions : 0, botPct: an ? an.part_pct : 0, net,
+    jours: an ? (an.jours || []) : [],
+    part: traffic ? net / traffic * 100 : null,
+    conv: net ? leads / net * 100 : null,
+    convBrut: reprise ? leads / reprise * 100 : null,
+    per1k: traffic ? leads / traffic * 1000 : null,
+    trafficPD: traffic == null ? null : traffic / days,
+    reprisePD: net == null ? null : net / days,
+    leadsPD: leads / days,
+  };
+}
+
+/* la periode de scission pre/post portee par le bloc v2 */
+function splitPeriod(d) {
+  const lbl = (d.v2 && d.v2.pre_label) || "";
+  const m = lbl.match(/\/(\d{2})\s*$/);
+  if (!m) return null;
+  return months(d).find(p => p.slice(5, 7) === m[1]) || null;
+}
+
+/* index du jour de bascule V2 dans la periode courante */
+function v2Index(d, p) {
+  if (!d.v2_date || !d.v2 || !d.v2.is_v2_split) return null;
+  const key = d.v2_date.slice(5).replace("-", "-");
+  const list = idx(d, p).map(i => d.daily.d[i]);
+  const i = list.indexOf(key);
+  return i >= 0 ? i : null;
+}
+
+/* ============================ composants ============================ */
+
+function arrow(dir) {
+  const p = dir > 0 ? "m5 12 7-7 7 7M12 5v14" : dir < 0 ? "m5 12 7 7 7-7M12 19V5" : "M5 12h14";
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
+}
+
+/* ecart : "pts" pour les taux, pourcentage relatif pour les volumes */
+function delta(cur, ref, mode) {
+  if (cur == null || ref == null || !isFinite(cur) || !isFinite(ref)) return "";
+  const isPts = mode === "pts";
+  const v = isPts ? cur - ref : (ref ? (cur - ref) / ref * 100 : null);
+  if (v == null || !isFinite(v)) return "";
+  const dir = Math.abs(v) < 0.05 ? 0 : (v > 0 ? 1 : -1);
+  const cls = dir > 0 ? "up" : dir < 0 ? "down" : "flat";
+  const txt = (v > 0 ? "+" : "") + nf1.format(v) + (isPts ? " pts" : " %");
+  return `<span class="delta ${cls}">${arrow(dir)}${txt}</span>`;
+}
+
+function spark(values, color) {
+  const v = (values || []).filter(x => x != null && isFinite(x));
+  if (v.length < 2) return "";
+  const w = 78, h = 24, min = Math.min(...v), max = Math.max(...v), span = (max - min) || 1;
+  const pt = v.map((y, i) => [i / (v.length - 1) * w, h - 2 - (y - min) / span * (h - 4)]);
+  const line = pt.map(([x, y]) => x.toFixed(1) + "," + y.toFixed(1)).join(" ");
+  const area = `0,${h} ${line} ${w},${h}`;
+  const id = "g" + Math.random().toString(36).slice(2, 8);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity=".18"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <polygon points="${area}" fill="url(#${id})"/>
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.6"
+      stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+    <circle cx="${pt[pt.length-1][0].toFixed(1)}" cy="${pt[pt.length-1][1].toFixed(1)}" r="2" fill="${color}"/>
+  </svg>`;
+}
+
+function score(o) {
+  return `<div class="score">
+    <div class="score-lbl">${esc(o.label)}</div>
+    <div class="score-val">${o.value}${o.unit ? `<u>${o.unit}</u>` : ""}</div>
+    <div class="score-foot">
+      <div>
+        <div class="score-sub">${o.sub || ""}</div>
+        ${o.delta || ""}
+      </div>
+      ${o.spark || ""}
+    </div>
+  </div>`;
+}
+
+function bar(ratio, tone) {
+  const w = Math.max(0, Math.min(1, ratio || 0)) * 100;
+  return `<span class="bar ${tone || ""}"><i style="width:${w.toFixed(1)}%"></i></span>`;
+}
+
+/* ============================ graphiques ============================ */
+
+Chart.defaults.font.family = '"IBM Plex Mono", ui-monospace, monospace';
+Chart.defaults.font.size = 10.5;
+Chart.defaults.color = C.ink3;
+Chart.defaults.animation.duration = 420;
+Chart.defaults.maintainAspectRatio = false;
+
+/* bande + etiquette du jour de bascule V2 */
+const V2MARK = {
+  id: "v2mark",
+  beforeDatasetsDraw(chart) {
+    const o = chart.options.plugins.v2mark;
+    if (!o || o.index == null) return;
+    const a = chart.chartArea, ctx = chart.ctx;
+    if (!a) return;
+    const x = chart.scales.x.getPixelForValue(o.index);
+    ctx.save();
+    ctx.fillStyle = "rgba(245,197,24,.14)";
+    ctx.fillRect(x, a.top, a.right - x, a.bottom - a.top);
+    ctx.strokeStyle = C.tag; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom); ctx.stroke();
+    if (o.label) {
+      ctx.font = '700 9px "IBM Plex Sans Condensed", sans-serif';
+      const w = ctx.measureText(o.label).width + 12;
+      const lx = Math.min(x, a.right - w);
+      ctx.fillStyle = C.tag;
+      ctx.beginPath(); ctx.roundRect(lx, a.top + 4, w, 15, 3); ctx.fill();
+      ctx.fillStyle = C.ink; ctx.textBaseline = "middle"; ctx.textAlign = "center";
+      ctx.fillText(o.label, lx + w / 2, a.top + 12);
+    }
+    ctx.restore();
+  }
+};
+Chart.register(V2MARK);
+
+function tooltipCfg(fmtFn) {
+  return {
+    backgroundColor: C.ink, padding: 10, cornerRadius: 6, displayColors: true,
+    boxWidth: 8, boxHeight: 8, boxPadding: 4,
+    titleFont: { family:'"IBM Plex Sans", sans-serif', weight:"600", size:11.5 },
+    bodyFont: { family:'"IBM Plex Mono", monospace', size:11.5 },
+    callbacks: { label: c => "  " + c.dataset.label + " : " + (fmtFn || fmt)(c.parsed.y) }
+  };
+}
+
+function axes(showX, tickCount) {
+  return {
+    x: {
+      grid: { display:false }, border:{ color:C.line },
+      ticks: {
+        display: showX !== false, maxRotation:0, autoSkip:true,
+        maxTicksLimit: tickCount || 10, padding:6, color:C.ink3
+      }
+    },
+    y: {
+      beginAtZero:true, border:{ display:false },
+      grid: { color:C.line2, drawTicks:false },
+      ticks: { padding:9, maxTicksLimit:5, callback:v => fmt(v) }
+    }
+  };
+}
+
+function draw(key, cfg) {
+  if (CHARTS[key]) CHARTS[key].destroy();
+  const cv = document.getElementById(key);
+  if (!cv) return;
+  CHARTS[key] = new Chart(cv.getContext("2d"), cfg);
+}
+function clearCharts() {
+  Object.keys(CHARTS).forEach(k => { CHARTS[k].destroy(); delete CHARTS[k]; });
+}
+
+/* ============================== rail ============================== */
+
+function euStars() {
+  let s = "";
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    s += `<circle cx="${(12 + Math.cos(a) * 6.4).toFixed(2)}" cy="${(12 + Math.sin(a) * 6.4).toFixed(2)}" r="1.05" fill="#fff"/>`;
+  }
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${s}</svg>`;
+}
+
+function renderRail() {
+  const groupes = ["PSA", "FCA"];
+  $("#plates").innerHTML = groupes.map(g => {
+    const liste = SITES.filter(s => (FAMILLE[s] || "PSA") === g);
+    if (!liste.length) return "";
+    return `<div class="fam">${esc(FAM_LABEL[g])}</div>` + liste.map(s => {
+      const h = HOSTS[s] || { pays:"", host:"" };
+      const band = h.pays === "P" ? "var(--tag)" : "var(--eu)";
+      return `<button class="plate" data-site="${esc(s)}" style="--band:${band}" aria-pressed="false">
+        <span class="plate-eu">${euStars()}<b>${esc(h.pays)}</b></span>
+        <span class="plate-face">
+          <span class="plate-name">${esc(s)}</span>
+          <span class="plate-sub">${esc(h.host)}</span>
+        </span>
+        <span class="plate-band"></span>
+      </button>`;
+    }).join("");
+  }).join("");
+
+  $("#plates").addEventListener("click", e => {
+    const b = e.target.closest(".plate");
+    if (b) selectSite(b.dataset.site);
+  });
+  $("#navOverview").addEventListener("click", () => selectOverview());
+}
+
+function syncRail() {
+  $("#navOverview").classList.toggle("on", view.scope === "overview");
+  document.querySelectorAll(".plate").forEach(p => {
+    const on = view.scope === "site" && p.dataset.site === view.site;
+    p.classList.toggle("on", on);
+    p.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+
+/* ============================ controle de periode ============================ */
+
+function periodList() {
+  const d = view.scope === "site" ? DATA[view.site] : DATA[SITES[0]];
+  return d.periods || d.months;
+}
+function metaOf(p) {
+  const d = view.scope === "site" ? DATA[view.site] : DATA[SITES[0]];
+  return d.meta[p];
+}
+
+function renderPeriodControl() {
+  const list = periodList();
+  const d = view.scope === "site" ? DATA[view.site] : null;
+
+  $("#ctlLabel").textContent = metaOf(view.period).label;
+  $("#ctlCmp").textContent = view.compare ? "vs " + shortP(view.compare) : "sans comparaison";
+  $("#ctlCmp").hidden = false;
+
+  const pf = $("#partialFlag");
+  const mm = metaOf(view.period);
+  const isPartial = d ? !!d.meta[view.period].partial
+                      : SITES.some(s => (DATA[s].meta[view.period] || {}).partial);
+  pf.hidden = !isPartial;
+  if (isPartial) {
+    pf.textContent = mm.provisional ? "Mois en cours" : "Données partielles";
+    pf.title = mm.note || "Ce mois n'est pas complet.";
+  }
+
+  $("#popPeriods").innerHTML = list.map(p =>
+    `<button class="pop-opt ${p === view.period ? "on" : ""}" data-period="${p}">
+      <span>${esc(metaOf(p).label)}</span><small>${metaOf(p).days} j</small>
+    </button>`).join("");
+
+  /* un mois provisoire ne sert pas de reference : 2 jours face a 31 n'a pas de sens */
+  const opts = list.filter(p => p !== view.period && p !== "total"
+    && !(metaOf(p) || {}).provisional);
+  $("#popCompare").innerHTML =
+    `<button class="pop-opt ${!view.compare ? "on" : ""}" data-cmp="">Aucune</button>` +
+    opts.map(p => `<button class="pop-opt ${view.compare === p ? "on" : ""}" data-cmp="${p}">
+      <span>${esc(metaOf(p).label)}</span><small>${metaOf(p).days} j</small></button>`).join("");
+}
+
+function wirePeriodControl() {
+  const btn = $("#ctlBtn"), pop = $("#pop");
+  const close = () => { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const open = pop.hidden;
+    pop.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.addEventListener("click", e => { if (!pop.contains(e.target)) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+
+  pop.addEventListener("click", e => {
+    const p = e.target.closest("[data-period]");
+    if (p) {
+      view.period = p.dataset.period;
+      const prev = view.scope === "site" ? prevPeriod(DATA[view.site], view.period) : prevPeriod(DATA[SITES[0]], view.period);
+      view.compare = prev;
+      close(); render(); return;
+    }
+    const c = e.target.closest("[data-cmp]");
+    if (c) { view.compare = c.dataset.cmp || null; close(); render(); }
+  });
+}
+
+/* ============================ navigation ============================ */
+
+const REPORTS = [
+  { k:"acquisition", t:"Acquisition" },
+  { k:"leads",       t:"Leads" },
+  { k:"parcours",    t:"Parcours" },
+];
+
+function renderTabs() {
+  const nav = $("#tabs");
+  nav.hidden = view.scope !== "site";
+  if (nav.hidden) { nav.innerHTML = ""; return; }
+  nav.innerHTML = REPORTS.map(r =>
+    `<button class="tab ${r.k === view.report ? "on" : ""}" data-report="${r.k}">${r.t}</button>`).join("");
+}
+
+function selectOverview() {
+  view.scope = "overview"; view.site = null;
+  render();
+}
+async function selectSite(site) {
+  await load(site);
+  view.scope = "site"; view.site = site;
+  if (!DATA[site].meta[view.period]) view.period = defaultPeriod(DATA[site]);
+  if (view.compare && !DATA[site].meta[view.compare]) view.compare = prevPeriod(DATA[site], view.period);
+  render();
+}
+
+/* ============================== rapports ============================== */
+
+function panel(id) {
+  document.querySelectorAll(".panel").forEach(p => p.hidden = true);
+  const p = document.getElementById(id);
+  p.hidden = false;
+  return p;
+}
+
+/* ---------------------------- vue d'ensemble ---------------------------- */
+
+function renderOverview() {
+  const p = view.period, cmp = view.compare;
+  const rows = SITES.map(s => {
+    const d = DATA[s];
+    const st = stats(d, p), ref = cmp ? stats(d, cmp) : null;
+    const ids = idx(d, p), lbd = leadsByDate(d);
+    return { s, d, st, ref, fam: FAMILLE[s] || "PSA",
+             sparkLeads: ids.map(i => lbd[d.daily.d[i]]).filter(v => v != null) };
+  });
+
+  const days = metaOf(p).days;
+  const daysRef = cmp ? metaOf(cmp).days : null;
+  const som = (k, r) => r.reduce((a, x) => a + (x.st[k] || 0), 0);
+  const somRef = (k, r) => cmp ? r.reduce((a, x) => a + ((x.ref && x.ref[k]) || 0), 0) : null;
+
+  const sansGA4 = rows.some(r => r.st.sansGA4);
+  const tLeads = som("leads", rows), tNet = som("net", rows), tTraf = som("traffic", rows);
+  const tBot = som("bot", rows);
+  const rLeads = somRef("leads", rows), rNet = somRef("net", rows), rTraf = somRef("traffic", rows);
+  const totalJour = mergeDaily(rows);
+
+  const host = panel("panel-overview");
+  host.innerHTML = `
+    <div class="scores">
+      ${score({ label:"Leads", value:fmt(tLeads), sub:fmt1(tLeads / days) + " / jour",
+        delta: cmp ? delta(tLeads / days, rLeads / daysRef) : "", spark:spark(totalJour, C.ink) })}
+      ${score({ label:"Sessions outil de reprise", value: sansGA4 ? "—" : fmt(tNet),
+        sub: sansGA4 ? "relevé GA4 en attente" : fmt1(tNet / days) + " / jour",
+        delta: cmp && !sansGA4 ? delta(tNet / days, rNet / daysRef) : "" })}
+      ${score({ label:"Transformation reprise → leads",
+        value: sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null),
+        sub: sansGA4 ? "relevé GA4 en attente" : "sur l'ensemble du parc",
+        delta: cmp && rNet && !sansGA4 ? delta(tLeads / tNet * 100, rLeads / rNet * 100, "pts") : "" })}
+      ${score({ label:"Sessions site parent", value: sansGA4 ? "—" : fmt(tTraf),
+        sub: sansGA4 ? "relevé GA4 en attente" : fmt1(tTraf / days) + " / jour",
+        delta: cmp && !sansGA4 ? delta(tTraf / days, rTraf / daysRef) : "" })}
+    </div>
+    ${sansGA4 ? `<div class="card"><div class="v2-strip">
+      <span class="tagchip">Provisoire</span>
+      <p>Les relevés GA4 de ${esc(metaOf(p).label)} ne sont pas encore disponibles. Seuls les leads,
+      issus du back-office, sont affichés. Trafic et transformation apparaîtront une fois GA4 relevé.</p>
+    </div></div>` : ""}
+
+    ${tBot ? `<div class="card"><div class="v2-strip">
+      <span class="tagchip">Robot</span>
+      <p><b>${fmt(tBot)} sessions automatisées</b> ont été identifiées sur les sites ex-FCA et retirées du calcul de transformation. Les volumes affichés restent les valeurs GA4 brutes.</p>
+    </div></div>` : ""}
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Le parc, site par site</h2>
+          <p>Chaque ligne suit la même chaîne : le site parent amène du trafic vers l'outil de reprise, qui produit des leads. Cliquez une ligne pour ouvrir le site.</p>
+        </div>
+      </div>
+      <div class="card-body flush"><table class="grid" id="ovTable"></table></div>
+      <div class="note">La <b>part vers la reprise</b> mesure combien de sessions du site parent atteignent l'outil. La <b>transformation</b> mesure combien de ces sessions produisent un lead.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Leads par jour, tout le parc</h2><p>${esc(metaOf(p).label)} — total des ${rows.length} sites.</p></div>
+        <div class="legend"><span><i style="background:${C.ink}"></i>Total parc</span></div>
+      </div>
+      <div class="card-body"><div class="plot tall"><canvas id="ovChart"></canvas></div></div>
+    </div>`;
+
+  const maxLeads = Math.max(...rows.map(r => r.st.leads || 0));
+  const ligne = r => `
+    <tr class="clickable" data-site="${esc(r.s)}">
+      <td><span class="cell-name"><b>${esc(r.s)}</b>${r.st.bot ? `<span class="flag">robot ${r.st.botPct} %</span>` : ""}</span></td>
+      <td class="num dim">${r.st.sansGA4 ? "—" : fmt(r.st.traffic)}</td>
+      <td class="num dim">${r.st.sansGA4 ? "—" : fmt(r.st.net)}</td>
+      <td class="num dim">${r.st.sansGA4 ? "—" : pct(r.st.part)}</td>
+      <td class="num">${fmt(r.st.leads)}</td>
+      <td class="td-bar">${bar((r.st.leads || 0) / maxLeads, "k")}</td>
+      <td class="num">${r.st.sansGA4 ? "—" : pct(r.st.conv)}</td>
+      <td>${spark(r.sparkLeads, C.ink4)}</td>
+    </tr>`;
+
+  const sousTotal = (g, r) => {
+    const l = som("leads", r), n = som("net", r), t = som("traffic", r);
+    const sg = r.some(x => x.st.sansGA4);
+    return `<tr class="total"><td>${esc(FAM_LABEL[g])}</td>
+      <td class="num">${sg ? "—" : fmt(t)}</td><td class="num">${sg ? "—" : fmt(n)}</td>
+      <td class="num">${sg ? "—" : pct(t ? n / t * 100 : null)}</td>
+      <td class="num">${fmt(l)}</td><td></td>
+      <td class="num">${sg ? "—" : pct(n ? l / n * 100 : null)}</td><td></td></tr>`;
   };
 
-  document.querySelector("#stepTable thead").innerHTML =
-    '<tr><th class="mtx-lab">Étape du parcours</th>' +
-    cols.map(c=>'<th class="num'+(c.m===mk?" mtx-cur":"")+'">'+esc(c.label)+'</th>').join("") +
-    '<th class="num mtx-ref">Moyenne avril–juin</th><th class="num mtx-end">Écart</th></tr>';
-
-  let body = rows.map((r,i)=>
-    '<tr class="'+(i===hi?"mtx-hi":"")+'"><td class="mtx-lab">'+esc(r.l)+'</td>' +
-    r.vals.map((v,j)=>'<td class="num'+(cols[j].m===mk?" mtx-cur":"")+'">'+(v==null?"—":pct(v))+'</td>').join("") +
-    '<td class="num mtx-ref">'+(r.moy==null?"—":pct(r.moy))+'</td>' +
-    '<td class="num mtx-end">'+gap(r.vals[r.vals.length-1], r.moy)+'</td></tr>').join("");
-
-  const cz = conv[conv.length-1];
-  body += '<tr class="mtx-total"><td class="mtx-lab">Taux de complétion du parcours</td>' +
-    conv.map((v,j)=>'<td class="num'+(cols[j].m===mk?" mtx-cur":"")+'">'+(v==null?"—":pct(v))+'</td>').join("") +
-    '<td class="num mtx-ref">'+(convMoy==null?"—":pct(convMoy))+'</td>' +
-    '<td class="num mtx-end">'+gap(cz,convMoy)+
-      ((convMoy&&cz)?'<span class="mtx-evo-sub">× '+fmt(cz/convMoy)+'</span>':"")+'</td></tr>';
-
-  document.querySelector("#stepTable tbody").innerHTML = body;
-
-  document.getElementById("stepSub").textContent =
-    "Part des utilisateurs actifs franchissant chaque étape · avril → juillet 2026";
-  const dd = v2DateFR(d);
-  document.getElementById("stepNote").innerHTML =
-    (hi>=0 ? "L'étape qui bouge le plus est <strong>"+esc(rows[hi].l)+"</strong> ("+
-      fmt(Math.abs(rows[hi].vals[rows[hi].vals.length-1]-rows[hi].moy))+" pts d'écart avec la moyenne avril–juin). " : "") +
-    "La moyenne avril–juin est pondérée par les volumes de chaque mois. Lancement V2 le <strong>"+dd+"</strong>. " +
-    "Chaque mois est extrait directement de GA4 sur le mois plein, en utilisateurs actifs.";
-}
-
-function funnelTotal(d){
-  const v2=d.v2, dd=v2DateFR(d);
-  const warn=document.getElementById("funnelV2Notice");
-  warn.hidden=false;
-  warn.querySelector("p").innerHTML =
-    "Le funnel <strong>ne peut pas être cumulé</strong> : GA4 dédoublonne les utilisateurs actifs, "+
-    "additionner les mois compterait plusieurs fois une même personne. Voici donc le détail période par période, "+
-    "avec le lancement V2 du <strong>"+dd+"</strong> comme repère.";
-
-  document.getElementById("funnelHero").innerHTML="";
-
-  const rows=[];
-  d.months.forEach(m=>{
-    const F=d.funnelMonth[m]; if(!F) return;
-    const st=F.steps;
-    rows.push({ nom:d.meta[m].label.replace(" 2026",""), post:(d.v2_date && m>=d.v2_date.slice(0,7)),
-                e1:st[0].users, fin:st[st.length-1].users, conv:F.conversion_pct, jour:F.users_per_day });
+  const table = $("#ovTable");
+  table.innerHTML = `
+    <thead><tr>
+      <th>Site</th><th>Sessions site</th><th>Sessions reprise</th>
+      <th>Part vers la reprise</th><th>Leads</th><th></th><th>Transformation</th><th>Tendance</th>
+    </tr></thead>
+    <tbody>${["PSA", "FCA"].map(g => {
+      const r = rows.filter(x => x.fam === g);
+      if (!r.length) return "";
+      return `<tr class="grp"><td colspan="8">${esc(FAM_LABEL[g])}</td></tr>`
+        + r.map(ligne).join("") + sousTotal(g, r);
+    }).join("")}
+      <tr class="total gt">
+        <td>Ensemble du parc</td>
+        <td class="num">${sansGA4 ? "—" : fmt(tTraf)}</td><td class="num">${sansGA4 ? "—" : fmt(tNet)}</td>
+        <td class="num">${sansGA4 ? "—" : pct(tTraf ? tNet / tTraf * 100 : null)}</td>
+        <td class="num">${fmt(tLeads)}</td><td></td>
+        <td class="num">${sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null)}</td><td></td>
+      </tr>
+    </tbody>`;
+  table.addEventListener("click", e => {
+    const tr = e.target.closest("tr[data-site]");
+    if (tr) selectSite(tr.dataset.site);
   });
-  if(v2){
-    const sv=v2.is_v2_split;
-    rows.push({ nom:"Juil. "+(sv?"pré-V2":v2.pre_label), post:!sv,
-      e1:v2.pre_step1_total, fin:v2.pre_final_users, conv:v2.pre_conversion_pct, jour:v2.pre_users_per_day });
-    rows.push({ nom:"Juil. "+(sv?"post-V2":v2.post_label), post:true,
-      e1:v2.post_step1_total, fin:v2.post_final_users, conv:v2.post_conversion_pct, jour:v2.post_users_per_day });
-  }
 
-  const best=rows.reduce((a,b)=>b.conv>a.conv?b:a,rows[0]);
-  const pre=rows.filter(r=>!r.post), post=rows.filter(r=>r.post);
-  const moy=a=>a.length? a.reduce((s,r)=>s+r.conv,0)/a.length : null;
-  const mPre=moy(pre), mPost=moy(post);
-
-  document.getElementById("funnelKpis").innerHTML=
-    kpi("Complétion moyenne avant V2", mPre!=null?pct(mPre):"—", pre.length+" période"+(pre.length>1?"s":"")) +
-    kpi("Complétion moyenne après V2", mPost!=null?pct(mPost):"—", post.length+" période"+(post.length>1?"s":""),
-        (mPre!=null&&mPost!=null)?badge(mPost-mPre,"pts"):null) +
-    kpi("Meilleure période", pct(best.conv), best.nom) +
-    kpi("Lancement V2", dd, "bascule de référence");
-
-  document.getElementById("funnelVizSub").textContent="Détail par période · un funnel ne s’additionne pas";
-  document.getElementById("funnelVizLegend").innerHTML=
-    '<div class="legend-item"><span class="swatch" style="background:#c7cbc8"></span><span class="lname">Avant V2</span></div>'+
-    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">Après V2</span></div>';
-
-  const max=Math.max.apply(null,rows.map(r=>r.conv))||1;
-  document.getElementById("funnelViz").innerHTML=
-    '<div class="rank-head" style="padding:0 0 9px"><span>Période</span><span class="rh-share">Complétion</span><span class="rh-value">Estimations</span></div>'+
-    rows.map(r=>{
-      const col=r.post?C.teal:"#c7cbc8";
-      return '<div class="rank-row" style="padding-left:0;padding-right:0">'+
-        '<div class="rank-name"><span class="rank-badge" style="background:'+col+'"></span>'+
-          '<span class="rank-label">'+esc(r.nom)+'</span>'+
-          '<span class="rank-pct" style="width:auto;color:var(--text-muted)">'+fmt(r.jour)+' entrées / j</span></div>'+
-        '<div class="rank-share"><span class="rank-track"><span class="rank-fill" style="width:'+(r.conv/max*100).toFixed(1)+'%;background:'+col+'"></span></span>'+
-          '<span class="rank-pct">'+pct(r.conv)+'</span></div>'+
-        '<div class="rank-value">'+fmt(r.fin)+' / '+fmt(r.e1)+'</div></div>';
-    }).join("");
-
-  document.getElementById("channelSub").textContent="Entrées de funnel par canal · juin 2026 (dernier mois complet)";
-  const FM=d.funnelMonth["2026-06"];
-  const ch=FM?(FM.channels||[]).slice().sort((a,b)=>b.u-a.u):[];
-  const tot=ch.reduce((s,x)=>s+x.u,0)||1;
-  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">Utilisateurs</th><th class="num">Part</th></tr>';
-  document.querySelector("#channelTable tbody").innerHTML=ch.map(x=>
-    '<tr><td>'+esc(x.c)+'</td><td class="num">'+fmt(x.u)+'</td><td class="num">'+fmt(x.u/tot*100)+' %</td></tr>').join("");
-}
-
-function funnelJuly(d){
-  const v2=d.v2, steps=d.v2steps, sv=v2.is_v2_split, dd=v2DateFR(d);
-  const A = sv ? "Pré-V2" : v2.pre_label, B = sv ? "Post-V2" : v2.post_label;
-  const warn = document.getElementById("funnelV2Notice");
-  if(sv){ warn.hidden = true; }
-  else {
-    warn.hidden = false;
-    warn.querySelector("p").innerHTML =
-      "La V2 de ce site a été lancée le <strong>"+dd+"</strong>. Les deux périodes de juillet ci-dessous ("+
-      "<strong>"+v2.pre_label+"</strong> et <strong>"+v2.post_label+"</strong>) sont donc <strong>toutes deux "+
-      "postérieures</strong> au lancement : ce n'est pas une comparaison avant/après. Pour mesurer l'effet de la V2, "+
-      "comparer avril–mai à juin–juillet sur le graphe de tendance ci-dessus.";
-  }
-  document.getElementById("funnelHero").innerHTML=
-    '<div class="hero-card"><div class="hero-icon">'+icon("zap","#fff")+'</div><div class="hero-body">'+
-    '<p class="hero-label">Taux de complétion du funnel — utilisateurs actifs</p>'+
-    '<p class="hero-value">'+pct(v2.post_conversion_pct)+'<span class="hero-sub">'+(sv ? "post-V2, depuis le "+dd : "période "+v2.post_label)+'</span>'+
-    '<span class="hero-badge">'+(v2.delta_conversion_pts>=0?"↑":"↓")+" "+fmt(Math.abs(v2.delta_conversion_pts))+' pts vs '+A+'</span></p>'+
-    '<p class="hero-note">'+A+' : '+pct(v2.pre_conversion_pct)+' ('+fmt(v2.pre_final_users)+' / '+fmt(v2.pre_step1_total)+') · '+
-    B+' : '+pct(v2.post_conversion_pct)+' ('+fmt(v2.post_final_users)+' / '+fmt(v2.post_step1_total)+')</p></div></div>';
-
-  document.getElementById("funnelKpis").innerHTML=
-    kpi("Complétion "+A, pct(v2.pre_conversion_pct), v2.pre_days+" jours") +
-    kpi("Complétion "+B, pct(v2.post_conversion_pct), v2.post_days+" jours", badge(v2.delta_conversion_pts,"pts")) +
-    kpi("Entrées / jour "+A, fmt(v2.pre_users_per_day), null) +
-    kpi("Entrées / jour "+B, fmt(v2.post_users_per_day), null, badge(v2.delta_users_per_day_pct,"%"));
-
-  document.getElementById("funnelVizSub").textContent="Utilisateurs actifs · "+A+" vs "+B+" · largeur = rétention depuis l'étape 1";
-  document.getElementById("funnelVizLegend").innerHTML=
-    '<div class="legend-item"><span class="swatch" style="background:#b9beba"></span><span class="lname">'+A+'</span></div>'+
-    '<div class="legend-item"><span class="swatch" style="background:'+C.teal+'"></span><span class="lname">'+B+'</span></div>';
-  const pT=steps[0].a||1, qT=steps[0].b||1;
-  let h='<div class="fn-head"><span>Étape</span><span>'+A+'</span><span>'+B+'</span></div>';
-  steps.forEach((s,i)=>{
-    const pr=s.a/pT*100, po=s.b/qT*100;
-    h+='<div class="fn-row"><div class="fn-step-label"><span class="fn-step-num">'+(i+1)+'</span>'+
-       '<span class="fn-step-name">'+esc(s.step.replace(/^\d+\.\s*/,""))+'</span></div>'+
-       '<div class="fn-cell"><div class="fn-bar pre" style="width:'+Math.max(pr,9).toFixed(1)+'%">'+fmt(s.a)+'</div><div class="fn-meta">'+fmt(pr)+' %</div></div>'+
-       '<div class="fn-cell"><div class="fn-bar post" style="width:'+Math.max(po,9).toFixed(1)+'%">'+fmt(s.b)+'</div><div class="fn-meta">'+fmt(po)+' %</div></div></div>';
-    if(i<steps.length-1){
-      const a=s.a?(steps[i+1].a-s.a)/s.a*100:0;
-      const b=s.b?(steps[i+1].b-s.b)/s.b*100:0;
-      h+='<div class="fn-drop"><span></span><span class="fn-drop-cell'+(a>=0?" neutral":"")+'">↓ '+fmt(a)+' %</span>'+
-         '<span class="fn-drop-cell'+(b>=0?" neutral":"")+'">↓ '+fmt(b)+' %</span></div>';
+  const base = DATA[SITES[0]];
+  const labels = idx(base, p).map(i => base.daily.d[i]);
+  draw("ovChart", {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Total parc", data:totalJour,
+      borderColor:C.ink, backgroundColor:"rgba(14,17,22,.07)", fill:true,
+      borderWidth:2, pointRadius:0, pointHoverRadius:3.5, tension:.28 }] },
+    options:{
+      interaction:{ mode:"index", intersect:false },
+      plugins:{ legend:{ display:false }, tooltip:tooltipCfg(), v2mark:{ index:null } },
+      scales:axes(true, 12)
     }
   });
-  document.getElementById("funnelViz").innerHTML=h;
+}
 
-  const rows=(d.v2channels||[]).filter(r=>r.c!=="Total");
-  const first=rows.map(r=>r.st).sort()[0];
-  const chans=[]; rows.forEach(r=>{ if(r.st===first&&!chans.includes(r.c)) chans.push(r.c); });
-  document.getElementById("channelSub").textContent="Utilisateurs actifs à l'étape 1 · "+A+" vs "+B;
-  document.querySelector("#channelTable thead").innerHTML='<tr><th>Canal</th><th class="num">'+A+'</th><th class="num">'+B+'</th><th class="num">Évolution</th></tr>';
-  document.querySelector("#channelTable tbody").innerHTML=chans.map(c=>{
-    const p=rows.find(r=>r.p==="pre_v2"&&r.st===first&&r.c===c), q=rows.find(r=>r.p==="post_v2"&&r.st===first&&r.c===c);
-    const pu=p?p.u:0, qu=q?q.u:0, dl=pu?(qu-pu)/pu*100:0;
-    return '<tr><td>'+esc(c)+'</td><td class="num">'+fmt(pu)+'</td><td class="num">'+fmt(qu)+
-      '</td><td class="num" style="color:'+(dl>=0?C.teal:C.red)+'">'+(dl>=0?"+":"")+fmt(dl)+' %</td></tr>';
+const SERIES = [C.ink, C.eu, C.jade, "#8B5CF6", "#C4462F", "#B07C00", "#0E7490", "#9D174D"];
+
+function mergeDaily(rows) {
+  const n = Math.max(...rows.map(r => r.sparkLeads.length));
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(rows.reduce((a, r) => a + (r.sparkLeads[i] || 0), 0));
+  return out;
+}
+
+/* ---------------------------- acquisition ---------------------------- */
+
+function renderAcquisition() {
+  const d = DATA[view.site], p = view.period, cmp = view.compare;
+  const st = stats(d, p), ref = cmp ? stats(d, cmp) : null;
+  const ids = idx(d, p);
+  const labels = ids.map(i => d.daily.d[i]);
+  const su = ids.map(i => d.daily.u[i]);
+  const sr = ids.map(i => d.daily.rep[i]);
+  const vi = v2Index(d, p);
+
+  const host = panel("panel-acquisition");
+  if (st.sansGA4) {
+    host.innerHTML = `<div class="card"><div class="empty">
+      <b>Relevés GA4 indisponibles sur ${esc(st.label)}</b>
+      <p>${esc(st.note || "Le trafic de ce mois n'a pas encore été relevé.")}</p>
+      <p style="margin-top:10px">L'onglet <b>Leads</b> reste consultable : les leads proviennent du back-office, pas de GA4.</p>
+    </div></div>`;
+    return;
+  }
+  host.innerHTML = `
+    ${st.bot ? `<div class="card"><div class="v2-strip">
+      <span class="tagchip">Robot</span>
+      <p><b>${fmt(st.bot)} sessions automatisées</b> identifiées sur ${st.jours.length} journée${st.jours.length > 1 ? "s" : ""}
+      (${esc(st.jours.join(", "))}), soit ${st.botPct} % du trafic de reprise du mois. Origine Espagne, Chrome desktop.
+      Le graphique montre les volumes bruts ; les taux sont calculés hors robot.</p>
+    </div></div>` : ""}
+    <div class="scores">
+      ${score({ label:"Sessions site parent", value:fmt(st.traffic),
+        sub:fmt1(st.trafficPD) + " / jour",
+        delta: ref ? delta(st.trafficPD, ref.trafficPD) : "", spark:spark(su, C.eu) })}
+      ${score({ label:"Sessions outil de reprise", value:fmt(st.reprise),
+        sub: st.bot ? fmt(st.net) + " hors robot" : fmt1(st.reprisePD) + " / jour",
+        delta: ref ? delta(st.reprisePD, ref.reprisePD) : "", spark:spark(sr, C.jade) })}
+      ${score({ label:"Part vers la reprise", value:pct(st.part),
+        sub:"des sessions du site parent",
+        delta: ref ? delta(st.part, ref.part, "pts") : "" })}
+      ${score({ label:"Leads pour 1 000 sessions site", value:fmt1(st.per1k),
+        sub:"chaîne complète",
+        delta: ref ? delta(st.per1k, ref.per1k) : "" })}
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Deux niveaux, deux échelles</h2>
+          <p>Le site parent et l'outil de reprise n'ont pas le même ordre de grandeur. Ils sont tracés l'un sous l'autre, sur le même axe des jours, plutôt que superposés — les hauteurs ne se comparent pas, les formes si.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="twin-wrap">
+          <div class="twin-tag"><i style="background:${C.eu}"></i>Sessions site parent</div>
+          <div class="plot twin"><canvas id="acqTop"></canvas></div>
+          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions outil de reprise</div>
+          <div class="plot twin"><canvas id="acqBot"></canvas></div>
+        </div>
+      </div>
+      ${vi != null ? `<div class="note"><b>Bande jaune :</b> période postérieure à la bascule V2 du ${esc(frDate(d.v2_date))}.</div>` : ""}
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Mois par mois</h2><p>Du site parent au lead, chaque étage de la chaîne.</p></div>
+      </div>
+      <div class="card-body flush"><table class="grid" id="acqTable"></table></div>
+      <div class="note">Les colonnes <b>par jour</b> sont celles à comparer entre mois : juillet compte 31 jours, juin 30.</div>
+    </div>`;
+
+  const opts = (showX, markIdx) => ({
+    interaction:{ mode:"index", intersect:false },
+    plugins:{
+      legend:{ display:false }, tooltip:tooltipCfg(),
+      v2mark:{ index:markIdx, label: markIdx != null && showX ? "V2" : null }
+    },
+    scales:axes(showX, 12)
+  });
+
+  draw("acqTop", {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Sessions site parent", data:su,
+      borderColor:C.eu, backgroundColor:"rgba(27,63,184,.08)", fill:true,
+      borderWidth:1.9, pointRadius:0, pointHoverRadius:3.5, tension:.3 }] },
+    options:opts(false, vi)
+  });
+  draw("acqBot", {
+    type:"line",
+    data:{ labels, datasets:[{ label:"Sessions outil de reprise", data:sr,
+      borderColor:C.jade, backgroundColor:"rgba(11,123,107,.10)", fill:true,
+      borderWidth:1.9, pointRadius:0, pointHoverRadius:3.5, tension:.3 }] },
+    options:opts(true, vi)
+  });
+
+  /* tableau de trafic : seuls les mois dont GA4 est releve */
+  const ms = months(d).filter(m => !provisoire(d, m));
+  $("#acqTable").innerHTML = `
+    <thead><tr>
+      <th>Mois</th><th>Jours</th><th>Sessions site</th><th>/ jour</th>
+      <th>Sessions reprise</th><th>/ jour</th><th>Part</th><th>Leads</th><th>Transformation</th>
+    </tr></thead>
+    <tbody>${ms.map(m => {
+      const s = stats(d, m), on = m === p;
+      return `<tr${on ? ' style="background:var(--sunk)"' : ""}>
+        <td><span class="cell-name"><b>${esc(s.label)}</b>${s.partial ? '<span class="flag">partiel</span>' : ""}</span></td>
+        <td class="num dim">${s.days}</td>
+        <td class="num">${fmt(s.traffic)}</td>
+        <td class="num dim">${fmt(s.trafficPD)}</td>
+        <td class="num">${fmt(s.reprise)}</td>
+        <td class="num dim">${fmt(s.reprisePD)}</td>
+        <td class="num">${pct(s.part)}</td>
+        <td class="num">${fmt(s.leads)}</td>
+        <td class="num">${pct(s.conv)}</td>
+      </tr>`;
+    }).join("")}</tbody>`;
+}
+
+function frDate(iso) {
+  if (!iso) return "";
+  const [y, m, dd] = iso.split("-");
+  return `${+dd} ${MONTHS[+m - 1]} ${y}`;
+}
+
+/* ------------------------------- leads ------------------------------- */
+
+function renderLeads() {
+  const d = DATA[view.site], p = view.period, cmp = view.compare;
+  const st = stats(d, p), ref = cmp ? stats(d, cmp) : null;
+  const ids = idx(d, p), lbd = leadsByDate(d);
+  const labels = ids.map(i => d.daily.d[i]);
+  const series = ids.map(i => lbd[d.daily.d[i]] ?? null);
+  const vi = v2Index(d, p);
+
+  const own = OWN_BRAND[view.site];
+  const brands = pairs((d.leads[p] || {}).brand);
+  const ownV = (brands.find(b => b[0].toUpperCase() === own) || [null, 0])[1];
+  const ownShare = st.leads ? ownV / st.leads * 100 : null;
+  const refBrands = ref ? pairs((d.leads[cmp] || {}).brand) : null;
+  const refOwn = refBrands ? (refBrands.find(b => b[0].toUpperCase() === own) || [null, 0])[1] : null;
+  const refShare = ref && ref.leads ? refOwn / ref.leads * 100 : null;
+
+  /* moyenne mobile 7 jours */
+  const ma = series.map((_, i) => {
+    const w = series.slice(Math.max(0, i - 6), i + 1).filter(v => v != null);
+    return w.length ? w.reduce((a, b) => a + b, 0) / w.length : null;
+  });
+
+  const host = panel("panel-leads");
+  host.innerHTML = `
+    ${st.provisional ? `<div class="card"><div class="v2-strip">
+      <span class="tagchip">Provisoire</span>
+      <p>${esc(st.note)}</p>
+    </div></div>` : ""}
+    ${st.bot ? `<div class="card"><div class="v2-strip">
+      <span class="tagchip">Robot</span>
+      <p>Le taux de transformation est calculé sur <b>${fmt(st.net)} sessions réelles</b> et non sur les
+      ${fmt(st.reprise)} sessions brutes : ${fmt(st.bot)} d'entre elles sont automatisées.
+      En brut, le taux afficherait ${pct(st.convBrut)}.</p>
+    </div></div>` : ""}
+    <div class="scores">
+      ${score({ label:"Leads", value:fmt(st.leads),
+        sub:fmt1(st.leadsPD) + " / jour",
+        delta: ref ? delta(st.leadsPD, ref.leadsPD) : "", spark:spark(series, C.ink) })}
+      ${score({ label:"Transformation reprise → leads", value: st.sansGA4 ? "—" : pct(st.conv),
+        sub: st.sansGA4 ? "relevé GA4 en attente" : "des sessions de l'outil",
+        delta: ref && !st.sansGA4 ? delta(st.conv, ref.conv, "pts") : "" })}
+      ${score({ label:"Reprises de la marque", value:pct(ownShare),
+        sub:`${fmt(ownV)} véhicules ${esc(own || "")}`,
+        delta: refShare != null ? delta(ownShare, refShare, "pts") : "" })}
+      ${score({ label:"Leads pour 1 000 sessions site", value: st.sansGA4 ? "—" : fmt1(st.per1k),
+        sub: st.sansGA4 ? "relevé GA4 en attente" : "chaîne complète",
+        delta: ref && !st.sansGA4 ? delta(st.per1k, ref.per1k) : "" })}
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Leads par jour</h2>
+          <p>Barres : le volume quotidien. Courbe : la moyenne des sept derniers jours, qui lisse l'effet week-end.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background:${C.ink}"></i>Leads du jour</span>
+          <span><i style="background:${C.jade}"></i>Moyenne 7 jours</span>
+        </div>
+      </div>
+      <div class="card-body"><div class="plot tall"><canvas id="leadsChart"></canvas></div></div>
+      ${st.partial ? `<div class="note"><b>Le 31 juillet manque.</b> L'API d'extraction a renvoyé une erreur ce jour-là. Le trafic et le parcours couvrent bien le mois entier.</div>` : ""}
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Qui fait estimer son véhicule</h2>
+          <p id="dimHelp">—</p>
+        </div>
+        <div class="seg" id="dimSeg">${DIMS.map(x =>
+          `<button data-dim="${x.k}" class="${x.k === view.dim ? "on" : ""}">${x.t}</button>`).join("")}</div>
+      </div>
+      <div class="card-body flush"><table class="grid" id="dimTable"></table></div>
+      <div class="note" id="dimNote"></div>
+    </div>`;
+
+  draw("leadsChart", {
+    data:{ labels, datasets:[
+      { type:"bar", label:"Leads du jour", data:series,
+        backgroundColor:C.ink, borderRadius:2, barPercentage:.72, categoryPercentage:.92, order:2 },
+      { type:"line", label:"Moyenne 7 jours", data:ma,
+        borderColor:C.jade, borderWidth:2, pointRadius:0, pointHoverRadius:3.5, tension:.35, order:1 }
+    ]},
+    options:{
+      interaction:{ mode:"index", intersect:false },
+      plugins:{
+        legend:{ display:false }, tooltip:tooltipCfg(v => fmt1(v)),
+        v2mark:{ index:vi, label: vi != null ? "V2" : null }
+      },
+      scales:axes(true, 12)
+    }
+  });
+
+  $("#dimSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-dim]");
+    if (!b) return;
+    view.dim = b.dataset.dim;
+    document.querySelectorAll("#dimSeg button").forEach(x => x.classList.toggle("on", x === b));
+    renderDim();
+  });
+  renderDim();
+
+  function renderDim() {
+    const meta = DIMS.find(x => x.k === view.dim);
+    $("#dimHelp").textContent = meta.h;
+    const list = pairs((d.leads[p] || {})[view.dim]);
+    const covered = list.reduce((a, b) => a + b[1], 0);
+    /* la dimension ne couvre pas toujours tous les leads : on montre l'ecart */
+    const tot = st.leads || covered;
+    const gap = Math.max(0, tot - covered);
+    const max = list.length ? list[0][1] : 1;
+    const shown = list.slice(0, 12);
+    const rest = list.slice(12);
+    const restSum = rest.reduce((a, b) => a + b[1], 0);
+
+    $("#dimTable").innerHTML = `
+      <thead><tr><th>${esc(meta.t)}</th><th></th><th>Leads</th><th>Part</th></tr></thead>
+      <tbody>${shown.map(([n, v], i) => `
+        <tr>
+          <td><span class="cell-name"><span class="rank">${i + 1}</span><b title="${esc(n)}">${esc(n)}</b></span></td>
+          <td class="td-bar">${bar(v / max, "k")}</td>
+          <td class="num">${fmt(v)}</td>
+          <td class="num dim">${pct(tot ? v / tot * 100 : null)}</td>
+        </tr>`).join("")}
+        ${rest.length ? `<tr>
+          <td><span class="cell-name"><span class="rank"></span><b style="color:var(--ink-3)">${rest.length} autres</b></span></td>
+          <td class="td-bar">${bar(restSum / max, "k")}</td>
+          <td class="num dim">${fmt(restSum)}</td>
+          <td class="num dim">${pct(tot ? restSum / tot * 100 : null)}</td>
+        </tr>` : ""}
+        ${gap ? `<tr>
+          <td><span class="cell-name"><span class="rank"></span><b style="color:var(--ink-3)">${
+            view.dim === "brand" && list.length >= 25 ? "Autres marques" : "Non renseigné"}</b></span></td>
+          <td class="td-bar">${bar(gap / max, "k")}</td>
+          <td class="num dim">${fmt(gap)}</td>
+          <td class="num dim">${pct(tot ? gap / tot * 100 : null)}</td>
+        </tr>` : ""}
+        <tr class="total"><td>Total des leads</td><td></td><td class="num">${fmt(tot)}</td><td class="num">100,0 %</td></tr>
+      </tbody>`;
+
+    /* la liste des marques est plafonnee a 25 par le pipeline : l'ecart n'est
+       pas une valeur manquante mais une queue tronquee. */
+    const tronque = view.dim === "brand" && list.length >= 25;
+    $("#dimNote").innerHTML = !gap
+      ? `Toutes les lignes du mois portent une valeur pour cette dimension.`
+      : tronque
+        ? `<b>${fmt(gap)} leads</b> portent une marque hors des 25 plus fréquentes, que la source ne détaille pas. Les parts sont calculées sur le total des leads.`
+        : `<b>${fmt(gap)} leads</b> n'ont pas de valeur renseignée pour cette dimension, soit ${pct(gap / tot * 100)} du mois. Les parts sont calculées sur le total des leads, pas sur les seules lignes renseignées.`;
+  }
+}
+
+/* ------------------------------ parcours ------------------------------ */
+
+function renderParcours() {
+  const d = DATA[view.site], p = view.period, cmp = view.compare;
+  const host = panel("panel-parcours");
+  const fm = d.funnelMonth[p];
+
+  if (!fm) {
+    const st0 = stats(d, p);
+    host.innerHTML = `<div class="card"><div class="empty">
+      <b>Pas de parcours sur ${esc(st0 ? st0.label : "cette période")}</b>
+      <p>${st0 && st0.note ? esc(st0.note)
+        : "Les entonnoirs sont relevés mois par mois. Choisissez un mois dans le sélecteur de période."}</p>
+    </div></div>`;
+    return;
+  }
+
+  const steps = fm.steps || [];
+  const first = steps.length ? steps[0].users : 0;
+  const last = steps.length ? steps[steps.length - 1].users : 0;
+  const fmRef = cmp ? d.funnelMonth[cmp] : null;
+  const drop12 = first && steps[1] ? (first - steps[1].users) / first * 100 : null;
+
+  const isSplitHere = splitPeriod(d) === p && d.v2steps && d.v2steps.length;
+  const v2 = d.v2 || {};
+  const realV2 = !!v2.is_v2_split;
+
+  host.innerHTML = `
+    ${isSplitHere && realV2 ? `<div class="card" style="margin-bottom:14px">
+      <div class="v2-strip">
+        <span class="tagchip">V2</span>
+        <p>Bascule le <b>${esc(frDate(d.v2_date))}</b>. Les deux moitiés du mois sont comparées ci-dessous : <b>${esc(v2.pre_label)}</b> avant, <b>${esc(v2.post_label)}</b> après.</p>
+      </div>
+    </div>` : ""}
+
+    <div class="scores">
+      ${score({ label:"Entrées de parcours", value:fmt(first),
+        sub:fmt1(fm.users_per_day) + " / jour",
+        delta: fmRef ? delta(first / d.meta[p].days, fmRef.steps[0].users / d.meta[cmp].days) : "" })}
+      ${score({ label:"Estimations terminées", value:fmt(last),
+        sub:fmt1(last / d.meta[p].days) + " / jour",
+        delta: fmRef ? delta(last / d.meta[p].days, fmRef.steps[fmRef.steps.length - 1].users / d.meta[cmp].days) : "" })}
+      ${score({ label:"Taux de complétion", value:pct(fm.conversion_pct),
+        sub:"de l'entrée à l'estimation",
+        delta: fmRef ? delta(fm.conversion_pct, fmRef.conversion_pct, "pts") : "" })}
+      ${score({ label:"Perte à la première étape", value:pct(drop12),
+        sub:"entrée → choix de version" })}
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h2>Le parcours, étape par étape</h2>
+          <p>Mesuré en <b>utilisateurs actifs</b> : l'exploration de funnel GA4 ne propose pas les sessions. Ces volumes ne se comparent pas à ceux de l'onglet Acquisition.</p>
+        </div>
+        ${isSplitHere ? `<div class="legend">
+          <span><i style="background:var(--ink-4)"></i>${esc(v2.pre_label)}</span>
+          <span><i style="background:var(--ink)"></i>${esc(v2.post_label)}</span>
+        </div>` : ""}
+      </div>
+      <div class="card-body"><div class="steps" id="stepList"></div></div>
+      <div class="note">La colonne de droite indique la <b>perte par rapport à l'étape précédente</b>. C'est là que se joue le parcours, pas sur le total.</div>
+    </div>
+
+    ${isSplitHere ? renderSplitCards(d, v2, realV2) : ""}`;
+
+  /* etapes */
+  const useSplit = isSplitHere;
+  const stepsSrc = useSplit ? d.v2steps : steps;
+  const maxA = useSplit ? Math.max(...d.v2steps.map(s => Math.max(s.a, s.b))) : first;
+
+  $("#stepList").innerHTML = stepsSrc.map((s, i) => {
+    const name = stepLabel(s.step);
+    const prev = i > 0 ? stepsSrc[i - 1] : null;
+    if (useSplit) {
+      const lossA = prev && prev.a ? (prev.a - s.a) / prev.a * 100 : null;
+      const lossB = prev && prev.b ? (prev.b - s.b) / prev.b * 100 : null;
+      return `<div class="step">
+        <div class="step-name">${esc(name)}<em>${esc(String(s.step).replace(/^\s*\d+\s*[.)]\s*/, ""))}</em></div>
+        <div class="step-track">
+          ${barRow(s.a, maxA, "a", i)}
+          ${barRow(s.b, maxA, "b", i)}
+        </div>
+        <div class="step-val">
+          ${fmt(s.b)}
+          <em class="${lossB == null ? "none" : ""}">${lossB == null ? "entrée" : "−" + nf1.format(lossB) + " %"}</em>
+        </div>
+      </div>`;
+    }
+    const loss = prev && prev.users ? (prev.users - s.users) / prev.users * 100 : null;
+    return `<div class="step">
+      <div class="step-name">${esc(name)}<em>${esc(String(s.step).replace(/^\s*\d+\s*[.)]\s*/, ""))}</em></div>
+      <div class="step-track">${barRow(s.users, maxA, "solo", i)}</div>
+      <div class="step-val">
+        ${fmt(s.users)}
+        <em class="${loss == null ? "none" : ""}">${loss == null ? "entrée" : "−" + nf1.format(loss) + " %"}</em>
+      </div>
+    </div>`;
   }).join("");
 }
 
-/* ==================== CHART HELPERS ==================== */
-/* arrondi "propre" superieur : 4 830 -> 5 000 */
-function niceMax(v){
-  if(!(v>0)) return 1;
-  const e = Math.pow(10, Math.floor(Math.log10(v))), r = v/e;
-  const s = [1,1.2,1.5,2,2.5,3,4,5,6,8,10].find(x=>x>=r) || 10;
-  return s*e;
-}
-/* deux echelles calibrees pour que la serie secondaire reste sous la principale */
-function dualScale(main, sec){
-  const A = main.filter(x=>x!=null&&!isNaN(x)), B = sec.filter(x=>x!=null&&!isNaN(x));
-  if(!A.length||!B.length) return { left:undefined, right:undefined };
-  const maxA = Math.max.apply(null,A), minA = Math.min.apply(null,A), maxB = Math.max.apply(null,B);
-  const left = niceMax(maxA*1.02);
-  // hauteur relative du creux de la courbe principale : la secondaire doit rester dessous
-  let frac = (minA/left)*0.9;
-  frac = Math.min(Math.max(frac, 0.30), 0.85);
-  return { left:left, right:niceMax(maxB/frac) };
+function barRow(v, max, tone, i) {
+  const w = max ? v / max * 100 : 0;
+  const inside = w > 22;
+  return `<div class="step-bar ${tone}">
+    <i style="width:${w.toFixed(1)}%;animation-delay:${i * 55}ms"></i>
+    <span class="${inside ? "" : "out"}" style="left:${inside ? "0" : w.toFixed(1) + "%"}">${fmt(v)}</span>
+  </div>`;
 }
 
-function grad(c){ return ctx=>{ const a=ctx.chart.chartArea; if(!a) return c+"22";
-  const g=ctx.chart.ctx.createLinearGradient(0,a.top,0,a.bottom); g.addColorStop(0,c+"2e"); g.addColorStop(1,c+"02"); return g; }; }
-function tip(){ return {backgroundColor:"#141a17",padding:11,cornerRadius:9,titleFont:{weight:"700",size:12.5},bodyFont:{size:12.5},boxPadding:4,usePointStyle:true}; }
-function tk(max){ return {color:"#949a94",font:{size:10.5},maxRotation:0,autoSkip:true,maxTicksLimit:max||14,padding:6}; }
-function leg(){ return {boxWidth:8,usePointStyle:true,pointStyle:"circle",font:{size:11.5,weight:"600"},color:"#61675f"}; }
-function lineOpt(max){ return {responsive:true,maintainAspectRatio:false,
-  interaction:{mode:"index",intersect:false},
-  plugins:{legend:{display:false},tooltip:tip()},
-  scales:{x:{grid:{display:false},border:{display:false},ticks:tk(max)},
-    y:{beginAtZero:true,grid:{color:"#eef0ee"},border:{display:false},ticks:tk()}}}; }
+function renderSplitCards(d, v2, realV2) {
+  const title = realV2 ? "Avant et après la bascule V2" : "Première et seconde moitié du mois";
+  const sub = realV2
+    ? "Le volume d'entrées et le taux de complétion ne bougent pas dans le même sens : c'est la lecture utile."
+    : "Ce site n'a pas basculé en V2 sur ce mois. Le découpage est conservé pour rester comparable à l'historique.";
+  return `<div class="duo">
+    <div class="card">
+      <div class="card-head"><div><h2>${title}</h2><p>Entrées de parcours, en moyenne par jour.</p></div></div>
+      <div class="card-body">
+        <div class="stat-pair">
+          <div class="stat-side pre">
+            <div class="k">${esc(v2.pre_label || "avant")}</div>
+            <div class="v">${fmt1(v2.pre_users_per_day)}</div>
+            <div class="d">${v2.pre_days} jours</div>
+          </div>
+          <div class="stat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></div>
+          <div class="stat-side post">
+            <div class="k">${esc(v2.post_label || "après")}</div>
+            <div class="v">${fmt1(v2.post_users_per_day)}</div>
+            <div class="d">${v2.post_days} jours</div>
+          </div>
+        </div>
+        <div style="text-align:center">${delta(v2.post_users_per_day, v2.pre_users_per_day)}</div>
+      </div>
+      <div class="note">${esc(sub)}</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><h2>Taux de complétion</h2><p>Part des entrées qui vont jusqu'à l'estimation.</p></div></div>
+      <div class="card-body">
+        <div class="stat-pair">
+          <div class="stat-side pre">
+            <div class="k">${esc(v2.pre_label || "avant")}</div>
+            <div class="v">${pct(v2.pre_conversion_pct)}</div>
+            <div class="d">${fmt(v2.pre_final_users)} estimations</div>
+          </div>
+          <div class="stat-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></div>
+          <div class="stat-side post">
+            <div class="k">${esc(v2.post_label || "après")}</div>
+            <div class="v">${pct(v2.post_conversion_pct)}</div>
+            <div class="d">${fmt(v2.post_final_users)} estimations</div>
+          </div>
+        </div>
+        <div style="text-align:center">${delta(v2.post_conversion_pct, v2.pre_conversion_pct, "pts")}</div>
+      </div>
+      <div class="note">Moins d'entrées mais une meilleure complétion signifie un parcours qui filtre plus tôt, pas forcément moins performant.</div>
+    </div>
+  </div>`;
+}
 
-init();
+/* ============================== rendu ============================== */
+
+function render() {
+  clearCharts();
+  syncRail();
+  renderTabs();
+  renderPeriodControl();
+
+  $("#crumb").textContent = view.scope === "overview" ? "Synthèse" : view.site;
+
+  if (view.scope === "overview") { renderOverview(); return; }
+  if (view.report === "acquisition") renderAcquisition();
+  else if (view.report === "leads") renderLeads();
+  else renderParcours();
+}
+
+$("#tabs").addEventListener("click", e => {
+  const b = e.target.closest("[data-report]");
+  if (!b) return;
+  view.report = b.dataset.report;
+  render();
+});
+
+/* ============================== chargement ============================== */
+
+async function load(site) {
+  if (DATA[site]) return DATA[site];
+  const r = await fetch("data/" + slug(site) + ".json");
+  if (!r.ok) throw new Error("Données indisponibles pour " + site);
+  DATA[site] = await r.json();
+  return DATA[site];
+}
+
+async function boot() {
+  try {
+    const index = await (await fetch("data/index.json")).json();
+    SITES = index.sites;
+    await Promise.all(SITES.map(load));
+  } catch (err) {
+    document.querySelector(".content").innerHTML =
+      `<div class="card"><div class="empty">
+        <b>Les données ne se chargent pas</b>
+        <p>Vérifiez que le dossier <code>data/</code> est bien publié à côté de cette page.</p>
+      </div></div>`;
+    return;
+  }
+
+  const base = DATA[SITES[0]];
+  view.period = defaultPeriod(base);
+  view.compare = prevPeriod(base, view.period);
+
+  renderRail();
+  wirePeriodControl();
+  render();
+}
+
+/* les donnees peuvent etre injectees en dur pour une previsualisation hors ligne */
+if (window.__INLINE_DATA__) {
+  SITES = window.__INLINE_DATA__.sites;
+  SITES.forEach(s => { DATA[s] = window.__INLINE_DATA__.data[s]; });
+  const base = DATA[SITES[0]];
+  view.period = defaultPeriod(base);
+  view.compare = prevPeriod(base, view.period);
+  renderRail(); wirePeriodControl(); render();
+} else {
+  boot();
+}
