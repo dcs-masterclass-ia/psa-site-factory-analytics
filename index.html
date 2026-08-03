@@ -2,284 +2,79 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSA Site Factory — Dashboard Leads / Trafic / Funnel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PSA Site Factory — Reprise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="app">
 
-  <aside class="sidebar">
-    <div class="brand"><span class="logo">P</span> PSA Site Factory</div>
-    <nav class="site-nav">
-      <button class="site-tab overview-tab active" id="btnOverview"><span class="dot"></span>Vue d'ensemble</button>
-    </nav>
-    <div class="nav-label">Sites</div>
-    <nav class="site-nav" id="siteTabs"></nav>
-    <div class="sidebar-footer">
-      <div class="period-card">
-        <p>Avril → Juillet 2026</p>
-        <p class="sub" id="v2DateLabel">Lancement V2 : —</p>
-        <p class="sub">Comparaisons en moyenne / jour</p>
-      </div>
+  <!-- ============================ rail ============================ -->
+  <aside class="rail">
+    <div class="mark">
+      <span class="mark-glyph">PSF</span>
+      <span class="mark-txt">Site Factory<span>Parcours de reprise</span></span>
+    </div>
+
+    <div class="rail-nav">
+      <button class="rail-link" id="navOverview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Synthèse
+      </button>
+    </div>
+
+    <div class="rail-label">Sites</div>
+    <div class="plates" id="plates"></div>
+
+    <div class="rail-foot">
+      <p><b>Trafic et reprise</b> en sessions GA4.</p>
+      <p><b>Parcours</b> en utilisateurs actifs — l'exploration de funnel ne propose pas les sessions. Les deux volumes ne se comparent pas.</p>
+      <p><b>Leads</b> issus du back-office, hors doublons et tests.</p>
     </div>
   </aside>
 
+  <!-- ============================ main ============================ -->
   <div class="main">
+
     <header class="topbar">
-      <div class="crumb">Analytics <span>/</span> <strong id="crumbSite">—</strong></div>
-      <div class="month-tabs" id="monthTabs"></div>
+      <div class="topbar-row">
+        <div class="crumb">Site Factory <strong id="crumb">—</strong></div>
+        <div class="ctl">
+          <span class="flag" id="partialFlag" hidden></span>
+          <button class="ctl-btn" id="ctlBtn" aria-expanded="false" aria-haspopup="true">
+            <span id="ctlLabel">Juillet 2026</span>
+            <span class="ctl-cmp" id="ctlCmp">vs juin</span>
+            <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="pop" id="pop" hidden>
+            <div class="pop-lbl">Période</div>
+            <div id="popPeriods"></div>
+            <div class="pop-sep"></div>
+            <div class="pop-lbl">Comparer à</div>
+            <div id="popCompare"></div>
+            <p class="pop-note">Les mois n'ont pas la même longueur : les écarts sont toujours calculés sur des moyennes par jour.</p>
+          </div>
+        </div>
+      </div>
+      <nav class="tabs" id="tabs" hidden></nav>
     </header>
 
     <main class="content">
-      <div class="content-header">
-        <div>
-          <h1 id="pageTitle">Overview</h1>
-          <p class="page-sub" id="pageSub">Leads, trafic et parcours de reprise</p>
-        </div>
-        <div class="section-tabs" id="rangeTabs" hidden>
-          <button class="section-tab" data-range="7">7 jours</button>
-          <button class="section-tab active" data-range="30">30 jours</button>
-          <button class="section-tab" data-range="all">Tout</button>
-        </div>
-      </div>
-
-      <div class="notice notice-warn" id="partialNotice" hidden>
-        <span class="notice-icon">!</span>
-        <p>Juillet ne couvre que <strong>30 jours</strong> au lieu de 31. Les totaux mensuels ne sont donc pas comparables tels quels — les évolutions affichées sont calculées en <strong>moyenne par jour</strong>.</p>
-      </div>
-
-      <!-- ==================== VUE D'ENSEMBLE ==================== -->
-      <section id="panel-overview" class="panel">
-        <div class="kpi-row" id="ovKpis"></div>
-
-        <div class="card card-flush">
-          <div class="card-head card-head-pad">
-            <div>
-              <h3>Les cinq sites</h3>
-              <p class="card-sub" id="ovSub">—</p>
-            </div>
-            <div class="seg" id="ovScope">
-              <button class="seg-btn active" data-scope="month">Mois en cours</button>
-              <button class="seg-btn" data-scope="day">Dernier jour</button>
-            </div>
-          </div>
-          <table class="mtx ov-table" id="ovTable"><thead></thead><tbody></tbody></table>
-          <p class="mtx-note" id="ovNote">—</p>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Leads par jour, tous sites</h3>
-              <p class="card-sub" id="ovChartSub">—</p>
-            </div>
-          </div>
-          <div class="chart-wrap chart-wrap-sm"><canvas id="ovChart"></canvas></div>
-        </div>
-      </section>
-
-      <!-- ==================== ESSENTIEL ==================== -->
-      <section id="panel-site" class="panel">
-        <div class="metric-row" id="metricCards"></div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3 id="mainChartTitle">—</h3>
-              <p class="card-sub" id="mainChartSub">—</p>
-            </div>
-            <label class="cmp-toggle"><input type="checkbox" id="cmpToggle" checked><span>Comparer à la période précédente</span></label>
-          </div>
-          <div class="chart-wrap chart-wrap-tall"><canvas id="mainChart"></canvas></div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Parcours de reprise</h3>
-              <p class="card-sub" id="stripSub">—</p>
-            </div>
-          </div>
-          <div class="funnel-strip" id="funnelStrip"></div>
-        </div>
-      </section>
-
-      <details class="details-block" id="detailLeads">
-        <summary>Détail des leads</summary>
-      <!-- ==================== LEADS ==================== -->
-      <section id="panel-leads" class="panel active">
-        <div class="hero-row" id="leadsHero"></div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Évolution des sessions de reprise et des leads</h3>
-              <p class="card-sub">Un point par mois. Les sessions de l'outil de reprise sont sur l'échelle de gauche, les leads du back-office sur celle de droite.</p>
-            </div>
-            <div class="seg" id="evoScale">
-              <button class="seg-btn active" data-scale="day">Moyenne par jour</button>
-              <button class="seg-btn" data-scale="total">Total du mois</button>
-            </div>
-          </div>
-          <div class="chart-wrap chart-wrap-tall"><canvas id="evoChart"></canvas></div>
-          <div class="card-legend legend-center">
-            <div class="legend-item"><span class="swatch" style="background:#0e6f56"></span><span class="lname">Sessions outil de reprise</span></div>
-            <div class="legend-item"><span class="swatch" style="background:#e8892e"></span><span class="lname">Leads</span></div>
-          </div>
-          <div class="kpi-row kpi-row-flat" id="evoKpis"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Leads par jour</h3>
-              <p class="card-sub" id="leadsDailySub">—</p>
-            </div>
-          </div>
-          <div class="chart-wrap chart-wrap-sm"><canvas id="leadsDailyChart"></canvas></div>
-        </div>
-
-        <details class="details-block">
-          <summary>Voir le détail des leads — marques, carburants, sources, projets</summary>
-        <div class="split-main">
-          <div class="card card-flush">
-            <div class="card-head card-head-pad">
-              <div>
-                <h3>Analyse des leads</h3>
-                <p class="card-sub" id="dimSub">—</p>
-              </div>
-              <div class="dim-tabs" id="dimTabs"></div>
-            </div>
-            <div class="rank-head">
-              <span class="rh-name">Valeur</span>
-              <span class="rh-share">Part</span>
-              <span class="rh-value">Leads</span>
-            </div>
-            <div class="rank-list" id="dimList"></div>
-            <div class="rank-foot" id="dimFoot"></div>
-          </div>
-
-          <div class="side-stack">
-            <div class="card">
-              <h3>Mode d'entrée</h3>
-              <p class="card-sub">Comment le lead démarre son estimation</p>
-              <div class="donut-block">
-                <div class="chart-wrap chart-wrap-donut">
-                  <canvas id="entryChart"></canvas>
-                  <div class="donut-center"><div class="dc-value" id="entryCenter">—</div><div class="dc-label">leads</div></div>
-                </div>
-                <div class="donut-legend" id="entryLegend"></div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>Projet d'achat</h3>
-              <p class="card-sub">Intention déclarée</p>
-              <div class="donut-block">
-                <div class="chart-wrap chart-wrap-donut">
-                  <canvas id="projectChart"></canvas>
-                  <div class="donut-center"><div class="dc-value" id="projectCenter">—</div><div class="dc-label">leads</div></div>
-                </div>
-                <div class="donut-legend" id="projectLegend"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </details>
-      </section>
-
-      </details>
-
-      <details class="details-block" id="detailTrafic">
-        <summary>Détail du trafic</summary>
-      <!-- ==================== TRAFIC ==================== -->
-      <section id="panel-trafic" class="panel">
-        <div class="kpi-row" id="trafficKpis"></div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Sessions quotidiennes</h3>
-              <p class="card-sub" id="trafficDailySub">—</p>
-            </div>
-            <div class="card-legend" id="trafficLegend"></div>
-          </div>
-          <div class="chart-wrap"><canvas id="trafficChart"></canvas></div>
-          <p class="card-note">Les deux séries sont des <strong>sessions</strong> GA4, filtrées par nom d'hôte : site parent d'un côté, outil de reprise de l'autre. Elles ont <strong>chacune leur échelle</strong> (parent à gauche, reprise à droite) pour rendre la forme de la courbe de reprise lisible : les hauteurs ne sont donc pas comparables entre les deux séries, seules les variations le sont.</p>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Synthèse mensuelle — trafic, reprise et leads</h3>
-              <p class="card-sub">Du site parent au lead : chaque étage de la chaîne, mois par mois.</p>
-            </div>
-          </div>
-          <table class="mtx" id="synthTable"><thead></thead><tbody></tbody></table>
-          <p class="mtx-note" id="synthNote">—</p>
-        </div>
-      </section>
-
-      </details>
-
-      <details class="details-block" id="detailFunnel">
-        <summary>Détail du funnel</summary>
-      <!-- ==================== FUNNEL ==================== -->
-      <section id="panel-funnel" class="panel">
-        <div class="notice">
-          <span class="notice-icon">i</span>
-          <p>Le funnel est mesuré en <strong>utilisateurs actifs</strong>, pas en sessions : l'exploration de funnel GA4 ne propose pas la métrique « sessions ». Les volumes ne sont donc pas comparables à ceux de l'onglet Trafic.</p>
-        </div>
-
-        <div class="notice notice-warn" id="funnelV2Notice" hidden>
-          <span class="notice-icon">!</span>
-          <p></p>
-        </div>
-
-        <div class="hero-row" id="funnelHero"></div>
-        <div class="kpi-row" id="funnelKpis"></div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Détail du parcours, étape par étape</h3>
-              <p class="card-sub" id="stepSub">—</p>
-            </div>
-          </div>
-          <table class="mtx" id="stepTable"><thead></thead><tbody></tbody></table>
-          <p class="mtx-note" id="stepNote">—</p>
-        </div>
-
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Parcours étape par étape</h3>
-              <p class="card-sub" id="funnelVizSub">—</p>
-            </div>
-            <div class="card-legend" id="funnelVizLegend"></div>
-          </div>
-          <div id="funnelViz"></div>
-        </div>
-
-        <details class="details-block">
-          <summary>Voir les entrées de funnel par canal</summary>
-        <div class="card">
-          <div class="card-head">
-            <div>
-              <h3>Entrées du funnel par canal</h3>
-              <p class="card-sub" id="channelSub">—</p>
-            </div>
-          </div>
-          <table class="simple" id="channelTable"><thead></thead><tbody></tbody></table>
-        </div>
-        </details>
-      </section>
-
-      </details>
-
+      <section class="panel" id="panel-overview" hidden></section>
+      <section class="panel" id="panel-acquisition" hidden></section>
+      <section class="panel" id="panel-leads" hidden></section>
+      <section class="panel" id="panel-parcours" hidden></section>
     </main>
 
-    <footer class="footer">Données : extraction PSA Site Factory (back-office) &amp; Google Analytics 4 · Trafic et reprise en sessions, funnel en utilisateurs actifs</footer>
+    <footer class="foot">
+      Extraction back-office PSA Site Factory et Google Analytics 4. Le total mensuel de sessions
+      n'est pas la somme exacte des sessions quotidiennes — une session à cheval sur minuit est
+      comptée différemment. Les totaux affichés sont les valeurs GA4.
+    </footer>
   </div>
 </div>
 
