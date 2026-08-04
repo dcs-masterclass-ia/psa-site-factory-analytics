@@ -541,6 +541,8 @@ function renderOverview() {
       issus du back-office, sont affichés. Trafic et transformation apparaîtront une fois GA4 relevé.</p>
     </div></div>` : ""}
 
+    ${bandeauSante()}
+
     ${tBot ? `<div class="card"><div class="v2-strip">
       <span class="tagchip">Robot</span>
       <p><b>${fmt(tBot)} sessions automatisées</b> ont été identifiées sur les sites ex-FCA et retirées du calcul de transformation. Les volumes affichés restent les valeurs GA4 brutes.</p>
@@ -1098,6 +1100,72 @@ $("#tabs").addEventListener("click", e => {
 
 /* ============================== chargement ============================== */
 
+/* etat du pipeline : fraicheur des donnees et anomalies remontees.
+   Le silence compte autant que l'echec declare : si le pipeline s'arrete,
+   pipeline.json cesse d'etre mis a jour et personne ne verrait rien. */
+var ETAT = null;
+
+async function loadEtat() {
+  /* l'apercu hors ligne injecte l'etat comme il injecte les donnees */
+  if (window.__INLINE_ETAT__) { ETAT = window.__INLINE_ETAT__; return; }
+  try {
+    const r = await fetch("data/pipeline.json", { cache: "no-store" });
+    ETAT = r.ok ? await r.json() : null;
+  } catch (e) { ETAT = null; }
+}
+
+const HEURES_RETARD = 30;
+const HEURES_ARRET = 72;
+
+function santeDonnees() {
+  if (!ETAT || !ETAT.derniere_execution) {
+    return { niveau: "inconnu",
+             texte: "État du rafraîchissement inconnu : le fichier d'état n'est pas publié." };
+  }
+  const ageH = (Date.now() - new Date(ETAT.derniere_execution).getTime()) / 36e5;
+  const quand = new Date(ETAT.derniere_execution).toLocaleString("fr-FR",
+    { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+  if (ageH > HEURES_ARRET) {
+    return { niveau: "arret",
+             texte: `Pipeline arrêté depuis ${Math.floor(ageH / 24)} jours. Dernier rafraîchissement le ${quand}. Les chiffres affichés ne bougent plus.` };
+  }
+  if (ageH > HEURES_RETARD) {
+    return { niveau: "retard",
+             texte: `Rafraîchissement en retard : dernière exécution le ${quand}, il y a ${Math.round(ageH)} heures.` };
+  }
+  if (ETAT.statut === "echec") {
+    return { niveau: "echec",
+             texte: (ETAT.blocage || "Un contrôle bloquant a échoué.") + ` Dernier essai le ${quand}.` };
+  }
+  if (ETAT.statut === "degrade") {
+    const n = (ETAT.anomalies || []).length;
+    return { niveau: "degrade",
+             texte: `${n} anomalie${n > 1 ? "s" : ""} relevée${n > 1 ? "s" : ""} au dernier rafraîchissement, le ${quand}.` };
+  }
+  return { niveau: "ok", texte: `Données à jour, rafraîchies le ${quand}.` };
+}
+
+function bandeauSante() {
+  const s = santeDonnees();
+  if (s.niveau === "ok") return "";
+  const grave = s.niveau === "arret" || s.niveau === "echec";
+  const liste = (ETAT && ETAT.anomalies || []).slice(0, 6).map(a =>
+    `<li><b>${esc(a.site)}</b> — ${esc(a.controle)}${a.detail ? " : " + esc(a.detail) : ""}</li>`).join("");
+  return `<div class="card"><div class="v2-strip${grave ? " grave" : ""}">
+    <span class="tagchip">${grave ? "Alerte" : "Attention"}</span>
+    <div>
+      <p>${esc(s.texte)}</p>
+      ${liste ? `<ul class="anos">${liste}</ul>` : ""}
+      ${ETAT && ETAT.sites ? (() => {
+        const ind = Object.entries(ETAT.sites).filter(([, v]) => v.statut === "indisponible");
+        return ind.length ? `<p style="margin-top:6px">Sites non rafraîchis : ${
+          ind.map(([k, v]) => `<b>${esc(k)}</b> (${esc(v.motif || "")})`).join(", ")}</p>` : "";
+      })() : ""}
+    </div>
+  </div></div>`;
+}
+
 async function load(site) {
   if (DATA[site]) return DATA[site];
   const r = await fetch("data/" + slug(site) + ".json");
@@ -1110,7 +1178,7 @@ async function boot() {
   try {
     const index = await (await fetch("data/index.json")).json();
     SITES = index.sites;
-    await Promise.all(SITES.map(load));
+    await Promise.all([loadEtat(), ...SITES.map(load)]);
   } catch (err) {
     document.querySelector(".content").innerHTML =
       `<div class="card"><div class="empty">
