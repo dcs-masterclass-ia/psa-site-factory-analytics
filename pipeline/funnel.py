@@ -41,6 +41,15 @@ ETAPES_PARAM = [
     ("Estimation", "price estimation"),
 ]
 
+# l'etape 6 (Estimation) porte une seconde condition dans l'exploration GA4 :
+# step_name = "price estimation" ET eventName = "tradein_request". C'est ce
+# second evenement qui alimente les GA Leads du Looker Studio du projet
+# (confirme le 04/08/2026 : la liste des evenements de la propriete le montre
+# entre testdrive_request et uaevent). Sans lui, l'etape finale du funnel est
+# surevaluee : elle compte toute session ayant vu la page d'estimation, pas
+# seulement celles ou l'evenement de demande de reprise a ete emis.
+EVENEMENT_ESTIMATION = "tradein_request"
+
 # mots-cles de repli si la dimension personnalisee n'existe pas (piste C)
 MOTIFS_EVT = {
     ETAPE_HOME: MOTIFS_HOME,
@@ -124,7 +133,21 @@ def _via_step_name(cli, pid, hote, debut, fin):
 
     trouves = []
     for nom, valeur_attendue in ETAPES_PARAM:
-        u = par_valeur.get(valeur_attendue.lower())
+        if nom == "Estimation":
+            # etape 6 des explorations GA4 : deux conditions en ET, pas une
+            # seule. Sans le filtre sur l'evenement, cette etape est
+            # surevaluee : elle compterait toute session ayant vu la page
+            # d'estimation, meme sans demande de reprise emise.
+            l = ga4._rapport(
+                cli, pid, debut, fin, [], ["activeUsers"],
+                ga4._et(
+                    ga4._egal("hostName", hote),
+                    ga4._egal("eventName", EVENEMENT_ESTIMATION),
+                    ga4._egal(dim_step, valeur_attendue),
+                ))
+            u = int(l[0][0]) if l else None
+        else:
+            u = par_valeur.get(valeur_attendue.lower())
         if u is None:
             continue
         trouves.append({"step": nom, "users": u})
