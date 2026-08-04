@@ -1,0 +1,184 @@
+"""Controles avant publication.
+
+Ce module ne fait qu'une chose : dire si un fichier de donnees est publiable.
+Un controle `bloquant` qui echoue interdit l'ecriture. Un `avertissement`
+laisse passer mais remonte dans data/pipeline.json et s'affiche dans le
+dashboard.
+
+Chaque controle est ne d'une erreur reellement survenue sur ce projet. Les
+commentaires disent laquelle.
+"""
+
+from dataclasses import dataclass, field
+
+DIMS = ("brand", "fuel", "entry", "project", "source", "code")
+
+# seuils
+ECART_DEPOT_MAX = 30.0        # %
+NON_ADDITIVITE_MAX = 3.5      # %
+TRANSFO_MIN, TRANSFO_MAX = 2.0, 45.0   # %
+SESSIONS_PAR_USER_MAX = 3.0
+TRAFIC_ETRANGER_MAX = 40.0    # %
+
+
+@dataclass
+class Resultat:
+    nom: str
+    ok: bool
+    bloquant: bool
+    detail: str = ""
+
+
+@dataclass
+class Rapport:
+    site: str
+    resultats: list = field(default_factory=list)
+
+    def ajoute(self, nom, ok, bloquant, detail=""):
+        self.resultats.append(Resultat(nom, ok, bloquant, detail))
+
+    @property
+    def echecs_bloquants(self):
+        return [r for r in self.resultats if not r.ok and r.bloquant]
+
+    @property
+    def avertissements(self):
+        return [r for r in self.resultats if not r.ok and not r.bloquant]
+
+    @property
+    def publiable(self):
+        return not self.echecs_bloquants
+
+    @property
+    def statut(self):
+        if self.echecs_bloquants:
+            return "echec"
+        return "degrade" if self.avertissements else "ok"
+
+    def resume(self):
+        p = sum(1 for r in self.resultats if r.ok)
+        return f"{p}/{len(self.resultats)} controles passes"
+
+
+def _mois_consolides(d):
+    return [m for m in d["months"] if not d["meta"].get(m, {}).get("provisional")]
+
+
+def controle(nouveau, ancien=None, modele=None):
+    """Applique tous les controles a un fichier de donnees assemble.
+
+    nouveau : dict du fichier candidat
+    ancien  : dict du fichier actuellement en ligne, pour l'ecart au depot
+    modele  : dict d'un fichier de reference, pour la structure
+    """
+    r = Rapport(site=nouveau.get("site", "?"))
+
+    # --- coherence interne -------------------------------------------------
+    # ne du trou du 31/07 : leads.daily a 30 valeurs pour un mois de 31 jours
+    ok = all(sum(nouveau["leads"][m]["daily"]) == nouveau["leads"][m]["total"]
+             for m in nouveau["periods"])
+    r.ajoute("somme_daily_egale_total", ok, True,
+             "" if ok else "au moins un mois ou la somme des jours differe du total")
+
+    mauvais = [m for m in nouveau["periods"]
+               if len(nouveau["leads"][m]["daily"]) != nouveau["meta"][m]["days"]]
+    r.ajoute("longueur_daily_egale_days", not mauvais, True,
+             "" if not mauvais else f"mois en ecart : {mauvais}")
+
+    longueurs = {k: len(nouveau["daily"][k]) for k in ("d", "u", "rep")}
+    ok = len(set(longueurs.values())) == 1
+    r.ajoute("series_alignees", ok, True, "" if ok else str(longueurs))
+
+    # ne du cumul perime d'OPEL FR : leads.total ignorait le rattrapage du 31/07
+    cons = _mois_consolides(nouveau)
+    attendu = sum(nouveau["leads"][m]["total"] for m in cons)
+    ok = nouveau["leads"]["total"]["total"] == attendu
+    r.ajoute("cumul_egale_somme_mois", ok, True,
+             "" if ok else f"cumul {nouveau['leads']['total']['total']} vs somme {attendu}")
+
+    # --- structure ---------------------------------------------------------
+    if modele:
+        # les cles prefixees par _ sont des diagnostics internes, retires avant
+        # ecriture : elles ne font pas partie du schema publie.
+        sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - {"anomaly"}
+        manq = set(modele) - set(nouveau)
+        ok = not sup and not manq
+        r.ajoute("structure_identique", ok, True,
+                 "" if ok else f"en trop {sorted(sup)} / manquantes {sorted(manq)}")
+
+    # --- ecart au depot ----------------------------------------------------
+    if ancien:
+        gros = []
+        for m in nouveau["months"]:
+            if m not in ancien.get("leads", {}):
+                continue
+            a = ancien["leads"][m]["total"]
+            b = nouveau["leads"][m]["total"]
+            if a and abs(b - a) / a * 100 > ECART_DEPOT_MAX:
+                gros.append(f"{m} {a}->{b}")
+        r.ajoute("ecart_depot_sous_30pct", not gros, True,
+                 "" if not gros else "; ".join(gros))
+
+    # --- non-additivite GA4 (avertissement : c'est normal, pas a corriger) --
+    souples = []
+    for m in nouveau["months"]:
+        if m not in nouveau.get("trafficMonth", {}):
+            continue
+        mm = m[5:7]
+        idx = [i for i, x in enumerate(nouveau["daily"]["d"]) if x[:2] == mm]
+        for cle, serie in (("trafficMonth", "u"), ("repriseMonth", "rep")):
+            tot = nouveau[cle][m]["sessions"]
+            s = sum(v for i, v in enumerate(nouveau["daily"][serie]) if i in idx and v is not None)
+            if tot and abs(s - tot) / tot * 100 > NON_ADDITIVITE_MAX:
+                souples.append(f"{m} {cle} {(s - tot) / tot * 100:+.1f}%")
+    r.ajoute("non_additivite_sous_3_5pct", not souples, False,
+             "" if not souples else "; ".join(souples))
+
+    # --- taux de transformation -------------------------------------------
+    hors = []
+    for m in nouveau["months"]:
+        if m not in nouveau.get("repriseMonth", {}):
+            continue
+        an = (nouveau.get("anomaly") or {}).get(m)
+        net = an["reprise_nette"] if an else nouveau["repriseMonth"][m]["sessions"]
+        l = nouveau["leads"][m]["total"]
+        if not net:
+            continue
+        t = l / net * 100
+        if not (TRANSFO_MIN <= t <= TRANSFO_MAX):
+            hors.append(f"{m} {t:.1f}%")
+    r.ajoute("transformation_dans_2_45pct", not hors, False,
+             "" if not hors else "; ".join(hors))
+
+    # --- signature de trafic automatise -----------------------------------
+    # ne du robot espagnol : 14 sessions par utilisateur sur ALFA ROMEO en juin
+    mauvais = []
+    for m, val in (nouveau.get("_ratios_sessions_users") or {}).items():
+        if val and val > SESSIONS_PAR_USER_MAX:
+            mauvais.append(f"{m} ratio {val:.1f}")
+    r.ajoute("sessions_par_utilisateur_sous_3", not mauvais, False,
+             "" if not mauvais else "; ".join(mauvais))
+
+    # ne du meme robot : 85 % du trafic venait d'Espagne sur un site portugais
+    mauvais = []
+    for m, val in (nouveau.get("_part_etranger") or {}).items():
+        if val and val > TRAFIC_ETRANGER_MAX:
+            mauvais.append(f"{m} {val:.0f}% hors pays")
+    r.ajoute("trafic_etranger_sous_40pct", not mauvais, False,
+             "" if not mauvais else "; ".join(mauvais))
+
+    return r
+
+
+def affiche(rapports):
+    """Rend le rapport lisible dans un journal d'execution."""
+    lignes = []
+    for r in rapports:
+        lignes.append(f"\n{r.site} — {r.resume()} — statut {r.statut}")
+        for res in r.resultats:
+            if res.ok:
+                lignes.append(f"   ok       {res.nom}")
+            else:
+                marque = "BLOQUANT" if res.bloquant else "avert."
+                lignes.append(f"   {marque:<9}{res.nom}  {res.detail}")
+    return "\n".join(lignes)
