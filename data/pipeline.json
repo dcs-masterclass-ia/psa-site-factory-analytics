@@ -1,6 +1,6 @@
 {
- "derniere_execution": "2026-08-04T18:47:09+02:00",
- "commit": "e3be00e",
+ "derniere_execution": "2026-08-04T23:15:43+02:00",
+ "commit": "dc25063",
  "jour_ga4_fiable": "2026-08-02",
  "mois_traites": [
   "2026-04",
@@ -9,37 +9,13 @@
   "2026-07",
   "2026-08"
  ],
- "statut": "degrade",
+ "statut": "echec",
  "sites": {
   "OPEL FR": {
-   "statut": "degrade",
+   "statut": "echec",
    "hotes": {
     "parent": "www.opel.fr",
     "reprise": "www.reprise.opel.fr"
-   },
-   "ga4_jusqu_au": "2026-08-02",
-   "controles": {
-    "passes": 12,
-    "total": 13
-   }
-  },
-  "FIAT PT": {
-   "statut": "degrade",
-   "hotes": {
-    "parent": "www.fiat.pt",
-    "reprise": "www.retoma.fiat.pt"
-   },
-   "ga4_jusqu_au": "2026-08-02",
-   "controles": {
-    "passes": 9,
-    "total": 13
-   }
-  },
-  "JEEP PT": {
-   "statut": "degrade",
-   "hotes": {
-    "parent": "www.jeep.pt",
-    "reprise": "www.retoma.jeep.pt"
    },
    "ga4_jusqu_au": "2026-08-02",
    "controles": {
@@ -47,11 +23,23 @@
     "total": 13
    }
   },
-  "ALFA ROMEO PT": {
-   "statut": "degrade",
+  "FIAT PT": {
+   "statut": "echec",
    "hotes": {
-    "parent": "www.alfaromeo.pt",
-    "reprise": "www.retoma.alfaromeo.pt"
+    "parent": "www.fiat.pt",
+    "reprise": "www.retoma.fiat.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "JEEP PT": {
+   "statut": "echec",
+   "hotes": {
+    "parent": "www.jeep.pt",
+    "reprise": "www.retoma.jeep.pt"
    },
    "ga4_jusqu_au": "2026-08-02",
    "controles": {
@@ -59,8 +47,20 @@
     "total": 13
    }
   },
+  "ALFA ROMEO PT": {
+   "statut": "echec",
+   "hotes": {
+    "parent": "www.alfaromeo.pt",
+    "reprise": "www.retoma.alfaromeo.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
   "OPEL PT": {
-   "statut": "degrade",
+   "statut": "echec",
    "hotes": {
     "parent": "www.opel.pt",
     "reprise": "www.retoma.opel.pt"
@@ -72,7 +72,7 @@
    }
   },
   "CITROEN PT": {
-   "statut": "degrade",
+   "statut": "echec",
    "hotes": {
     "parent": "www.citroen.pt",
     "reprise": "www.retoma-citroen.pt"
@@ -84,7 +84,7 @@
    }
   },
   "PEUGEOT PT": {
-   "statut": "degrade",
+   "statut": "echec",
    "hotes": {
     "parent": "www.peugeot.pt",
     "reprise": "www.retoma.peugeot.pt"
@@ -106,6 +106,12 @@
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL FR",
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   },
   {
    "site": "FIAT PT",
@@ -132,6 +138,12 @@
    "gravite": "avertissement"
   },
   {
+   "site": "FIAT PT",
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
+  },
+  {
    "site": "JEEP PT",
    "controle": "trafic_etranger_sous_40pct",
    "detail": "2026-06 70% hors pays; 2026-07 65% hors pays",
@@ -142,6 +154,12 @@
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   },
   {
    "site": "ALFA ROMEO PT",
@@ -160,6 +178,12 @@
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   },
   {
    "site": "OPEL PT",
@@ -181,9 +205,9 @@
   },
   {
    "site": "OPEL PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-04 227->226 (-0%); 2026-06 68->23 (-66%); 2026-07 228->153 (-33%)",
-   "gravite": "avertissement"
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   },
   {
    "site": "CITROEN PT",
@@ -199,9 +223,9 @@
   },
   {
    "site": "CITROEN PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-04 765->764 (-0%); 2026-06 551->550 (-0%); 2026-07 688->685 (-0%); 2026-08 75->73 (-3%)",
-   "gravite": "avertissement"
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   },
   {
    "site": "PEUGEOT PT",
@@ -211,9 +235,10 @@
   },
   {
    "site": "PEUGEOT PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-04 1005->1003 (-0%); 2026-06 893->892 (-0%); 2026-07 1291->1287 (-0%)",
-   "gravite": "avertissement"
+   "controle": "structure_identique",
+   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "gravite": "bloquant"
   }
- ]
+ ],
+ "blocage": "7 site(s) en echec de controle : OPEL FR, FIAT PT, JEEP PT, ALFA ROMEO PT, OPEL PT, CITROEN PT, PEUGEOT PT. Donnees de la veille conservees."
 }
