@@ -1,6 +1,6 @@
 {
- "derniere_execution": "2026-08-04T18:46:04+02:00",
- "commit": "db0920b",
+ "derniere_execution": "2026-08-04T18:47:09+02:00",
+ "commit": "e3be00e",
  "jour_ga4_fiable": "2026-08-02",
  "mois_traites": [
   "2026-04",
@@ -23,6 +23,78 @@
     "total": 13
    }
   },
+  "FIAT PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.pt",
+    "reprise": "www.retoma.fiat.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "JEEP PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.pt",
+    "reprise": "www.retoma.jeep.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 11,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.pt",
+    "reprise": "www.retoma.alfaromeo.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "OPEL PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.pt",
+    "reprise": "www.retoma.opel.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.pt",
+    "reprise": "www.retoma-citroen.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "PEUGEOT PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.pt",
+    "reprise": "www.retoma.peugeot.pt"
+   },
+   "ga4_jusqu_au": "2026-08-02",
+   "controles": {
+    "passes": 11,
+    "total": 13
+   }
+  },
   "DS PT": {
    "statut": "indisponible",
    "motif": "compte de service non autorise sur la propriete 276470566"
@@ -33,6 +105,114 @@
    "site": "OPEL FR",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-06 ratio 5.7; 2026-07 ratio 3.5",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-06 84% hors pays; 2026-07 72% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-06 70% hors pays; 2026-07 65% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-06 ratio 13.5; 2026-07 ratio 6.8",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-06 95% hors pays; 2026-07 88% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-06 50% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-06', '2026-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-04 227->226 (-0%); 2026-06 68->23 (-66%); 2026-07 228->153 (-33%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-04', '2026-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-04 765->764 (-0%); 2026-06 551->550 (-0%); 2026-07 688->685 (-0%); 2026-08 75->73 (-3%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-04 1005->1003 (-0%); 2026-06 893->892 (-0%); 2026-07 1291->1287 (-0%)",
    "gravite": "avertissement"
   }
  ]
