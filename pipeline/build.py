@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import detect, discover, funnel, ga4
+from pipeline import channel, detect, discover, funnel, ga4
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -93,6 +93,20 @@ def assemble(cli, s, mois_liste, existant):
             journal.append(f"{mois} : funnel via {methode_f}")
         elif mois not in d["funnelMonth"]:
             journal.append(f"{mois} : funnel indisponible ({methode_f})")
+
+        # canal d'acquisition quotidien, pour le graphique en aires empilees.
+        # entierement optionnel : si la dimension n'existe pas sur cette
+        # propriete, on continue sans rien publier plutot que de bloquer.
+        try:
+            dim_canal, par_jour_canal = channel.canal_quotidien(cli, s.propriete, hote_parent, deb, f_iso)
+        except Exception as e:
+            dim_canal, par_jour_canal = None, {}
+            journal.append(f"{mois} : canal quotidien en erreur ({type(e).__name__})")
+        if dim_canal:
+            d.setdefault("canalQuotidien", {})[mois] = par_jour_canal
+            journal.append(f"{mois} : canal quotidien via {dim_canal}")
+        elif mois in d.get("canalQuotidien", {}):
+            pass  # on garde la donnee du mois precedemment reussie
 
         # profils pour la detection, par jour
         brut = ga4._rapport(
