@@ -122,6 +122,151 @@ function pairs(x) {
   return [...acc.values()].map(o => [tidy(o.name), o.v]).sort((a, b) => b[1] - a[1]);
 }
 
+/* ============================ plage calendaire (GA4) ============================ */
+/* Le sélecteur n'impose plus des mois entiers : n'importe quelle plage de
+   jours est acceptable, comme dans GA4. Sessions, reprise et leads sont
+   resolus au jour pres — c'est la granularite reelle des donnees.
+   Deux choses restent au mois, parce que la donnee elle-meme n'existe qu'a
+   ce grain : les dimensions de leads (marque, carburant...) et le funnel.
+   Quand la plage choisie couvre un ou plusieurs mois complets, on les
+   agrege ; sinon on l'affiche honnetement comme indisponible plutot que
+   d'inventer une repartition quotidienne qui n'existe pas. */
+
+const DIMS_KEYS = ["brand", "fuel", "entry", "project", "source", "code"];
+
+const mdToYmd = md => "2026-" + md;
+function rangeLabel(debut, fin) {
+  const f = md => { const [m, j] = md.split("-"); return `${+j} ${MONTHS[+m - 1]}`; };
+  return debut === fin ? f(debut) + " 2026" : `${f(debut)} → ${f(fin)} 2026`;
+}
+function nbJoursRange(debut, fin) {
+  return Math.round((new Date(mdToYmd(fin)) - new Date(mdToYmd(debut))) / 86400000) + 1;
+}
+function decaleMD(md, n) {
+  const dt = new Date(mdToYmd(md));
+  dt.setDate(dt.getDate() + n);
+  return `${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+}
+function joursDansRange(d, debut, fin) {
+  return d.daily.d.map((_, i) => i).filter(i => d.daily.d[i] >= debut && d.daily.d[i] <= fin);
+}
+function rangeKey(debut, fin) { return `range:${debut}:${fin}`; }
+function estRange(p) { return typeof p === "string" && p.startsWith("range:"); }
+
+/* les mois entierement inclus dans [debut, fin] — seuls eux peuvent nourrir
+   les dimensions de leads et le funnel, sommables ou affichables tels quels. */
+function moisCompletsCouverts(d, debut, fin) {
+  return months(d).filter(m => {
+    const mm = m.slice(5, 7);
+    const jm = d.daily.d.filter(x => x.slice(0, 2) === mm);
+    if (!jm.length) return false;
+    return debut <= jm[0] && fin >= jm[jm.length - 1];
+  });
+}
+
+/* materialise une plage libre dans les memes structures que les mois
+   existants (d.meta / d.trafficMonth / d.repriseMonth / d.leads / ...),
+   pour que stats(), idx() et tous les rendus continuent de fonctionner sans
+   distinguer un mois "en dur" d'une plage choisie a la volee. Mis en cache
+   sur l'objet du site, recalcule si les bornes changent. */
+function materialiseRange(d, debut, fin) {
+  const key = rangeKey(debut, fin);
+  if (d.meta[key]) return key;
+
+  const idxs = joursDansRange(d, debut, fin);
+  const days = nbJoursRange(debut, fin);
+  const idxsU = idxs.filter(i => d.daily.u[i] != null);
+  const idxsR = idxs.filter(i => d.daily.rep[i] != null);
+  // indisponible seulement si RIEN n'est exploitable sur la plage ; un jour
+  // manquant au milieu (mois en cours non consolide) ne doit pas effacer les
+  // jours qui, eux, ont une vraie mesure — GA4 ne fait pas disparaitre toute
+  // la plage pour un seul jour provisoire.
+  const sansU = idxsU.length === 0;
+  const sansR = idxsR.length === 0;
+  const traffic = sansU ? null : idxsU.reduce((a, i) => a + (d.daily.u[i] || 0), 0);
+  const reprise = sansR ? null : idxsR.reduce((a, i) => a + (d.daily.rep[i] || 0), 0);
+  const joursManquants = idxs.length - idxsU.length;
+
+  const lbd = leadsByDate(d);
+  const leadsDaily = idxs.map(i => lbd[d.daily.d[i]] ?? 0);
+  const leadsTotal = leadsDaily.reduce((a, b) => a + b, 0);
+
+  d.meta[key] = {
+    label: rangeLabel(debut, fin), days,
+    partial: joursManquants > 0 || sansU || sansR, provisional: false,
+    note: joursManquants > 0
+      ? `${joursManquants} jour${joursManquants > 1 ? "s" : ""} sur ${days} n'a/n'ont pas encore de relevé GA4 (mois en cours, données non consolidées). Les totaux ci-dessous portent sur les jours disponibles.`
+      : "",
+  };
+  d.trafficMonth[key] = { sessions: traffic, tdays: days };
+  d.repriseMonth[key] = { sessions: reprise, rdays: days };
+  d.leads[key] = { total: leadsTotal, daily: leadsDaily };
+
+  const moisComplets = moisCompletsCouverts(d, debut, fin);
+  d.leads[key]._dimsDisponibles = moisComplets.length > 0;
+  if (moisComplets.length) {
+    for (const k of DIMS_KEYS) {
+      const acc = new Map();
+      for (const m of moisComplets) {
+        const src = d.leads[m][k];
+        const arr = Array.isArray(src) ? src : Object.entries(src || {});
+        for (const [n, v] of arr) acc.set(n, (acc.get(n) || 0) + v);
+      }
+      d.leads[key][k] = [...acc.entries()];
+    }
+    // exactement un mois complet, bornes identiques : le funnel de ce mois s'applique
+    if (moisComplets.length === 1) {
+      const mm = moisComplets[0].slice(5, 7);
+      const jm = d.daily.d.filter(x => x.slice(0, 2) === mm);
+      if (debut === jm[0] && fin === jm[jm.length - 1] && d.funnelMonth[moisComplets[0]]) {
+        d.funnelMonth[key] = d.funnelMonth[moisComplets[0]];
+      }
+      if (debut === jm[0] && fin === jm[jm.length - 1] && (d.canalQuotidien || {})[moisComplets[0]]) {
+        d.canalQuotidien = d.canalQuotidien || {};
+        d.canalQuotidien[key] = d.canalQuotidien[moisComplets[0]];
+      }
+    }
+    // une anomalie documentee ne s'applique que si la plage = exactement ce mois
+    if (moisComplets.length === 1) {
+      const mm = moisComplets[0].slice(5, 7);
+      const jm = d.daily.d.filter(x => x.slice(0, 2) === mm);
+      if (debut === jm[0] && fin === jm[jm.length - 1] && (d.anomaly || {})[moisComplets[0]]) {
+        d.anomaly[key] = d.anomaly[moisComplets[0]];
+      }
+    }
+  }
+  return key;
+}
+
+/* periode precedente de meme duree, pour la comparaison par defaut */
+function rangePrecedente(debut, fin) {
+  const n = nbJoursRange(debut, fin);
+  return { debut: decaleMD(debut, -n), fin: decaleMD(fin, -n) };
+}
+
+/* presets, sur le modele de GA4 : bornes calculees a partir du dernier jour
+   de donnees disponible pour le site de reference. */
+function bornesDonnees(d) {
+  return { min: d.daily.d[0], max: d.daily.d[d.daily.d.length - 1] };
+}
+function presets(d) {
+  const { max } = bornesDonnees(d);
+  const auj = new Date(mdToYmd(max));
+  const back = n => decaleMD(max, -(n - 1));
+  const moisCourant = max.slice(0, 2) + "-01";
+  const moisPrec = (() => {
+    const dt = new Date(mdToYmd(moisCourant)); dt.setDate(0);
+    return { debut: `${String(dt.getMonth() + 1).padStart(2, "0")}-01`, fin: `${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}` };
+  })();
+  return [
+    { label:"7 derniers jours", debut:back(7), fin:max },
+    { label:"28 derniers jours", debut:back(28), fin:max },
+    { label:"Ce mois-ci", debut:moisCourant, fin:max },
+    { label:"Mois précédent", debut:moisPrec.debut, fin:moisPrec.fin },
+    { label:"Depuis le début", debut:months(d)[0].slice(5,7)+"-01", fin:max },
+  ];
+}
+
 /* ============================ acces donnees ============================ */
 
 const months = d => d.months.filter(m => m !== "total");
@@ -147,6 +292,10 @@ const provisoire = (d, m) => !!(d.meta[m] && d.meta[m].provisional);
    Le cumul ne prend que les mois consolides : un mois provisoire n'a pas
    encore ses releves GA4, l'inclure faussrait le rapport leads/sessions. */
 function idx(d, p) {
+  if (estRange(p)) {
+    const [, debut, fin] = p.split(":");
+    return joursDansRange(d, debut, fin);
+  }
   const all = d.daily.d.map((_, i) => i);
   if (p === "total") {
     const ok = new Set(months(d).filter(m => !provisoire(d, m)).map(m => m.slice(5, 7)));
@@ -266,6 +415,33 @@ function score(o) {
   </div>`;
 }
 
+/* composant "flux" : trois etapes reliees par des fleches pourcentees,
+   sur le modele du Monthly Quick Look de Looker Studio. */
+function flowStep(o) {
+  return `<div class="flow-box">
+    <div class="flow-lbl">${esc(o.label)}</div>
+    <div class="flow-val">${o.value}</div>
+    ${o.delta ? `<div class="flow-delta">${o.delta}</div>` : ""}
+  </div>`;
+}
+function flowArrow(pct) {
+  return `<div class="flow-arrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
+    <span>${pct}</span>
+  </div>`;
+}
+function flow(steps) {
+  const parts = [];
+  steps.forEach((s, i) => {
+    parts.push(flowStep(s));
+    if (i < steps.length - 1) {
+      const r = steps[i].raw, r2 = steps[i + 1].raw;
+      parts.push(flowArrow(r ? pct(r2 / r * 100) : "—"));
+    }
+  });
+  return `<div class="flow">${parts.join("")}</div>`;
+}
+
 function bar(ratio, tone) {
   const w = Math.max(0, Math.min(1, ratio || 0)) * 100;
   return `<span class="bar ${tone || ""}"><i style="width:${w.toFixed(1)}%"></i></span>`;
@@ -355,82 +531,138 @@ function euStars() {
   return `<svg viewBox="0 0 24 24" aria-hidden="true">${s}</svg>`;
 }
 
-function renderRail() {
+function renderSiteSelect() {
   const groupes = ["PSA", "FCA"];
-  $("#plates").innerHTML = groupes.map(g => {
+  $("#sitePopList").innerHTML = groupes.map(g => {
     const liste = SITES.filter(s => (FAMILLE[s] || "PSA") === g);
     if (!liste.length) return "";
-    return `<div class="fam">${esc(FAM_LABEL[g])}</div>` + liste.map(s => {
+    return `<div class="pop-lbl">${esc(FAM_LABEL[g])}</div>` + liste.map(s => {
       const h = HOSTS[s] || { pays:"", host:"" };
-      const band = h.pays === "P" ? "var(--tag)" : "var(--eu)";
-      return `<button class="plate" data-site="${esc(s)}" style="--band:${band}" aria-pressed="false">
-        <span class="plate-eu">${euStars()}<b>${esc(h.pays)}</b></span>
-        <span class="plate-face">
-          <span class="plate-name">${esc(s)}</span>
-          <span class="plate-sub">${esc(h.host)}</span>
-        </span>
-        <span class="plate-band"></span>
+      const dot = h.pays === "P" ? "var(--tag)" : "var(--eu)";
+      return `<button class="pop-opt site-opt" data-site="${esc(s)}">
+        <span class="site-dot" style="background:${dot}"></span>
+        <span class="site-opt-face"><b>${esc(s)}</b><small>${esc(h.host)}</small></span>
       </button>`;
     }).join("");
   }).join("");
 
-  $("#plates").addEventListener("click", e => {
-    const b = e.target.closest(".plate");
-    if (b) selectSite(b.dataset.site);
+  $("#sitePop").addEventListener("click", e => {
+    const ov = e.target.closest('[data-site="__overview__"]');
+    if (ov) { selectOverview(); closeSitePop(); return; }
+    const b = e.target.closest(".site-opt");
+    if (b) { selectSite(b.dataset.site); closeSitePop(); }
   });
-  $("#navOverview").addEventListener("click", () => selectOverview());
+
+  const btn = $("#siteBtn"), pop = $("#sitePop");
+  btn.addEventListener("click", e => {
+    e.stopPropagation();
+    const open = pop.hidden;
+    pop.hidden = !open;
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  document.addEventListener("click", e => {
+    if (!pop.contains(e.target) && !btn.contains(e.target)) closeSitePop();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") closeSitePop(); });
+}
+function closeSitePop() {
+  $("#sitePop").hidden = true;
+  $("#siteBtn").setAttribute("aria-expanded", "false");
 }
 
-function syncRail() {
-  $("#navOverview").classList.toggle("on", view.scope === "overview");
-  document.querySelectorAll(".plate").forEach(p => {
-    const on = view.scope === "site" && p.dataset.site === view.site;
-    p.classList.toggle("on", on);
-    p.setAttribute("aria-pressed", on ? "true" : "false");
+function syncSiteSelect() {
+  const lbl = $("#siteBtnLabel"), dot = $("#siteDot");
+  if (view.scope === "overview") {
+    lbl.textContent = "Synthèse — tous les sites";
+    dot.style.background = "var(--ink-4)";
+  } else {
+    const h = HOSTS[view.site] || {};
+    lbl.textContent = view.site;
+    dot.style.background = h.pays === "P" ? "var(--tag)" : "var(--eu)";
+  }
+  document.querySelectorAll("#sitePop [data-site]").forEach(b => {
+    const on = (view.scope === "overview" && b.dataset.site === "__overview__")
+            || (view.scope === "site" && b.dataset.site === view.site);
+    b.classList.toggle("on", on);
   });
 }
 
 /* ============================ controle de periode ============================ */
 
-function periodList() {
-  const d = view.scope === "site" ? DATA[view.site] : DATA[SITES[0]];
-  return d.periods || d.months;
+/* ============================ controle de periode (calendaire) ============================ */
+
+/* bornes calendaires de n'importe quelle periode, qu'elle soit une plage
+   libre, un mois classique ou le cumul — pour alimenter les champs de date
+   quelle que soit la selection en cours. */
+function bornesDePeriode(d, p) {
+  if (estRange(p)) { const [, debut, fin] = p.split(":"); return { debut, fin }; }
+  if (p === "total") {
+    const ms = months(d);
+    const premierMois = d.daily.d.filter(x => x.slice(0, 2) === ms[0].slice(5, 7));
+    const dernierMois = d.daily.d.filter(x => x.slice(0, 2) === ms[ms.length - 1].slice(5, 7));
+    return { debut: premierMois[0], fin: dernierMois[dernierMois.length - 1] };
+  }
+  const jm = d.daily.d.filter(x => x.slice(0, 2) === p.slice(5, 7));
+  return { debut: jm[0], fin: jm[jm.length - 1] };
 }
-function metaOf(p) {
-  const d = view.scope === "site" ? DATA[view.site] : DATA[SITES[0]];
-  return d.meta[p];
-}
+
+function refSite() { return view.scope === "site" ? DATA[view.site] : DATA[SITES[0]]; }
+function metaOf(p) { return refSite().meta[p]; }
 
 function renderPeriodControl() {
-  const list = periodList();
-  const d = view.scope === "site" ? DATA[view.site] : null;
+  const d = refSite();
+  const { debut: pDebut, fin: pFin } = bornesDePeriode(d, view.period);
 
   $("#ctlLabel").textContent = metaOf(view.period).label;
-  $("#ctlCmp").textContent = view.compare ? "vs " + shortP(view.compare) : "sans comparaison";
+  $("#ctlCmp").textContent = view.compare ? "vs " + metaOf(view.compare).label : "sans comparaison";
   $("#ctlCmp").hidden = false;
 
-  const pf = $("#partialFlag");
   const mm = metaOf(view.period);
-  const isPartial = d ? !!d.meta[view.period].partial
-                      : SITES.some(s => (DATA[s].meta[view.period] || {}).partial);
-  pf.hidden = !isPartial;
-  if (isPartial) {
+  const pf = $("#partialFlag");
+  pf.hidden = !mm.partial;
+  if (mm.partial) {
     pf.textContent = mm.provisional ? "Mois en cours" : "Données partielles";
-    pf.title = mm.note || "Ce mois n'est pas complet.";
+    pf.title = mm.note || "Cette période n'est pas complète.";
   }
 
-  $("#popPeriods").innerHTML = list.map(p =>
-    `<button class="pop-opt ${p === view.period ? "on" : ""}" data-period="${p}">
-      <span>${esc(metaOf(p).label)}</span><small>${metaOf(p).days} j</small>
-    </button>`).join("");
+  $("#rangeDebut").value = mdToYmd(pDebut);
+  $("#rangeFin").value = mdToYmd(pFin);
+  const b = bornesDonnees(d);
+  $("#rangeDebut").min = $("#rangeFin").min = mdToYmd(b.min);
+  $("#rangeDebut").max = $("#rangeFin").max = mdToYmd(b.max);
 
-  /* un mois provisoire ne sert pas de reference : 2 jours face a 31 n'a pas de sens */
-  const opts = list.filter(p => p !== view.period && p !== "total"
-    && !(metaOf(p) || {}).provisional);
+  $("#popPresets").innerHTML = presets(d).map(pr => {
+    const k = rangeKey(pr.debut, pr.fin);
+    return `<button class="pop-opt ${view.period === k ? "on" : ""}" data-preset="${pr.debut}|${pr.fin}">
+      <span>${esc(pr.label)}</span><small>${nbJoursRange(pr.debut, pr.fin)} j</small>
+    </button>`;
+  }).join("") + `<button class="pop-opt ${view.period === "total" ? "on" : ""}" data-preset="__total__">
+    <span>Période cumulée</span><small>${(metaOf("total") || {}).days || ""} j</small>
+  </button>`;
+
+  const moisOptions = months(d).filter(m => m !== view.period);
   $("#popCompare").innerHTML =
     `<button class="pop-opt ${!view.compare ? "on" : ""}" data-cmp="">Aucune</button>` +
-    opts.map(p => `<button class="pop-opt ${view.compare === p ? "on" : ""}" data-cmp="${p}">
-      <span>${esc(metaOf(p).label)}</span><small>${metaOf(p).days} j</small></button>`).join("");
+    `<button class="pop-opt ${view.compare === "__auto__" ? "on" : ""}" data-cmp="__auto__">
+      <span>Période précédente</span><small>même durée</small></button>` +
+    moisOptions.filter(m => !(metaOf(m) || {}).provisional).map(m =>
+      `<button class="pop-opt ${view.compare === m ? "on" : ""}" data-cmp="${m}">
+        <span>${esc(metaOf(m).label)}</span><small>${metaOf(m).days} j</small></button>`).join("");
+}
+
+function appliquerRange(debut, fin) {
+  const d = refSite();
+  const key = materialiseRange(d, debut, fin);
+  view.period = key;
+  view.compare = !view.compare
+    ? appliquerComparaisonAuto(d, debut, fin) : view.compare;
+  render();
+}
+function appliquerComparaisonAuto(d, debut, fin) {
+  const prev = rangePrecedente(debut, fin);
+  const b = bornesDonnees(d);
+  if (prev.fin < b.min) return null;      // hors des donnees disponibles
+  return materialiseRange(d, prev.debut, prev.fin);
 }
 
 function wirePeriodControl() {
@@ -443,19 +675,44 @@ function wirePeriodControl() {
     pop.hidden = !open;
     btn.setAttribute("aria-expanded", open ? "true" : "false");
   });
-  document.addEventListener("click", e => { if (!pop.contains(e.target)) close(); });
+  document.addEventListener("click", e => { if (!pop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) close(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
 
   pop.addEventListener("click", e => {
-    const p = e.target.closest("[data-period]");
-    if (p) {
-      view.period = p.dataset.period;
-      const prev = view.scope === "site" ? prevPeriod(DATA[view.site], view.period) : prevPeriod(DATA[SITES[0]], view.period);
-      view.compare = prev;
-      close(); render(); return;
+    const pr = e.target.closest("[data-preset]");
+    if (pr) {
+      if (pr.dataset.preset === "__total__") {
+        view.period = "total";
+        const d = refSite();
+        view.compare = null;
+        close(); render(); return;
+      }
+      const [debut, fin] = pr.dataset.preset.split("|");
+      close(); appliquerRange(debut, fin); return;
     }
     const c = e.target.closest("[data-cmp]");
-    if (c) { view.compare = c.dataset.cmp || null; close(); render(); }
+    if (c) {
+      const val = c.dataset.cmp;
+      if (val === "__auto__") {
+        const d = refSite();
+        if (estRange(view.period)) {
+          const [, deb, fin] = view.period.split(":");
+          view.compare = appliquerComparaisonAuto(d, deb, fin);
+        } else {
+          view.compare = prevPeriod(d, view.period);
+        }
+      } else {
+        view.compare = val || null;
+      }
+      close(); render();
+    }
+  });
+
+  $("#rangeApply").addEventListener("click", () => {
+    const deb = $("#rangeDebut").value, fin = $("#rangeFin").value;
+    if (!deb || !fin || deb > fin) return;
+    close();
+    appliquerRange(deb.slice(5), fin.slice(5));
   });
 }
 
@@ -482,8 +739,18 @@ function selectOverview() {
 async function selectSite(site) {
   await load(site);
   view.scope = "site"; view.site = site;
-  if (!DATA[site].meta[view.period]) view.period = defaultPeriod(DATA[site]);
-  if (view.compare && !DATA[site].meta[view.compare]) view.compare = prevPeriod(DATA[site], view.period);
+  if (estRange(view.period)) {
+    const [, deb, fin] = view.period.split(":");
+    materialiseRange(DATA[site], deb, fin);
+  } else if (!DATA[site].meta[view.period]) {
+    view.period = defaultPeriod(DATA[site]);
+  }
+  if (view.compare && estRange(view.compare)) {
+    const [, deb, fin] = view.compare.split(":");
+    materialiseRange(DATA[site], deb, fin);
+  } else if (view.compare && !DATA[site].meta[view.compare]) {
+    view.compare = prevPeriod(DATA[site], view.period);
+  }
   render();
 }
 
@@ -500,6 +767,14 @@ function panel(id) {
 
 function renderOverview() {
   const p = view.period, cmp = view.compare;
+  if (estRange(p)) {
+    const [, deb, fin] = p.split(":");
+    SITES.forEach(s => materialiseRange(DATA[s], deb, fin));
+  }
+  if (cmp && estRange(cmp)) {
+    const [, deb, fin] = cmp.split(":");
+    SITES.forEach(s => materialiseRange(DATA[s], deb, fin));
+  }
   const rows = SITES.map(s => {
     const d = DATA[s];
     const st = stats(d, p), ref = cmp ? stats(d, cmp) : null;
@@ -667,6 +942,22 @@ function renderAcquisition() {
       (${esc(st.jours.join(", "))}), soit ${st.botPct} % du trafic de reprise du mois. Origine Espagne, Chrome desktop.
       Le graphique montre les volumes bruts ; les taux sont calculés hors robot.</p>
     </div></div>` : ""}
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Vue d'ensemble du mois</h2><p>${esc(st.label)} — du site parent au lead, en un coup d'œil.</p></div>
+      </div>
+      <div class="card-body">
+        ${flow([
+          { label:"Sessions site", value:fmt(st.traffic), raw:st.traffic },
+          { label:"Sessions reprise", value:fmt(st.net), raw:st.net,
+            delta: ref ? delta(st.reprisePD, ref.reprisePD) : "" },
+          { label:"Leads", value:fmt(st.leads), raw:st.leads,
+            delta: ref ? delta(st.leadsPD, ref.leadsPD) : "" },
+        ])}
+      </div>
+    </div>
+
     <div class="scores">
       ${score({ label:"Sessions site parent", value:fmt(st.traffic),
         sub:fmt1(st.trafficPD) + " / jour",
@@ -700,6 +991,13 @@ function renderAcquisition() {
       ${vi != null ? `<div class="note"><b>Bande jaune :</b> période postérieure à la bascule V2 du ${esc(frDate(d.v2_date))}.</div>` : ""}
     </div>
 
+    ${(d.canalQuotidien || {})[p] ? `<div class="card">
+      <div class="card-head">
+        <div><h2>Sessions par canal</h2><p>${esc(st.label)} — répartition quotidienne du trafic reprise.</p></div>
+      </div>
+      <div class="card-body"><div class="plot tall"><canvas id="canalChart"></canvas></div></div>
+    </div>` : ""}
+
     <div class="card">
       <div class="card-head">
         <div><h2>Mois par mois</h2><p>Du site parent au lead, chaque étage de la chaîne.</p></div>
@@ -731,6 +1029,36 @@ function renderAcquisition() {
       borderWidth:1.9, pointRadius:0, pointHoverRadius:3.5, tension:.3 }] },
     options:opts(true, vi)
   });
+
+  /* canal quotidien : aires empilees, uniquement si le pipeline a reussi a
+     l'extraire pour ce mois (dimension GA4 non garantie sur toutes les
+     proprietes — voir pipeline/channel.py). Rien n'est invente si absent. */
+  const canalMois = (d.canalQuotidien || {})[p];
+  if (canalMois) {
+    const joursCanal = idx(d, p).map(i => d.daily.d[i]);
+    const canaux = [...new Set(joursCanal.flatMap(j => Object.keys(canalMois[j] || {})))]
+      .sort((a, b) => joursCanal.reduce((s, j) => s + ((canalMois[j] || {})[b] || 0), 0)
+                     - joursCanal.reduce((s, j) => s + ((canalMois[j] || {})[a] || 0), 0));
+    draw("canalChart", {
+      type: "line",
+      data: {
+        labels: joursCanal,
+        datasets: canaux.map((c, i) => ({
+          label: c, data: joursCanal.map(j => (canalMois[j] || {})[c] || 0),
+          borderColor: SERIES[i % SERIES.length], backgroundColor: SERIES[i % SERIES.length] + "cc",
+          fill: "stack", borderWidth: 1, pointRadius: 0, tension: .25,
+        })),
+      },
+      options: {
+        interaction: { mode: "index", intersect: false },
+        plugins: { legend: { position: "bottom", labels: { boxWidth: 9, boxHeight: 9,
+          font: { family: "Plus Jakarta Sans", size: 11, weight: 600 }, color: C.ink3 } },
+          tooltip: tooltipCfg() },
+        scales: { x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: 12 } },
+                  y: { stacked: true, beginAtZero: true, grid: { color: C.line2 } } },
+      },
+    });
+  }
 
   /* tableau de trafic : seuls les mois dont GA4 est releve */
   const ms = months(d).filter(m => !provisoire(d, m));
@@ -828,6 +1156,39 @@ function renderLeads() {
       ${st.partial ? `<div class="note"><b>Le 31 juillet manque.</b> L'API d'extraction a renvoyé une erreur ce jour-là. Le trafic et le parcours couvrent bien le mois entier.</div>` : ""}
     </div>
 
+    <div class="duo">
+      <div class="card">
+        <div class="card-head">
+          <div><h2>Projet d'achat</h2><p>Répartition des leads par intention déclarée.</p></div>
+        </div>
+        <div class="card-body"><div class="plot" style="height:220px"><canvas id="projectDonut"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div><h2>Tendance</h2><p>Trois indicateurs, même échelle de temps.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="trend-row">
+            <div class="trend-cell">
+              <span class="trend-lbl">Sessions reprise</span>
+              <span class="trend-val">${fmt(st.net)}</span>
+              ${spark(idx(d, p).map(i => d.daily.rep[i]), C.eu)}
+            </div>
+            <div class="trend-cell">
+              <span class="trend-lbl">Leads BO / sessions</span>
+              <span class="trend-val">${st.sansGA4 ? "—" : pct(st.conv)}</span>
+              ${spark(series, C.jade)}
+            </div>
+            <div class="trend-cell">
+              <span class="trend-lbl">Leads</span>
+              <span class="trend-val">${fmt(st.leads)}</span>
+              ${spark(series, C.ink)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-head">
         <div>
@@ -865,11 +1226,42 @@ function renderLeads() {
     document.querySelectorAll("#dimSeg button").forEach(x => x.classList.toggle("on", x === b));
     renderDim();
   });
+
+  /* donut projet d'achat : neuf / occasion / aucun projet — meme donnee
+     que la dimension "project" du tableau ci-dessous, sur le modele du
+     donut new/used/none du Looker Studio du projet */
+  const projRaw = pairs((d.leads[p] || {}).project);
+  const projMap = { "Véhicule neuf":C.eu, "Véhicule d'occasion":C.jade, "Aucun projet":C.ink4 };
+  const projLabels = projRaw.map(([n]) => n);
+  const projData = projRaw.map(([, v]) => v);
+  const projColors = projLabels.map(n => projMap[n] || C.ink3);
+  draw("projectDonut", {
+    type:"doughnut",
+    data:{ labels:projLabels, datasets:[{ data:projData, backgroundColor:projColors,
+      borderColor:"#fff", borderWidth:3, hoverOffset:4 }] },
+    options:{
+      cutout:"68%",
+      plugins:{
+        legend:{ position:"bottom", labels:{ boxWidth:9, boxHeight:9, usePointStyle:true,
+          pointStyle:"circle", font:{ family:"Plus Jakarta Sans", size:11, weight:600 }, color:C.ink3 } },
+        tooltip:tooltipCfg()
+      }
+    }
+  });
   renderDim();
 
   function renderDim() {
     const meta = DIMS.find(x => x.k === view.dim);
     $("#dimHelp").textContent = meta.h;
+
+    if (estRange(p) && (d.leads[p] || {})._dimsDisponibles === false) {
+      $("#dimTable").innerHTML = "";
+      $("#dimNote").innerHTML =
+        `<b>Répartition indisponible sur cette plage.</b> Les dimensions de leads ne sont mesurées que par mois complet. ` +
+        `Choisissez un mois entier, ou la période cumulée, pour voir cette répartition.`;
+      return;
+    }
+
     const list = pairs((d.leads[p] || {})[view.dim]);
     const covered = list.reduce((a, b) => a + b[1], 0);
     /* la dimension ne couvre pas toujours tous les leads : on montre l'ecart */
@@ -967,6 +1359,16 @@ function renderParcours() {
 
     <div class="card">
       <div class="card-head">
+        <div><h2>Complétion par étape</h2><p>${esc(fm && metaOf(p) ? metaOf(p).label : "")} — chaque barre en part de la précédente.</p></div>
+      </div>
+      <div class="card-body">
+        <div class="plot"><canvas id="funnelBars"></canvas></div>
+      </div>
+      <div class="note">Complétion de chaque étape par rapport à l'entrée du parcours, en <b>utilisateurs actifs</b>.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <div>
           <h2>Le parcours, étape par étape</h2>
           <p>Mesuré en <b>utilisateurs actifs</b> : l'exploration de funnel GA4 ne propose pas les sessions. Ces volumes ne se comparent pas à ceux de l'onglet Acquisition.</p>
@@ -980,10 +1382,87 @@ function renderParcours() {
       <div class="note">La colonne de droite indique la <b>perte par rapport à l'étape précédente</b>. C'est là que se joue le parcours, pas sur le total.</div>
     </div>
 
-    ${isSplitHere ? renderSplitCards(d, v2, realV2) : ""}`;
+    ${isSplitHere ? renderSplitCards(d, v2, realV2) : ""}
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Complétion — évolution mensuelle</h2><p>Un mois par barre, sur tous les mois relevés pour ce site.</p></div>
+      </div>
+      <div class="card-body"><div class="plot"><canvas id="funnelEvo"></canvas></div></div>
+    </div>`;
 
   /* etapes */
+  /* graphique en barres du funnel, façon Looker : un pourcentage de
+     completion au-dessus de chaque barre, relatif a l'entree du parcours. */
+  const LABELS_PLUGIN = {
+    id: "barLabels",
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      const ds = chart.data.datasets[0];
+      ctx.save();
+      ctx.font = '800 12px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = "center"; ctx.fillStyle = C.ink;
+      ds.data.forEach((v, i) => {
+        const pctTxt = first ? `${(v / first * 100).toFixed(1)} %` : "";
+        ctx.fillText(pctTxt, x.getPixelForValue(i), y.getPixelForValue(v) - 8);
+      });
+      ctx.restore();
+    },
+  };
+  draw("funnelBars", {
+    type: "bar",
+    data: {
+      labels: steps.map(s => stepLabel(s.step)),
+      datasets: [{ data: steps.map(s => s.users), backgroundColor: C.eu, borderRadius: 8,
+        barPercentage: .62, categoryPercentage: .82 }],
+    },
+    options: {
+      plugins: { legend: { display: false }, tooltip: tooltipCfg() },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: "Plus Jakarta Sans", weight: 600, size: 11.5 }, color: C.ink3 } },
+        y: { beginAtZero: true, grid: { color: C.line2 }, ticks: { callback: v => fmt(v), maxTicksLimit: 5 } },
+      },
+      layout: { padding: { top: 22 } },
+    },
+    plugins: [LABELS_PLUGIN],
+  });
+
   const useSplit = isSplitHere;
+
+  /* evolution mensuelle : un mois = une barre, uniquement les mois qui ont
+     un funnel releve pour ce site (JEEP par exemple n'en a pas avant juin). */
+  const moisFunnel = months(d).filter(m => d.funnelMonth[m]);
+  const evoData = moisFunnel.map(m => d.funnelMonth[m].conversion_pct);
+  const EVO_LABELS_PLUGIN = {
+    id: "evoLabels",
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      ctx.save();
+      ctx.font = '800 11.5px "Plus Jakarta Sans", sans-serif';
+      ctx.textAlign = "center"; ctx.fillStyle = C.ink;
+      evoData.forEach((v, i) => {
+        ctx.fillText(v.toFixed(1).replace(".", ",") + " %", x.getPixelForValue(i), y.getPixelForValue(v) - 8);
+      });
+      ctx.restore();
+    },
+  };
+  draw("funnelEvo", {
+    type: "bar",
+    data: {
+      labels: moisFunnel.map(m => MONTHS[+m.slice(5, 7) - 1]),
+      datasets: [{ data: evoData, backgroundColor: moisFunnel.map(m => m === p ? C.eu : C.ink4),
+        borderRadius: 8, barPercentage: .55, categoryPercentage: .75 }],
+    },
+    options: {
+      plugins: { legend: { display: false }, tooltip: tooltipCfg(v => pct(v)) },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: "Plus Jakarta Sans", weight: 600, size: 11.5 }, color: C.ink3 } },
+        y: { beginAtZero: true, grid: { color: C.line2 }, ticks: { callback: v => v + " %", maxTicksLimit: 5 } },
+      },
+      layout: { padding: { top: 22 } },
+    },
+    plugins: [EVO_LABELS_PLUGIN],
+  });
   const stepsSrc = useSplit ? d.v2steps : steps;
   const maxA = useSplit ? Math.max(...d.v2steps.map(s => Math.max(s.a, s.b))) : first;
 
@@ -1077,13 +1556,25 @@ function renderSplitCards(d, v2, realV2) {
 
 /* ============================== rendu ============================== */
 
+const REPORT_TITLES = { acquisition:"Acquisition", leads:"Leads", parcours:"Parcours" };
+
+function syncPageHead() {
+  const sub = $("#pageSub"), h1 = $("#pageTitle");
+  if (view.scope === "overview") {
+    sub.textContent = "Site Factory";
+    h1.textContent = "Synthèse";
+  } else {
+    sub.textContent = view.site;
+    h1.textContent = REPORT_TITLES[view.report] || view.report;
+  }
+}
+
 function render() {
   clearCharts();
-  syncRail();
+  syncSiteSelect();
   renderTabs();
   renderPeriodControl();
-
-  $("#crumb").textContent = view.scope === "overview" ? "Synthèse" : view.site;
+  syncPageHead();
 
   if (view.scope === "overview") { renderOverview(); return; }
   if (view.report === "acquisition") renderAcquisition();
@@ -1174,6 +1665,41 @@ async function load(site) {
   return DATA[site];
 }
 
+/* bouton Actualiser : appelle une fonction serverless Vercel (api/refresh.js)
+   qui detient le jeton GitHub cote serveur. Le jeton n'entre jamais dans ce
+   fichier ni dans le navigateur — c'est la seule maniere sure de declencher
+   une GitHub Action depuis une page publique. */
+function wireRefreshButton() {
+  const btn = $("#refreshBtn"), lbl = $("#refreshLabel");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add("spin");
+    lbl.textContent = "Lancement…";
+    try {
+      const r = await fetch("/api/refresh", { method:"POST" });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 200) {
+        lbl.textContent = "Lancé ✓";
+        btn.title = "Les nouvelles données arrivent en général en 2 à 3 minutes.";
+      } else if (r.status === 429) {
+        lbl.textContent = "Déjà en cours";
+        btn.title = j.error || "Un rafraîchissement est déjà en cours.";
+      } else {
+        lbl.textContent = "Échec";
+        btn.title = j.error || "Le déclenchement a échoué.";
+      }
+    } catch (e) {
+      lbl.textContent = "Échec";
+      btn.title = "Le service de rafraîchissement n'est pas joignable.";
+    } finally {
+      btn.classList.remove("spin");
+      setTimeout(() => { btn.disabled = false; lbl.textContent = "Actualiser"; btn.title = ""; }, 6000);
+    }
+  });
+}
+
 async function boot() {
   try {
     const index = await (await fetch("data/index.json")).json();
@@ -1192,8 +1718,9 @@ async function boot() {
   view.period = defaultPeriod(base);
   view.compare = prevPeriod(base, view.period);
 
-  renderRail();
+  renderSiteSelect();
   wirePeriodControl();
+  wireRefreshButton();
   render();
 }
 
@@ -1204,7 +1731,7 @@ if (window.__INLINE_DATA__) {
   const base = DATA[SITES[0]];
   view.period = defaultPeriod(base);
   view.compare = prevPeriod(base, view.period);
-  renderRail(); wirePeriodControl(); render();
+  renderSiteSelect(); wirePeriodControl(); wireRefreshButton(); render();
 } else {
   boot();
 }
