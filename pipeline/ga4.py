@@ -12,7 +12,8 @@ from collections import defaultdict
 
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
-    DateRange, Dimension, Filter, FilterExpression, Metric, RunReportRequest,
+    DateRange, Dimension, Filter, FilterExpression, FilterExpressionList,
+    Metric, RunReportRequest,
 )
 
 LIMITE = 100000
@@ -30,6 +31,13 @@ def _egal(champ, valeur):
         string_filter=Filter.StringFilter(
             value=valeur, match_type=Filter.StringFilter.MatchType.EXACT),
     ))
+
+
+def _et(*filtres):
+    """Combine plusieurs filtres en ET. Utile pour croiser un evenement et
+    un parametre personnalise sur la meme etape (ex : eventName = X ET
+    step_name = Y, comme l'etape 6 des explorations GA4 du projet)."""
+    return FilterExpression(and_group=FilterExpressionList(expressions=list(filtres)))
 
 
 def _rapport(cli, pid, debut, fin, dimensions, metriques, filtre=None):
