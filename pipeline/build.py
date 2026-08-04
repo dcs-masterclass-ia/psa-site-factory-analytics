@@ -252,6 +252,9 @@ def main():
                                       "detail": x.detail, "gravite": "bloquant"})
         for l in journal:
             print(f"   {s.nom} — {l}")
+        if journal:
+            ecrit_recap(f"\n<details><summary>{s.nom} — détail</summary>\n\n"
+                       + "\n".join(f"- {esc_md(l)}" for l in journal) + "\n\n</details>")
         if r.publiable:
             a_ecrire[chemin] = nettoie(d)
 
