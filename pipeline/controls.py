@@ -178,12 +178,21 @@ def controle(nouveau, ancien=None, modele=None):
     r.ajoute("funnel_decroissant", not non_decroissant, False,
              "" if not non_decroissant else f"mois en ecart : {non_decroissant}")
 
-    # la bascule sur la methode de repli degrade la fidelite : on le signale,
-    # sans bloquer, pour garder une trace de quand l'API alpha est indisponible
-    repli = [m for m, meth in (nouveau.get("_methodes_funnel") or {}).items()
-             if meth and "repli" in meth]
-    r.ajoute("funnel_methode_precise", not repli, False,
-             "" if not repli else f"methode de repli utilisee sur : {repli}")
+    # la bascule sur une methode de repli degrade la fidelite : on le signale,
+    # sans bloquer, en precisant LAQUELLE des deux methodes de repli a servi —
+    # step_name est fidele a l'exploration GA4 manuelle, mot-cle est une
+    # approximation plus grossiere.
+    methodes = nouveau.get("_methodes_funnel") or {}
+    via_step_name = [m for m, meth in methodes.items() if meth and "step_name" in meth]
+    via_mot_cle = [m for m, meth in methodes.items() if meth and "mot-cle" in meth]
+    if via_mot_cle:
+        r.ajoute("funnel_methode_precise", False, False,
+                 f"repli par mot-cle (approximation) sur : {via_mot_cle}")
+    elif via_step_name:
+        r.ajoute("funnel_methode_precise", False, False,
+                 f"dimension step_name (fidele a l'exploration GA4) sur : {via_step_name}")
+    else:
+        r.ajoute("funnel_methode_precise", True, False)
 
     return r
 
