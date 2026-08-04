@@ -1,0 +1,102 @@
+name: Rafraîchissement automatique des données
+
+# Tourne seul, tous les jours ouvrés en fin de matinée.
+# 09:00 UTC = 11:00 à Paris en été, 10:00 en hiver — cron ne gère pas l'heure
+# d'été, décalage assumé.
+#
+# Les données ne sont écrites que si tous les contrôles bloquants passent.
+# data/pipeline.json est écrit dans tous les cas : c'est le canal d'alerte du
+# dashboard, un échec muet serait pire qu'un échec.
+
+on:
+  schedule:
+    - cron: "0 9 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      simulation:
+        description: "Simulation : calcule et affiche sans rien écrire"
+        type: boolean
+        default: false
+      sites:
+        description: "Sites à traiter, séparés par une espace (vide = tous)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write          # nécessaire pour committer les données rafraîchies
+
+concurrency:
+  group: rafraichissement
+  cancel-in-progress: false
+
+jobs:
+  rafraichir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          python -c "import json,os;json.load(open(os.environ['RUNNER_TEMP']+'/ga4.json'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Extraire, contrôler, assembler
+        id: build
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.sites }}" ]; then ARGS="--sites ${{ inputs.sites }}"; fi
+          if [ "${{ inputs.simulation }}" != "true" ]; then ARGS="$ARGS --ecrire"; fi
+          python -m pipeline.build $ARGS | tee sortie.txt
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -60 sortie.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Committer si quelque chose a changé
+        if: inputs.simulation != 'true'
+        run: |
+          git config user.name "pipeline"
+          git config user.email "pipeline@users.noreply.github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "Aucun changement, pas de commit."
+            exit 0
+          fi
+          STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
+          git commit -m "Rafraîchissement automatique — statut ${STATUT}" \
+                     -m "$(git diff --cached --stat | tail -1)"
+          # une autre exécution a pu committer entre-temps
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          echo "::error::Impossible de pousser après 3 tentatives."
+          exit 1
+
+      - name: Signaler un échec de contrôle
+        if: inputs.simulation != 'true'
+        run: |
+          STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
+          if [ "$STATUT" = "echec" ]; then
+            echo "::warning::Contrôle bloquant : les données de la veille ont été conservées. Le dashboard l'affiche."
+          fi
+
+      - name: Effacer la clé
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ga4.json"
