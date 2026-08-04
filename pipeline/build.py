@@ -27,6 +27,10 @@ DATA = RACINE / "data"
 PARIS = timezone(timedelta(hours=2))          # CEST ; l'ecart hiver est assume
 
 
+def esc_md(t):
+    return str(t).replace("|", "\\|").replace("\n", " ")
+
+
 def mois_a_traiter(jusqu_a=None):
     """Tous les mois depuis avril 2026 jusqu'au mois courant inclus."""
     fin = jusqu_a or datetime.now(PARIS).date()
@@ -160,6 +164,20 @@ def main():
     modele = json.loads((DATA / "opel-fr.json").read_text())
     cli = ga4.client()
 
+    recap = os.environ.get("GITHUB_STEP_SUMMARY")
+
+    def ecrit_recap(texte):
+        """Ecrit immediatement, site par site : jamais perdu a une troncature."""
+        if recap:
+            with open(recap, "a", encoding="utf-8") as f:
+                f.write(texte + "\n")
+
+    ecrit_recap(f"## Rafraîchissement automatique — {datetime.now(PARIS).strftime('%d/%m/%Y %H:%M')}\n")
+    ecrit_recap(f"Mois traités : {', '.join(mois_liste)} — dernier jour fiable : {jour_fiable()}\n")
+    ecrit_recap("### Hôtes découverts\n")
+    ecrit_recap("| Site | Parent | Reprise |")
+    ecrit_recap("|---|---|---|")
+
     etat = {
         "derniere_execution": datetime.now(PARIS).isoformat(timespec="seconds"),
         "commit": os.environ.get("GITHUB_SHA", "")[:7],
@@ -189,18 +207,23 @@ def main():
             etat["sites"][s.nom] = {"statut": "indisponible",
                                     "motif": f"hotes indeterminables : {e}"}
             print(f"{s.nom} : AMBIGU — {e}")
+            ecrit_recap(f"| {s.nom} | *ambigu* | {esc_md(str(e))} |")
             continue
         except Exception as e:
             etat["sites"][s.nom] = {"statut": "indisponible",
                                     "motif": f"{type(e).__name__}: {e}"}
             print(f"{s.nom} : ERREUR — {type(e).__name__}: {e}")
+            ecrit_recap(f"| {s.nom} | *erreur* | {type(e).__name__} |")
             continue
+
+        h = d["_hotes"]
+        ecrit_recap(f"| {s.nom} | `{h['parent']}` | `{h['reprise']}` |")
 
         r = controle(d, ancien=existant, modele=modele)
         rapports.append(r)
         etat["sites"][s.nom] = {
             "statut": r.statut,
-            "hotes": d["_hotes"],
+            "hotes": h,
             "ga4_jusqu_au": etat["jour_ga4_fiable"],
             "controles": {"passes": sum(1 for x in r.resultats if x.ok),
                           "total": len(r.resultats)},
@@ -216,6 +239,10 @@ def main():
         if r.publiable:
             a_ecrire[chemin] = nettoie(d)
 
+    ecrit_recap("\n### Contrôles\n")
+    ecrit_recap("```")
+    ecrit_recap(affiche(rapports))
+    ecrit_recap("```")
     print(affiche(rapports))
 
     bloques = [r.site for r in rapports if not r.publiable]
@@ -229,6 +256,7 @@ def main():
     if not a.ecrire:
         print("\nMode simulation : rien n'a ete ecrit. Ajouter --ecrire pour publier.")
         print(f"statut calcule : {etat['statut']}")
+        ecrit_recap(f"\n_Mode simulation : rien n'a été écrit. Statut calculé : **{etat['statut']}**._")
         return 0
 
     # les donnees ne sont ecrites que si tout passe ; l'etat l'est toujours
@@ -238,6 +266,7 @@ def main():
             print(f"ecrit  {chemin.name}")
     else:
         print("Controle bloquant : aucune donnee ecrite, on garde celles de la veille.")
+        ecrit_recap(f"\n**Contrôle bloquant : aucune donnée écrite, celles de la veille sont conservées.**")
 
     (DATA / "pipeline.json").write_text(
         json.dumps(etat, ensure_ascii=False, indent=1))
