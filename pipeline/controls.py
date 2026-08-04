@@ -167,6 +167,24 @@ def controle(nouveau, ancien=None, modele=None):
     r.ajoute("trafic_etranger_sous_40pct", not mauvais, False,
              "" if not mauvais else "; ".join(mauvais))
 
+    # --- funnel ---------------------------------------------------------
+    # un entonnoir doit decroitre etape par etape ; une hausse signale que la
+    # methode de repli (mot-cle sur les evenements) a mal identifie une etape
+    non_decroissant = []
+    for m, fm in (nouveau.get("funnelMonth") or {}).items():
+        vals = [s["users"] for s in fm.get("steps", [])]
+        if any(vals[i] < vals[i + 1] for i in range(len(vals) - 1)):
+            non_decroissant.append(m)
+    r.ajoute("funnel_decroissant", not non_decroissant, False,
+             "" if not non_decroissant else f"mois en ecart : {non_decroissant}")
+
+    # la bascule sur la methode de repli degrade la fidelite : on le signale,
+    # sans bloquer, pour garder une trace de quand l'API alpha est indisponible
+    repli = [m for m, meth in (nouveau.get("_methodes_funnel") or {}).items()
+             if meth and "repli" in meth]
+    r.ajoute("funnel_methode_precise", not repli, False,
+             "" if not repli else f"methode de repli utilisee sur : {repli}")
+
     return r
 
 
