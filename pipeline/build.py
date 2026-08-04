@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import detect, discover, ga4
+from pipeline import detect, discover, funnel, ga4
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -62,7 +62,9 @@ def assemble(cli, s, mois_liste, existant):
     d = json.loads(json.dumps(existant))      # copie
     d["daily"] = {"d": [], "u": [], "rep": []}
     d["trafficMonth"], d["repriseMonth"] = {}, {}
+    d.setdefault("funnelMonth", {})
     anomalies, ratios, parts = {}, {}, {}
+    methodes_funnel = {}
 
     limite = jour_fiable().replace("-", "")
 
@@ -78,6 +80,19 @@ def assemble(cli, s, mois_liste, existant):
         tp = ga4.sessions_total(cli, s.propriete, hote_parent, deb, f_iso)
         tr = ga4.sessions_total(cli, s.propriete, hote_reprise, deb, f_iso)
         sess, users = ga4.sessions_et_utilisateurs(cli, s.propriete, hote_reprise, deb, f_iso)
+
+        # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
+        # on n'ecrase jamais un funnel existant par un echec : si les deux
+        # methodes echouent, on garde ce qu'il y avait avant plutot que de
+        # publier un trou ou une supposition.
+        bloc_f, methode_f = funnel.bloc_funnel(cli, s.propriete, hote_reprise,
+                                               deb, f_iso, nb)
+        methodes_funnel[mois] = methode_f
+        if bloc_f:
+            d["funnelMonth"][mois] = bloc_f
+            journal.append(f"{mois} : funnel via {methode_f}")
+        elif mois not in d["funnelMonth"]:
+            journal.append(f"{mois} : funnel indisponible ({methode_f})")
 
         # profils pour la detection, par jour
         brut = ga4._rapport(
@@ -144,6 +159,7 @@ def assemble(cli, s, mois_liste, existant):
     d["_ratios_sessions_users"] = ratios
     d["_part_etranger"] = parts
     d["_hotes"] = {"parent": hote_parent, "reprise": hote_reprise}
+    d["_methodes_funnel"] = methodes_funnel
     return d, journal
 
 
