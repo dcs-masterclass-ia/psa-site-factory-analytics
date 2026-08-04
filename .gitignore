@@ -1,4 +1,10 @@
-.DS_Store
-node_modules/
-*.log
-.vercel
+# clés de comptes de service — ne doivent jamais être versionnées
+psa-reporting*.json
+ga4-consolidation*.json
+*-service-account*.json
+service-account*.json
+
+__pycache__/
+*.pyc
+venv/
+venv-*/
