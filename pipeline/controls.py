@@ -194,6 +194,27 @@ def controle(nouveau, ancien=None, modele=None):
     else:
         r.ajoute("funnel_methode_precise", True, False)
 
+    # ne de la correction du 04/08/2026 : l'etape Estimation etait surevaluee
+    # (filtre sur step_name seul, sans le croisement avec l'evenement
+    # tradein_request exige par l'exploration GA4). On mesure l'ampleur du
+    # changement pour ce mois si l'ancien fichier avait deja un funnel.
+    ecarts_estim = []
+    for m, fm in (nouveau.get("funnelMonth") or {}).items():
+        ancien_fm = (ancien.get("funnelMonth") or {}).get(m) if ancien else None
+        if not ancien_fm or not fm.get("steps") or not ancien_fm.get("steps"):
+            continue
+        # comparaison par position : les libelles heritent parfois de
+        # relevés manuels anterieurs ("6. price estimation") plutot que du
+        # libelle produit par ce module ("Estimation")
+        n_new = fm["steps"][-1]["users"]
+        n_old = ancien_fm["steps"][-1]["users"]
+        if n_old and n_new != n_old:
+            ecarts_estim.append(f"{m} {n_old}->{n_new} ({(n_new-n_old)/n_old*100:+.0f}%)")
+    if ecarts_estim:
+        r.ajoute("funnel_estimation_recalculee", False, False, "; ".join(ecarts_estim))
+    else:
+        r.ajoute("funnel_estimation_recalculee", True, False)
+
     return r
 
 
