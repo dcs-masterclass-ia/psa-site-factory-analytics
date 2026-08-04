@@ -15,8 +15,9 @@ on:
     inputs:
       simulation:
         description: "Simulation : calcule et affiche sans rien écrire"
-        type: boolean
-        default: false
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
       sites:
         description: "Sites à traiter, séparés par une espace (vide = tous)"
         required: false
@@ -62,14 +63,19 @@ jobs:
         run: |
           ARGS=""
           if [ -n "${{ inputs.sites }}" ]; then ARGS="--sites ${{ inputs.sites }}"; fi
-          if [ "${{ inputs.simulation }}" != "true" ]; then ARGS="$ARGS --ecrire"; fi
+          if [ "${{ inputs.simulation }}" != "oui" ]; then ARGS="$ARGS --ecrire"; fi
+          echo "mode : $([ "${{ inputs.simulation }}" = "oui" ] && echo SIMULATION || echo ECRITURE)"
           python -m pipeline.build $ARGS | tee sortie.txt
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           tail -60 sortie.txt >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Committer si quelque chose a changé
-        if: inputs.simulation != 'true'
+        # comparaison en chaine explicite : inputs.simulation vient d'un choix
+        # textuel "oui"/"non", jamais d'un type boolean — GitHub Actions coerce
+        # mal les booleens dans les expressions if, ce qui a deja fait passer
+        # cette etape alors qu'elle aurait du etre ignoree en simulation.
+        if: ${{ inputs.simulation != 'oui' }}
         run: |
           git config user.name "pipeline"
           git config user.email "pipeline@users.noreply.github.com"
@@ -90,8 +96,12 @@ jobs:
           exit 1
 
       - name: Signaler un échec de contrôle
-        if: inputs.simulation != 'true'
+        if: ${{ always() && inputs.simulation != 'oui' }}
         run: |
+          if [ ! -f data/pipeline.json ]; then
+            echo "::notice::pipeline.json absent (rien n'a ete ecrit, probablement une simulation ou une erreur en amont)."
+            exit 0
+          fi
           STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
           if [ "$STATUT" = "echec" ]; then
             echo "::warning::Contrôle bloquant : les données de la veille ont été conservées. Le dashboard l'affiche."
