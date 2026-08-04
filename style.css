@@ -483,3 +483,14 @@ table{ border-collapse:collapse; width:100%; }
 }
 .grid tbody tr.total.gt td{ background:var(--ink); color:#fff; border-top:0; }
 .grid tbody tr.total.gt td.num{ color:#fff; }
+
+/* ---- bandeau d'état du pipeline ---- */
+.v2-strip.grave{ background:#FDF0EE; border-bottom-color:#F0C4BC; }
+.v2-strip.grave .tagchip{ background:var(--rust); color:#fff; }
+.v2-strip.grave p{ color:#7A2A1B; }
+.v2-strip > div{ min-width:0; }
+ul.anos{
+  margin:7px 0 0; padding-left:18px;
+  font:400 11px/1.55 var(--sans); color:var(--ink-2);
+}
+ul.anos b{ font-weight:600; color:var(--ink); }
