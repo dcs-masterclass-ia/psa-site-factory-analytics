@@ -1,0 +1,47 @@
+name: Diagnostic Search Console (étape 0)
+
+# Lecture seule, déclenchement manuel. Répond à une seule question : le
+# compte de service GA4 voit-il déjà des propriétés Search Console ?
+# N'écrit rien, ne commite rien, ne configure rien côté Google — l'ajout de
+# l'accès se fait à la main dans l'interface Search Console.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostiquer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          python -c "import json,os;json.load(open(os.environ['RUNNER_TEMP']+'/ga4.json'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Lister les propriétés Search Console accessibles
+        run: python -m pipeline.search_console --sites
+
+      - name: Effacer la clé
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ga4.json"
