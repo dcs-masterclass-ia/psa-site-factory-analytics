@@ -100,7 +100,12 @@ def controle(nouveau, ancien=None, modele=None):
     if modele:
         # les cles prefixees par _ sont des diagnostics internes, retires avant
         # ecriture : elles ne font pas partie du schema publie.
-        sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - {"anomaly"}
+        # cles de schema ajoutees volontairement par le pipeline, au-dela du
+        # modele historique : `anomaly` (trafic automatise documente) et
+        # `canalQuotidien` (repartition par canal, jour par jour). Toute AUTRE
+        # cle inattendue doit continuer de bloquer la publication.
+        SCHEMA_ETENDU = {"anomaly", "canalQuotidien"}
+        sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - SCHEMA_ETENDU
         manq = set(modele) - set(nouveau)
         ok = not sup and not manq
         r.ajoute("structure_identique", ok, True,
