@@ -449,3 +449,38 @@ ul.anos b{ font-weight:700; }
   .score-val{ font-size:28px; }
   .td-bar{ display:none; }
 }
+
+/* ============================== ecran de connexion ============================== */
+
+.login-screen{
+  position:fixed; inset:0; z-index:100;
+  background:var(--rail-bg);
+  display:flex; align-items:center; justify-content:center;
+}
+.login-card{
+  width:100%; max-width:340px; margin:0 20px;
+  background:var(--panel); border-radius:var(--r-lg);
+  box-shadow:var(--shadow-up);
+  padding:32px 28px 28px;
+  display:flex; flex-direction:column; gap:16px;
+}
+.login-mark{ display:flex; align-items:center; gap:10px; }
+.login-mark .mark-glyph{ width:34px; height:34px; border-radius:10px; font-size:11px; }
+.login-mark span:last-child{ font:700 15px/1 var(--sans); color:var(--ink); }
+.login-sub{ margin:0; font:500 12.5px/1.5 var(--sans); color:var(--ink-3); }
+.login-field{
+  display:flex; flex-direction:column; gap:6px;
+  font:700 10.5px/1 var(--sans); letter-spacing:.05em; text-transform:uppercase; color:var(--ink-4);
+}
+.login-field input{
+  font:600 14px/1 var(--sans); color:var(--ink); padding:11px 12px; border:0;
+  border-radius:var(--r-md); background:var(--sunk); width:100%;
+}
+.login-field input:focus{ outline:2px solid var(--eu); outline-offset:1px; }
+.login-btn{
+  margin-top:4px; padding:12px; border-radius:var(--r-md);
+  background:var(--eu); color:#fff; font:700 13.5px/1 var(--sans);
+  transition:background .15s ease;
+}
+.login-btn:hover{ background:var(--eu-dark); }
+.login-err{ margin:0; font:600 12px/1.4 var(--sans); color:var(--rust); }
