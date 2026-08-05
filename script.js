@@ -1977,20 +1977,68 @@ async function load(site) {
    qui detient le jeton GitHub cote serveur. Le jeton n'entre jamais dans ce
    fichier ni dans le navigateur — c'est la seule maniere sure de declencher
    une GitHub Action depuis une page publique. */
+/* recharge les donnees depuis le serveur sans perdre la position de
+   l'utilisateur (site, rapport, periode) — contrairement a un F5 qui
+   reviendrait au mois par defaut. */
+async function rafraichirDonnees() {
+  const index = await (await fetch("data/index.json", { cache: "no-store" })).json();
+  SITES = index.sites;
+  await Promise.all([loadEtat(), ...SITES.map(async (s) => {
+    const r = await fetch("data/" + slug(s) + ".json", { cache: "no-store" });
+    if (r.ok) DATA[s] = await r.json();
+  })]);
+  render();
+}
+
 function wireRefreshButton() {
   const btn = $("#refreshBtn"), lbl = $("#refreshLabel");
   if (!btn) return;
+
+  const DUREE_ESTIMEE = 210;   // secondes : pipeline (~150s) + redeploiement Vercel (~40s)
+  const DELAI_SONDAGE = 15000; // frequence de verification, en ms
+  const SONDAGE_MAX = 40;      // ~10 minutes avant d'abandonner
+
+  async function attendreLesNouvellesDonnees(avant) {
+    const debut = Date.now();
+    for (let i = 0; i < SONDAGE_MAX; i++) {
+      await new Promise(r => setTimeout(r, DELAI_SONDAGE));
+      const restant = Math.max(0, Math.round(DUREE_ESTIMEE - (Date.now() - debut) / 1000));
+      lbl.textContent = restant > 0 ? `En cours… ~${Math.ceil(restant / 60)} min` : "Vérification…";
+
+      try {
+        const r = await fetch("data/pipeline.json", { cache: "no-store" });
+        if (!r.ok) continue;
+        const etat = await r.json();
+        if (etat.derniere_execution && etat.derniere_execution !== avant) {
+          await rafraichirDonnees();
+          lbl.textContent = etat.statut === "ok" ? "À jour ✓" : "À jour (voir alertes)";
+          btn.title = `Rafraîchi à l'instant. Statut du pipeline : ${etat.statut}.`;
+          return;
+        }
+      } catch (e) { /* on retente au prochain tour */ }
+    }
+    lbl.textContent = "Toujours en cours";
+    btn.title = "Le pipeline met plus de temps que prévu. Les données se mettront à jour dès qu'il aura terminé — recharger la page dans quelques minutes.";
+  }
+
   btn.addEventListener("click", async () => {
     if (btn.disabled) return;
     btn.disabled = true;
     btn.classList.add("spin");
     lbl.textContent = "Lancement…";
     try {
-      const r = await fetch("/api/refresh", { method:"POST" });
+      // horodatage actuel, pour detecter le changement plutot que deviner un delai fixe
+      const etatAvant = await fetch("data/pipeline.json", { cache: "no-store" })
+        .then(r => r.ok ? r.json() : {}).catch(() => ({}));
+      const avant = etatAvant.derniere_execution || null;
+
+      const r = await fetch("/api/refresh", { method: "POST" });
       const j = await r.json().catch(() => ({}));
+
       if (r.status === 200) {
-        lbl.textContent = "Lancé ✓";
-        btn.title = "Les nouvelles données arrivent en général en 2 à 3 minutes.";
+        btn.classList.remove("spin");
+        btn.title = "Extraction GA4 puis redéploiement : compter 3 à 4 minutes.";
+        await attendreLesNouvellesDonnees(avant);
       } else if (r.status === 429) {
         lbl.textContent = "Déjà en cours";
         btn.title = j.error || "Un rafraîchissement est déjà en cours.";
@@ -2003,7 +2051,7 @@ function wireRefreshButton() {
       btn.title = "Le service de rafraîchissement n'est pas joignable.";
     } finally {
       btn.classList.remove("spin");
-      setTimeout(() => { btn.disabled = false; lbl.textContent = "Actualiser"; btn.title = ""; }, 6000);
+      setTimeout(() => { btn.disabled = false; lbl.textContent = "Actualiser"; btn.title = ""; }, 8000);
     }
   });
 }
