@@ -50,10 +50,10 @@ SITES = [
          "www.peugeot.pt", "www.retoma.peugeot.pt",
          verifie=False, acces_api=True, pays="PT"),
 
-    # --- acces refuse : demande en cours aupres de DPM ---
+    # --- acces accorde le 05/08/2026, hotes a confirmer contre le volume reel ---
     Site("DS PT", "ds-pt", "276470566",
          "www.dsautomobiles.pt", "retoma.dsautomobiles.pt",
-         verifie=False, acces_api=False, pays="PT"),
+         verifie=False, acces_api=True, pays="PT"),
 ]
 
 PAR_SLUG = {s.slug: s for s in SITES}
