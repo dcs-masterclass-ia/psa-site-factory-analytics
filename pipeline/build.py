@@ -158,6 +158,21 @@ def assemble(cli, s, mois_liste, existant):
                 f"Mois en cours. Relevé GA4 arrêté au {f_iso}, "
                 "les données ne sont consolidées qu'après 24 à 48 heures.")
 
+        # Les leads viennent du back-office, extraits a la main : ils peuvent
+        # couvrir moins de jours que GA4. On complete avec None — « inconnu » —
+        # et jamais avec 0, qui affirmerait a tort « aucun lead ce jour-la ».
+        bloc_leads = d["leads"].setdefault(mois, {"total": 0, "daily": []})
+        serie = bloc_leads.setdefault("daily", [])
+        if len(serie) < jours_reels:
+            manquants = jours_reels - len(serie)
+            serie.extend([None] * manquants)
+            journal.append(f"{mois} : {manquants} jour(s) de leads non encore extraits "
+                           f"du back-office, marqués inconnus")
+        elif len(serie) > jours_reels:
+            # GA4 couvre moins de jours que les leads : on ne tronque pas les
+            # leads, on aligne le compteur de jours sur la donnee la plus large
+            d["meta"][mois]["days"] = len(serie)
+
     if mois_liste and mois_liste[-1] not in d["months"]:
         d["months"] = [m for m in mois_liste if m in d["trafficMonth"]]
     d["periods"] = d["months"] + ["total"]
