@@ -1,12 +1,28 @@
-name: Diagnostic Search Console (étape 0)
+name: Diagnostic Search Console
 
-# Lecture seule, déclenchement manuel. Répond à une seule question : le
-# compte de service GA4 voit-il déjà des propriétés Search Console ?
-# N'écrit rien, ne commite rien, ne configure rien côté Google — l'ajout de
-# l'accès se fait à la main dans l'interface Search Console.
+# Lecture seule, declenchement manuel. Deux modes :
+#   - sans site_url : liste les proprietes accessibles au compte de service
+#     (etape 0 — repond a « avons-nous deja acces a quelque chose ? »)
+#   - avec site_url : extrait vue d'ensemble, top requetes, top pages sur la
+#     periode donnee (etape 1 — verifie que l'extraction renvoie des chiffres
+#     coherents avant de l'assembler dans data/).
+# N'ecrit rien dans data/, ne commite rien.
 
 on:
   workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Propriete exacte (vide = liste seulement les proprietes accessibles)"
+        required: false
+        default: ""
+      debut:
+        description: "Debut de periode"
+        required: false
+        default: "2026-07-01"
+      fin:
+        description: "Fin de periode"
+        required: false
+        default: "2026-07-31"
 
 permissions:
   contents: read
@@ -39,8 +55,15 @@ jobs:
             || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
-      - name: Lister les propriétés Search Console accessibles
-        run: python -m pipeline.search_console --sites
+      - name: Interroger Search Console
+        run: |
+          SITE_URL="${{ inputs.site_url }}"
+          if [ -n "$SITE_URL" ]; then
+            python -m pipeline.search_console --sites \
+              --site-url "$SITE_URL" --debut "${{ inputs.debut }}" --fin "${{ inputs.fin }}"
+          else
+            python -m pipeline.search_console --sites
+          fi
 
       - name: Effacer la clé
         if: always()
