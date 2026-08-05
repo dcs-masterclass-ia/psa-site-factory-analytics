@@ -11,6 +11,26 @@
 </head>
 <body>
 
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm" autocomplete="off">
+    <div class="login-mark">
+      <span class="mark-glyph">PSF</span>
+      <span>Site Factory</span>
+    </div>
+    <p class="login-sub">Accès réservé — connexion requise.</p>
+    <label class="login-field">
+      Identifiant
+      <input type="text" id="loginUser" autocomplete="username" autofocus>
+    </label>
+    <label class="login-field">
+      Mot de passe
+      <input type="password" id="loginPass" autocomplete="current-password">
+    </label>
+    <button type="submit" class="login-btn">Se connecter</button>
+    <p class="login-err" id="loginErr" hidden>Identifiant ou mot de passe incorrect.</p>
+  </form>
+</div>
+
 <div class="mesh" aria-hidden="true">
   <div class="blob blob--a"></div>
   <div class="blob blob--b"></div>
@@ -19,7 +39,7 @@
   <div class="blob blob--e"></div>
 </div>
 
-<div class="app">
+<div class="app" id="appRoot" hidden>
 
   <!-- ============================ rail ============================ -->
   <aside class="rail">
