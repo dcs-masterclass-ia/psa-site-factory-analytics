@@ -1,7 +1,7 @@
 {
- "derniere_execution": "2026-08-04T23:15:43+02:00",
- "commit": "dc25063",
- "jour_ga4_fiable": "2026-08-02",
+ "derniere_execution": "2026-08-05T09:44:17+02:00",
+ "commit": "6a0b7f8",
+ "jour_ga4_fiable": "2026-08-03",
  "mois_traites": [
   "2026-04",
   "2026-05",
@@ -17,9 +17,9 @@
     "parent": "www.opel.fr",
     "reprise": "www.reprise.opel.fr"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 11,
+    "passes": 10,
     "total": 13
    }
   },
@@ -29,9 +29,9 @@
     "parent": "www.fiat.pt",
     "reprise": "www.retoma.fiat.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 8,
+    "passes": 7,
     "total": 13
    }
   },
@@ -41,9 +41,9 @@
     "parent": "www.jeep.pt",
     "reprise": "www.retoma.jeep.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 10,
+    "passes": 9,
     "total": 13
    }
   },
@@ -53,9 +53,9 @@
     "parent": "www.alfaromeo.pt",
     "reprise": "www.retoma.alfaromeo.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 9,
+    "passes": 8,
     "total": 13
    }
   },
@@ -65,9 +65,9 @@
     "parent": "www.opel.pt",
     "reprise": "www.retoma.opel.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 9,
+    "passes": 8,
     "total": 13
    }
   },
@@ -77,9 +77,9 @@
     "parent": "www.citroen.pt",
     "reprise": "www.retoma-citroen.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 10,
+    "passes": 9,
     "total": 13
    }
   },
@@ -89,9 +89,9 @@
     "parent": "www.peugeot.pt",
     "reprise": "www.retoma.peugeot.pt"
    },
-   "ga4_jusqu_au": "2026-08-02",
+   "ga4_jusqu_au": "2026-08-03",
    "controles": {
-    "passes": 11,
+    "passes": 10,
     "total": 13
    }
   },
@@ -109,8 +109,14 @@
   },
   {
    "site": "OPEL FR",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 76->118 (+55%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL FR",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -139,8 +145,14 @@
   },
   {
    "site": "FIAT PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 10->14 (+40%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -157,8 +169,14 @@
   },
   {
    "site": "JEEP PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 6->11 (+83%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -181,8 +199,14 @@
   },
   {
    "site": "ALFA ROMEO PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 2->3 (+50%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -194,7 +218,7 @@
   {
    "site": "OPEL PT",
    "controle": "funnel_decroissant",
-   "detail": "mois en ecart : ['2026-06', '2026-07']",
+   "detail": "mois en ecart : ['2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
   },
   {
@@ -205,8 +229,14 @@
   },
   {
    "site": "OPEL PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 13->31 (+138%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -223,8 +253,14 @@
   },
   {
    "site": "CITROEN PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 73->118 (+62%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   },
   {
@@ -235,8 +271,14 @@
   },
   {
    "site": "PEUGEOT PT",
-   "controle": "structure_identique",
-   "detail": "en trop ['canalQuotidien'] / manquantes []",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 106->170 (+60%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "longueur_daily_egale_days",
+   "detail": "mois en ecart : ['2026-08']",
    "gravite": "bloquant"
   }
  ],
