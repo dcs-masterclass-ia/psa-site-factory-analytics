@@ -75,7 +75,10 @@ def controle(nouveau, ancien=None, modele=None):
 
     # --- coherence interne -------------------------------------------------
     # ne du trou du 31/07 : leads.daily a 30 valeurs pour un mois de 31 jours
-    ok = all(sum(nouveau["leads"][m]["daily"]) == nouveau["leads"][m]["total"]
+    # les jours inconnus (None) sont ignores : un jour de leads pas encore
+    # extrait du back-office ne doit pas faire echouer la coherence du mois.
+    ok = all(sum(v for v in nouveau["leads"][m]["daily"] if v is not None)
+             == nouveau["leads"][m]["total"]
              for m in nouveau["periods"])
     r.ajoute("somme_daily_egale_total", ok, True,
              "" if ok else "au moins un mois ou la somme des jours differe du total")
