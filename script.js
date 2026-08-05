@@ -2008,6 +2008,57 @@ function wireRefreshButton() {
   });
 }
 
+/* ============================== connexion ============================== */
+/* Barriere cote client uniquement : ce site est statique, sans serveur pour
+   verifier quoi que ce soit. Elle arrete la visite accidentelle ou un lien
+   partage sans y penser — pas un acces volontaire de quelqu'un qui lirait le
+   code source de la page, ou il verrait cette meme empreinte. */
+
+const AUTH_EMPREINTE = "fd98a33cea628c0865faf7df0f9dabcbbb9f9fad73130bbc9e2fad8a060f7af3";
+const AUTH_CLE = "psf_auth_ok";
+
+async function empreinte(texte) {
+  const donnees = new TextEncoder().encode(texte);
+  const buf = await crypto.subtle.digest("SHA-256", donnees);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* localStorage peut etre indisponible (navigation privee stricte, origine
+   opaque, iframe restreinte) : on degrade proprement plutot que de planter. */
+function stockageLire(cle) {
+  try { return localStorage.getItem(cle); } catch (e) { return null; }
+}
+function stockageEcrire(cle, val) {
+  try { localStorage.setItem(cle, val); } catch (e) { /* session non memorisee */ }
+}
+
+function afficherApp() {
+  $("#loginScreen").remove();
+  $("#appRoot").hidden = false;
+}
+
+async function verifierConnexion(user, pass) {
+  const h = await empreinte(`${user}:${pass}`);
+  return h === AUTH_EMPREINTE;
+}
+
+function wireLogin() {
+  if (stockageLire(AUTH_CLE) === "1") { afficherApp(); return; }
+
+  $("#loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const ok = await verifierConnexion($("#loginUser").value.trim(), $("#loginPass").value);
+    if (ok) {
+      stockageEcrire(AUTH_CLE, "1");
+      afficherApp();
+    } else {
+      $("#loginErr").hidden = false;
+      $("#loginPass").value = "";
+      $("#loginPass").focus();
+    }
+  });
+}
+
 async function boot() {
   try {
     const index = await (await fetch("data/index.json")).json();
@@ -2033,6 +2084,7 @@ async function boot() {
 }
 
 /* les donnees peuvent etre injectees en dur pour une previsualisation hors ligne */
+wireLogin();
 if (window.__INLINE_DATA__) {
   SITES = window.__INLINE_DATA__.sites;
   SITES.forEach(s => { DATA[s] = window.__INLINE_DATA__.data[s]; });
