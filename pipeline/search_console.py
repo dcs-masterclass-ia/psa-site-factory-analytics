@@ -75,6 +75,27 @@ def sites_accessibles(cli):
         key=lambda x: x["site"])
 
 
+def propriete_pour_hote(sites_dispo, hote):
+    """Retrouve la propriete Search Console d'un hote parmi celles listees
+    par sites_accessibles(). Le compte de service peut voir des dizaines de
+    proprietes hors perimetre (portefeuille Stellantis entier) : on ne
+    retient que celle qui correspond exactement a l'hote de reprise deja
+    decouvert cote GA4, jamais une reconstruction supposee.
+
+    Cherche d'abord le prefixe d'URL exact, puis une propriete de domaine
+    qui couvrirait cet hote — sans jamais deviner un format non confirme
+    par l'API.
+    """
+    prefixe = f"https://{hote}/"
+    for e in sites_dispo:
+        if e["site"] == prefixe:
+            return e["site"]
+    for e in sites_dispo:
+        if e["site"].startswith("sc-domain:") and hote.endswith(e["site"].split(":", 1)[1]):
+            return e["site"]
+    return None
+
+
 def _requete(cli, site_url, debut, fin, dimensions):
     corps = {"startDate": debut, "endDate": fin, "dimensions": dimensions,
              "rowLimit": LIMITE}
@@ -90,6 +111,14 @@ def _ligne(r):
 def vue_ensemble_quotidienne(cli, site_url, debut, fin):
     """{'AAAA-MM-JJ': {clics, impressions, ctr, position}}"""
     return {r["keys"][0]: _ligne(r) for r in _requete(cli, site_url, debut, fin, ["date"])}
+
+
+def total_periode(cli, site_url, debut, fin):
+    """Total exact de la periode. Ce n'est pas la somme des jours : la
+    position et le CTR sont des moyennes ponderees, pas des valeurs
+    additives — meme lecon que ga4.sessions_total pour les sessions GA4."""
+    lignes = _requete(cli, site_url, debut, fin, [])
+    return _ligne(lignes[0]) if lignes else {"clics": 0, "impressions": 0, "ctr": 0.0, "position": 0.0}
 
 
 def top_requetes(cli, site_url, debut, fin, n=20):
