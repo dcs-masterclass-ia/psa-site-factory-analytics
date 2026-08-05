@@ -225,6 +225,10 @@ function materialiseRange(d, debut, fin) {
         d.canalQuotidien = d.canalQuotidien || {};
         d.canalQuotidien[key] = d.canalQuotidien[moisComplets[0]];
       }
+      if (debut === jm[0] && fin === jm[jm.length - 1] && (d.searchMonth || {})[moisComplets[0]]) {
+        d.searchMonth = d.searchMonth || {};
+        d.searchMonth[key] = d.searchMonth[moisComplets[0]];
+      }
     }
     // une anomalie documentee ne s'applique que si la plage = exactement ce mois
     if (moisComplets.length === 1) {
@@ -873,6 +877,7 @@ const REPORTS = [
   { k:"acquisition", t:"Acquisition" },
   { k:"leads",       t:"Leads" },
   { k:"parcours",    t:"Parcours" },
+  { k:"recherche",   t:"Recherche" },
 ];
 
 function renderTabs() {
@@ -1862,9 +1867,144 @@ function renderSplitCards(d, v2, realV2) {
   </div>`;
 }
 
+/* ------------------------------ recherche ------------------------------ */
+/* Search Console, mesuré sur l'outil de reprise uniquement (le site parent
+   n'entre pas dans ce périmètre). Deux grains distincts, comme pour le
+   funnel : la série quotidienne clics/impressions existe pour n'importe
+   quelle période (elle vit dans d.daily, comme le trafic GA4), mais le
+   détail — total exact, top requêtes, top pages — n'est reconstruit qu'au
+   mois complet ou au cumul, jamais sommé depuis des plages arbitraires. */
+
+function rechTable(id, rows, keyLabel, keyField) {
+  const max = rows.length ? Math.max(...rows.map(r => r.clics)) : 1;
+  $(id).innerHTML = `
+    <thead><tr><th>${esc(keyLabel)}</th><th></th><th>Clics</th><th>Impr.</th><th>CTR</th><th>Position</th></tr></thead>
+    <tbody>${rows.length ? rows.map((r, i) => `
+      <tr>
+        <td><span class="cell-name"><span class="rank">${i + 1}</span><b title="${esc(r[keyField])}">${esc(r[keyField])}</b></span></td>
+        <td class="td-bar">${bar(r.clics / max, "k")}</td>
+        <td class="num">${fmt(r.clics)}</td>
+        <td class="num dim">${fmt(r.impressions)}</td>
+        <td class="num dim">${pct(r.ctr)}</td>
+        <td class="num dim">${fmt1(r.position)}</td>
+      </tr>`).join("") : `<tr><td colspan="6" style="text-align:center;color:var(--ink-4)">Aucune donnée</td></tr>`}
+    </tbody>`;
+}
+
+function renderRecherche() {
+  const d = DATA[view.site], p = view.period, cmp = view.compare;
+  const host = panel("panel-recherche");
+
+  const sm = (d.searchMonth || {})[p] || null;
+  const smRef = cmp ? (d.searchMonth || {})[cmp] || null : null;
+
+  const ids = idx(d, p);
+  const labels = ids.map(i => d.daily.d[i]);
+  const clicsJour = ids.map(i => (d.daily.sc || [])[i] ?? null);
+  const imprJour = ids.map(i => (d.daily.si || [])[i] ?? null);
+  const hasDaily = clicsJour.some(v => v != null);
+  const vi = v2Index(d, p);
+
+  if (!sm && !hasDaily) {
+    host.innerHTML = `<div class="card"><div class="empty">
+      <b>Search Console indisponible sur ${esc((metaOf(p) || {}).label || p)}</b>
+      <p>Aucune propriété Search Console n'a été trouvée pour l'outil de reprise de ce site, ou la période n'a pas encore été relevée.</p>
+    </div></div>`;
+    return;
+  }
+
+  const days = (metaOf(p) || {}).days || 1;
+  const daysRef = smRef ? ((metaOf(cmp) || {}).days || 1) : null;
+
+  host.innerHTML = `
+    <div class="note" style="margin-bottom:16px">Mesuré sur <b>l'outil de reprise uniquement</b> — le site parent n'est pas dans ce périmètre. Indépendant de GA4 : ce sont les clics et impressions dans les résultats de recherche Google.</div>
+
+    ${sm ? `<div class="scores">
+      ${score({ label:"Clics", value:fmt(sm.clics), sub:fmt1(sm.clics / days) + " / jour",
+        delta: smRef ? delta(sm.clics / days, smRef.clics / daysRef) : "", spark: hasDaily ? spark(clicsJour, C.eu) : "" })}
+      ${score({ label:"Impressions", value:fmt(sm.impressions), sub:fmt1(sm.impressions / days) + " / jour",
+        delta: smRef ? delta(sm.impressions / days, smRef.impressions / daysRef) : "", spark: hasDaily ? spark(imprJour, C.jade) : "" })}
+      ${score({ label:"CTR moyen", value:pct(sm.ctr), sub:"clics / impressions",
+        delta: smRef ? delta(sm.ctr, smRef.ctr, "pts") : "" })}
+      ${score({ label:"Position moyenne", value:fmt1(sm.position), sub:"plus bas = mieux classé",
+        delta: smRef ? delta(-sm.position, -smRef.position, "pts") : "" })}
+    </div>` : `<div class="card"><div class="empty">
+      <b>Détail indisponible sur ${esc((metaOf(p) || {}).label || p)}</b>
+      <p>Le total, les requêtes et les pages ne sont reconstruits qu'au mois complet ou au cumul. Choisissez un mois entier, ou la période cumulée, pour les voir. La série quotidienne ci-dessous reste valable sur n'importe quelle plage.</p>
+    </div></div>`}
+
+    ${hasDaily ? `<div class="card">
+      <div class="card-head">
+        <div><h2>Clics et impressions par jour</h2><p>Deux échelles très différentes : tracées l'une sous l'autre plutôt que superposées, comme le trafic parent/reprise.</p></div>
+      </div>
+      <div class="card-body">
+        <div class="twin-wrap">
+          <div class="twin-tag"><i style="background:${C.eu}"></i>Clics</div>
+          <div class="plot twin"><canvas id="rechTop"></canvas></div>
+          <div class="twin-tag"><i style="background:${C.jade}"></i>Impressions</div>
+          <div class="plot twin"><canvas id="rechBot"></canvas></div>
+        </div>
+      </div>
+      ${vi != null ? `<div class="note"><b>Bande jaune :</b> période postérieure à la bascule V2 du ${esc(frDate(d.v2_date))}.</div>` : ""}
+    </div>` : ""}
+
+    ${sm ? `<div class="search-grid">
+      <div class="card">
+        <div class="card-head"><div><h2>Top requêtes</h2><p>Recherches Google ayant amené des clics vers l'outil de reprise.</p></div></div>
+        <div class="card-body flush"><div class="dimScroll"><table class="grid" id="reqTable"></table></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h2>Top pages</h2><p>Pages de l'outil de reprise cliquées depuis la recherche.</p></div></div>
+        <div class="card-body flush"><div class="dimScroll"><table class="grid" id="pageTable"></table></div></div>
+      </div>
+    </div>` : ""}`;
+
+  if (hasDaily) {
+    const syncJumeaux = (source) => (evt, actifs) => {
+      const autre = CHARTS[source === "rechTop" ? "rechBot" : "rechTop"];
+      if (!autre) return;
+      if (!actifs.length) { autre.setActiveElements([]); autre.tooltip.setActiveElements([], {}); }
+      else {
+        const i = actifs[0].index;
+        autre.setActiveElements([{ datasetIndex: 0, index: i }]);
+        autre.tooltip.setActiveElements([{ datasetIndex: 0, index: i }], { x: 0, y: 0 });
+      }
+      autre.update("none");
+    };
+    const opts = (showX, source) => ({
+      interaction:{ mode:"index", intersect:false },
+      onHover: syncJumeaux(source),
+      plugins:{ legend:{ display:false }, tooltip:tooltipCfg(), v2mark:{ index:vi, label: vi != null && showX ? "V2" : null } },
+      scales:axes(showX, 10),
+      layout:{ padding:{ top:6, right:4 } }
+    });
+    draw("rechTop", {
+      type:"line",
+      data:{ labels, datasets:[{ label:"Clics", data:clicsJour,
+        borderColor:C.eu, fill:true, backgroundColor:fondDegrade(C.eu, .18),
+        borderWidth:2, tension:.4, spanGaps:true,
+        pointRadius:0, pointHoverRadius:5, pointBackgroundColor:C.eu }] },
+      options:opts(false, "rechTop")
+    });
+    draw("rechBot", {
+      type:"line",
+      data:{ labels, datasets:[{ label:"Impressions", data:imprJour,
+        borderColor:C.jade, fill:true, backgroundColor:fondDegrade(C.jade, .2),
+        borderWidth:2, tension:.4, spanGaps:true,
+        pointRadius:0, pointHoverRadius:5, pointBackgroundColor:C.jade }] },
+      options:opts(true, "rechBot")
+    });
+  }
+
+  if (sm) {
+    rechTable("#reqTable", sm.queries || [], "Requête", "requete");
+    rechTable("#pageTable", sm.pages || [], "Page", "page");
+  }
+}
+
 /* ============================== rendu ============================== */
 
-const REPORT_TITLES = { acquisition:"Acquisition", leads:"Leads", parcours:"Parcours" };
+const REPORT_TITLES = { acquisition:"Acquisition", leads:"Leads", parcours:"Parcours", recherche:"Recherche" };
 
 function syncPageHead() {
   const sub = $("#pageSub"), h1 = $("#pageTitle");
@@ -1887,7 +2027,8 @@ function render() {
   if (view.scope === "overview") { renderOverview(); return; }
   if (view.report === "acquisition") renderAcquisition();
   else if (view.report === "leads") renderLeads();
-  else renderParcours();
+  else if (view.report === "parcours") renderParcours();
+  else renderRecherche();
 }
 
 $("#tabs").addEventListener("click", e => {
