@@ -113,12 +113,12 @@ jobs:
           # illisible ici (ex. push precedent avorte en plein rebase) doit se
           # signaler proprement plutot que de planter sur le traceback.
           STATUT=$(python -c "
-import json
-try:
-    print(json.load(open('data/pipeline.json'))['statut'])
-except Exception as e:
-    print(f'illisible:{type(e).__name__}')
-")
+          import json
+          try:
+              print(json.load(open('data/pipeline.json'))['statut'])
+          except Exception as e:
+              print(f'illisible:{type(e).__name__}')
+          ")
           if [ "$STATUT" = "echec" ]; then
             echo "::warning::Contrôle bloquant : les données de la veille ont été conservées. Le dashboard l'affiche."
           elif [[ "$STATUT" == illisible:* ]]; then
