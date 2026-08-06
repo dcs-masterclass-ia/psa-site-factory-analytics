@@ -36,7 +36,14 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      # jeton personnel plutot que le GITHUB_TOKEN par defaut : Vercel bloque
+      # en production tout deploiement pousse par une identite qu'il ne
+      # reconnait pas comme collaborateur autorise (ici github-actions[bot]).
+      # Le commit du pipeline doit apparaitre comme pousse par un compte
+      # deja reconnu pour se deployer automatiquement, sans promotion manuelle.
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
 
       - uses: actions/setup-python@v5
         with:
