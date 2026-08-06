@@ -1,6 +1,6 @@
 {
- "derniere_execution": "2026-08-06T00:02:27+02:00",
- "commit": "7e63419",
+ "derniere_execution": "2026-08-06T12:07:33+02:00",
+ "commit": "c044d6a",
  "jour_ga4_fiable": "2026-08-04",
  "mois_traites": [
   "2026-04",
@@ -19,7 +19,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 11,
+    "passes": 12,
     "total": 13
    }
   },
@@ -31,7 +31,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 8,
+    "passes": 9,
     "total": 13
    }
   },
@@ -43,7 +43,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 10,
+    "passes": 11,
     "total": 13
    }
   },
@@ -55,7 +55,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 9,
+    "passes": 10,
     "total": 13
    }
   },
@@ -67,7 +67,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 9,
+    "passes": 10,
     "total": 13
    }
   },
@@ -79,7 +79,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 10,
+    "passes": 11,
     "total": 13
    }
   },
@@ -91,7 +91,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 11,
+    "passes": 12,
     "total": 13
    }
   },
@@ -103,7 +103,7 @@
    },
    "ga4_jusqu_au": "2026-08-04",
    "controles": {
-    "passes": 9,
+    "passes": 10,
     "total": 13
    }
   }
@@ -113,12 +113,6 @@
    "site": "OPEL FR",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
-   "gravite": "avertissement"
-  },
-  {
-   "site": "OPEL FR",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 118->159 (+35%)",
    "gravite": "avertissement"
   },
   {
@@ -146,12 +140,6 @@
    "gravite": "avertissement"
   },
   {
-   "site": "FIAT PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 14->24 (+71%)",
-   "gravite": "avertissement"
-  },
-  {
    "site": "JEEP PT",
    "controle": "trafic_etranger_sous_40pct",
    "detail": "2026-06 70% hors pays; 2026-07 65% hors pays",
@@ -161,12 +149,6 @@
    "site": "JEEP PT",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
-   "gravite": "avertissement"
-  },
-  {
-   "site": "JEEP PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 11->22 (+100%)",
    "gravite": "avertissement"
   },
   {
@@ -188,12 +170,6 @@
    "gravite": "avertissement"
   },
   {
-   "site": "ALFA ROMEO PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 3->4 (+33%)",
-   "gravite": "avertissement"
-  },
-  {
    "site": "OPEL PT",
    "controle": "trafic_etranger_sous_40pct",
    "detail": "2026-06 50% hors pays",
@@ -212,12 +188,6 @@
    "gravite": "avertissement"
   },
   {
-   "site": "OPEL PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 31->41 (+32%)",
-   "gravite": "avertissement"
-  },
-  {
    "site": "CITROEN PT",
    "controle": "funnel_decroissant",
    "detail": "mois en ecart : ['2026-04', '2026-07']",
@@ -230,21 +200,9 @@
    "gravite": "avertissement"
   },
   {
-   "site": "CITROEN PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 118->162 (+37%)",
-   "gravite": "avertissement"
-  },
-  {
    "site": "PEUGEOT PT",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
-   "gravite": "avertissement"
-  },
-  {
-   "site": "PEUGEOT PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 170->230 (+35%)",
    "gravite": "avertissement"
   },
   {
@@ -263,12 +221,6 @@
    "site": "DS PT",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
-   "gravite": "avertissement"
-  },
-  {
-   "site": "DS PT",
-   "controle": "funnel_estimation_recalculee",
-   "detail": "2026-04 201->240 (+19%); 2026-05 316->356 (+13%); 2026-06 253->288 (+14%); 2026-07 261->306 (+17%)",
    "gravite": "avertissement"
   }
  ]
