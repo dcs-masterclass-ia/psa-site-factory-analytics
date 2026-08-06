@@ -96,15 +96,15 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
     tronque a la place du precedent sans le signaler.
 
     jours_reels borne la plage interrogee aux jours deja ecoules (mois en
-    cours) : au-dela, ce ne sont pas des jours a zero lead mais des jours
-    qui n'ont pas encore eu lieu — meme logique que le reste du pipeline,
-    jamais 0 la ou c'est « pas encore connu »."""
+    cours) : le tableau daily n'a que ces jours-la, jamais complete a la
+    longueur du mois — meme convention que l'ancien processus manuel
+    (« leads.daily a 30 valeurs pour un mois de 31 jours »)."""
     bornes = jours_reels if jours_reels is not None else jours_du_mois
     debut = f"{mois}-01"
     fin = f"{mois}-{max(1, bornes):02d}"
     lignes = [l for l in _telecharge(site_nom, debut, fin) if _valide(l)] if bornes > 0 else []
 
-    daily = [0] * bornes + [None] * (jours_du_mois - bornes)
+    daily = [0] * bornes
     brand, fuel, project, source, code = (Counter() for _ in range(5))
     entree = {"Avec immatriculation": 0, "Marque / modele": 0}
 
