@@ -85,8 +85,13 @@ jobs:
         # cette etape alors qu'elle aurait du etre ignoree en simulation.
         if: ${{ inputs.simulation != 'oui' }}
         run: |
-          git config user.name "pipeline"
-          git config user.email "pipeline@users.noreply.github.com"
+          # identite reconnue par Vercel, pas une identite bot cosmetique :
+          # changer le token de push (checkout) ne suffisait pas, Vercel
+          # bloquait encore parce que l'AUTEUR du commit ("pipeline",
+          # sans compte GitHub reel) restait non reconnu comme collaborateur,
+          # independamment de qui a authentifie le push.
+          git config user.name "dcs-masterclass-ia"
+          git config user.email "m.foureau@autobiz.com"
           git add data/
           if git diff --cached --quiet; then
             echo "Aucun changement, pas de commit."
