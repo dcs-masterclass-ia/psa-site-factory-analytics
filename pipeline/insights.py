@@ -21,6 +21,8 @@ import os
 
 SEUIL_MIN = 20          # clics OU impressions minimum pour qu'une requete/page
                          # entre dans le lot presente au modele
+PLANCHER_IMPRESSIONS = 50  # sous ce total mensuel, le mois est trop frais
+                            # (juste commence) pour dire quoi que ce soit
 MAX_MOIS = 3             # nombre de mois de contexte envoyes (tendance, pas instantane)
 MAX_LIGNES = 10           # top N requetes/pages par mois, deja trie par clics
 MODELE = "gpt-4o-mini"
@@ -117,6 +119,11 @@ def genere_insights(nom_site, search_month):
 
     mois_dispo = sorted(m for m in search_month if m != "total")
     mois_retenus = mois_dispo[-MAX_MOIS:]
+    # un mois a peine commence (quelques impressions) donne l'illusion d'un
+    # effondrement du trafic et biaise la lecture de tendance des mois
+    # precedents — on l'exclut plutot que de laisser le modele s'y fier.
+    while mois_retenus and search_month[mois_retenus[-1]].get("impressions", 0) < PLANCHER_IMPRESSIONS:
+        mois_retenus = mois_retenus[:-1]
     if len(mois_retenus) < 2:
         return []  # une tendance ne se lit pas sur un seul point
 
@@ -130,7 +137,8 @@ def genere_insights(nom_site, search_month):
         client = OpenAI(api_key=cle)
         resp = client.chat.completions.create(
             model=MODELE,
-            temperature=0.3,
+            temperature=0.1,  # coherence d'un jour sur l'autre plus importante
+                               # qu'un peu de diversite pour ce genre d'analyse
             max_tokens=900,
             response_format={"type": "json_object"},
             messages=[
