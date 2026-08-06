@@ -106,7 +106,7 @@ input[type=date]{color-scheme:dark}
       </sc-for>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
         <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
           <span style="{{ refreshProgressStyle }}"></span>
           <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
@@ -114,7 +114,9 @@ input[type=date]{color-scheme:dark}
           </span>
         </button>
         <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
-          <span style="font-size:12px;font-weight:500;color:var(--muted2);white-space:nowrap">{{ lastUpdateLabel }}</span>
+          <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"></path></svg>{{ lastUpdateLabel }}
+          </span>
         </sc-if>
       </div>
       <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
@@ -907,9 +909,9 @@ class Component extends DCLogic {
     if (isNaN(d)) return null;
     const hh = String(d.getHours()).padStart(2, "0"), mn = String(d.getMinutes()).padStart(2, "0");
     const sameDay = d.toDateString() === new Date().toDateString();
-    if (sameDay) return "Données mises à jour aujourd'hui à " + hh + ":" + mn;
+    if (sameDay) return "Actualisé à " + hh + ":" + mn;
     const jj = String(d.getDate()).padStart(2, "0"), moi = String(d.getMonth() + 1).padStart(2, "0");
-    return "Données mises à jour le " + jj + "/" + moi + " à " + hh + ":" + mn;
+    return "Actualisé le " + jj + "/" + moi + " à " + hh + ":" + mn;
   }
 
   /* recharge les donnees depuis le serveur sans perdre le filtre courant
