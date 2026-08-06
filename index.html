@@ -570,7 +570,17 @@ input[type=date]{color-scheme:dark}
         <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;margin-top:10px">
           <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
             <div style="{{ p.row }}">
-              <span style="{{ p.dot }}"></span>
+              <span style="{{ p.iconBadge }}">
+                <sc-if value="{{ p.isNew }}" hint-placeholder-val="{{ false }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>
+                </sc-if>
+                <sc-if value="{{ p.isUsed }}" hint-placeholder-val="{{ false }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                </sc-if>
+                <sc-if value="{{ p.isUnknown }}" hint-placeholder-val="{{ true }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+                </sc-if>
+              </span>
               <span style="display:flex;flex-direction:column;gap:3px;flex:1">
                 <span style="font-size:17px;font-weight:600;color:var(--text)">{{ p.name }}</span>
                 <span style="font-size:14.5px;font-weight:500;color:var(--muted)">{{ p.pct }}</span>
@@ -589,8 +599,13 @@ input[type=date]{color-scheme:dark}
         <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;margin-top:18px">
           <sc-for list="{{ audience }}" as="a" hint-placeholder-count="5">
             <div style="{{ a.row }}">
-              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
-                <span style="font-size:16.5px;font-weight:600;color:var(--text)">{{ a.name }}</span>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="display:flex;align-items:center;gap:10px">
+                  <span style="width:30px;height:30px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(249,171,0,.15);color:#F9AB00">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"></path><path d="M7 14h.01"></path><path d="M17 14h.01"></path><rect width="18" height="8" x="3" y="10" rx="2"></rect><path d="M5 18v2"></path><path d="M19 18v2"></path></svg>
+                  </span>
+                  <span style="font-size:16.5px;font-weight:600;color:var(--text)">{{ a.name }}</span>
+                </span>
                 <span style="font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ a.pct }}</span>
               </div>
               <div style="height:12px;border-radius:6px;background:var(--soft);overflow:hidden"><div style="{{ a.bar }}"></div></div>
@@ -1487,12 +1502,18 @@ class Component extends DCLogic {
     const PROJ_COLORS = ["#FF6B6B", "#F2E85F", "#7B7BF0", "#4A9BF5"];
     const projList = [...agg.project.entries()].sort((a,b) => b[1]-a[1]).slice(0, 4);
     const totalProj = projList.reduce((s, [,v]) => s + v, 0) || 1;
-    const projects = projList.map(([name, v], i) => ({
-      name, pct: dec(v/totalProj*100,0) + " %", value: fmt(v),
-      row: "display:flex;align-items:center;gap:14px;animation:riseIn .6s ease " + (0.75 + i * 0.09) + "s both",
-      dot: "width:11px;height:11px;border-radius:50%;flex:none;background:" + PROJ_COLORS[i % PROJ_COLORS.length],
-      segment: "width:" + dec(v/totalProj*100,0) + "%;border-radius:8px;background:" + PROJ_COLORS[i % PROJ_COLORS.length] + ";animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.7 + i*.12) + "s both",
-    }));
+    const projects = projList.map(([name, v], i) => {
+      const color = PROJ_COLORS[i % PROJ_COLORS.length];
+      const upper = String(name).toUpperCase();
+      const isNew = upper === "VN", isUsed = upper === "VO", isUnknown = !isNew && !isUsed;
+      return {
+        name, pct: dec(v/totalProj*100,0) + " %", value: fmt(v),
+        isNew, isUsed, isUnknown,
+        row: "display:flex;align-items:center;gap:14px;animation:riseIn .6s ease " + (0.75 + i * 0.09) + "s both",
+        iconBadge: "width:38px;height:38px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;background:" + color + "26;color:" + color,
+        segment: "width:" + dec(v/totalProj*100,0) + "%;border-radius:8px;background:" + color + ";animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.7 + i*.12) + "s both",
+      };
+    });
 
     // marques reprises
     const brandList = [...agg.brand.entries()].sort((a,b) => b[1]-a[1]).slice(0, 5);
