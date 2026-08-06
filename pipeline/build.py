@@ -250,9 +250,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             except Exception as e:
                 journal.append(f"total : recherche en erreur ({type(e).__name__})")
 
-    # insights IA : uniquement s'il y a une propriete Search Console reelle
-    # a analyser, jamais invente sur des donnees absentes.
-    d["insights"] = insights.genere_insights(s.nom, d["searchMonth"]) if gsc_site else []
+    # insights IA : un jeu par rapport (Acquisition/Leads/Parcours toujours
+    # tentes, Recherche uniquement s'il y a une propriete Search Console
+    # reelle) — jamais invente sur des donnees absentes.
+    d["insights"] = insights.genere_tous(s.nom, d, gsc_site)
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios

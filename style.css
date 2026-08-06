@@ -487,7 +487,7 @@ ul.anos b{ font-weight:700; color:var(--ink); }
 /* ---- insights IA : meme accent gauche fin que les bandeaux, un insight
    = un signal, jamais un encadre plein ---- */
 
-#aiInsightsCard{ scroll-margin-top:84px; }
+.ai-insights{ scroll-margin-top:84px; }
 .ai-title{ display:flex; align-items:center; gap:9px; }
 .ai-title svg{ width:16px; height:16px; flex:none; color:var(--eu); }
 .insight-list{ display:flex; flex-direction:column; gap:18px; }
