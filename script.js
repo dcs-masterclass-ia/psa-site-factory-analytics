@@ -13,6 +13,8 @@ const C = {
   jade:  CSS.getPropertyValue("--jade").trim()  || "#0B7B6B",
   tag:   CSS.getPropertyValue("--tag").trim()   || "#F5C518",
   rust:  CSS.getPropertyValue("--rust").trim()  || "#C4462F",
+  pos:   CSS.getPropertyValue("--pos").trim()   || "#3ECF8E",
+  pink:  CSS.getPropertyValue("--pink").trim()  || "#EC6FAE",
   line:  CSS.getPropertyValue("--line").trim()  || "#DCE1E7",
   line2: CSS.getPropertyValue("--line-2").trim()|| "#EDF0F3",
 };
@@ -399,51 +401,31 @@ function spark(values, color) {
       <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
     </linearGradient></defs>
     <polygon points="${area}" fill="url(#${id})"/>
-    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="1.6"
+    <polyline points="${line}" fill="none" stroke="${color}" stroke-width="2.4"
       stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
     <circle cx="${pt[pt.length-1][0].toFixed(1)}" cy="${pt[pt.length-1][1].toFixed(1)}" r="2" fill="${color}"/>
   </svg>`;
 }
 
-function score(o) {
-  return `<div class="score">
-    <div class="score-lbl">${esc(o.label)}</div>
-    <div class="score-val">${o.value}${o.unit ? `<u>${o.unit}</u>` : ""}</div>
-    <div class="score-foot">
-      <div>
-        <div class="score-sub">${o.sub || ""}</div>
-        ${o.delta || ""}
-      </div>
-      ${o.spark || ""}
-    </div>
-  </div>`;
+/* pastille d'icone par defaut : simple point dans un halo pastel — pas
+   besoin d'un pictogramme distinct par metrique pour lire la carte. */
+function scoreIcon(color) {
+  return `<i style="color:${color}"></i>`;
 }
 
-/* composant "flux" : trois etapes reliees par des fleches pourcentees,
-   sur le modele du Monthly Quick Look de Looker Studio. */
-function flowStep(o) {
-  return `<div class="flow-box">
-    <div class="flow-lbl">${esc(o.label)}</div>
-    <div class="flow-val">${o.value}</div>
-    ${o.delta ? `<div class="flow-delta">${o.delta}</div>` : ""}
+/* carte KPI, sur le modele exact des cartes Total sales / Total expenses de
+   la reference : libelle en haut, pastille d'icone au coin, gros chiffre,
+   ecart en dessous. */
+function score(o) {
+  const color = o.color || C.eu;
+  return `<div class="score">
+    <div class="score-top">
+      <span class="score-lbl">${esc(o.label)}</span>
+      <span class="score-ic" style="background:${color}22;color:${color}">${o.icon || scoreIcon(color)}</span>
+    </div>
+    <div class="score-val">${o.value}${o.unit ? `<u>${o.unit}</u>` : ""}</div>
+    ${o.delta ? `<div class="score-delta">${o.delta}</div>` : ""}
   </div>`;
-}
-function flowArrow(pct) {
-  return `<div class="flow-arrow">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg>
-    <span>${pct}</span>
-  </div>`;
-}
-function flow(steps) {
-  const parts = [];
-  steps.forEach((s, i) => {
-    parts.push(flowStep(s));
-    if (i < steps.length - 1) {
-      const r = steps[i].raw, r2 = steps[i + 1].raw;
-      parts.push(flowArrow(r ? pct(r2 / r * 100) : "—"));
-    }
-  });
-  return `<div class="flow">${parts.join("")}</div>`;
 }
 
 function bar(ratio, tone) {
@@ -462,7 +444,7 @@ function bar(ratio, tone) {
    - une seule police, Plus Jakarta Sans, dans tout le graphique
    - curseur vertical au survol pour lier les series a la date          */
 
-const FONT = "Plus Jakarta Sans";
+const FONT = "Inter";
 
 Chart.defaults.font.family = FONT;
 Chart.defaults.font.size = 11;
@@ -515,7 +497,9 @@ const CURSEUR = {
 };
 Chart.register(CURSEUR);
 
-/* bande + etiquette du jour de bascule V2 */
+/* etiquette du jour de bascule V2 : juste un trait pointille + une pastille,
+   plus de fond teinte pleine largeur — ca lisait comme une alerte d'erreur
+   plutot qu'un simple repere temporel. */
 const V2MARK = {
   id: "v2mark",
   beforeDatasetsDraw(chart) {
@@ -525,12 +509,10 @@ const V2MARK = {
     if (!a) return;
     const x = chart.scales.x.getPixelForValue(o.index);
     ctx.save();
-    ctx.fillStyle = C.tag + "14";
-    ctx.fillRect(x, a.top, a.right - x, a.bottom - a.top);
     ctx.beginPath();
     ctx.setLineDash([3, 3]);
     ctx.moveTo(x, a.top); ctx.lineTo(x, a.bottom);
-    ctx.strokeStyle = C.tag; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = C.ink4; ctx.lineWidth = 1.25;
     ctx.stroke();
     ctx.setLineDash([]);
     if (o.label) {
@@ -539,7 +521,7 @@ const V2MARK = {
       const lx = Math.min(x + 5, a.right - w);
       ctx.fillStyle = C.tag;
       ctx.beginPath(); ctx.roundRect(lx, a.top + 5, w, 17, 100); ctx.fill();
-      ctx.fillStyle = "#fff"; ctx.textBaseline = "middle"; ctx.textAlign = "center";
+      ctx.fillStyle = "#0b0b12"; ctx.textBaseline = "middle"; ctx.textAlign = "center";
       ctx.fillText(o.label, lx + w / 2, a.top + 13.5);
     }
     ctx.restore();
@@ -565,41 +547,59 @@ const SAILLANT = {
     const moy = reels.reduce((s, v) => s + v, 0) / reels.length;
     ctx.save();
 
-    /* ligne de moyenne */
+    /* ligne de moyenne : fine, discrete */
     const ym = y.getPixelForValue(moy);
     if (ym > a.top && ym < a.bottom) {
       ctx.beginPath();
       ctx.setLineDash([2, 5]);
       ctx.moveTo(a.left, ym); ctx.lineTo(a.right, ym);
-      ctx.strokeStyle = C.ink4; ctx.lineWidth = 1;
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1;
       ctx.stroke();
       ctx.setLineDash([]);
       const txt = `moy. ${abrege(moy)}`;
       ctx.font = `700 9.5px ${FONT}`;
       const w = ctx.measureText(txt).width + 12;
-      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.fillStyle = "#1b1b28";
       ctx.beginPath(); ctx.roundRect(a.right - w, ym - 8, w, 16, 100); ctx.fill();
       ctx.fillStyle = C.ink3; ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText(txt, a.right - w / 2, ym);
     }
 
-    /* pic annote */
+    /* pic annote : petite carte flottante (libelle + valeur), sur le modele
+       des bulles "Income / $190,350" de la reference, plutot qu'une simple
+       pastille de chiffre. */
     const max = Math.max(...reels);
     const iMax = vals.indexOf(max);
     if (iMax >= 0) {
+      const col = o.couleur || C.eu;
       const px = x.getPixelForValue(iMax), py = y.getPixelForValue(max);
-      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, Math.PI * 2);
-      ctx.fillStyle = o.couleur || C.eu; ctx.fill();
-      ctx.lineWidth = 2.5; ctx.strokeStyle = "#fff"; ctx.stroke();
-      const txt = abrege(max);
-      ctx.font = `800 11px ${FONT}`;
-      const w = ctx.measureText(txt).width + 14;
-      const bx = Math.min(Math.max(px - w / 2, a.left), a.right - w);
-      const by = Math.max(py - 30, a.top + 2);
-      ctx.fillStyle = o.couleur || C.eu;
-      ctx.beginPath(); ctx.roundRect(bx, by, w, 19, 100); ctx.fill();
-      ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText(txt, bx + w / 2, by + 10);
+
+      ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2);
+      ctx.fillStyle = col; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = "#0b0b12"; ctx.stroke();
+
+      const lbl = (o.label || "pic").toUpperCase();
+      const val = abrege(max);
+      ctx.font = `700 8.5px ${FONT}`;
+      const wLbl = ctx.measureText(lbl).width;
+      ctx.font = `800 13px ${FONT}`;
+      const wVal = ctx.measureText(val).width;
+      const cw = Math.max(wLbl, wVal) + 24;
+      const ch = 46;
+      let bx = px - cw / 2; bx = Math.min(Math.max(bx, a.left), a.right - cw);
+      let by = py - ch - 14; if (by < a.top) by = py + 14;
+
+      ctx.beginPath(); ctx.roundRect(bx, by, cw, ch, 12);
+      ctx.fillStyle = "#1b1b28"; ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = "rgba(255,255,255,.1)"; ctx.stroke();
+
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = C.ink4; ctx.font = `700 8.5px ${FONT}`;
+      ctx.fillText(lbl, bx + 12, by + 17);
+      ctx.fillStyle = "#f4f4f7"; ctx.font = `800 13px ${FONT}`;
+      ctx.fillText(val, bx + 12, by + 35);
+      ctx.beginPath(); ctx.arc(bx + cw - 12, by + 27, 3, 0, Math.PI * 2);
+      ctx.fillStyle = col; ctx.fill();
     }
     ctx.restore();
   },
@@ -609,7 +609,9 @@ Chart.register(SAILLANT);
 function tooltipCfg(fmtFn) {
   return {
     enabled: true,
-    backgroundColor: "rgba(13,18,32,.94)",
+    backgroundColor: "#1b1b28",
+    borderColor: "rgba(255,255,255,.1)",
+    borderWidth: 1,
     padding: { top: 10, bottom: 10, left: 12, right: 14 },
     cornerRadius: 10,
     caretSize: 5,
@@ -629,6 +631,8 @@ function tooltipCfg(fmtFn) {
   };
 }
 
+/* quasi aucune grille visible, comme la reference : juste assez pour
+   raccrocher un point a sa valeur, jamais un quadrillage. */
 function axes(showX, tickCount) {
   return {
     x: {
@@ -643,15 +647,36 @@ function axes(showX, tickCount) {
     y: {
       beginAtZero: true,
       border: { display: false },
-      grid: {
-        color: C.line, drawTicks: false, lineWidth: 1,
-        // grille pointillee : presente sans peser
-        borderDash: [3, 4],
-      },
+      grid: { color: C.line2, drawTicks: false, lineWidth: 1 },
       ticks: {
         padding: 12, maxTicksLimit: 5, callback: v => abrege(v),
         color: C.ink4, font: { family: FONT, size: 10.5, weight: 600 },
       },
+    },
+  };
+}
+
+/* libelle chaque point d'une courbe : illisible a 30 points (les jours),
+   mais a 4-5 points (les mois) ca se lit d'un coup d'oeil sans survol —
+   pas besoin de deviner la valeur exacte au pixel pres. */
+function pointLabels(fmtFn) {
+  return {
+    id: "pointLabels",
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      ctx.save();
+      ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+      chart.data.datasets.forEach(ds => {
+        if (ds.hidden) return;
+        ctx.font = `800 11px ${FONT}`;
+        ctx.fillStyle = ds.borderColor || C.ink;
+        (ds.data || []).forEach((v, i) => {
+          if (v == null || !isFinite(v)) return;
+          const px = x.getPixelForValue(i), py = y.getPixelForValue(v);
+          ctx.fillText((fmtFn || fmt)(v), px, py - 11);
+        });
+      });
+      ctx.restore();
     },
   };
 }
@@ -668,37 +693,24 @@ function clearCharts() {
 
 /* ============================== rail ============================== */
 
-function euStars() {
-  let s = "";
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
-    s += `<circle cx="${(12 + Math.cos(a) * 6.4).toFixed(2)}" cy="${(12 + Math.sin(a) * 6.4).toFixed(2)}" r="1.05" fill="#fff"/>`;
-  }
-  return `<svg viewBox="0 0 24 24" aria-hidden="true">${s}</svg>`;
-}
+const ICON_GRID = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>`;
 
-/* Navigation refondue : les marques sont directement listees dans le rail —
-   un clic au lieu de deux — avec leur volume de leads visible pour comparer
-   sans changer de vue. Les fleches haut/bas parcourent la liste. */
+/* bande d'icones : un monogramme par marque (2 lettres) + le pays en
+   sous-texte, le nom complet et le volume de leads apparaissent au survol
+   (voir data-tip) plutot que d'occuper la place en permanence. */
 function renderSiteSelect() {
-  const lignes = [`<button class="navRow" data-site="__overview__">
-      <span class="navDot" style="background:var(--rail-mut)"></span>
-      <span class="navName">Synthèse</span>
+  const lignes = [`<button class="navRow" data-site="__overview__" data-tip="Synthèse — tous les sites">
+      <span class="navDot">${ICON_GRID}</span>
+      <span class="navName">Tous</span>
     </button>`];
 
-  for (const g of ["PSA", "FCA"]) {
-    const liste = SITES.filter(s => (FAMILLE[s] || "PSA") === g);
-    if (!liste.length) continue;
-    lignes.push(`<div class="fam">${esc(FAM_LABEL[g])}</div>`);
-    for (const s of liste) {
-      const h = HOSTS[s] || { pays: "" };
-      const dot = h.pays === "P" ? "var(--tag)" : "var(--eu)";
-      lignes.push(`<button class="navRow" data-site="${esc(s)}">
-        <span class="navDot" style="background:${dot}"></span>
-        <span class="navName">${esc(s)}</span>
-        <span class="navVal num" data-leads="${esc(s)}"></span>
-      </button>`);
-    }
+  for (const s of SITES) {
+    const mono = s.split(" ")[0].slice(0, 2).toUpperCase();
+    const cc = s.split(" ").slice(-1)[0];
+    lignes.push(`<button class="navRow" data-site="${esc(s)}" data-tip="${esc(s)}">
+      <span class="navDot">${esc(mono)}</span>
+      <span class="navName">${esc(cc)}</span>
+    </button>`);
   }
   $("#siteNav").innerHTML = lignes.join("");
 
@@ -729,16 +741,16 @@ function syncSiteSelect() {
     b.classList.toggle("on", on);
     b.setAttribute("aria-current", on ? "page" : "false");
   });
-  /* volume de leads de la periode courante, en regard de chaque marque */
-  document.querySelectorAll("[data-leads]").forEach(el => {
-    const s = el.dataset.leads, d = DATA[s];
+  /* volume de leads de la periode courante, ajoute a l'infobulle de survol */
+  document.querySelectorAll("#siteNav .navRow[data-site]").forEach(b => {
+    const s = b.dataset.site, d = DATA[s];
     if (!d) return;
     if (estRange(view.period)) {
       const [, deb, fin] = view.period.split(":");
       materialiseRange(d, deb, fin);
     }
     const st = stats(d, view.period);
-    el.textContent = st ? fmt(st.leads) : "—";
+    b.dataset.tip = `${s} — ${st ? fmt(st.leads) + " leads" : "—"}`;
   });
 }
 
@@ -873,19 +885,39 @@ function wirePeriodControl() {
 
 /* ============================ navigation ============================ */
 
-const REPORTS = [
-  { k:"acquisition", t:"Acquisition" },
-  { k:"leads",       t:"Leads" },
-  { k:"parcours",    t:"Parcours" },
-  { k:"recherche",   t:"Recherche" },
+/* deux niveaux : le groupe est la source de donnee (GA4 / Recherche...),
+   le rapport est la vue a l'interieur. view.report reste la seule source de
+   verite — le groupe s'en deduit toujours, jamais stocke a part, pour ne
+   jamais desynchroniser les deux. */
+const GROUPS = [
+  { k:"ga4", t:"GA4", reports:[
+    { k:"acquisition", t:"Acquisition" },
+    { k:"leads",       t:"Leads" },
+    { k:"parcours",    t:"Parcours" },
+  ]},
+  { k:"recherche", t:"Recherche", reports:[
+    { k:"recherche", t:"Vue d'ensemble" },
+  ]},
 ];
+const REPORTS = GROUPS.flatMap(g => g.reports);
+const groupOf = r => (GROUPS.find(g => g.reports.some(x => x.k === r)) || GROUPS[0]).k;
+
+function renderGroups() {
+  const nav = $("#groups");
+  nav.hidden = view.scope !== "site";
+  if (nav.hidden) { nav.innerHTML = ""; return; }
+  const cur = groupOf(view.report);
+  nav.innerHTML = GROUPS.map(g =>
+    `<button class="grouptab ${g.k === cur ? "on" : ""}" data-group="${g.k}">${esc(g.t)}</button>`).join("");
+}
 
 function renderTabs() {
   const nav = $("#tabs");
-  nav.hidden = view.scope !== "site";
+  const g = GROUPS.find(x => x.k === groupOf(view.report)) || GROUPS[0];
+  nav.hidden = view.scope !== "site" || g.reports.length < 2;
   if (nav.hidden) { nav.innerHTML = ""; return; }
-  nav.innerHTML = REPORTS.map(r =>
-    `<button class="tab ${r.k === view.report ? "on" : ""}" data-report="${r.k}">${r.t}</button>`).join("");
+  nav.innerHTML = g.reports.map(r =>
+    `<button class="tab ${r.k === view.report ? "on" : ""}" data-report="${r.k}">${esc(r.t)}</button>`).join("");
 }
 
 function selectOverview() {
@@ -953,18 +985,15 @@ function renderOverview() {
   const host = panel("panel-overview");
   host.innerHTML = `
     <div class="scores">
-      ${score({ label:"Leads", value:fmt(tLeads), sub:fmt1(tLeads / days) + " / jour",
-        delta: cmp ? delta(tLeads / days, rLeads / daysRef) : "", spark:spark(totalJour, C.ink) })}
-      ${score({ label:"Sessions outil de reprise", value: sansGA4 ? "—" : fmt(tNet),
-        sub: sansGA4 ? "relevé GA4 en attente" : fmt1(tNet / days) + " / jour",
+      ${score({ label:"Sessions site parent", value: sansGA4 ? "—" : fmt(tTraf), color:C.eu,
+        delta: cmp && !sansGA4 ? delta(tTraf / days, rTraf / daysRef) : "" })}
+      ${score({ label:"Sessions outil de reprise", value: sansGA4 ? "—" : fmt(tNet), color:C.jade,
         delta: cmp && !sansGA4 ? delta(tNet / days, rNet / daysRef) : "" })}
       ${score({ label:"Leads BO / sessions reprise",
-        value: sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null),
-        sub: sansGA4 ? "relevé GA4 en attente" : "sur l'ensemble du parc",
+        value: sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null), color:C.tag,
         delta: cmp && rNet && !sansGA4 ? delta(tLeads / tNet * 100, rLeads / rNet * 100, "pts") : "" })}
-      ${score({ label:"Sessions site parent", value: sansGA4 ? "—" : fmt(tTraf),
-        sub: sansGA4 ? "relevé GA4 en attente" : fmt1(tTraf / days) + " / jour",
-        delta: cmp && !sansGA4 ? delta(tTraf / days, rTraf / daysRef) : "" })}
+      ${score({ label:"Leads", value:fmt(tLeads), color:C.pink,
+        delta: cmp ? delta(tLeads / days, rLeads / daysRef) : "" })}
     </div>
     ${sansGA4 ? `<div class="card"><div class="v2-strip">
       <span class="tagchip">Provisoire</span>
@@ -1087,14 +1116,14 @@ function renderOverview() {
     options:{
       interaction:{ mode:"index", intersect:false },
       plugins:{ legend:{ display:false }, tooltip:tooltipCfg(), v2mark:{ index:null },
-        saillant:{ actif:true, couleur:C.eu } },
+        saillant:{ actif:true, couleur:C.eu, label:"pic leads" } },
       scales:axes(true, 10),
       layout:{ padding:{ top:32, right:4 } }
     }
   });
 }
 
-const SERIES = [C.ink, C.eu, C.jade, "#8B5CF6", "#C4462F", "#B07C00", "#0E7490", "#9D174D"];
+const SERIES = [C.eu, C.jade, C.tag, C.pink, C.pos, C.rust, "#9d8cf9", "#7fa8f7"];
 
 function mergeDaily(rows) {
   const n = Math.max(...rows.map(r => r.sparkLeads.length));
@@ -1131,34 +1160,15 @@ function renderAcquisition() {
       Le graphique montre les volumes bruts ; les taux sont calculés hors robot.</p>
     </div></div>` : ""}
 
-    <div class="card">
-      <div class="card-head">
-        <div><h2>Vue d'ensemble du mois</h2><p>${esc(st.label)} — du site parent au lead, en un coup d'œil.</p></div>
-      </div>
-      <div class="card-body">
-        ${flow([
-          { label:"Sessions site", value:fmt(st.traffic), raw:st.traffic },
-          { label:"Sessions reprise", value:fmt(st.net), raw:st.net,
-            delta: ref ? delta(st.reprisePD, ref.reprisePD) : "" },
-          { label:"Leads", value:fmt(st.leads), raw:st.leads,
-            delta: ref ? delta(st.leadsPD, ref.leadsPD) : "" },
-        ])}
-      </div>
-    </div>
-
     <div class="scores">
-      ${score({ label:"Sessions site parent", value:fmt(st.traffic),
-        sub:fmt1(st.trafficPD) + " / jour",
-        delta: ref ? delta(st.trafficPD, ref.trafficPD) : "", spark:spark(su, C.eu) })}
-      ${score({ label:"Sessions outil de reprise", value:fmt(st.reprise),
-        sub: st.bot ? fmt(st.net) + " hors robot" : fmt1(st.reprisePD) + " / jour",
-        delta: ref ? delta(st.reprisePD, ref.reprisePD) : "", spark:spark(sr, C.jade) })}
-      ${score({ label:"Part vers la reprise", value:pct(st.part),
-        sub:"des sessions du site parent",
+      ${score({ label:"Sessions site parent", value:fmt(st.traffic), color:C.eu,
+        delta: ref ? delta(st.trafficPD, ref.trafficPD) : "" })}
+      ${score({ label:"Sessions outil de reprise", value:fmt(st.reprise), color:C.jade,
+        delta: ref ? delta(st.reprisePD, ref.reprisePD) : "" })}
+      ${score({ label:"Part vers la reprise", value:pct(st.part), color:C.tag,
         delta: ref ? delta(st.part, ref.part, "pts") : "" })}
-      ${score({ label:"Leads pour 1 000 sessions site", value:fmt1(st.per1k),
-        sub:"chaîne complète",
-        delta: ref ? delta(st.per1k, ref.per1k) : "" })}
+      ${score({ label:"Leads BO / sessions reprise", value: st.sansGA4 ? "—" : pct(st.conv), color:C.pink,
+        delta: ref && !st.sansGA4 ? delta(st.conv, ref.conv, "pts") : "" })}
     </div>
 
     <div class="card">
@@ -1188,10 +1198,31 @@ function renderAcquisition() {
 
     <div class="card">
       <div class="card-head">
-        <div><h2>Mois par mois</h2><p>Du site parent au lead, chaque étage de la chaîne.</p></div>
+        <div><h2>Mois par mois</h2><p>Du site parent au lead, chaque étage de la chaîne — en moyenne par jour, pour rester comparable d'un mois à l'autre.</p></div>
       </div>
-      <div class="card-body flush"><table class="grid" id="acqTable"></table></div>
-      <div class="note">Les colonnes <b>par jour</b> sont celles à comparer entre mois : juillet compte 31 jours, juin 30. <b>Leads BO / sessions reprise</b> part des leads du back-office, qui les enregistre tous. Ce taux est donc structurellement supérieur au Conversion Rate de Looker, qui ne compte que les leads vus par GA4 — ceux des visiteurs ayant accepté les cookies. Sur OPEL FR, GA4 en a capté 34 % en avril, 30 % en mai et 57 % en juin : cette captation variant d'un mois sur l'autre, le taux de Looker ne se compare pas dans le temps. <b>Complétion parcours</b> est une mesure GA4 en utilisateurs actifs, de l'entrée jusqu'à l'estimation affichée. Les deux colonnes ne mesurent pas la même chose.</div>
+      <div class="card-body">
+        <div class="twin-wrap">
+          <div class="twin-tag"><i style="background:${C.eu}"></i>Sessions site parent / jour</div>
+          <div class="plot twin"><canvas id="moisSite"></canvas></div>
+          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions outil de reprise / jour</div>
+          <div class="plot twin"><canvas id="moisReprise"></canvas></div>
+          <div class="twin-tag"><i style="background:${C.pink}"></i>Leads BO / mois</div>
+          <div class="plot twin"><canvas id="moisLeads"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h2>Taux, mois par mois</h2><p>Part vers la reprise, conversion et complétion du parcours.</p></div>
+        <div class="legend">
+          <span><i style="background:${C.eu}"></i>Part vers la reprise</span>
+          <span><i style="background:${C.jade}"></i>Leads BO / sessions</span>
+          <span><i style="background:${C.tag}"></i>Complétion parcours</span>
+        </div>
+      </div>
+      <div class="card-body"><div class="plot"><canvas id="moisTaux"></canvas></div></div>
+      <div class="note">Les courbes ci-dessus sont en <b>moyenne par jour</b> : juillet compte 31 jours, juin 30, comparer les totaux bruts serait trompeur. <b>Leads BO / sessions reprise</b> part des leads du back-office, qui les enregistre tous. Ce taux est donc structurellement supérieur au Conversion Rate de Looker, qui ne compte que les leads vus par GA4 — ceux des visiteurs ayant accepté les cookies. Sur OPEL FR, GA4 en a capté 34 % en avril, 30 % en mai et 57 % en juin : cette captation variant d'un mois sur l'autre, le taux de Looker ne se compare pas dans le temps. <b>Complétion parcours</b> est une mesure GA4 en utilisateurs actifs, de l'entrée jusqu'à l'estimation affichée. Les deux colonnes ne mesurent pas la même chose.</div>
     </div>`;
 
   /* les deux graphiques partagent l'axe des jours : survoler l'un doit
@@ -1257,8 +1288,11 @@ function renderAcquisition() {
       ? mineurs.reduce((s, m) => s + ((canalMois[j] || {})[m] || 0), 0)
       : ((canalMois[j] || {})[c] || 0);
 
+    /* barres empilees, pas des aires : la reference n'a jamais de masse
+       lissee, et une silhouette de montagne a 5 series devient du bruit.
+       Un jour = une barre, un canal = un segment. */
     draw("canalChart", {
-      type: "line",
+      type: "bar",
       data: {
         labels: joursCanal,
         datasets: canaux.map((c, i) => {
@@ -1267,11 +1301,10 @@ function renderAcquisition() {
           return {
             label: gris ? `Autres (${mineurs.length})` : c,
             data: joursCanal.map(j => valeur(c, j)),
-            borderColor: col,
-            backgroundColor: col + (gris ? "40" : "d9"),
-            fill: "stack", borderWidth: 0, tension: .4,
-            pointRadius: 0, pointHoverRadius: 4, pointBackgroundColor: col,
-            order: gris ? 99 : i,
+            backgroundColor: col + (gris ? "45" : "e0"),
+            hoverBackgroundColor: col,
+            borderRadius: 3, borderSkipped: false,
+            barPercentage: .82, categoryPercentage: .92,
           };
         }),
       },
@@ -1281,7 +1314,7 @@ function renderAcquisition() {
           legend: {
             position: "bottom", align: "start",
             labels: {
-              boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: "circle",
+              boxWidth: 8, boxHeight: 8, usePointStyle: true, pointStyle: "rect",
               padding: 16, color: C.ink3,
               font: { family: FONT, size: 11, weight: 600 },
             },
@@ -1297,28 +1330,57 @@ function renderAcquisition() {
     });
   }
 
-  /* tableau de trafic : seuls les mois dont GA4 est releve */
+  /* courbes mois par mois : seuls les mois dont GA4 est releve, en
+     moyenne par jour pour rester comparable (juillet 31 j, juin 30). */
   const ms = months(d).filter(m => !provisoire(d, m));
-  $("#acqTable").innerHTML = `
-    <thead><tr>
-      <th>Mois</th><th>Jours</th><th>Sessions site</th><th>/ jour</th>
-      <th>Sessions reprise</th><th>/ jour</th><th>Part</th><th>Leads BO</th><th>Leads BO / sessions</th><th>Complétion parcours</th>
-    </tr></thead>
-    <tbody>${ms.map(m => {
-      const s = stats(d, m), on = m === p;
-      return `<tr${on ? ' style="background:var(--sunk)"' : ""}>
-        <td><span class="cell-name"><b>${esc(s.label)}</b>${s.partial ? '<span class="flag">partiel</span>' : ""}</span></td>
-        <td class="num dim">${s.days}</td>
-        <td class="num">${fmt(s.traffic)}</td>
-        <td class="num dim">${fmt(s.trafficPD)}</td>
-        <td class="num">${fmt(s.reprise)}</td>
-        <td class="num dim">${fmt(s.reprisePD)}</td>
-        <td class="num">${pct(s.part)}</td>
-        <td class="num">${fmt(s.leads)}</td>
-        <td class="num">${pct(s.conv)}</td>
-        <td class="num dim">${pct(((d.funnelMonth || {})[m] || {}).conversion_pct)}</td>
-      </tr>`;
-    }).join("")}</tbody>`;
+  const statsMois = ms.map(m => stats(d, m));
+  const moisLbl = ms.map(m => MONTHS[+m.slice(5, 7) - 1]);
+  const onIdx = ms.indexOf(p);
+
+  const miniLine = (canvasId, data, color, fmtFn) => draw(canvasId, {
+    type: "line",
+    data: { labels: moisLbl, datasets: [{
+      data, borderColor: color, backgroundColor: fondDegrade(color, .16),
+      borderWidth: 2, tension: .3, fill: true,
+      pointRadius: 4, pointHoverRadius: 6, pointBorderWidth: 2,
+      pointBorderColor: color,
+      pointBackgroundColor: (ctx) => ctx.dataIndex === onIdx ? color : "#15151f",
+    }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: tooltipCfg(fmtFn) },
+      scales: axes(true, 8),
+      layout: { padding: { top: 26, right: 10, left: 4 } },
+    },
+    plugins: [pointLabels(fmtFn)],
+  });
+
+  miniLine("moisSite", statsMois.map(s => s.trafficPD), C.eu, fmt);
+  miniLine("moisReprise", statsMois.map(s => s.reprisePD), C.jade, fmt);
+  miniLine("moisLeads", statsMois.map(s => s.leads), C.pink, fmt);
+
+  draw("moisTaux", {
+    type: "line",
+    data: {
+      labels: moisLbl,
+      datasets: [
+        { label:"Part vers la reprise", data: statsMois.map(s => s.part),
+          borderColor: C.eu, backgroundColor: "transparent", borderWidth: 2.2, tension: .3,
+          pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: C.eu, pointBorderColor: C.eu },
+        { label:"Leads BO / sessions", data: statsMois.map(s => s.conv),
+          borderColor: C.jade, backgroundColor: "transparent", borderWidth: 2.2, tension: .3,
+          pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: C.jade, pointBorderColor: C.jade },
+        { label:"Complétion parcours", data: ms.map(m => ((d.funnelMonth || {})[m] || {}).conversion_pct ?? null),
+          borderColor: C.tag, backgroundColor: "transparent", borderWidth: 2.2, tension: .3,
+          pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: C.tag, pointBorderColor: C.tag },
+      ],
+    },
+    options: {
+      interaction: { mode: "index", intersect: false },
+      plugins: { legend: { display: false }, tooltip: tooltipCfg(v => pct(v)) },
+      scales: axes(true, 8),
+      layout: { padding: { top: 10, right: 10, left: 4 } },
+    },
+  });
 }
 
 function frDate(iso) {
@@ -1373,17 +1435,13 @@ function renderLeads() {
       En brut, le taux afficherait ${pct(st.convBrut)}.</p>
     </div></div>` : ""}
     <div class="scores">
-      ${score({ label:"Leads", value:fmt(st.leads),
-        sub:fmt1(st.leadsPD) + " / jour",
-        delta: ref ? delta(st.leadsPD, ref.leadsPD) : "", spark:spark(series, C.ink) })}
-      ${score({ label:"Leads BO / sessions reprise", value: st.sansGA4 ? "—" : pct(st.conv),
-        sub: st.sansGA4 ? "relevé GA4 en attente" : "leads du back-office",
+      ${score({ label:"Leads", value:fmt(st.leads), color:C.eu,
+        delta: ref ? delta(st.leadsPD, ref.leadsPD) : "" })}
+      ${score({ label:"Leads BO / sessions reprise", value: st.sansGA4 ? "—" : pct(st.conv), color:C.jade,
         delta: ref && !st.sansGA4 ? delta(st.conv, ref.conv, "pts") : "" })}
-      ${score({ label:"Reprises de la marque", value:pct(ownShare),
-        sub:`${fmt(ownV)} véhicules ${esc(own || "")}`,
+      ${score({ label:"Reprises de la marque", value:pct(ownShare), color:C.tag,
         delta: refShare != null ? delta(ownShare, refShare, "pts") : "" })}
-      ${score({ label:"Leads pour 1 000 sessions site", value: st.sansGA4 ? "—" : fmt1(st.per1k),
-        sub: st.sansGA4 ? "relevé GA4 en attente" : "chaîne complète",
+      ${score({ label:"Leads pour 1 000 sessions site", value: st.sansGA4 ? "—" : fmt1(st.per1k), color:C.pink,
         delta: ref && !st.sansGA4 ? delta(st.per1k, ref.per1k) : "" })}
     </div>
 
@@ -1391,11 +1449,11 @@ function renderLeads() {
       <div class="card-head">
         <div>
           <h2>Leads par jour</h2>
-          <p>Barres : le volume quotidien. Courbe : la moyenne des sept derniers jours, qui lisse l'effet week-end.</p>
+          <p>Deux vagues superposées : le volume brut du jour, et la moyenne des sept derniers jours qui lisse l'effet week-end.</p>
         </div>
         <div class="legend">
-          <span><i style="background:${C.ink}"></i>Leads du jour</span>
-          <span><i style="background:${C.jade}"></i>Moyenne 7 jours</span>
+          <span><i style="background:${C.jade}"></i>Leads du jour</span>
+          <span><i style="background:${C.eu}"></i>Moyenne 7 jours</span>
         </div>
       </div>
       <div class="card-body"><div class="plot tall"><canvas id="leadsChart"></canvas></div></div>
@@ -1419,24 +1477,32 @@ function renderLeads() {
           <div class="seg" id="dimSeg">${DIMS.map(x =>
             `<button data-dim="${x.k}" class="${x.k === view.dim ? "on" : ""}">${x.t}</button>`).join("")}</div>
         </div>
-        <div class="card-body flush"><div class="dimScroll"><table class="grid" id="dimTable"></table></div></div>
+        <div class="card-body">
+          <div class="donut-row">
+            <div class="plot" style="height:230px"><canvas id="dimDonut"></canvas></div>
+            <ul class="legend-list" id="dimList"></ul>
+          </div>
+        </div>
         <div class="note" id="dimNote"></div>
       </div>
     </div>`;
 
+  /* deux vagues superposees plutot que barres + ligne : le brut en aire
+     douce et large, la moyenne 7 jours par-dessus en aire plus dense —
+     meme esprit que l'aire montagneuse de la reference. */
   draw("leadsChart", {
     data:{ labels, datasets:[
-      { type:"bar", label:"Leads du jour", data:series,
-        backgroundColor:C.eu + "38", hoverBackgroundColor:C.eu,
-        borderRadius:{ topLeft:5, topRight:5, bottomLeft:0, bottomRight:0 },
-        borderSkipped:false,
-        barPercentage:.68, categoryPercentage:.9, order:3 },
+      { type:"line", label:"Leads du jour", data:series,
+        borderColor:C.jade, borderWidth:1.6, tension:.42, order:2, fill:true,
+        backgroundColor:fondDegrade(C.jade, .32),
+        pointRadius:0, pointHoverRadius:4, pointBackgroundColor:C.jade },
       { type:"line", label:"Moyenne 7 jours", data:ma,
-        borderColor:C.eu, borderWidth:2.6, tension:.45, order:1,
-        pointRadius:0, pointHoverRadius:5, pointBackgroundColor:C.eu, fill:false },
+        borderColor:C.eu, borderWidth:2.8, tension:.42, order:1, fill:true,
+        backgroundColor:fondDegrade(C.eu, .22),
+        pointRadius:0, pointHoverRadius:5, pointBackgroundColor:C.eu },
       ...(serieRef ? [{ type:"line", label:labelRef, data:serieRef,
-        borderColor:C.ink4, borderWidth:1.8, borderDash:[5,4], tension:.45, order:2,
-        pointRadius:0, pointHoverRadius:4, pointBackgroundColor:C.ink4, fill:false }] : [])
+        borderColor:C.ink4, borderWidth:1.8, borderDash:[5,4], tension:.42, order:3, fill:false,
+        pointRadius:0, pointHoverRadius:4, pointBackgroundColor:C.ink4 }] : [])
     ]},
     options:{
       interaction:{ mode:"index", intersect:false },
@@ -1453,7 +1519,7 @@ function renderLeads() {
             padding:16, color:C.ink3, font:{ family:FONT, size:11, weight:600 } } },
         tooltip:tooltipCfg(v => fmt1(v)),
         v2mark:{ index:vi, label: vi != null ? "V2" : null },
-        saillant:{ actif:true, dataset:0, couleur:C.eu }
+        saillant:{ actif:true, dataset:1, couleur:C.eu, label:"pic moyenne" }
       },
       scales:axes(true, 10),
       layout:{ padding:{ top:32, right:4 } }
@@ -1520,7 +1586,8 @@ function renderLeads() {
     $("#dimHelp").textContent = meta.h;
 
     if (estRange(p) && (d.leads[p] || {})._dimsDisponibles === false) {
-      $("#dimTable").innerHTML = "";
+      if (CHARTS.dimDonut) { CHARTS.dimDonut.destroy(); delete CHARTS.dimDonut; }
+      $("#dimList").innerHTML = "";
       $("#dimNote").innerHTML =
         `<b>Répartition indisponible sur cette plage.</b> Les dimensions de leads ne sont mesurées que par mois complet. ` +
         `Choisissez un mois entier, ou la période cumulée, pour voir cette répartition.`;
@@ -1532,42 +1599,59 @@ function renderLeads() {
     /* la dimension ne couvre pas toujours tous les leads : on montre l'ecart */
     const tot = st.leads || covered;
     const gap = Math.max(0, tot - covered);
-    const max = list.length ? list[0][1] : 1;
-    /* 7 lignes suffisent : au-dela on scrolle sans rien apprendre, la queue
-       etant de toute facon regroupee sur la ligne « autres ». */
-    const TOP = 7;
+    /* 5 parts nommees suffisent pour un donut lisible ; le reste rejoint
+       « Autres », comme les classements de la reference. */
+    const TOP = 5;
     const shown = list.slice(0, TOP);
     const rest = list.slice(TOP);
     const restSum = rest.reduce((a, b) => a + b[1], 0);
-
-    $("#dimTable").innerHTML = `
-      <thead><tr><th>${esc(meta.t)}</th><th></th><th>Leads</th><th>Part</th></tr></thead>
-      <tbody>${shown.map(([n, v], i) => `
-        <tr>
-          <td><span class="cell-name"><span class="rank">${i + 1}</span><b title="${esc(n)}">${esc(n)}</b></span></td>
-          <td class="td-bar">${bar(v / max, "k")}</td>
-          <td class="num">${fmt(v)}</td>
-          <td class="num dim">${pct(tot ? v / tot * 100 : null)}</td>
-        </tr>`).join("")}
-        ${rest.length ? `<tr>
-          <td><span class="cell-name"><span class="rank"></span><b style="color:var(--ink-3)">${rest.length} autres</b></span></td>
-          <td class="td-bar">${bar(restSum / max, "k")}</td>
-          <td class="num dim">${fmt(restSum)}</td>
-          <td class="num dim">${pct(tot ? restSum / tot * 100 : null)}</td>
-        </tr>` : ""}
-        ${gap ? `<tr>
-          <td><span class="cell-name"><span class="rank"></span><b style="color:var(--ink-3)">${
-            view.dim === "brand" && list.length >= 25 ? "Autres marques" : "Non renseigné"}</b></span></td>
-          <td class="td-bar">${bar(gap / max, "k")}</td>
-          <td class="num dim">${fmt(gap)}</td>
-          <td class="num dim">${pct(tot ? gap / tot * 100 : null)}</td>
-        </tr>` : ""}
-        <tr class="total"><td>Total des leads</td><td></td><td class="num">${fmt(tot)}</td><td class="num">100,0 %</td></tr>
-      </tbody>`;
-
-    /* la liste des marques est plafonnee a 25 par le pipeline : l'ecart n'est
-       pas une valeur manquante mais une queue tronquee. */
     const tronque = view.dim === "brand" && list.length >= 25;
+    const gapLabel = view.dim === "brand" && list.length >= 25 ? "Autres marques" : "Non renseigné";
+
+    const rows = [
+      ...shown.map(([n, v], i) => ({ n, v, c: SERIES[i % SERIES.length] })),
+      ...(rest.length ? [{ n: `${rest.length} autres`, v: restSum, c: "var(--ink-4)" }] : []),
+      ...(gap ? [{ n: gapLabel, v: gap, c: "var(--line)" }] : []),
+    ];
+
+    $("#dimList").innerHTML = rows.map(r => `
+      <li><i style="background:${r.c}"></i><span>${esc(r.n)}</span><b>${fmt(r.v)}</b><em>${pct(tot ? r.v / tot * 100 : null)}</em></li>
+    `).join("");
+
+    draw("dimDonut", {
+      type:"doughnut",
+      data:{ labels:rows.map(r => r.n), datasets:[{ data:rows.map(r => r.v),
+        backgroundColor:rows.map(r => r.c), borderColor:"#fff", borderWidth:4,
+        hoverOffset:8, hoverBorderColor:"#fff", spacing:2 }] },
+      options:{
+        cutout:"70%",
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ ...tooltipCfg(), callbacks:{
+            label: c => ` ${c.label}   ${fmt(c.parsed)}  (${pct(tot ? c.parsed / tot * 100 : null)})`,
+          } },
+        },
+        layout:{ padding:6 },
+      },
+      plugins:[{
+        id:"centreDim",
+        afterDraw(chart) {
+          const { ctx, chartArea: a } = chart;
+          if (!a) return;
+          const cx = (a.left + a.right) / 2, cy = (a.top + a.bottom) / 2;
+          ctx.save();
+          ctx.textAlign = "center";
+          ctx.fillStyle = C.ink;
+          ctx.font = `800 24px ${FONT}`;
+          ctx.fillText(fmt(tot), cx, cy + 2);
+          ctx.fillStyle = C.ink4;
+          ctx.font = `700 9px ${FONT}`;
+          ctx.fillText("LEADS", cx, cy + 18);
+          ctx.restore();
+        },
+      }],
+    });
+
     $("#dimNote").innerHTML = !gap
       ? `Toutes les lignes du mois portent une valeur pour cette dimension.`
       : tronque
@@ -1612,17 +1696,13 @@ function renderParcours() {
     </div>` : ""}
 
     <div class="scores">
-      ${score({ label:"Entrées de parcours", value:fmt(first),
-        sub:fmt1(fm.users_per_day) + " / jour",
+      ${score({ label:"Entrées de parcours", value:fmt(first), color:C.eu,
         delta: fmRef ? delta(first / d.meta[p].days, fmRef.steps[0].users / d.meta[cmp].days) : "" })}
-      ${score({ label:"Estimations terminées", value:fmt(last),
-        sub:fmt1(last / d.meta[p].days) + " / jour",
+      ${score({ label:"Estimations terminées", value:fmt(last), color:C.jade,
         delta: fmRef ? delta(last / d.meta[p].days, fmRef.steps[fmRef.steps.length - 1].users / d.meta[cmp].days) : "" })}
-      ${score({ label:"Taux de complétion", value:pct(fm.conversion_pct),
-        sub:"de l'entrée à l'estimation",
+      ${score({ label:"Taux de complétion", value:pct(fm.conversion_pct), color:C.tag,
         delta: fmRef ? delta(fm.conversion_pct, fmRef.conversion_pct, "pts") : "" })}
-      ${score({ label:"Perte à la première étape", value:pct(drop12),
-        sub:"entrée → choix de version" })}
+      ${score({ label:"Perte à la première étape", value:pct(drop12), color:C.pink })}
     </div>
 
     <div class="card">
@@ -1920,13 +2000,13 @@ function renderRecherche() {
     <div class="note" style="margin-bottom:16px">Mesuré sur <b>l'outil de reprise uniquement</b> — le site parent n'est pas dans ce périmètre. Indépendant de GA4 : ce sont les clics et impressions dans les résultats de recherche Google.</div>
 
     ${sm ? `<div class="scores">
-      ${score({ label:"Clics", value:fmt(sm.clics), sub:fmt1(sm.clics / days) + " / jour",
-        delta: smRef ? delta(sm.clics / days, smRef.clics / daysRef) : "", spark: hasDaily ? spark(clicsJour, C.eu) : "" })}
-      ${score({ label:"Impressions", value:fmt(sm.impressions), sub:fmt1(sm.impressions / days) + " / jour",
-        delta: smRef ? delta(sm.impressions / days, smRef.impressions / daysRef) : "", spark: hasDaily ? spark(imprJour, C.jade) : "" })}
-      ${score({ label:"CTR moyen", value:pct(sm.ctr), sub:"clics / impressions",
+      ${score({ label:"Clics", value:fmt(sm.clics), color:C.eu,
+        delta: smRef ? delta(sm.clics / days, smRef.clics / daysRef) : "" })}
+      ${score({ label:"Impressions", value:fmt(sm.impressions), color:C.jade,
+        delta: smRef ? delta(sm.impressions / days, smRef.impressions / daysRef) : "" })}
+      ${score({ label:"CTR moyen", value:pct(sm.ctr), color:C.tag,
         delta: smRef ? delta(sm.ctr, smRef.ctr, "pts") : "" })}
-      ${score({ label:"Position moyenne", value:fmt1(sm.position), sub:"plus bas = mieux classé",
+      ${score({ label:"Position moyenne", value:fmt1(sm.position), color:C.pink,
         delta: smRef ? delta(-sm.position, -smRef.position, "pts") : "" })}
     </div>` : `<div class="card"><div class="empty">
       <b>Détail indisponible sur ${esc((metaOf(p) || {}).label || p)}</b>
@@ -2020,6 +2100,7 @@ function syncPageHead() {
 function render() {
   clearCharts();
   syncSiteSelect();
+  renderGroups();
   renderTabs();
   renderPeriodControl();
   syncPageHead();
@@ -2030,6 +2111,15 @@ function render() {
   else if (view.report === "parcours") renderParcours();
   else renderRecherche();
 }
+
+$("#groups").addEventListener("click", e => {
+  const b = e.target.closest("[data-group]");
+  if (!b) return;
+  const g = GROUPS.find(x => x.k === b.dataset.group);
+  if (!g) return;
+  view.report = g.reports[0].k;
+  render();
+});
 
 $("#tabs").addEventListener("click", e => {
   const b = e.target.closest("[data-report]");
