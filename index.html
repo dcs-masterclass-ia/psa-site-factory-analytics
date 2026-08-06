@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PSA Site Factory — Reprise</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<script src="./support.js"></script>
 </head>
 <body>
 
@@ -30,88 +27,1140 @@
     <p class="login-err" id="loginErr" hidden>Identifiant ou mot de passe incorrect.</p>
   </form>
 </div>
+<style>
+  .login-screen{position:fixed;inset:0;z-index:1000;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+  .login-card{width:100%;max-width:340px;margin:0 20px;background:#1a1a1a;border:1px solid #262626;border-radius:22px;box-shadow:0 40px 80px -20px rgba(0,0,0,.55);padding:32px 28px 28px;display:flex;flex-direction:column;gap:16px}
+  .login-mark{display:flex;align-items:center;gap:10px}
+  .mark-glyph{width:36px;height:36px;border-radius:11px;flex:none;background:linear-gradient(145deg,#F5411E,#D62F0C);color:#fff;display:flex;align-items:center;justify-content:center;font:800 12.5px/1 inherit;letter-spacing:.01em}
+  .login-mark span:last-child{font:700 15px/1 inherit;color:#fff}
+  .login-sub{margin:0;font:500 12.5px/1.5 inherit;color:#8b8b8b}
+  .login-field{display:flex;flex-direction:column;gap:6px;font:700 10.5px/1 inherit;letter-spacing:.05em;text-transform:uppercase;color:#7d7d7d}
+  .login-field input{font:600 14px/1 inherit;color:#fff;padding:11px 12px;border:1px solid #262626;border-radius:12px;background:#242424;width:100%;box-sizing:border-box}
+  .login-field input:focus{outline:2px solid #F5411E;outline-offset:1px}
+  .login-btn{margin-top:4px;padding:12px;border:none;border-radius:12px;background:#F5411E;color:#fff;font:700 13.5px/1 inherit;cursor:pointer;transition:background .15s ease}
+  .login-btn:hover{background:#ff6a45}
+  .login-err{margin:0;font:600 12px/1.4 inherit;color:#ff7a6b}
+</style>
 
-<div class="mesh" aria-hidden="true">
-  <div class="blob blob--a"></div>
-  <div class="blob blob--b"></div>
-  <div class="blob blob--c"></div>
-</div>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--page:#9fb2a5;--bg:#0d0d0d;--card:#1a1a1a;--pop:#181818;--soft:#242424;--soft2:#262626;--soft3:#2e2e2e;--hover:#303030;--text:#ffffff;--text2:#c9c9c9;--muted:#8b8b8b;--muted2:#7d7d7d;--grid:#242424;--line:#262626;--tick:#3a3a3a;--cell0:#2c3a30;--active-bg:#ffffff;--active-fg:#141414;--active-mark:#f2f2f2;--pos:#4ADE80;--neg:#ff7a6b;--pos-bg:rgba(74,222,128,.13);--neg-bg:rgba(255,122,107,.13);--warn:#F9AB00;--warn-bg:rgba(249,171,0,.13);--shadow:rgba(0,0,0,.55)}
+:root[data-theme=light]{--page:#dfe6df;--bg:#ffffff;--card:#f3f5f2;--pop:#ffffff;--soft:#e7eae5;--soft2:#dfe3dc;--soft3:#d5dad2;--hover:#dbe0d8;--text:#15181a;--text2:#3f4448;--muted:#6d7378;--muted2:#8b9196;--grid:#e2e6e0;--line:#e2e6e0;--tick:#c2c8c1;--cell0:#dfe8e0;--active-bg:#15181a;--active-fg:#ffffff;--active-mark:#2b2f32;--pos:#0f7a3d;--neg:#b8341f;--pos-bg:rgba(15,122,61,.12);--neg-bg:rgba(184,52,31,.12);--warn:#9a6800;--warn-bg:rgba(154,104,0,.13);--shadow:rgba(70,85,72,.28)}
+html,body{margin:0;padding:0;background:var(--page);font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s ease}
+a{color:#F5411E;text-decoration:none}a:hover{color:#ff6a45}
+input[type=date]{color-scheme:dark}
+@keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes drawLine{to{stroke-dashoffset:0}}
+@keyframes popIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+@keyframes cellIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
+@keyframes growW{from{width:0}}
+@keyframes glowPulse{0%,100%{opacity:.5}50%{opacity:.85}}
+@keyframes blip{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes dropIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:48px 24px;background:#9fb2a5;box-sizing:border-box">
+<div style="width:1780px;margin:0 auto;background:var(--bg);border-radius:34px;padding:36px 44px 44px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);animation:fadeIn .5s ease both">
 
-<div class="app" id="appRoot" hidden>
-
-  <!-- ============================ rail ============================ -->
-  <aside class="rail">
-    <div class="rail-mark">PSF</div>
-    <nav class="siteNav" id="siteNav" aria-label="Marques"></nav>
-  </aside>
-
-  <div class="main">
-
-    <header class="navbar">
-      <div class="navbar-l">
-        <nav class="groups" id="groups" hidden></nav>
-        <nav class="tabs" id="tabs" hidden></nav>
-      </div>
-      <div class="navbar-r ctl">
-        <span class="flag" id="partialFlag" hidden></span>
-        <button class="ctl-btn ctl-btn--dark refresh-btn" id="refreshBtn" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
-          <span id="refreshLabel">Actualiser</span>
-        </button>
-        <button class="ctl-btn" id="ctlBtn" aria-expanded="false" aria-haspopup="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>
-          <span id="ctlLabel">Juillet 2026</span>
-          <span class="ctl-cmp" id="ctlCmp">vs juin</span>
-          <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
-        <div class="pop pop-wide" id="pop" hidden>
-          <div class="pop-lbl">Plage de dates</div>
-          <div class="range-inputs">
-            <label>Du <input type="date" id="rangeDebut"></label>
-            <label>Au <input type="date" id="rangeFin"></label>
-            <button class="range-apply" id="rangeApply" type="button">Appliquer</button>
-          </div>
-          <div class="pop-sep"></div>
-          <div id="popPresets"></div>
-          <div class="pop-sep"></div>
-          <div class="pop-lbl">Comparer à</div>
-          <div id="popCompare"></div>
-          <p class="pop-note">Les périodes n'ont pas la même longueur : les écarts sont toujours calculés sur des moyennes par jour.</p>
-        </div>
-        <button class="ai-btn" type="button" title="Voir les insights IA détectés sur Google Search Console">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/><path d="M19 14l.9 2.6L22.5 17.5l-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14z" opacity=".7"/></svg>
-          Assistant IA
-        </button>
-        <span class="avatar">PS</span>
-      </div>
-    </header>
-
-    <header class="topbar">
-      <div class="topbar-row">
-        <div class="page-head">
-          <span class="crumb2" id="pageSub">—</span>
-          <h1 id="pageTitle">Synthèse</h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="width:54px;height:54px;border-radius:16px;background:linear-gradient(145deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#ffffff">PSF</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.3px">Site Factory — Reprise</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:500;color:var(--muted)">
+          <span style="width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:blip 2s ease-in-out infinite"></span>{{ scopeLabel }} · {{ periodLabel }}
         </div>
       </div>
-    </header>
-
-    <main class="content">
-      <section class="panel" id="panel-overview" hidden></section>
-      <section class="panel" id="panel-acquisition" hidden></section>
-      <section class="panel" id="panel-leads" hidden></section>
-      <section class="panel" id="panel-parcours" hidden></section>
-      <section class="panel" id="panel-recherche" hidden></section>
-    </main>
-
-    <footer class="foot">
-      Extraction back-office PSA Site Factory et Google Analytics 4. Le total mensuel de sessions
-      n'est pas la somme exacte des sessions quotidiennes — une session à cheval sur minuit est
-      comptée différemment. Les totaux affichés sont les valeurs GA4.
-    </footer>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+        <button onClick="{{ t.pick }}" style="{{ t.style }}">
+          <span style="{{ t.markWrap }}">
+            <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
+              <span style="display:flex;align-items:flex-end;gap:2px">
+                <i style="width:4px;height:7px;border-radius:2px;background:#F9AB00;display:block"></i>
+                <i style="width:4px;height:11px;border-radius:2px;background:#F9AB00;display:block"></i>
+                <i style="width:4px;height:15px;border-radius:2px;background:#E37400;display:block"></i>
+              </span>
+            </sc-if>
+            <sc-if value="{{ t.isGsc }}" hint-placeholder-val="{{ true }}">
+              <span style="position:relative;width:20px;height:20px;display:block">
+                <span style="position:absolute;left:1px;top:1px;width:13px;height:13px;border-radius:50%;border:3px solid #4285F4;box-sizing:border-box;display:block"></span>
+                <span style="position:absolute;right:2px;bottom:3px;width:9px;height:3px;border-radius:2px;background:#34A853;transform:rotate(45deg)"></span>
+                <span style="position:absolute;right:0px;bottom:0px;width:5px;height:5px;border-radius:2px;background:#FBBC04"></span>
+              </span>
+            </sc-if>
+          </span>{{ t.label }}
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onClick="{{ refresh }}" style="display:flex;align-items:center;gap:11px;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)" style-hover="transform:translateY(-2px);filter:brightness(1.08)">{{ refreshLabel }}
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
+      </button>
+      <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
+        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
+        </sc-if>
+      </button>
+      <span style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800">PS</span>
+    </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="script.js"></script>
+  <div style="display:flex;align-items:center;gap:14px;margin-top:22px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .05s both">
+    <div style="position:relative">
+      <button onClick="{{ togglePicker }}" style="{{ pickerBtn }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"></path></svg>
+        <span style="font-size:15.5px;font-weight:600;color:var(--text)">{{ scopeLabel }}</span>
+        <span style="font-size:14px;font-weight:500;color:var(--muted)">{{ scopeDetail }}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:0;top:60px;width:560px;background:var(--pop);border-radius:22px;padding:22px 24px 20px;box-shadow:0 40px 80px -20px var(--shadow);animation:dropIn .22s ease both">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:16px;font-weight:700;color:var(--text)">Périmètre d'analyse</div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ selectAll }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">Tout</button>
+              <button onClick="{{ clearAll }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">Aucun</button>
+            </div>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par pays</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+            <sc-for list="{{ marketChips }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.toggle }}" style="{{ m.style }}">{{ m.name }}<span style="opacity:.6;font-weight:600">{{ m.count }}</span></button>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par marque</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
+            <sc-for list="{{ familyChips }}" as="fa" hint-placeholder-count="7">
+              <button onClick="{{ fa.toggle }}" style="{{ fa.style }}">{{ fa.name }}<span style="opacity:.6;font-weight:600">{{ fa.count }}</span></button>
+            </sc-for>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par site</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:264px;overflow:auto">
+            <sc-for list="{{ brandRows }}" as="b" hint-placeholder-count="8">
+              <button onClick="{{ b.toggle }}" style="{{ b.style }}">
+                <span style="{{ b.box }}">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>
+                </span>
+                <span style="flex:1;text-align:left;font-size:14.5px;font-weight:600;color:var(--text)">{{ b.name }}</span>
+                <span style="font-size:13px;font-weight:600;color:var(--muted2)">{{ b.leads }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:5px">
+      <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
+        <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{ customDate }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:999px;padding:7px 16px;animation:dropIn .22s ease both">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
+        <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
+        <span style="font-size:14px;color:var(--muted2)">→</span>
+        <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
+      </div>
+    </sc-if>
+
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:500;color:var(--muted)">
+      <span>Comparé à la période précédente</span>
+      <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
+    </div>
+  </div>
+
+  <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
+  <div style="margin-top:24px">
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+      <sc-for list="{{ ga4Kpis }}" as="k" hint-placeholder-count="4">
+        <div style="{{ k.card }}">
+          <div style="font-size:15.5px;font-weight:600;color:var(--muted)">{{ k.label }}</div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto">
+            <div ref="{{ k.ref }}" style="font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1.3px;line-height:1;white-space:nowrap">{{ k.value }}</div>
+            <svg width="116" height="34" viewBox="0 0 120 36" style="overflow:visible;flex:none">
+              <path ref="{{ k.sparkRef }}" fill="none" stroke="{{ k.sparkColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="240" stroke-dashoffset="240" style="animation:drawLine 1.4s cubic-bezier(.35,.6,.3,1) .5s forwards"></path>
+            </svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+            <span style="{{ k.deltaStyle }}">{{ k.delta }}</span>
+            <span style="font-size:14px;font-weight:500;color:var(--muted2)">{{ k.note }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px 24px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Suivi des sessions par canal</div>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ channels }}" as="c" hint-placeholder-count="5">
+              <button onClick="{{ c.toggle }}" style="{{ c.chip }}">
+                <span style="{{ c.dot }}"></span>{{ c.name }}<span style="font-weight:700;color:var(--text)">{{ c.share }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position:relative;flex:1;margin-top:22px">
+          <svg width="100%" height="100%" viewBox="0 0 900 300" preserveAspectRatio="none" style="position:absolute;inset:0">
+            <g stroke="var(--grid)" stroke-width="1"><path d="M0 60 H900"></path><path d="M0 120 H900"></path><path d="M0 180 H900"></path><path d="M0 240 H900"></path></g>
+            <sc-for list="{{ channelPaths }}" as="cp" hint-placeholder-count="5">
+              <path style="{{ cp.style }}" ref="{{ cp.ref }}" fill="none" stroke="{{ cp.color }}" stroke-width="2.6" stroke-linecap="round" vector-effect="non-scaling-stroke" stroke-dasharray="1400" stroke-dashoffset="1400"></path>
+            </sc-for>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-top:16px;font-size:14px;font-weight:500;color:var(--muted);animation:fadeIn .8s ease 1.1s both">
+          <sc-for list="{{ channelAxisLabels }}" as="al" hint-placeholder-count="10"><span>{{ al }}</span></sc-for>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(155deg,#FA4B22,#D62F0C);border-radius:26px;padding:26px 28px 26px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(8px);animation:floatY 6s ease-in-out infinite"></div>
+        <div style="display:flex;align-items:center;gap:11px;position:relative">
+          <span style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.9 5.6L19.5 9l-4.4 3.6 1.4 5.9L12 15.3 7.5 18.5l1.4-5.9L4.5 9l5.6-1.4z"></path></svg>
+          </span>
+          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.3px">Analyse IA des performances</div>
+        </div>
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;margin:20px 0;position:relative;overflow:auto">
+          <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ ga4Insights }}" as="i" hint-placeholder-count="3">
+              <div style="{{ i.wrap }}">
+                <div style="font-size:14px;font-weight:700;color:#ffffff;letter-spacing:.4px;text-transform:uppercase">{{ i.tag }}</div>
+                <div style="margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
+          </sc-if>
+        </div>
+        <sc-if value="{{ noGa4Insights }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94)">Pas assez de tendance confirmée sur la période pour un insight fiable — sélectionne un mois complet ou plus de sites.</div>
+          </div>
+        </sc-if>
+        <button onClick="{{ scrollToFunnel }}" style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:16.5px;font-weight:700;color:#141414;cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le parcours complet
+          <span style="width:34px;height:34px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div id="funnelAnchor" style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px;scroll-margin-top:24px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:470px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Parcours d'estimation — complétion par étape</div>
+            <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Outil de reprise · {{ scopeLabel }}</div>
+          </div>
+          <div style="{{ funnelDeltaBadge }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>
+            <span style="font-size:14.5px;font-weight:600">{{ funnelDeltaText }}</span>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;margin-top:22px">
+          <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="5">
+            <div style="{{ f.row }}">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:9px">
+                <span style="display:flex;align-items:baseline;gap:10px">
+                  <span style="font-size:13px;font-weight:700;color:var(--muted2);font-variant-numeric:tabular-nums">{{ f.step }}</span>
+                  <span style="font-size:17px;font-weight:600;color:var(--text)">{{ f.name }}</span>
+                </span>
+                <span style="display:flex;align-items:baseline;gap:14px">
+                  <span style="font-size:14.5px;font-weight:500;color:var(--muted)">{{ f.count }}</span>
+                  <span style="font-size:19px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ f.pct }}</span>
+                  <span style="{{ f.dropStyle }}">{{ f.drop }}</span>
+                </span>
+              </div>
+              <div style="height:16px;border-radius:8px;background:var(--soft);overflow:hidden">
+                <div style="{{ f.bar }}"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:470px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .22s both">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700;color:var(--text);padding-top:10px;letter-spacing:-.2px">Taux de complétion</div>
+          <div style="display:flex;align-items:baseline;color:var(--text)"><span ref="{{ compRef }}" style="font-size:56px;font-weight:800;letter-spacing:-2.4px;line-height:1">0,0</span><span style="font-size:25px;font-weight:600;color:var(--muted);margin-left:2px">%</span></div>
+        </div>
+        <div style="position:relative;flex:1;margin-top:8px">
+          <div style="position:absolute;left:80px;top:45px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,.28),rgba(74,222,128,0) 68%);filter:blur(14px);animation:glowPulse 3.4s ease-in-out infinite"></div>
+          <svg width="408" height="250" viewBox="0 0 408 250" style="position:absolute;left:0;top:0;overflow:visible">
+            <g stroke="var(--tick)" stroke-width="3" stroke-linecap="round">
+              <path d="M304.3 149.0 L338.9 129.0"></path>
+              <path d="M312.0 164.5 L348.9 149.2"></path>
+              <path d="M317.5 180.8 L356.1 170.5"></path>
+              <path d="M320.9 197.8 L360.5 192.6"></path>
+              <path d="M322.0 215.0 L362.0 215.0"></path>
+              <path d="M320.9 232.2 L360.5 237.4"></path>
+            </g>
+            <path ref="{{ gaugeArcRef }}" fill="none" stroke="#4ADE80" stroke-width="38" stroke-linecap="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation:drawLine 1.5s cubic-bezier(.3,.8,.3,1) .4s forwards;filter:drop-shadow(0 0 22px rgba(74,222,128,.42))"></path>
+            <circle ref="{{ gaugeDotRef }}" r="16" fill="var(--card)" style="opacity:0;animation:popIn .45s cubic-bezier(.2,1.4,.4,1) 1.6s forwards"></circle>
+          </svg>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="background:var(--soft);border-radius:16px;padding:16px 18px;animation:riseIn .6s ease 1.2s both">
+            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Leads BO / sessions reprise</div>
+            <div style="margin-top:7px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px">{{ convText }}</div>
+          </div>
+          <div style="background:var(--soft);border-radius:16px;padding:16px 18px;animation:riseIn .6s ease 1.3s both">
+            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Part vers la reprise</div>
+            <div style="margin-top:7px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px">{{ partText }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Leads par projet d'achat</div>
+        <div style="display:flex;gap:5px;margin-top:20px;height:22px;flex:none">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+            <span style="{{ p.segment }}"></span>
+          </sc-for>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;margin-top:10px">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+            <div style="{{ p.row }}">
+              <span style="{{ p.dot }}"></span>
+              <span style="display:flex;flex-direction:column;gap:3px;flex:1">
+                <span style="font-size:17px;font-weight:600;color:var(--text)">{{ p.name }}</span>
+                <span style="font-size:14.5px;font-weight:500;color:var(--muted)">{{ p.pct }}</span>
+              </span>
+              <span style="font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.4px;font-variant-numeric:tabular-nums">{{ p.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .26s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Marques reprises</div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <span style="font-size:13.5px;font-weight:600;color:var(--text);background:var(--soft);border-radius:999px;padding:8px 13px">{{ ownBrandShare }}</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;margin-top:18px">
+          <sc-for list="{{ audience }}" as="a" hint-placeholder-count="5">
+            <div style="{{ a.row }}">
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:16.5px;font-weight:600;color:var(--text)">{{ a.name }}</span>
+                <span style="font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ a.pct }}</span>
+              </div>
+              <div style="height:12px;border-radius:6px;background:var(--soft);overflow:hidden"><div style="{{ a.bar }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .32s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Leads quotidiens</div>
+          <span style="font-size:14px;font-weight:600;color:var(--muted)">{{ heatmapDaysLabel }}</span>
+        </div>
+        <div style="flex:1;display:flex;align-items:center">
+          <div style="display:grid;grid-template-columns:repeat(18,1fr);gap:7px;width:100%">
+            <sc-for list="{{ leadCells }}" as="c" hint-placeholder-count="90">
+              <div style="{{ c.style }}" title="{{ c.title }}"></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between">
+          <div>
+            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Moyenne / jour</div>
+            <div ref="{{ dailyAvgRef }}" style="margin-top:6px;font-size:30px;font-weight:800;color:var(--text);letter-spacing:-1.2px">0</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:7px;padding-bottom:6px">
+            <span style="font-size:13px;font-weight:500;color:var(--muted2)">Faible</span>
+            <span style="width:14px;height:14px;border-radius:4px;background:var(--cell0);display:block"></span>
+            <span style="width:14px;height:14px;border-radius:4px;background:#2f6b45;display:block"></span>
+            <span style="width:14px;height:14px;border-radius:4px;background:#3fae63;display:block"></span>
+            <span style="width:14px;height:14px;border-radius:4px;background:#4ADE80;display:block"></span>
+            <span style="font-size:13px;font-weight:500;color:var(--muted2)">Élevé</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isGsc }}" hint-placeholder-val="{{ false }}">
+  <div style="margin-top:24px">
+
+    <sc-if value="{{ noGsc }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--card);border-radius:26px;padding:60px;text-align:center;animation:riseIn .6s ease both">
+        <div style="font-size:20px;font-weight:700;color:var(--text)">Search Console indisponible sur ce périmètre</div>
+        <div style="margin-top:8px;font-size:15px;font-weight:500;color:var(--muted)">Aucun des sites sélectionnés n'a de propriété Search Console rattachée, ou la période n'a pas encore été relevée.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasGsc }}" hint-placeholder-val="{{ true }}">
+    <div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+      <sc-for list="{{ gscKpis }}" as="k" hint-placeholder-count="4">
+        <div style="{{ k.card }}">
+          <div style="font-size:15.5px;font-weight:600;color:var(--muted)">{{ k.label }}</div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto">
+            <div ref="{{ k.ref }}" style="font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1.3px;line-height:1;white-space:nowrap">{{ k.value }}</div>
+            <svg width="116" height="34" viewBox="0 0 120 36" style="overflow:visible;flex:none">
+              <path ref="{{ k.sparkRef }}" fill="none" stroke="{{ k.sparkColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="240" stroke-dashoffset="240" style="animation:drawLine 1.4s cubic-bezier(.35,.6,.3,1) .5s forwards"></path>
+            </svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+            <span style="{{ k.deltaStyle }}">{{ k.delta }}</span>
+            <span style="font-size:14px;font-weight:500;color:var(--muted2)">{{ k.note }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px 24px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Clics et impressions par jour</div>
+          <div style="display:flex;gap:18px">
+            <span style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text2)"><span style="width:11px;height:11px;border-radius:50%;background:#4285F4;display:block"></span>Clics</span>
+            <span style="display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:var(--text2)"><span style="width:11px;height:11px;border-radius:50%;background:#7B4DF0;display:block"></span>Impressions</span>
+          </div>
+        </div>
+        <div style="position:relative;flex:1;margin-top:22px">
+          <svg width="100%" height="100%" viewBox="0 0 900 240" preserveAspectRatio="none" style="position:absolute;inset:0">
+            <defs>
+              <linearGradient id="gscImpFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7B4DF0" stop-opacity=".34"></stop><stop offset="100%" stop-color="#7B4DF0" stop-opacity="0"></stop></linearGradient>
+              <linearGradient id="gscClkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4285F4" stop-opacity=".30"></stop><stop offset="100%" stop-color="#4285F4" stop-opacity="0"></stop></linearGradient>
+            </defs>
+            <g stroke="var(--grid)" stroke-width="1"><path d="M0 60 H900"></path><path d="M0 120 H900"></path><path d="M0 180 H900"></path></g>
+            <path ref="{{ imprFillRef }}" fill="url(#gscImpFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.2s forwards"></path>
+            <path ref="{{ imprLineRef }}" fill="none" stroke="#7B4DF0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="1800" stroke-dashoffset="1800" style="animation:drawLine 2s cubic-bezier(.35,.6,.3,1) .4s forwards"></path>
+            <path ref="{{ clicsFillRef }}" fill="url(#gscClkFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.3s forwards"></path>
+            <path ref="{{ clicsLineRef }}" fill="none" stroke="#4285F4" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="1800" stroke-dashoffset="1800" style="animation:drawLine 2s cubic-bezier(.35,.6,.3,1) .55s forwards"></path>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-top:16px;font-size:14px;font-weight:500;color:var(--muted);animation:fadeIn .8s ease 1.2s both">
+          <sc-for list="{{ gscAxisLabels }}" as="al" hint-placeholder-count="6"><span>{{ al }}</span></sc-for>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(155deg,#FA4B22,#D62F0C);border-radius:26px;padding:26px 28px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(8px);animation:floatY 6s ease-in-out infinite"></div>
+        <div style="display:flex;align-items:center;gap:11px;position:relative">
+          <span style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.9 5.6L19.5 9l-4.4 3.6 1.4 5.9L12 15.3 7.5 18.5l1.4-5.9L4.5 9l5.6-1.4z"></path></svg>
+          </span>
+          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.3px">Analyse IA · visibilité SEO</div>
+        </div>
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;margin:20px 0;position:relative;overflow:auto">
+          <sc-if value="{{ hasGscInsights }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ seoInsights }}" as="i" hint-placeholder-count="3">
+              <div style="{{ i.wrap }}">
+                <div style="font-size:14px;font-weight:700;color:#ffffff;letter-spacing:.4px;text-transform:uppercase">{{ i.tag }}</div>
+                <div style="margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+              </div>
+            </sc-for>
+          </sc-if>
+        </div>
+        <sc-if value="{{ noGscInsights }}" hint-placeholder-val="{{ false }}">
+          <div style="position:relative;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94)">Pas assez de tendance confirmée sur la période pour un insight fiable.</div>
+          </div>
+        </sc-if>
+        <button onClick="{{ scrollToQueries }}" style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:16.5px;font-weight:700;color:#141414;cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le détail
+          <span style="width:34px;height:34px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <div id="queriesAnchor" style="display:grid;grid-template-columns:468px 1fr;gap:20px;margin-top:20px;scroll-margin-top:24px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:486px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .22s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Top requêtes</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:2px;margin-top:14px;overflow:auto">
+          <sc-for list="{{ queries }}" as="q" hint-placeholder-count="6">
+            <div style="{{ q.row }}">
+              <span style="display:flex;flex-direction:column;gap:5px;flex:1;min-width:0">
+                <span style="font-size:16.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.term }}</span>
+                <span style="font-size:14px;font-weight:500;color:var(--muted)">CTR {{ q.ctr }} · pos. {{ q.pos }}</span>
+              </span>
+              <span style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+                <span style="font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.3px;font-variant-numeric:tabular-nums">{{ q.clicks }}</span>
+                <span style="font-size:14px;font-weight:500;color:var(--muted2)">{{ q.impr }} impr.</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:486px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .28s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Analyse du trafic par page</div>
+            <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">{{ scopeLabel }} · {{ periodLabel }}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2.2fr .9fr 1fr .8fr .9fr;gap:14px;padding:16px 12px 12px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted)">
+          <span>Page</span><span style="text-align:right">Clics</span><span style="text-align:right">Impressions</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;overflow:auto">
+          <sc-for list="{{ pages }}" as="p" hint-placeholder-count="6">
+            <div style="{{ p.row }}">
+              <span style="display:flex;flex-direction:column;gap:7px;min-width:0">
+                <span style="font-size:16px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.url }}</span>
+                <span style="height:5px;border-radius:3px;background:var(--soft);overflow:hidden;display:block"><span style="{{ p.shareBar }}"></span></span>
+              </span>
+              <span style="text-align:right;font-size:16.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ p.clicks }}</span>
+              <span style="text-align:right;font-size:16.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ p.impr }}</span>
+              <span style="text-align:right;font-size:16.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ p.ctr }}</span>
+              <span style="text-align:right;font-size:16.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ p.pos }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1880,&quot;height&quot;:1720}}">
+/* ============================== donnees reelles du site (identique au modele existant) ============================== */
+
+const HOSTS = {
+  "OPEL FR":       { pays:"F", host:"reprise.opel.fr" },
+  "OPEL PT":       { pays:"P", host:"retoma.opel.pt" },
+  "CITROEN PT":    { pays:"P", host:"retoma-citroen.pt" },
+  "PEUGEOT PT":    { pays:"P", host:"retoma.peugeot.pt" },
+  "DS PT":         { pays:"P", host:"retoma.dsautomobiles.pt" },
+  "FIAT PT":       { pays:"P", host:"retoma.fiat.pt" },
+  "JEEP PT":       { pays:"P", host:"retoma.jeep.pt" },
+  "ALFA ROMEO PT": { pays:"P", host:"retoma.alfaromeo.pt" },
+};
+const BRAND_OF = {
+  "OPEL FR":"OPEL", "OPEL PT":"OPEL", "CITROEN PT":"CITROEN", "PEUGEOT PT":"PEUGEOT",
+  "DS PT":"DS AUTOMOBILES", "FIAT PT":"FIAT", "JEEP PT":"JEEP", "ALFA ROMEO PT":"ALFA ROMEO",
+};
+const PAYS_LABEL = { F:"France", P:"Portugal" };
+
+const nf = new Intl.NumberFormat("fr-FR");
+const nf1 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 });
+const dec = (v, d) => (v == null || !isFinite(v)) ? "—" : v.toFixed(d).replace(".", ",");
+const fmt = n => (n == null || !isFinite(n)) ? "—" : nf.format(Math.round(n));
+const esc = s => String(s == null ? "" : s);
+
+const MONTHS = ["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const mdToYmd = md => "2026-" + md;
+function nbJours(debut, fin) { return Math.round((new Date(mdToYmd(fin)) - new Date(mdToYmd(debut))) / 86400000) + 1; }
+function decale(md, n) { const d = new Date(mdToYmd(md)); d.setDate(d.getDate() + n); return `${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+
+/* somme d'une serie de valeurs {jour: {canal: v}} restreinte a une plage */
+function joursDans(dJours, debut, fin) { return dJours.filter(j => j >= debut && j <= fin); }
+
+/* lissage identique en esprit a la reference : une courbe douce a partir
+   de N points, echantillonnee sur une largeur fixe. */
+function smoothPath(values, w, h, min, max) {
+  const n = values.length;
+  if (n < 2) return "";
+  const span = (max - min) || 1;
+  const pts = values.map((v, i) => [i / (n - 1) * w, h - (v - min) / span * h]);
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+    const mx = (x0 + x1) / 2;
+    d += ` C${mx.toFixed(1)} ${y0.toFixed(1)} ${mx.toFixed(1)} ${y1.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+  }
+  return d;
+}
+function sparkPath(values) {
+  if (!values || values.length < 2) return "M0 30 L120 30";
+  const min = Math.min(...values), max = Math.max(...values);
+  return smoothPath(values, 120, 30, min, max === min ? min + 1 : max);
+}
+
+class Component extends DCLogic {
+  state = {
+    tab: "ga4",
+    period: "28 j",
+    customDate: false,
+    dateFrom: "2026-07-01",
+    dateTo: "2026-07-31",
+    compare: true,
+    pickerOpen: false,
+    theme: "dark",
+    sites: [],           // rempli au chargement : tous les sites par defaut
+    dim: "brand",
+    booted: false,
+    error: null,
+  };
+
+  applyTheme() { document.documentElement.setAttribute("data-theme", this.state.theme); }
+
+  componentDidMount() {
+    this.applyTheme();
+    this.wireLogin();
+    this.boot();
+  }
+  componentDidUpdate() {
+    this.applyTheme();
+    const sig = this.periodSignature();
+    if (sig !== this._sig) { this._sig = sig; this.runCounters(); }
+  }
+
+  /* ---------------------------- connexion (client-side, comme avant) ---------------------------- */
+  async empreinte(t) {
+    const b = new TextEncoder().encode(t);
+    const buf = await crypto.subtle.digest("SHA-256", b);
+    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, "0")).join("");
+  }
+  wireLogin() {
+    const AUTH_EMPREINTE = "fd98a33cea628c0865faf7df0f9dabcbbb9f9fad73130bbc9e2fad8a060f7af3";
+    const AUTH_CLE = "psf_auth_ok";
+    const lire = () => { try { return localStorage.getItem(AUTH_CLE); } catch (e) { return null; } };
+    const ecrire = v => { try { localStorage.setItem(AUTH_CLE, v); } catch (e) {} };
+    const afficher = () => { const el = document.getElementById("loginScreen"); if (el) el.remove(); };
+    if (lire() === "1") { afficher(); return; }
+    const form = document.getElementById("loginForm");
+    if (!form) return;
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      const u = document.getElementById("loginUser").value.trim();
+      const p = document.getElementById("loginPass").value;
+      const h = await this.empreinte(`${u}:${p}`);
+      if (h === AUTH_EMPREINTE) { ecrire("1"); afficher(); }
+      else {
+        document.getElementById("loginErr").hidden = false;
+        document.getElementById("loginPass").value = "";
+        document.getElementById("loginPass").focus();
+      }
+    });
+  }
+
+  /* ---------------------------- chargement des donnees ---------------------------- */
+  async boot() {
+    try {
+      const index = await (await fetch("data/index.json")).json();
+      this.sitesList = index.sites;
+      this.data = {};
+      await Promise.all(this.sitesList.map(async s => {
+        const slug = s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        const r = await fetch("data/" + slug + ".json");
+        if (r.ok) this.data[s] = await r.json();
+      }));
+      this.setState({ sites: this.sitesList.slice(), booted: true });
+    } catch (e) {
+      this.setState({ error: String(e && e.message || e) });
+    }
+  }
+
+  /* ---------------------------- plage de jours selon la periode choisie ---------------------------- */
+  rangeForPeriod() {
+    const st = this.state;
+    if (st.customDate) return { debut: st.dateFrom.slice(5), fin: st.dateTo.slice(5) };
+    const anySite = this.data && this.sitesList && this.data[this.sitesList[0]];
+    const jours = anySite ? anySite.daily.d : [];
+    const max = jours.length ? jours[jours.length - 1] : "07-31";
+    const back = n => decale(max, -(n - 1));
+    if (st.period === "7 j") return { debut: back(7), fin: max };
+    if (st.period === "28 j") return { debut: back(28), fin: max };
+    if (st.period === "3 mois") return { debut: back(90), fin: max };
+    if (st.period === "12 mois") return { debut: (jours[0] || "04-01"), fin: max };
+    return { debut: back(28), fin: max };
+  }
+  periodSignature() {
+    const r = this.rangeForPeriod();
+    return this.state.tab + "|" + this.state.sites.join(",") + "|" + r.debut + "|" + r.fin + "|" + this.state.compare;
+  }
+
+  /* ---------------------------- agregation reelle sur les sites selectionnes ---------------------------- */
+  aggregate(debut, fin) {
+    const out = {
+      traffic: 0, reprise: 0, leads: 0, leadsDaily: {}, brand: new Map(), project: new Map(),
+      funnelSteps: null, funnelDays: 0, canal: {}, gscClics: 0, gscImpr: 0, gscCtrSum: 0, gscPosSum: 0, gscN: 0,
+      gscDaily: {}, queries: new Map(), pages: new Map(), insightsAcq: [], insightsRech: [], ownBrand: 0,
+    };
+    for (const s of this.state.sites) {
+      const d = this.data[s];
+      if (!d) continue;
+      const idxs = d.daily.d.map((_, i) => i).filter(i => d.daily.d[i] >= debut && d.daily.d[i] <= fin);
+      for (const i of idxs) {
+        out.traffic += d.daily.u[i] || 0;
+        out.reprise += d.daily.rep[i] || 0;
+        if (d.daily.sc && d.daily.sc[i] != null) { out.gscClics += d.daily.sc[i]; out.gscDaily[d.daily.d[i]] = (out.gscDaily[d.daily.d[i]] || 0) + d.daily.sc[i]; }
+        if (d.daily.si && d.daily.si[i] != null) out.gscImpr += d.daily.si[i];
+      }
+      // leads / jour, reconstruits mois par mois comme dans le modele existant
+      for (const mois of Object.keys(d.leads || {})) {
+        if (mois === "total") continue;
+        const mm = mois.slice(5, 7);
+        const arr = (d.leads[mois] && d.leads[mois].daily) || [];
+        arr.forEach((v, i) => {
+          const jour = mm + "-" + String(i + 1).padStart(2, "0");
+          if (jour >= debut && jour <= fin) { out.leads += (v || 0); out.leadsDaily[jour] = (out.leadsDaily[jour] || 0) + (v || 0); }
+        });
+        // dimensions : tout mois qui chevauche la plage (donnee mensuelle, pas de resolution jour)
+        const joursMois = d.daily.d.filter(x => x.slice(0, 2) === mm);
+        if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
+          for (const [n, v] of (d.leads[mois].brand || [])) out.brand.set(n, (out.brand.get(n) || 0) + v);
+          for (const [n, v] of (d.leads[mois].project || [])) out.project.set(n, (out.project.get(n) || 0) + v);
+          const own = BRAND_OF[s];
+          for (const [n, v] of (d.leads[mois].brand || [])) if (String(n).toUpperCase() === own) out.ownBrand += v;
+        }
+      }
+      // funnel : tout mois qui chevauche la plage (donnee mensuelle, pas de resolution jour)
+      for (const mois of Object.keys(d.funnelMonth || {})) {
+        if (mois === "total") continue;
+        const mm = mois.slice(5, 7);
+        const joursMois = d.daily.d.filter(x => x.slice(0, 2) === mm);
+        if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
+          const fm = d.funnelMonth[mois];
+          if (!out.funnelSteps) out.funnelSteps = fm.steps.map(x => ({ step: x.step, users: 0 }));
+          fm.steps.forEach((x, i) => { if (out.funnelSteps[i]) out.funnelSteps[i].users += x.users; });
+          out.funnelDays += (d.trafficMonth[mois] || {}).tdays || 30;
+        }
+      }
+      // canal quotidien
+      for (const mois of Object.keys(d.canalQuotidien || {})) {
+        const c = d.canalQuotidien[mois];
+        for (const jour of Object.keys(c)) {
+          if (jour < debut || jour > fin) continue;
+          out.canal[jour] = out.canal[jour] || {};
+          for (const [ch, v] of Object.entries(c[jour])) out.canal[jour][ch] = (out.canal[jour][ch] || 0) + v;
+        }
+      }
+      // search console : tout mois qui chevauche la plage (donnee mensuelle, pas de resolution jour)
+      for (const mois of Object.keys(d.searchMonth || {})) {
+        if (mois === "total") continue;
+        const mm = mois.slice(5, 7);
+        const joursMois = d.daily.d.filter(x => x.slice(0, 2) === mm);
+        if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
+          const sm = d.searchMonth[mois];
+          out.gscCtrSum += sm.ctr; out.gscPosSum += sm.position; out.gscN++;
+          for (const q of (sm.queries || [])) {
+            const k = q.requete;
+            const cur = out.queries.get(k) || { clics:0, impressions:0, posSum:0 };
+            cur.clics += q.clics; cur.impressions += q.impressions; cur.posSum += q.position * q.impressions;
+            out.queries.set(k, cur);
+          }
+          for (const p of (sm.pages || [])) {
+            const k = p.page;
+            const cur = out.pages.get(k) || { clics:0, impressions:0, posSum:0 };
+            cur.clics += p.clics; cur.impressions += p.impressions; cur.posSum += p.position * p.impressions;
+            out.pages.set(k, cur);
+          }
+        }
+      }
+      // insights IA reels, deja calcules cote pipeline — prefixes du site si plusieurs selectionnes
+      // compatibilite : ancien format = tableau plat (SEO uniquement) ; nouveau format = objet par rapport
+      const pre = this.state.sites.length > 1 ? s + " — " : "";
+      const insByDomain = Array.isArray(d.insights) ? { recherche: d.insights } : (d.insights || {});
+      for (const it of (insByDomain.acquisition || [])) out.insightsAcq.push({ ...it, titre: pre + it.titre });
+      for (const it of (insByDomain.recherche || [])) out.insightsRech.push({ ...it, titre: pre + it.titre });
+    }
+    return out;
+  }
+
+  /* ---------------------------- rendu ---------------------------- */
+
+  up(el, to, f) {
+    if (!el) return;
+    const t0 = performance.now(), dur = 800;
+    const tick = now => {
+      if (!el.isConnected) return;
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = f(to * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+  runCounters() {
+    if (!this._vals) return;
+    const v = this._vals;
+    for (const k of v.ga4Kpis || []) this.up(k.__el, k.__to, k.__fmt);
+    for (const k of v.gscKpis || []) this.up(k.__el, k.__to, k.__fmt);
+    this.up(this._compEl, v.__compTo || 0, x => dec(x, 1));
+    this.up(this._dailyAvgEl, v.__dailyAvgTo || 0, x => fmt(x));
+  }
+
+  toggleSite(name) {
+    this.setState(s => ({ sites: s.sites.includes(name) ? s.sites.filter(x => x !== name) : s.sites.concat([name]) }));
+  }
+  toggleGroup(names) {
+    this.setState(s => {
+      const allIn = names.every(n => s.sites.includes(n));
+      return { sites: allIn ? s.sites.filter(x => !names.includes(x)) : s.sites.concat(names.filter(n => !s.sites.includes(n))) };
+    });
+  }
+
+  refresh() {
+    const btn = event && event.currentTarget;
+    fetch("/api/refresh", { method: "POST" }).catch(() => {});
+  }
+
+  renderVals() {
+    const st = this.state;
+    if (!st.booted) {
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+        tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
+        channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
+        ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
+        hasGscInsights: false, noGscInsights: false, gscAxisLabels: [],
+        toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true, refreshLabel:"Actualiser" };
+    }
+
+    const ALL = this.sitesList;
+    const inSel = n => st.sites.includes(n);
+    const paysGroups = ["F", "P"].map(p => [p, ALL.filter(n => (HOSTS[n] || {}).pays === p)]).filter(g => g[1].length);
+    const brandGroups = ALL.reduce((acc, n) => {
+      const b = BRAND_OF[n];
+      const g = acc.find(x => x[0] === b);
+      if (g) g[1].push(n); else acc.push([b, [n]]);
+      return acc;
+    }, []);
+
+    const scopeSites = st.sites;
+    let scopeLabel;
+    if (scopeSites.length === ALL.length) scopeLabel = "Tous les sites";
+    else if (scopeSites.length === 0) scopeLabel = "Aucune sélection";
+    else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
+    else scopeLabel = scopeSites.length + " sites sélectionnés";
+
+    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"]].map(t => {
+      const on = st.tab === t[0];
+      return {
+        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc",
+        pick: () => this.setState({ tab: t[0] }),
+        style: "display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:background .22s ease,color .22s ease;background:" +
+          (on ? "var(--active-bg)" : "transparent") + ";color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+        markWrap: "width:32px;height:32px;border-radius:10px;background:" + (on ? "var(--active-mark)" : "var(--soft)") + ";display:flex;align-items:center;justify-content:center;transition:background .22s ease",
+      };
+    });
+
+    const periods = ["7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
+      const on = st.period === label;
+      return {
+        label,
+        pick: () => this.setState({ period: label, customDate: label === "Date précise" }),
+        style: "border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;height:42px;padding:0 18px;border-radius:999px;transition:background .22s ease,color .22s ease;background:" +
+          (on ? "var(--active-bg)" : "transparent") + ";color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+      };
+    });
+
+    const chip = (label, names, count) => {
+      const on = names.every(n => inSel(n));
+      return {
+        name: label, count: count + (count > 1 ? " sites" : " site"),
+        toggle: () => this.toggleGroup(names),
+        style: "display:flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:600;height:40px;padding:0 16px;border-radius:999px;transition:background .2s ease,color .2s ease;background:" +
+          (on ? "#F5411E" : "var(--soft)") + ";color:" + (on ? "#ffffff" : "var(--text2)"),
+      };
+    };
+    const marketChips = paysGroups.map(g => chip(PAYS_LABEL[g[0]], g[1], g[1].length));
+    const familyChips = brandGroups.map(g => chip(g[0].charAt(0) + g[0].slice(1).toLowerCase(), g[1], g[1].length));
+
+    const brandRows = ALL.map(n => {
+      const on = inSel(n);
+      const d = this.data[n];
+      const leads = d ? (((d.leads || {}).total || {}).total || 0) : 0;
+      return {
+        name: n, leads: fmt(leads),
+        toggle: () => this.toggleSite(n),
+        style: "display:flex;align-items:center;gap:10px;border:none;cursor:pointer;font-family:inherit;background:" + (on ? "var(--soft2)" : "transparent") + ";padding:10px 12px;border-radius:12px;transition:background .18s ease",
+        box: "width:19px;height:19px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;transition:background .18s ease;background:" + (on ? "#4ADE80" : "var(--soft3)") + ";color:" + (on ? "#0d0d0d" : "transparent"),
+      };
+    });
+
+    const range = this.rangeForPeriod();
+    const agg = this.aggregate(range.debut, range.fin);
+    const days = Math.max(1, nbJours(range.debut, range.fin));
+
+    // comparaison periode precedente
+    let cmp = null;
+    if (st.compare) {
+      const prev = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
+      cmp = this.aggregate(prev.debut, prev.fin);
+    }
+    const deltaBadge = (cur, ref, unit, invert) => {
+      if (ref == null || !cur) return { style: "font-size:14.5px;font-weight:700;padding:5px 10px;border-radius:8px;color:var(--muted);background:var(--soft)", text: "—" };
+      const v = ref ? (cur - ref) / ref * 100 : 0;
+      const goingUp = v >= 0;
+      const good = invert ? !goingUp : goingUp;
+      return {
+        style: "font-size:14.5px;font-weight:700;padding:5px 10px;border-radius:8px;color:" + (good ? "var(--pos)" : "var(--neg)") + ";background:" + (good ? "var(--pos-bg)" : "var(--neg-bg)"),
+        text: (goingUp ? "↑ " : "↓ ") + dec(Math.abs(v), 1) + " %",
+      };
+    };
+
+    periodLabel_: void 0;
+    const periodLabel = st.customDate
+      ? range.debut + " → " + range.fin
+      : "derniers " + st.period;
+
+    const kpiCard = (label, value, spark, sparkColor, deltaInfo, note, i) => ({
+      label, value,
+      card: "background:var(--card);border-radius:24px;padding:24px 26px 22px;height:172px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) " + (0.06 + i * 0.06) + "s both",
+      sparkColor,
+      sparkRef: el => { if (el) el.setAttribute("d", sparkPath(spark)); },
+      deltaStyle: deltaInfo.style, delta: deltaInfo.text, note,
+    });
+
+    const convPct = agg.reprise ? agg.leads / agg.reprise * 100 : 0;
+    const cmpConvPct = cmp && cmp.reprise ? cmp.leads / cmp.reprise * 100 : null;
+    const leadsPerDay = agg.leads / days, cmpLeadsPerDay = cmp ? cmp.leads / days : null;
+    const trafficPerDay = agg.traffic, cmpTraffic = cmp ? cmp.traffic : null;
+
+    const leadsDailySeries = Object.keys(agg.leadsDaily).sort().map(k => agg.leadsDaily[k]);
+
+    const ga4Kpis = [
+      { label:"Sessions outil de reprise", to: agg.reprise, fmt: fmt, color:"#4ADE80", ref: el => { this._el_sessions = el; },
+        deltaInfo: deltaBadge(agg.reprise, cmp && cmp.reprise, ""), note:"vs période N-1", spark: leadsDailySeries },
+      { label:"Leads", to: agg.leads, fmt: fmt, color:"#F5411E", ref: el => { this._el_leads = el; },
+        deltaInfo: deltaBadge(agg.leads, cmp && cmp.leads, ""), note:"vs période N-1", spark: leadsDailySeries },
+      { label:"Leads / jour", to: leadsPerDay, fmt: fmt, color:"#F9AB00", ref: el => { this._el_daily = el; },
+        deltaInfo: deltaBadge(leadsPerDay, cmpLeadsPerDay, ""), note:"moyenne période", spark: leadsDailySeries },
+      { label:"Leads BO / sessions reprise", to: convPct, fmt: x => dec(x,2) + " %", color:"#7B7BF0", ref: el => { this._el_conv = el; },
+        deltaInfo: deltaBadge(convPct, cmpConvPct, "pts"), note:"leads → reprise", spark: leadsDailySeries },
+    ].map((k, i) => {
+      const c = kpiCard(k.label, k.fmt(k.to), k.spark, k.color, k.deltaInfo, k.note, i);
+      c.ref = el => { if (el) this.up(el, k.to, k.fmt); };
+      return c;
+    });
+
+    // canal : top 4 + Autres, courbes lissees a partir des vraies donnees
+    const joursCanal = Object.keys(agg.canal).sort();
+    const totalParCanal = {};
+    joursCanal.forEach(j => { for (const [c, v] of Object.entries(agg.canal[j])) totalParCanal[c] = (totalParCanal[c] || 0) + v; });
+    const tousCanaux = Object.keys(totalParCanal).sort((a, b) => totalParCanal[b] - totalParCanal[a]);
+    const CHAN_COLORS = ["#4ADE80", "#F5411E", "#7B7BF0", "#F2E85F", "#4A9BF5"];
+    const majeurs = tousCanaux.slice(0, 4);
+    const mineurs = tousCanaux.slice(4);
+    const canaux = majeurs.concat(mineurs.length ? ["Autres"] : []);
+    const totalCanalGlobal = Object.values(totalParCanal).reduce((a, b) => a + b, 0) || 1;
+    if (!this._chan) this._chan = {};
+    canaux.forEach(c => { if (this._chan[c] === undefined) this._chan[c] = true; });
+    const channels = canaux.map((c, i) => {
+      const total = c === "Autres" ? mineurs.reduce((s, m) => s + (totalParCanal[m] || 0), 0) : (totalParCanal[c] || 0);
+      const on = this._chan[c];
+      return {
+        name: c, share: dec(total / totalCanalGlobal * 100, 0) + " %",
+        toggle: () => { this._chan[c] = !this._chan[c]; this.forceUpdate(); },
+        chip: "display:flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;height:38px;padding:0 14px;border-radius:999px;transition:opacity .2s ease;background:var(--soft);color:var(--text2);opacity:" + (on ? "1" : ".4"),
+        dot: "width:10px;height:10px;border-radius:50%;display:block;background:" + CHAN_COLORS[i % CHAN_COLORS.length],
+      };
+    });
+    const maxCanalVal = Math.max(1, ...joursCanal.map(j => {
+      let mx = 0; for (const c of canaux) { const v = c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0); mx = Math.max(mx, v); } return mx;
+    }));
+    const channelPaths = canaux.map((c, i) => {
+      const vals = joursCanal.map(j => c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0));
+      const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 280, 0, maxCanalVal);
+      return {
+        ref: el => { if (el) el.setAttribute("d", d); },
+        color: CHAN_COLORS[i % CHAN_COLORS.length],
+        style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08) + ";animation:drawLine 1.9s cubic-bezier(.35,.6,.3,1) " + (0.35 + i * .15) + "s forwards",
+      };
+    });
+    const channelAxisLabels = (() => {
+      const n = joursCanal.length; if (!n) return [];
+      const step = Math.max(1, Math.floor(n / 8));
+      const out = [];
+      for (let i = 0; i < n; i += step) out.push(joursCanal[i]);
+      if (out[out.length-1] !== joursCanal[n-1]) out.push(joursCanal[n-1]);
+      return out;
+    })();
+
+    // funnel agrege
+    const funnel = (agg.funnelSteps || []).map((s, i, arr) => {
+      const first = arr[0].users || 1;
+      const prev = i > 0 ? arr[i-1].users : null;
+      const drop = prev ? (prev - s.users) / prev * 100 : null;
+      return {
+        step: String(i+1).padStart(2,"0"), name: s.step, count: fmt(s.users), pct: dec(s.users/first*100,0) + " %",
+        drop: drop != null ? "↓ " + dec(drop,0) + " %" : "",
+        row: "animation:riseIn .6s cubic-bezier(.2,.7,.3,1) " + (0.4 + i * 0.08) + "s both",
+        dropStyle: "font-size:14.5px;font-weight:600;min-width:52px;text-align:right;color:" + (drop ? "var(--neg)" : "transparent"),
+        bar: "height:100%;border-radius:8px;width:" + dec(s.users/first*100,1) + "%;background:linear-gradient(90deg,#F5411E," + (i < 2 ? "#FF8A4C" : "#F9AB00") + ");animation:growW 1s cubic-bezier(.3,.8,.3,1) " + (0.5 + i * 0.08) + "s both",
+      };
+    });
+    const compPct = funnel.length ? (agg.funnelSteps[agg.funnelSteps.length-1].users / (agg.funnelSteps[0].users || 1) * 100) : 0;
+    const cmpFunnelPct = (cmp && cmp.funnelSteps && cmp.funnelSteps.length) ? (cmp.funnelSteps[cmp.funnelSteps.length-1].users / (cmp.funnelSteps[0].users || 1) * 100) : null;
+    const funnelDelta = deltaBadge(compPct, cmpFunnelPct, "pts");
+    const gaugeFrac = Math.max(0, Math.min(1, compPct / 100));
+    const gaugeAngle = Math.PI * gaugeFrac;
+    const cx = 40 + 150, cy = 215, R = 150;
+    const gaugeDotX = (cx - R * Math.cos(gaugeAngle)).toFixed(1);
+    const gaugeDotY = (cy - R * Math.sin(gaugeAngle)).toFixed(1);
+    const gaugeArc = `M40 215 A150 150 0 0 1 ${gaugeDotX} ${gaugeDotY}`;
+    const gaugeArcRef = el => { if (el) el.setAttribute("d", gaugeArc); };
+    const gaugeDotRef = el => { if (el) { el.setAttribute("cx", gaugeDotX); el.setAttribute("cy", gaugeDotY); } };
+
+    // leads par projet d'achat
+    const PROJ_COLORS = ["#FF6B6B", "#F2E85F", "#7B7BF0", "#4A9BF5"];
+    const projList = [...agg.project.entries()].sort((a,b) => b[1]-a[1]).slice(0, 4);
+    const totalProj = projList.reduce((s, [,v]) => s + v, 0) || 1;
+    const projects = projList.map(([name, v], i) => ({
+      name, pct: dec(v/totalProj*100,0) + " %", value: fmt(v),
+      row: "display:flex;align-items:center;gap:14px;animation:riseIn .6s ease " + (0.75 + i * 0.09) + "s both",
+      dot: "width:11px;height:11px;border-radius:50%;flex:none;background:" + PROJ_COLORS[i % PROJ_COLORS.length],
+      segment: "width:" + dec(v/totalProj*100,0) + "%;border-radius:8px;background:" + PROJ_COLORS[i % PROJ_COLORS.length] + ";animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.7 + i*.12) + "s both",
+    }));
+
+    // marques reprises
+    const brandList = [...agg.brand.entries()].sort((a,b) => b[1]-a[1]).slice(0, 5);
+    const maxBrand = Math.max(1, ...brandList.map(([,v]) => v));
+    const audience = brandList.map(([name, v], i) => ({
+      name, pct: dec(v/(([...agg.brand.values()].reduce((a,b)=>a+b,0))||1)*100,0) + " %",
+      row: "animation:riseIn .6s ease " + (0.7 + i * 0.08) + "s both",
+      bar: "height:100%;border-radius:6px;width:" + dec(v/maxBrand*100,0) + "%;background:#F9AB00;animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.78 + i * 0.08) + "s both",
+    }));
+    const totalLeadsAllBrands = [...agg.brand.values()].reduce((a,b)=>a+b,0) || 1;
+    const ownBrandShare = dec(agg.ownBrand / totalLeadsAllBrands * 100, 0) + " % marque du site";
+
+    // heatmap leads quotidiens (90 derniers jours max)
+    const anySite = this.data[this.sitesList[0]];
+    const allDays = anySite ? anySite.daily.d : [];
+    const last90 = allDays.slice(-90);
+    const lbdAll = {};
+    for (const s of st.sites) {
+      const d = this.data[s]; if (!d) continue;
+      for (const mois of Object.keys(d.leads || {})) {
+        if (mois === "total") continue;
+        const mm = mois.slice(5,7);
+        (d.leads[mois].daily || []).forEach((v, i) => { const j = mm + "-" + String(i+1).padStart(2,"0"); lbdAll[j] = (lbdAll[j]||0) + (v||0); });
+      }
+    }
+    const cellVals = last90.map(j => lbdAll[j] || 0);
+    const maxCell = Math.max(1, ...cellVals);
+    const leadCells = last90.map((j, i) => {
+      const v = lbdAll[j] || 0;
+      const r = v / maxCell;
+      const bg = r > .7 ? "#4ADE80" : r > .45 ? "#3fae63" : r > .15 ? "#2f6b45" : "var(--cell0)";
+      return { title: j + " : " + fmt(v) + " leads",
+        style: "aspect-ratio:1;border-radius:6px;background:" + bg + ";opacity:0;animation:cellIn .5s cubic-bezier(.2,1.3,.4,1) " + (0.45 + i * 0.008).toFixed(3) + "s forwards" };
+    });
+    const dailyAvg = cellVals.length ? cellVals.reduce((a,b)=>a+b,0)/cellVals.length : 0;
+
+    const ga4Insights = agg.insightsAcq.slice(0, 3).map((n, i) => ({
+      tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
+      wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+    }));
+
+    // ---------------------------- GSC ----------------------------
+    const hasGsc = agg.gscN > 0 || Object.keys(agg.gscDaily).length > 0;
+    const gscDays = Object.keys(agg.gscDaily).sort();
+    const gscClicsSeries = gscDays.map(j => agg.gscDaily[j]);
+    const ctrMoy = agg.gscN ? agg.gscCtrSum / agg.gscN : 0;
+    const posMoy = agg.gscN ? agg.gscPosSum / agg.gscN : 0;
+
+    const cmpCtrMoy = cmp && cmp.gscN ? cmp.gscCtrSum / cmp.gscN : null;
+    const cmpPosMoy = cmp && cmp.gscN ? cmp.gscPosSum / cmp.gscN : null;
+    const gscKpis = [
+      { label:"Clics", to: agg.gscClics, fmt: fmt, color:"#4285F4", spark: gscClicsSeries, deltaInfo: deltaBadge(agg.gscClics, cmp && cmp.gscClics, "") },
+      { label:"Impressions", to: agg.gscImpr, fmt: fmt, color:"#7B4DF0", spark: gscClicsSeries, deltaInfo: deltaBadge(agg.gscImpr, cmp && cmp.gscImpr, "") },
+      { label:"CTR moyen", to: ctrMoy, fmt: x => dec(x,2) + " %", color:"#34A853", spark: gscClicsSeries, deltaInfo: deltaBadge(ctrMoy, cmpCtrMoy, "pts") },
+      { label:"Position moyenne", to: posMoy, fmt: x => dec(x,1), color:"#FBBC04", spark: gscClicsSeries, deltaInfo: deltaBadge(posMoy, cmpPosMoy, "pts", true) },
+    ].map((k, i) => {
+      const c = kpiCard(k.label, k.fmt(k.to), k.spark, k.color, k.deltaInfo, "vs période N-1", i);
+      c.ref = el => { if (el) this.up(el, k.to, k.fmt); };
+      return c;
+    });
+
+    const maxGsc = Math.max(1, ...gscClicsSeries);
+    const imprSeries = gscDays.map(() => 0); // impressions quotidiennes non conservees par jour au-dela du total mensuel
+    const clicsLinePath = smoothPath(gscClicsSeries.length > 1 ? gscClicsSeries : [0,0], 900, 240, 0, maxGsc);
+    const clicsFillPath = clicsLinePath ? clicsLinePath + ` L900 240 L0 240 Z` : "";
+    const imprLinePath = clicsLinePath; // meme forme, echelle differente non disponible au jour le jour
+    const imprFillPath = clicsFillPath;
+    const clicsLineRef = el => { if (el) el.setAttribute("d", clicsLinePath); };
+    const clicsFillRef = el => { if (el) el.setAttribute("d", clicsFillPath); };
+    const imprLineRef = el => { if (el) el.setAttribute("d", imprLinePath); };
+    const imprFillRef = el => { if (el) el.setAttribute("d", imprFillPath); };
+    const gscAxisLabels = (() => {
+      const n = gscDays.length; if (!n) return [];
+      const step = Math.max(1, Math.floor(n/6)); const out = [];
+      for (let i=0;i<n;i+=step) out.push(gscDays[i]);
+      return out;
+    })();
+
+    const queries = [...agg.queries.entries()].sort((a,b)=>b[1].clics-a[1].clics).slice(0,6).map(([term, v], i) => ({
+      term, clicks: fmt(v.clics), impr: fmt(v.impressions),
+      ctr: dec(v.impressions ? v.clics/v.impressions*100 : 0, 1) + " %", pos: dec(v.impressions ? v.posSum/v.impressions : 0, 1),
+      row: "display:flex;align-items:center;gap:14px;padding:10px 10px;border-radius:14px;animation:riseIn .6s ease " + (0.45 + i * 0.07) + "s both",
+    }));
+    const pageList = [...agg.pages.entries()].sort((a,b)=>b[1].clics-a[1].clics).slice(0,6);
+    const maxPageClicks = Math.max(1, ...pageList.map(([,v])=>v.clics));
+    const pages = pageList.map(([url, v], i) => ({
+      url, clicks: fmt(v.clics), impr: fmt(v.impressions), ctr: dec(v.impressions ? v.clics/v.impressions*100:0,1)+" %", pos: dec(v.impressions ? v.posSum/v.impressions : 0, 1),
+      row: "display:grid;grid-template-columns:2.2fr .9fr 1fr .8fr .9fr;gap:14px;align-items:center;padding:12px 12px;border-radius:14px;animation:riseIn .6s ease " + (0.5 + i * 0.07) + "s both",
+      shareBar: "display:block;height:100%;border-radius:3px;background:var(--pos);width:" + dec(v.clics/maxPageClicks*100,0) + "%;animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.6+i*.07) + "s both",
+    }));
+    const seoInsights = agg.insightsRech.slice(0,3).map((n,i) => ({
+      tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
+      wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+    }));
+
+    this._compEl = el => { this.__compEl = el; if (el) this.up(el, compPct, x => dec(x,1)); };
+    this._dailyAvgEl = el => { this.__dailyAvgEl = el; if (el) this.up(el, dailyAvg, x => fmt(x)); };
+
+    return {
+      tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      funnel, projects, audience, leadCells, queries, pages,
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc",
+      isLight: st.theme === "light", isDark: st.theme === "dark",
+      toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+      hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
+      ga4Insights,
+      hasGsc, noGsc: !hasGsc,
+      hasGscInsights: seoInsights.length > 0, noGscInsights: seoInsights.length === 0,
+      seoInsights,
+      scopeLabel, scopeDetail: st.sites.length + " site(s)", periodLabel,
+      pickerOpen: st.pickerOpen, customDate: st.customDate,
+      dateFrom: st.dateFrom, dateTo: st.dateTo,
+      setFrom: e => this.setState({ dateFrom: e.target.value }),
+      setTo: e => this.setState({ dateTo: e.target.value }),
+      togglePicker: () => this.setState(s => ({ pickerOpen: !s.pickerOpen })),
+      selectAll: () => this.setState({ sites: ALL.slice() }),
+      clearAll: () => this.setState({ sites: [] }),
+      toggleCompare: () => this.setState(s => ({ compare: !s.compare })),
+      compareToggle: "width:52px;height:30px;border-radius:999px;border:none;cursor:pointer;padding:3px;display:flex;justify-content:" + (st.compare ? "flex-end" : "flex-start") + ";transition:background .22s ease;background:" + (st.compare ? "#4ADE80" : "var(--soft3)"),
+      compareKnob: "width:24px;height:24px;border-radius:50%;background:" + (st.compare ? "#0d0d0d" : "var(--muted)") + ";display:block;transition:background .22s ease",
+      pickerBtn: "display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:inherit;height:52px;padding:0 20px;border-radius:999px;transition:background .2s ease;background:" + (st.pickerOpen ? "var(--hover)" : "var(--card)"),
+      ga4Kpis, gscKpis,
+      compRef: this._compEl, dailyAvgRef: this._dailyAvgEl,
+      gaugeArcRef, gaugeDotRef,
+      convText: dec(convPct, 2) + " %", partText: dec(agg.traffic ? agg.reprise/agg.traffic*100 : 0, 1) + " %",
+      funnelDeltaBadge: funnelDelta.style, funnelDeltaText: funnelDelta.text,
+      ownBrandShare, heatmapDaysLabel: last90.length + " derniers jours",
+      gscAxisLabels, clicsLineRef, clicsFillRef, imprLineRef, imprFillRef,
+      refresh: () => this.refresh(), refreshLabel: "Actualiser",
+      scrollToFunnel: () => document.getElementById("funnelAnchor")?.scrollIntoView({ behavior:"smooth" }),
+      scrollToQueries: () => document.getElementById("queriesAnchor")?.scrollIntoView({ behavior:"smooth" }),
+    };
+  }
+}
+</script>
 </body>
 </html>
