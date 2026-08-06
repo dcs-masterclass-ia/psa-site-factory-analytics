@@ -428,8 +428,21 @@ input[type=date]{color-scheme:dark}
           <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
             <sc-for list="{{ ga4Insights }}" as="i" hint-placeholder-count="3">
               <div style="{{ i.wrap }}">
-                <div style="font-size:14px;font-weight:700;color:#ffffff;letter-spacing:.4px;text-transform:uppercase">{{ i.tag }}</div>
-                <div style="margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="{{ i.iconBadge }}">
+                    <sc-if value="{{ i.isAttention }}" hint-placeholder-val="{{ false }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ i.isOpportunite }}" hint-placeholder-val="{{ false }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ i.isInfo }}" hint-placeholder-val="{{ true }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+                    </sc-if>
+                  </span>
+                  <div style="{{ i.tagStyle }}">{{ i.tag }}</div>
+                </div>
+                <div style="margin-top:8px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
               </div>
             </sc-for>
           </sc-if>
@@ -669,8 +682,21 @@ input[type=date]{color-scheme:dark}
           <sc-if value="{{ hasGscInsights }}" hint-placeholder-val="{{ true }}">
             <sc-for list="{{ seoInsights }}" as="i" hint-placeholder-count="3">
               <div style="{{ i.wrap }}">
-                <div style="font-size:14px;font-weight:700;color:#ffffff;letter-spacing:.4px;text-transform:uppercase">{{ i.tag }}</div>
-                <div style="margin-top:6px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="{{ i.iconBadge }}">
+                    <sc-if value="{{ i.isAttention }}" hint-placeholder-val="{{ false }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ i.isOpportunite }}" hint-placeholder-val="{{ false }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+                    </sc-if>
+                    <sc-if value="{{ i.isInfo }}" hint-placeholder-val="{{ true }}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
+                    </sc-if>
+                  </span>
+                  <div style="{{ i.tagStyle }}">{{ i.tag }}</div>
+                </div>
+                <div style="margin-top:8px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
               </div>
             </sc-for>
           </sc-if>
@@ -797,6 +823,20 @@ function sparkPath(values) {
   if (!values || values.length < 2) return "M0 30 L120 30";
   const min = Math.min(...values), max = Math.max(...values);
   return smoothPath(values, 120, 30, min, max === min ? min + 1 : max);
+}
+
+/* distingue visuellement une alerte d'une opportunite dans les cartes
+   "Analyse IA" : icone + couleur d'accent differentes au lieu de deux
+   blocs identiques ne se differenciant que par un mot en majuscules. */
+function insightVisuals(type) {
+  const isAttention = type === "attention", isOpportunite = type === "opportunite", isInfo = !isAttention && !isOpportunite;
+  const accent = isAttention ? "#FFD166" : isOpportunite ? "#B9FBC0" : "#ffffff";
+  return {
+    isAttention, isOpportunite, isInfo,
+    tagStyle: "font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:" + accent,
+    iconBadge: "width:26px;height:26px;border-radius:8px;flex:none;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:" + accent,
+    borderColor: accent,
+  };
 }
 
 /* pose de nouveaux attributs geometriques (d, cx, cy...) sur un element SVG
@@ -1458,10 +1498,14 @@ class Component extends DCLogic {
     });
     const dailyAvg = cellVals.length ? cellVals.reduce((a,b)=>a+b,0)/cellVals.length : 0;
 
-    const ga4Insights = agg.insightsAcq.slice(0, 3).map((n, i) => ({
-      tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
-      wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
-    }));
+    const ga4Insights = agg.insightsAcq.slice(0, 3).map((n, i) => {
+      const v = insightVisuals(n.type);
+      return {
+        tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
+        ...v,
+        wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;border-left:3px solid " + v.borderColor + ";animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+      };
+    });
 
     // ---------------------------- GSC ----------------------------
     const hasGsc = agg.gscN > 0 || Object.keys(agg.gscDaily).length > 0;
@@ -1512,10 +1556,14 @@ class Component extends DCLogic {
       row: "display:grid;grid-template-columns:2.2fr .9fr 1fr .8fr .9fr;gap:14px;align-items:center;padding:12px 12px;border-radius:14px;animation:riseIn .6s ease " + (0.5 + i * 0.07) + "s both",
       shareBar: "display:block;height:100%;border-radius:3px;background:var(--pos);width:" + dec(v.clics/maxPageClicks*100,0) + "%;animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.6+i*.07) + "s both",
     }));
-    const seoInsights = agg.insightsRech.slice(0,3).map((n,i) => ({
-      tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
-      wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
-    }));
+    const seoInsights = agg.insightsRech.slice(0,3).map((n,i) => {
+      const v = insightVisuals(n.type);
+      return {
+        tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
+        ...v,
+        wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;border-left:3px solid " + v.borderColor + ";animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+      };
+    });
 
     this._compEl = el => { this.__compEl = el; if (el) this.up(el, compPct, x => dec(x,1)); };
     this._dailyAvgEl = el => { this.__dailyAvgEl = el; if (el) this.up(el, dailyAvg, x => fmt(x)); };
