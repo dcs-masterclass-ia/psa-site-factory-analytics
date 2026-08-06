@@ -473,30 +473,40 @@ input[type=date]{color-scheme:dark}
           <div style="{{ v2BadgeStyle }}">{{ v2BadgeText }}</div>
         </div>
         <sc-if value="{{ hasV2 }}" hint-placeholder-val="{{ true }}">
-        <div>
-          <div style="display:flex;align-items:center;gap:18px;margin-top:14px">
-            <span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted)"><span style="width:10px;height:10px;border-radius:3px;background:var(--soft3);display:block"></span>Avant la V2</span>
-            <span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--muted)"><span style="width:10px;height:10px;border-radius:3px;background:linear-gradient(90deg,#F5411E,#F9AB00);display:block"></span>Après la V2</span>
-          </div>
-          <div style="margin-top:8px">
-          <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
-            <div style="{{ f.row }}">
-              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px">
-                <span style="display:flex;align-items:baseline;gap:10px">
-                  <span style="font-size:13px;font-weight:700;color:var(--muted2);font-variant-numeric:tabular-nums">{{ f.step }}</span>
-                  <span style="font-size:15.5px;font-weight:600;color:var(--text)">{{ f.name }}</span>
+        <div style="flex:1;display:flex;flex-direction:column;margin-top:8px">
+          <div style="position:relative;flex:1;display:flex;align-items:flex-start;justify-content:space-between;padding:28px 6px 0">
+            <div style="position:absolute;left:calc(100%/12);right:calc(100%/12);top:53px;height:2px;background:var(--soft3)"></div>
+            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
+              <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;{{ f.nodeWrap }}">
+                <span style="{{ f.nodeStyle }}">
+                  <sc-if value="{{ f.isHome }}" hint-placeholder-val="{{ false }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ f.isSliders }}" hint-placeholder-val="{{ false }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg>
+                  </sc-if>
+                  <sc-if value="{{ f.isGauge }}" hint-placeholder-val="{{ false }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ f.isUser }}" hint-placeholder-val="{{ false }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  </sc-if>
+                  <sc-if value="{{ f.isPin }}" hint-placeholder-val="{{ false }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  </sc-if>
+                  <sc-if value="{{ f.isCheck }}" hint-placeholder-val="{{ true }}">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
+                  </sc-if>
                 </span>
-                <span style="display:flex;align-items:baseline;gap:10px;font-variant-numeric:tabular-nums">
-                  <span style="font-size:13.5px;font-weight:600;color:var(--muted)">{{ f.pctA }}</span>
-                  <span style="font-size:15px;font-weight:700;color:var(--text)">→ {{ f.pctB }}</span>
-                </span>
+                <div style="margin-top:12px;text-align:center;padding:0 4px">
+                  <div style="font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3">{{ f.name }}</div>
+                  <div style="margin-top:7px;font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ f.pctB }}</div>
+                  <div style="margin-top:2px;height:16px">
+                    <span style="{{ f.deltaChipStyle }}">{{ f.deltaChip }}</span>
+                  </div>
+                </div>
               </div>
-              <div style="display:flex;flex-direction:column;gap:4px">
-                <div style="height:6px;border-radius:3px;background:var(--soft);overflow:hidden"><div style="{{ f.barA }}"></div></div>
-                <div style="height:6px;border-radius:3px;background:var(--soft);overflow:hidden"><div style="{{ f.barB }}"></div></div>
-              </div>
-            </div>
-          </sc-for>
+            </sc-for>
           </div>
         </div>
         </sc-if>
@@ -1421,15 +1431,25 @@ class Component extends DCLogic {
     const v2PostConv = v2First.b ? v2Last.b / v2First.b * 100 : 0;
     const v2DeltaPts = v2PostConv - v2PreConv;
     const V2_STEP_LABELS = ["Page d'accueil", "Version", "Kilométrage", "Coordonnées", "Point de vente", "Estimation"];
+    // une icone par etape plutot qu'un numero abstrait, pour que le parcours
+    // se lise comme un vrai parcours (maison -> reglages -> jauge -> contact
+    // -> point de vente -> validation), pas une liste de barres
+    const V2_STEP_ICON = ["home", "sliders", "gauge", "user", "pin", "check"];
     const funnel = (agg.v2Steps || []).map((s, i) => {
       const firstA = v2First.a || 1, firstB = v2First.b || 1;
       const pctA = s.a / firstA * 100, pctB = s.b / firstB * 100;
+      const deltaPts = pctB - pctA;
+      const icon = V2_STEP_ICON[i] || "check";
+      const fade = 0.32 + Math.max(0, Math.min(1, pctB / 100)) * 0.68;
       return {
         step: String(i + 1).padStart(2, "0"), name: V2_STEP_LABELS[i] || s.step,
         pctA: dec(pctA, 0) + " %", pctB: dec(pctB, 0) + " %",
-        row: "animation:riseIn .6s cubic-bezier(.2,.7,.3,1) " + (0.4 + i * 0.08) + "s both",
-        barA: "height:100%;border-radius:3px;width:" + dec(pctA, 1) + "%;background:var(--soft3);animation:growW 1s cubic-bezier(.3,.8,.3,1) " + (0.48 + i * 0.08) + "s both",
-        barB: "height:100%;border-radius:3px;width:" + dec(pctB, 1) + "%;background:linear-gradient(90deg,#F5411E," + (i < 2 ? "#FF8A4C" : "#F9AB00") + ");animation:growW 1s cubic-bezier(.3,.8,.3,1) " + (0.56 + i * 0.08) + "s both",
+        isHome: icon === "home", isSliders: icon === "sliders", isGauge: icon === "gauge",
+        isUser: icon === "user", isPin: icon === "pin", isCheck: icon === "check",
+        nodeWrap: "animation:riseIn .6s cubic-bezier(.2,.7,.3,1) " + (0.35 + i * 0.08) + "s both",
+        nodeStyle: "width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;color:#fff;box-shadow:0 0 0 6px var(--card);background:linear-gradient(145deg,rgba(245,65,30," + fade.toFixed(2) + "),rgba(249,171,0," + fade.toFixed(2) + "))",
+        deltaChip: i === 0 ? "" : (deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(deltaPts), 0) + " pts",
+        deltaChipStyle: "font-size:12px;font-weight:700;color:" + (i === 0 ? "transparent" : deltaPts >= 0 ? "var(--pos)" : "var(--neg)"),
       };
     });
     const v2BadgeStyle = "font-size:14.5px;font-weight:700;padding:5px 10px;border-radius:8px;color:" +
