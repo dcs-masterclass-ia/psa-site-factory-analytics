@@ -123,6 +123,13 @@ def controle(nouveau, ancien=None, modele=None):
         for m in nouveau["months"]:
             if m not in ancien.get("leads", {}):
                 continue
+            # mois en cours : le total grossit mecaniquement d'une extraction
+            # a l'autre au fil des jours qui s'ecoulent (et l'ancien depot,
+            # extrait a la main a une date inconnue, n'a pas forcement le
+            # meme nombre de jours couverts) — un ecart n'y signale rien
+            # d'anormal, contrairement a un mois deja consolide.
+            if nouveau.get("meta", {}).get(m, {}).get("provisional"):
+                continue
             a = ancien["leads"][m]["total"]
             b = nouveau["leads"][m]["total"]
             if a and abs(b - a) / a * 100 > ECART_DEPOT_MAX:
