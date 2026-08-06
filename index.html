@@ -8,35 +8,207 @@
 </head>
 <body>
 
-<div class="login-screen" id="loginScreen">
-  <form class="login-card" id="loginForm" autocomplete="off">
-    <div class="login-mark">
-      <img src="./logo-blanc.png" alt="Miracle" style="height:22px;width:auto;display:block">
+<div class="login-screen" id="loginScreen" data-theme="dark">
+  <div class="login-shell">
+
+    <div class="login-hero">
+      <div class="login-hero-blob login-hero-blob--a"></div>
+      <div class="login-hero-blob login-hero-blob--b"></div>
+
+      <div class="login-hero-brand">
+        <img src="./logo-blanc.png" alt="Miracle" style="width:150px;height:auto;display:block">
+        <span class="login-hero-sep"></span>
+        <div class="login-hero-tag">PSA Factory</div>
+      </div>
+
+      <div class="login-hero-pitch">
+        <div class="login-hero-title">Portail de performance digitale</div>
+        <div class="login-hero-sub">Reporting Analytics et Search Console du réseau PSA Factory — accès réservé aux équipes habilitées.</div>
+      </div>
+
+      <div class="login-hero-chart">
+        <svg width="100%" height="220" viewBox="0 0 500 220" preserveAspectRatio="none" style="position:absolute;inset:0;overflow:visible">
+          <defs>
+            <linearGradient id="loginFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity=".22"></stop>
+              <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <path d="M0 176 C 55 168 78 92 130 80 C 186 67 208 186 262 186 C 316 186 328 86 372 58 C 418 30 452 38 500 26 L500 220 L0 220 Z" fill="url(#loginFill)" stroke="none" style="opacity:0;animation:loginFadeIn 1.1s ease 1.4s forwards"></path>
+          <path d="M0 200 C 60 196 96 152 150 148 C 206 144 232 196 288 190 C 338 185 360 128 410 112 C 448 100 470 98 500 92" fill="none" stroke="rgba(255,255,255,.42)" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke" stroke-dasharray="760" stroke-dashoffset="760" style="animation:loginDrawLine 2.2s cubic-bezier(.35,.6,.3,1) .9s forwards"></path>
+          <path d="M0 176 C 55 168 78 92 130 80 C 186 67 208 186 262 186 C 316 186 328 86 372 58 C 418 30 452 38 500 26" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke" stroke-dasharray="760" stroke-dashoffset="760" style="animation:loginDrawLine 2.2s cubic-bezier(.35,.6,.3,1) .6s forwards"></path>
+        </svg>
+        <div class="login-hero-dot"></div>
+      </div>
     </div>
-    <p class="login-sub">Accès réservé — connexion requise.</p>
-    <label class="login-field">
-      Identifiant
-      <input type="text" id="loginUser" autocomplete="username" autofocus>
-    </label>
-    <label class="login-field">
-      Mot de passe
-      <input type="password" id="loginPass" autocomplete="current-password">
-    </label>
-    <button type="submit" class="login-btn">Se connecter</button>
-    <p class="login-err" id="loginErr" hidden>Identifiant ou mot de passe incorrect.</p>
-  </form>
+
+    <div class="login-panel">
+      <div class="login-panel-top">
+        <span class="login-eyebrow">Accès collaborateur</span>
+        <div class="login-panel-top-actions">
+          <span class="login-help-txt">Besoin d'un accès ?</span>
+          <button type="button" class="login-ghost-btn">Contacter l'administrateur</button>
+          <button type="button" class="login-icon-btn" id="loginThemeBtn" title="Thème clair / sombre">
+            <svg class="login-theme-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
+            <svg class="login-theme-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <form class="login-formwrap" id="loginForm" autocomplete="off">
+        <div class="login-formhead">
+          <div class="login-formtitle">Connexion</div>
+          <div class="login-formsub">Identifiez-vous pour accéder aux tableaux de bord GA4 et Search Console.</div>
+        </div>
+
+        <div class="login-fields">
+          <label class="login-lbl">
+            <span class="login-lbl-txt">Adresse e-mail</span>
+            <span class="login-inputwrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
+              <input type="email" id="loginEmail" autocomplete="username" placeholder="Votre adresse e-mail" autofocus>
+            </span>
+          </label>
+
+          <label class="login-lbl">
+            <span class="login-lbl-row">
+              <span class="login-lbl-txt">Mot de passe</span>
+              <a href="#" class="login-link">Mot de passe oublié ?</a>
+            </span>
+            <span class="login-inputwrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="3"></rect><path d="M8 10V7.5a4 4 0 0 1 8 0V10"></path></svg>
+              <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••••">
+              <button type="button" class="login-reveal-btn" id="loginRevealBtn" aria-label="Afficher le mot de passe">
+                <svg class="login-eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12C3.5 9.1 7.5 5 12 5s8.5 4.1 9.5 7c-1 2.9-5 7-9.5 7s-8.5-4.1-9.5-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="login-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.8 2.8"></path><path d="M6.7 6.8C4.6 8.2 3 10.3 2.5 12c1 2.9 5 7 9.5 7 1.8 0 3.4-.6 4.8-1.5M9.9 5.2A9 9 0 0 1 12 5c4.5 0 8.5 4.1 9.5 7-.4 1.2-1.3 2.7-2.6 4"></path></svg>
+              </button>
+            </span>
+          </label>
+
+          <button type="button" class="login-remember" id="loginRememberBtn">
+            <span class="login-remember-box is-on" id="loginRememberBox">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>
+            </span>
+            <span class="login-remember-txt">Rester connecté 30 jours</span>
+          </button>
+
+          <button type="submit" class="login-submit" id="loginSubmitBtn">
+            <span class="login-spinner" id="loginSpinner" hidden></span>
+            <span id="loginSubmitLabel">Se connecter</span>
+          </button>
+
+          <p class="login-err" id="loginErr" hidden>Adresse e-mail ou mot de passe incorrect.</p>
+
+          <div class="login-sep"><span></span><em>ou</em><span></span></div>
+
+          <button type="button" class="login-google-btn" title="Bientôt disponible">
+            <span class="login-google-mark">
+              <span class="login-google-o"></span>
+              <span class="login-google-check"></span>
+              <span class="login-google-dot"></span>
+            </span>
+            Continuer avec Google
+          </button>
+        </div>
+      </form>
+
+      <div class="login-foot">
+        <span>© 2026 Miracle · PSA Factory — Données hébergées dans l'UE</span>
+        <span class="login-foot-links"><a href="#">Confidentialité</a><a href="#">Sécurité</a></span>
+      </div>
+    </div>
+
+  </div>
 </div>
 <style>
-  .login-screen{position:fixed;inset:0;z-index:1000;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans',system-ui,sans-serif}
-  .login-card{width:100%;max-width:340px;margin:0 20px;background:#1a1a1a;border:1px solid #262626;border-radius:22px;box-shadow:0 40px 80px -20px rgba(0,0,0,.55);padding:32px 28px 28px;display:flex;flex-direction:column;gap:16px}
-  .login-mark{display:flex;align-items:center;gap:10px}
-  .login-sub{margin:0;font:500 12.5px/1.5 inherit;color:#8b8b8b}
-  .login-field{display:flex;flex-direction:column;gap:6px;font:700 10.5px/1 inherit;letter-spacing:.05em;text-transform:uppercase;color:#7d7d7d}
-  .login-field input{font:600 14px/1 inherit;color:#fff;padding:11px 12px;border:1px solid #262626;border-radius:12px;background:#242424;width:100%;box-sizing:border-box}
-  .login-field input:focus{outline:2px solid #F5411E;outline-offset:1px}
-  .login-btn{margin-top:4px;padding:12px;border:none;border-radius:12px;background:#F5411E;color:#fff;font:700 13.5px/1 inherit;cursor:pointer;transition:background .15s ease}
-  .login-btn:hover{background:#ff6a45}
-  .login-err{margin:0;font:600 12px/1.4 inherit;color:#ff7a6b}
+  .login-screen{
+    --page:#9fb2a5;--bg:#0d0d0d;--card:#1a1a1a;--soft:#242424;--soft2:#262626;--hover:#303030;
+    --text:#ffffff;--text2:#c9c9c9;--muted:#8b8b8b;--muted2:#7d7d7d;--line:#262626;--shadow:rgba(0,0,0,.55);
+    position:fixed;inset:0;z-index:1000;overflow:auto;background:var(--page);display:flex;align-items:center;justify-content:center;
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding:32px 16px;box-sizing:border-box;
+  }
+  .login-screen[data-theme="light"]{
+    --page:#dfe6df;--bg:#ffffff;--card:#f3f5f2;--soft:#e7eae5;--soft2:#dfe3dc;--hover:#dbe0d8;
+    --text:#15181a;--text2:#3f4448;--muted:#6d7378;--muted2:#8b9196;--line:#e2e6e0;--shadow:rgba(70,85,72,.28);
+  }
+  .login-screen a{color:#F5411E;text-decoration:none}
+  .login-screen a:hover{color:#ff6a45}
+  .login-screen input{font-family:inherit}
+  .login-screen input::placeholder{color:var(--muted2)}
+  @keyframes loginRiseIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  @keyframes loginFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes loginDrawLine{to{stroke-dashoffset:0}}
+  @keyframes loginFloatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @keyframes loginGlowPulse{0%,100%{opacity:.45}50%{opacity:.8}}
+  @keyframes loginPopIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
+  @keyframes loginSpin{to{transform:rotate(360deg)}}
+
+  .login-shell{width:100%;max-width:1360px;background:var(--card);border-radius:34px;padding:20px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);display:grid;grid-template-columns:minmax(0,580px) minmax(0,1fr);gap:20px;animation:loginFadeIn .5s ease both}
+  @media (max-width:860px){.login-shell{grid-template-columns:1fr}.login-hero{display:none}}
+
+  .login-hero{background:linear-gradient(155deg,#FA4B22,#D62F0C);border-radius:26px;padding:38px 40px;position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:760px;box-sizing:border-box;animation:loginRiseIn .7s cubic-bezier(.2,.7,.3,1) .05s both}
+  .login-hero-blob{position:absolute;border-radius:50%}
+  .login-hero-blob--a{right:-90px;top:-70px;width:300px;height:300px;background:rgba(255,255,255,.13);filter:blur(10px);animation:loginFloatY 7s ease-in-out infinite}
+  .login-hero-blob--b{left:-60px;bottom:-80px;width:260px;height:260px;background:rgba(255,255,255,.09);filter:blur(14px);animation:loginGlowPulse 5s ease-in-out infinite}
+  .login-hero-brand{display:flex;align-items:center;gap:16px;position:relative}
+  .login-hero-sep{width:1px;height:30px;background:rgba(255,255,255,.35);display:block}
+  .login-hero-tag{font-size:14px;font-weight:600;color:rgba(255,255,255,.9);letter-spacing:1.4px;text-transform:uppercase}
+  .login-hero-pitch{margin-top:auto;position:relative}
+  .login-hero-title{font-size:38px;font-weight:800;color:#ffffff;letter-spacing:-1.3px;line-height:1.1;max-width:440px}
+  .login-hero-sub{margin-top:16px;font-size:16.5px;font-weight:500;color:rgba(255,255,255,.9);line-height:1.55;max-width:430px}
+  .login-hero-chart{margin-top:40px;position:relative;height:220px}
+  .login-hero-dot{position:absolute;right:-4px;top:20px;width:14px;height:14px;border-radius:50%;background:#ffffff;box-shadow:0 0 0 6px rgba(255,255,255,.25);opacity:0;animation:loginPopIn .5s cubic-bezier(.2,1.4,.4,1) 2.5s forwards}
+
+  .login-panel{background:var(--card);border-radius:26px;padding:38px 44px;box-sizing:border-box;display:flex;flex-direction:column;animation:loginRiseIn .7s cubic-bezier(.2,.7,.3,1) .12s both;min-width:0}
+  .login-panel-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .login-eyebrow{font-size:14.5px;font-weight:600;color:var(--muted)}
+  .login-panel-top-actions{display:flex;align-items:center;gap:10px}
+  .login-help-txt{font-size:14.5px;font-weight:500;color:var(--muted)}
+  .login-ghost-btn{border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:14.5px;font-weight:600;height:40px;padding:0 16px;border-radius:999px;cursor:pointer;transition:background .2s ease}
+  .login-ghost-btn:hover{background:var(--hover)}
+  .login-icon-btn{width:40px;height:40px;border-radius:50%;background:var(--soft);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease;color:var(--text)}
+  .login-icon-btn:hover{background:var(--hover)}
+  .login-theme-sun,.login-theme-moon{display:none}
+  .login-screen[data-theme="dark"] .login-theme-moon{display:block}
+  .login-screen[data-theme="light"] .login-theme-sun{display:block}
+
+  .login-formwrap{margin-top:auto;margin-bottom:auto;padding:44px 0;max-width:460px;width:100%;align-self:center}
+  .login-formtitle{font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1.3px;line-height:1.1}
+  .login-formsub{margin-top:10px;font-size:16px;font-weight:500;color:var(--muted)}
+  .login-fields{display:flex;flex-direction:column;gap:16px;margin-top:32px}
+  .login-lbl{display:flex;flex-direction:column;gap:9px}
+  .login-lbl-txt{font-size:14.5px;font-weight:600;color:var(--text2)}
+  .login-lbl-row{display:flex;align-items:baseline;justify-content:space-between}
+  .login-link{font-size:14px;font-weight:600}
+  .login-inputwrap{display:flex;align-items:center;gap:12px;height:58px;padding:0 18px;border-radius:16px;box-sizing:border-box;transition:background .2s ease,box-shadow .2s ease;background:var(--soft);box-shadow:0 0 0 1px transparent}
+  .login-inputwrap:focus-within{box-shadow:0 0 0 2px #F5411E}
+  .login-inputwrap input{flex:1;background:transparent;border:none;outline:none;font-size:16px;font-weight:500;color:var(--text);min-width:0}
+  .login-reveal-btn{border:none;background:transparent;cursor:pointer;display:flex;align-items:center;padding:0}
+  .login-eye-on,.login-eye-off{display:none}
+  #loginPass[type="password"] ~ .login-reveal-btn .login-eye-off{display:block}
+  #loginPass[type="text"] ~ .login-reveal-btn .login-eye-on{display:block}
+  .login-remember{display:flex;align-items:center;gap:11px;border:none;background:transparent;cursor:pointer;padding:0;align-self:flex-start}
+  .login-remember-box{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:background .18s ease;background:var(--soft2);color:transparent}
+  .login-remember-box.is-on{background:#F5411E;color:#ffffff}
+  .login-remember-txt{font-size:15px;font-weight:500;color:var(--text2)}
+  .login-submit{display:flex;align-items:center;justify-content:center;gap:12px;height:60px;margin-top:8px;border:none;border-radius:16px;font-family:inherit;font-size:17px;font-weight:700;color:#ffffff;cursor:pointer;background:#F5411E;transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;box-shadow:0 14px 34px -14px rgba(245,65,30,.95)}
+  .login-submit:hover{filter:brightness(1.06)}
+  .login-submit:disabled{cursor:default}
+  .login-spinner{width:19px;height:19px;border-radius:50%;border:2.4px solid rgba(255,255,255,.35);border-top-color:#fff;display:block;animation:loginSpin .7s linear infinite}
+  .login-spinner[hidden]{display:none}
+  .login-err{margin:-4px 0 0;font:600 13px/1.4 inherit;color:#ff7a6b}
+  .login-sep{display:flex;align-items:center;gap:16px;margin:6px 0}
+  .login-sep span{flex:1;height:1px;background:var(--line);display:block}
+  .login-sep em{font-style:normal;font-size:13.5px;font-weight:600;color:var(--muted2)}
+  .login-google-btn{display:flex;align-items:center;justify-content:center;gap:13px;height:58px;border:none;border-radius:16px;background:var(--soft);color:var(--text);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s ease,transform .2s ease}
+  .login-google-btn:hover{background:var(--hover);transform:translateY(-2px)}
+  .login-google-mark{width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;flex:none}
+  .login-google-o{width:11px;height:11px;border-radius:50%;border:2.6px solid #4285F4;box-sizing:border-box;display:block}
+  .login-google-check{position:absolute;right:4px;bottom:5px;width:7px;height:2.6px;border-radius:2px;background:#34A853;transform:rotate(45deg)}
+  .login-google-dot{position:absolute;right:3px;bottom:3px;width:4px;height:4px;border-radius:1px;background:#FBBC04}
+
+  .login-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13.5px;font-weight:500;color:var(--muted2)}
+  .login-foot-links{display:flex;gap:18px}
 </style>
 
 <x-dc>
@@ -705,21 +877,55 @@ class Component extends DCLogic {
     const AUTH_CLE = "psf_auth_ok";
     const lire = () => { try { return localStorage.getItem(AUTH_CLE); } catch (e) { return null; } };
     const ecrire = v => { try { localStorage.setItem(AUTH_CLE, v); } catch (e) {} };
-    const afficher = () => { const el = document.getElementById("loginScreen"); if (el) el.remove(); };
+    const ecran = document.getElementById("loginScreen");
+    const afficher = () => { if (ecran) ecran.remove(); };
     if (lire() === "1") { afficher(); return; }
+    if (!ecran) return;
+
+    // thème du seul écran de connexion — independant de celui du dashboard,
+    // qui n'existe pas encore tant qu'on n'est pas authentifié
+    const themeBtn = document.getElementById("loginThemeBtn");
+    themeBtn?.addEventListener("click", () => {
+      ecran.setAttribute("data-theme", ecran.getAttribute("data-theme") === "dark" ? "light" : "dark");
+    });
+
+    // afficher / masquer le mot de passe
+    const pass = document.getElementById("loginPass");
+    document.getElementById("loginRevealBtn")?.addEventListener("click", () => {
+      pass.type = pass.type === "password" ? "text" : "password";
+    });
+
+    // rester connecté (purement visuel pour l'instant — la session est deja
+    // persistee dans localStorage independamment de cette case)
+    const rememberBox = document.getElementById("loginRememberBox");
+    let remember = true;
+    document.getElementById("loginRememberBtn")?.addEventListener("click", () => {
+      remember = !remember;
+      rememberBox?.classList.toggle("is-on", remember);
+    });
+
     const form = document.getElementById("loginForm");
     if (!form) return;
     form.addEventListener("submit", async e => {
       e.preventDefault();
-      const u = document.getElementById("loginUser").value.trim();
-      const p = document.getElementById("loginPass").value;
+      const submitBtn = document.getElementById("loginSubmitBtn");
+      const spinner = document.getElementById("loginSpinner");
+      const label = document.getElementById("loginSubmitLabel");
+      const errEl = document.getElementById("loginErr");
+      errEl.hidden = true;
+      submitBtn.disabled = true;
+      spinner.hidden = false;
+      label.textContent = "Connexion…";
+      const u = document.getElementById("loginEmail").value.trim();
+      const p = pass.value;
       const h = await this.empreinte(`${u}:${p}`);
-      if (h === AUTH_EMPREINTE) { ecrire("1"); afficher(); }
-      else {
-        document.getElementById("loginErr").hidden = false;
-        document.getElementById("loginPass").value = "";
-        document.getElementById("loginPass").focus();
-      }
+      if (h === AUTH_EMPREINTE) { ecrire("1"); afficher(); return; }
+      errEl.hidden = false;
+      pass.value = "";
+      pass.focus();
+      submitBtn.disabled = false;
+      spinner.hidden = true;
+      label.textContent = "Se connecter";
     });
   }
 
