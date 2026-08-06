@@ -931,30 +931,42 @@ function insightVisuals(type) {
    reellement change — comme dans le modele fourni, ou chaque changement de
    donnees (site, periode, filtre) redessine les courbes progressivement,
    pas seulement le montage initial. */
+function _recaleLongueurTrace(el) {
+  if (!el || typeof el.getTotalLength !== "function") return;
+  try {
+    const long = Math.ceil(el.getTotalLength()) + 2;
+    el.setAttribute("stroke-dasharray", String(long));
+    el.setAttribute("stroke-dashoffset", String(long));
+  } catch (e) { /* ignore : garde le budget pose dans le markup */ }
+}
+
 function setAnimatedAttrs(el, attrs) {
   if (!el) return;
   let changed = false;
   for (const k in attrs) { if (el.getAttribute(k) !== String(attrs[k])) changed = true; }
   for (const k in attrs) el.setAttribute(k, attrs[k]);
   // le stroke-dasharray des traces de courbes est pose en dur dans le markup
-  // pour amorcer l'animation avant le premier calcul — un budget trop court
-  // pour une ligne tres agitee (beaucoup de pics, ex. un canal "Direct" avec
-  // de gros ecarts jour a jour) laissait la fin du trace ne jamais se
-  // dessiner : elle semblait s'arreter en cours de route. On recalcule la
-  // vraie longueur du chemin a chaque changement de "d", quelle que soit sa
-  // forme, et on recale le budget dessus.
-  if ("d" in attrs && typeof el.getTotalLength === "function") {
-    try {
-      const long = Math.ceil(el.getTotalLength()) + 2;
-      el.setAttribute("stroke-dasharray", String(long));
-      if (changed) el.setAttribute("stroke-dashoffset", String(long));
-    } catch (e) { /* ignore : garde le budget fixe pose dans le markup */ }
-  }
+  // (valeur de secours) pour amorcer l'animation avant le premier calcul —
+  // un budget trop court pour une ligne tres agitee (beaucoup de pics, ex.
+  // un canal "Direct" avec de gros ecarts jour a jour) laissait la fin du
+  // trace ne jamais se dessiner : elle semblait s'arreter en cours de route.
+  //
+  // Le vrai risque etait une course : si l'animation CSS demarre sur la
+  // valeur de secours du markup avant que ce code ne la corrige, elle reste
+  // verrouillee sur ce depart perime meme si l'attribut change ensuite. On
+  // recalcule donc une premiere fois tout de suite (cas courant), PUIS on
+  // rejoue tout le cycle (longueur + coupure/relance de l'animation) au
+  // prochain repaint, une fois le "d" definitivement pose — a ce moment-la
+  // il n'y a plus de course possible.
+  if ("d" in attrs) _recaleLongueurTrace(el);
   if (changed && el.style.animation) {
     const anim = el.style.animation;
-    el.style.animation = "none";
-    void el.getBoundingClientRect();
-    el.style.animation = anim;
+    requestAnimationFrame(() => {
+      if ("d" in attrs) _recaleLongueurTrace(el);
+      el.style.animation = "none";
+      void el.getBoundingClientRect();
+      el.style.animation = anim;
+    });
   }
 }
 
