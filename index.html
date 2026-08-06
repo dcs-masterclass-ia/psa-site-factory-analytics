@@ -936,6 +936,20 @@ function setAnimatedAttrs(el, attrs) {
   let changed = false;
   for (const k in attrs) { if (el.getAttribute(k) !== String(attrs[k])) changed = true; }
   for (const k in attrs) el.setAttribute(k, attrs[k]);
+  // le stroke-dasharray des traces de courbes est pose en dur dans le markup
+  // pour amorcer l'animation avant le premier calcul — un budget trop court
+  // pour une ligne tres agitee (beaucoup de pics, ex. un canal "Direct" avec
+  // de gros ecarts jour a jour) laissait la fin du trace ne jamais se
+  // dessiner : elle semblait s'arreter en cours de route. On recalcule la
+  // vraie longueur du chemin a chaque changement de "d", quelle que soit sa
+  // forme, et on recale le budget dessus.
+  if ("d" in attrs && typeof el.getTotalLength === "function") {
+    try {
+      const long = Math.ceil(el.getTotalLength()) + 2;
+      el.setAttribute("stroke-dasharray", String(long));
+      if (changed) el.setAttribute("stroke-dashoffset", String(long));
+    } catch (e) { /* ignore : garde le budget fixe pose dans le markup */ }
+  }
   if (changed && el.style.animation) {
     const anim = el.style.animation;
     el.style.animation = "none";
