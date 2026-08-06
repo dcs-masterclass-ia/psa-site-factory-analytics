@@ -66,7 +66,8 @@ input[type=date]{color-scheme:dark}
 </style>
 </helmet>
 <div style="min-height:100vh;padding:48px 24px;background:#9fb2a5;box-sizing:border-box;overflow-x:hidden">
-<div style="width:100%;max-width:1780px;margin:0 auto;background:var(--bg);border-radius:34px;padding:36px 44px 44px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);animation:fadeIn .5s ease both">
+<div ref="{{ scaleSizerRef }}" style="width:100%;max-width:1780px;margin:0 auto;overflow:hidden">
+<div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);border-radius:34px;padding:36px 44px 44px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);animation:fadeIn .5s ease both;transform-origin:top left">
 
   <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
     <div style="display:flex;align-items:center;gap:16px">
@@ -125,7 +126,7 @@ input[type=date]{color-scheme:dark}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
       </button>
       <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute;left:0;top:60px;width:560px;max-width:calc(100vw - 88px);background:var(--pop);border-radius:22px;padding:22px 24px 20px;box-shadow:0 40px 80px -20px var(--shadow);animation:dropIn .22s ease both">
+        <div style="position:absolute;left:0;top:60px;width:560px;background:var(--pop);border-radius:22px;padding:22px 24px 20px;box-shadow:0 40px 80px -20px var(--shadow);animation:dropIn .22s ease both">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
             <div style="font-size:16px;font-weight:700;color:var(--text)">Périmètre d'analyse</div>
             <div style="display:flex;gap:8px">
@@ -203,7 +204,7 @@ input[type=date]{color-scheme:dark}
       </sc-for>
     </div>
 
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,468px);gap:20px;margin-top:20px">
+    <div style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px">
 
       <div style="background:var(--card);border-radius:26px;padding:28px 30px 24px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
@@ -262,7 +263,7 @@ input[type=date]{color-scheme:dark}
       </div>
     </div>
 
-    <div id="funnelAnchor" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,468px);gap:20px;margin-top:20px;scroll-margin-top:24px">
+    <div id="funnelAnchor" style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px;scroll-margin-top:24px">
 
       <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:470px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -432,7 +433,7 @@ input[type=date]{color-scheme:dark}
       </sc-for>
     </div>
 
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,468px);gap:20px;margin-top:20px">
+    <div style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px">
 
       <div style="background:var(--card);border-radius:26px;padding:28px 30px 24px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -491,7 +492,7 @@ input[type=date]{color-scheme:dark}
       </div>
     </div>
 
-    <div id="queriesAnchor" style="display:grid;grid-template-columns:minmax(300px,468px) minmax(0,1fr);gap:20px;margin-top:20px;scroll-margin-top:24px">
+    <div id="queriesAnchor" style="display:grid;grid-template-columns:468px 1fr;gap:20px;margin-top:20px;scroll-margin-top:24px">
 
       <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:486px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .22s both">
         <div style="display:flex;align-items:center;justify-content:space-between">
@@ -544,6 +545,7 @@ input[type=date]{color-scheme:dark}
   </div>
   </sc-if>
 
+</div>
 </div>
 </div>
 </x-dc>
@@ -619,13 +621,30 @@ class Component extends DCLogic {
 
   applyTheme() { document.documentElement.setAttribute("data-theme", this.state.theme); }
 
+  /* le canevas est concu a largeur fixe (1780px, comme le modele fourni) ;
+     on le reduit proportionnellement (transform:scale) pour qu'il tienne
+     dans n'importe quelle fenetre sans jamais deformer les proportions
+     ni faire deborder la page horizontalement. */
+  fitScale() {
+    const sizer = this._sizerEl, canvas = this._canvasEl;
+    if (!sizer || !canvas) return;
+    const naturalWidth = 1780;
+    const scale = Math.min(1, sizer.clientWidth / naturalWidth);
+    canvas.style.transform = "scale(" + scale + ")";
+    sizer.style.height = (canvas.offsetHeight * scale) + "px";
+  }
+
   componentDidMount() {
     this.applyTheme();
     this.wireLogin();
     this.boot();
+    this._onResize = () => this.fitScale();
+    window.addEventListener("resize", this._onResize);
+    requestAnimationFrame(() => this.fitScale());
   }
   componentDidUpdate() {
     this.applyTheme();
+    this.fitScale();
     const sig = this.periodSignature();
     if (sig !== this._sig) { this._sig = sig; this.runCounters(); }
   }
@@ -828,7 +847,9 @@ class Component extends DCLogic {
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
         hasGscInsights: false, noGscInsights: false, gscAxisLabels: [],
-        toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true, refreshLabel:"Actualiser" };
+        toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true, refreshLabel:"Actualiser",
+        scaleSizerRef: el => { this._sizerEl = el; },
+        scaleCanvasRef: el => { this._canvasEl = el; } };
     }
 
     const ALL = this.sitesList;
@@ -1158,6 +1179,8 @@ class Component extends DCLogic {
       refresh: () => this.refresh(), refreshLabel: "Actualiser",
       scrollToFunnel: () => document.getElementById("funnelAnchor")?.scrollIntoView({ behavior:"smooth" }),
       scrollToQueries: () => document.getElementById("queriesAnchor")?.scrollIntoView({ behavior:"smooth" }),
+      scaleSizerRef: el => { this._sizerEl = el; },
+      scaleCanvasRef: el => { this._canvasEl = el; },
     };
   }
 }
