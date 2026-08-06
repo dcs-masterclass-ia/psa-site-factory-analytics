@@ -259,7 +259,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # deja assemblees ci-dessus, funnel via une requete GA4 par semaine
     # ecoulee depuis la bascule. Ne bloque jamais le site en cas d'echec.
     try:
-        v2w = v2_report.rapport_hebdo(cli, s, d, jour_fiable())
+        v2w = v2_report.rapport_hebdo(cli, s, d, jour_fiable(), hote_reprise)
         if v2w:
             d["v2Weekly"] = v2w
             journal.append(f"V2 hebdo : {len(v2w['weeks'])} semaine(s) depuis le {v2w['v2Date']}")

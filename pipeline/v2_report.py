@@ -98,9 +98,11 @@ def _funnel_periode(cli, pid, hote, debut, fin):
     return None, None
 
 
-def rapport_hebdo(cli, s, d, jour_fiable_iso):
+def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
     """Construit le rapport V2 hebdomadaire d'un site, ou None si pas de
-    bascule connue ou pas assez de recul avant bascule pour comparer."""
+    bascule connue ou pas assez de recul avant bascule pour comparer.
+    hote_reprise est passe explicitement plutot que lu dans d['_hotes'],
+    qui n'est renseigne qu'a la toute fin de assemble()."""
     v2_date_iso = d.get("v2_date")
     if not v2_date_iso:
         return None
@@ -121,7 +123,6 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso):
     premiere_donnee, derniere_donnee = min(dates_disponibles), max(dates_disponibles)
     borne_haute = min(jour_fiable, derniere_donnee)
 
-    hote_reprise = (d.get("_hotes") or {}).get("reprise")
     if not hote_reprise:
         return None
 
