@@ -105,11 +105,12 @@ def controle(nouveau, ancien=None, modele=None):
         # ecriture : elles ne font pas partie du schema publie.
         # cles de schema ajoutees volontairement par le pipeline, au-dela du
         # modele historique : `anomaly` (trafic automatise documente),
-        # `canalQuotidien` (repartition par canal, jour par jour) et
+        # `canalQuotidien` (repartition par canal, jour par jour),
         # `searchMonth` (Search Console : clics/impressions/CTR/position,
-        # top requetes et top pages). Toute AUTRE cle inattendue doit
+        # top requetes et top pages) et `insights` (signaux IA sur ces
+        # memes donnees Search Console). Toute AUTRE cle inattendue doit
         # continuer de bloquer la publication.
-        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth"}
+        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights"}
         sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - SCHEMA_ETENDU
         manq = set(modele) - set(nouveau)
         ok = not sup and not manq

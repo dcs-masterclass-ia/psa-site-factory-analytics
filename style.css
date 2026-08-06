@@ -484,6 +484,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 ul.anos{ margin:8px 0 0; padding-left:18px; font:500 11.5px/1.65 var(--sans); color:var(--ink-3); }
 ul.anos b{ font-weight:700; color:var(--ink); }
 
+/* ---- insights IA : meme accent gauche fin que les bandeaux, un insight
+   = un signal, jamais un encadre plein ---- */
+
+#aiInsightsCard{ scroll-margin-top:84px; }
+.ai-title{ display:flex; align-items:center; gap:9px; }
+.ai-title svg{ width:16px; height:16px; flex:none; color:var(--eu); }
+.insight-list{ display:flex; flex-direction:column; gap:18px; }
+.insight{ padding:0 0 0 16px; border-left:3px solid var(--jade); }
+.insight--opportunite{ border-left-color:var(--pos); }
+.insight--attention{ border-left-color:var(--rust); }
+.insight--info{ border-left-color:var(--jade); }
+.insight-titre{ font:700 13px/1.3 var(--sans); color:var(--ink); margin-bottom:4px; }
+.insight-detail{ margin:0; font:500 12.5px/1.6 var(--sans); color:var(--ink-3); }
+
 /* ---- comparatif ---- */
 
 .duo{ display:grid; grid-template-columns:1fr 1fr; align-items:start; gap:16px; margin-bottom:20px; }

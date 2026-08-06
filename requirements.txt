@@ -1,3 +1,4 @@
 google-analytics-data==0.18.19
 google-api-python-client==2.147.0
 google-auth==2.35.0
+openai==1.54.4
