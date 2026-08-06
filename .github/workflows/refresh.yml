@@ -67,6 +67,10 @@ jobs:
 
       - name: Extraire, contrôler, assembler
         id: build
+        env:
+          # optionnel comme Search Console lui-meme : absent, insights.py se
+          # desactive proprement (liste vide), rien d'autre n'est affecte.
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           ARGS=""
           if [ -n "${{ inputs.sites }}" ]; then ARGS="--sites ${{ inputs.sites }}"; fi

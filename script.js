@@ -694,6 +694,7 @@ function clearCharts() {
 /* ============================== rail ============================== */
 
 const ICON_GRID = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>`;
+const ICON_SPARKLE = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/><path d="M19 14l.9 2.6L22.5 17.5l-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14z" opacity=".7"/></svg>`;
 
 /* bande d'icones : un monogramme par marque (2 lettres) + le pays en
    sous-texte, le nom complet et le volume de leads apparaissent au survol
@@ -895,7 +896,7 @@ const GROUPS = [
     { k:"leads",       t:"Leads" },
     { k:"parcours",    t:"Parcours" },
   ]},
-  { k:"recherche", t:"Recherche", reports:[
+  { k:"recherche", t:"Google Search Console", reports:[
     { k:"recherche", t:"Vue d'ensemble" },
   ]},
 ];
@@ -2013,6 +2014,20 @@ function renderRecherche() {
       <p>Le total, les requêtes et les pages ne sont reconstruits qu'au mois complet ou au cumul. Choisissez un mois entier, ou la période cumulée, pour les voir. La série quotidienne ci-dessous reste valable sur n'importe quelle plage.</p>
     </div></div>`}
 
+    ${(d.insights || []).length ? `<div class="card" id="aiInsightsCard">
+      <div class="card-head">
+        <div><h2 class="ai-title">${ICON_SPARKLE}Insights IA</h2><p>Signaux détectés automatiquement sur les derniers mois de Search Console — jamais un simple écart en pourcentage sur un petit volume.</p></div>
+      </div>
+      <div class="card-body">
+        <div class="insight-list">
+          ${d.insights.map(i => `<div class="insight insight--${esc(i.type)}">
+            <div class="insight-titre">${esc(i.titre)}</div>
+            <div class="insight-detail">${esc(i.detail)}</div>
+          </div>`).join("")}
+        </div>
+      </div>
+    </div>` : ""}
+
     ${hasDaily ? `<div class="card">
       <div class="card-head">
         <div><h2>Clics et impressions par jour</h2><p>Deux échelles très différentes : tracées l'une sous l'autre plutôt que superposées, comme le trafic parent/reprise.</p></div>
@@ -2084,7 +2099,7 @@ function renderRecherche() {
 
 /* ============================== rendu ============================== */
 
-const REPORT_TITLES = { acquisition:"Acquisition", leads:"Leads", parcours:"Parcours", recherche:"Recherche" };
+const REPORT_TITLES = { acquisition:"Acquisition", leads:"Leads", parcours:"Parcours", recherche:"Google Search Console" };
 
 function syncPageHead() {
   const sub = $("#pageSub"), h1 = $("#pageTitle");
@@ -2219,6 +2234,24 @@ async function rafraichirDonnees() {
     if (r.ok) DATA[s] = await r.json();
   })]);
   render();
+}
+
+/* le bouton Assistant IA n'appelle rien en direct : les insights sont deja
+   calcules cote pipeline (voir pipeline/insights.py) et vivent dans les
+   donnees du site. Cliquer navigue simplement jusqu'a la carte qui les
+   affiche, en changeant de rapport/site si besoin. */
+function wireAiButton() {
+  const btn = $(".ai-btn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    if (view.scope !== "site") return;
+    const alreadyThere = view.report === "recherche";
+    if (!alreadyThere) { view.report = "recherche"; render(); }
+    requestAnimationFrame(() => {
+      const carte = $("#aiInsightsCard");
+      (carte || $("#panel-recherche"))?.scrollIntoView({ behavior:"smooth", block:"start" });
+    });
+  });
 }
 
 function wireRefreshButton() {
@@ -2359,6 +2392,7 @@ async function boot() {
   renderSiteSelect();
   wirePeriodControl();
   wireRefreshButton();
+  wireAiButton();
   render();
 }
 
@@ -2370,7 +2404,7 @@ if (window.__INLINE_DATA__) {
   const base = DATA[SITES[0]];
   view.period = defaultPeriod(base);
   view.compare = prevPeriod(base, view.period);
-  renderSiteSelect(); wirePeriodControl(); wireRefreshButton(); render();
+  renderSiteSelect(); wirePeriodControl(); wireRefreshButton(); wireAiButton(); render();
 } else {
   boot();
 }

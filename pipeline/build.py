@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, ga4, search_console
+from pipeline import channel, detect, discover, funnel, ga4, insights, search_console
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -249,6 +249,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                 }
             except Exception as e:
                 journal.append(f"total : recherche en erreur ({type(e).__name__})")
+
+    # insights IA : uniquement s'il y a une propriete Search Console reelle
+    # a analyser, jamais invente sur des donnees absentes.
+    d["insights"] = insights.genere_insights(s.nom, d["searchMonth"]) if gsc_site else []
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios
