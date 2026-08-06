@@ -71,6 +71,10 @@ jobs:
           # optionnel comme Search Console lui-meme : absent, insights.py se
           # desactive proprement (liste vide), rien d'autre n'est affecte.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # optionnel comme le reste : absent ou invalide, leads_extract.py
+          # degrade site par site vers l'ancien comportement (donnees
+          # preservees), rien d'autre n'est affecte.
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
           ARGS=""
           if [ -n "${{ inputs.sites }}" ]; then ARGS="--sites ${{ inputs.sites }}"; fi

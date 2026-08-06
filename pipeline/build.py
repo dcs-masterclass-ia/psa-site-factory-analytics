@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, ga4, insights, search_console, v2_report
+from pipeline import channel, detect, discover, funnel, ga4, insights, leads_extract, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -204,20 +204,33 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                 f"Mois en cours. Relevé GA4 arrêté au {f_iso}, "
                 "les données ne sont consolidées qu'après 24 à 48 heures.")
 
-        # Les leads viennent du back-office, extraits a la main : ils peuvent
-        # couvrir moins de jours que GA4. On complete avec None — « inconnu » —
-        # et jamais avec 0, qui affirmerait a tort « aucun lead ce jour-la ».
-        bloc_leads = d["leads"].setdefault(mois, {"total": 0, "daily": []})
-        serie = bloc_leads.setdefault("daily", [])
-        if len(serie) < jours_reels:
-            manquants = jours_reels - len(serie)
-            serie.extend([None] * manquants)
-            journal.append(f"{mois} : {manquants} jour(s) de leads non encore extraits "
-                           f"du back-office, marqués inconnus")
-        elif len(serie) > jours_reels:
-            # GA4 couvre moins de jours que les leads : on ne tronque pas les
-            # leads, on aligne le compteur de jours sur la donnee la plus large
-            d["meta"][mois]["days"] = len(serie)
+        # Les leads : extraction automatisee depuis le back-office (meme
+        # point d'API que le bouton "Exporter" de l'interface, cf.
+        # pipeline/leads_extract.py) pour les sites couverts. Toute panne
+        # (token invalide, site absent, reseau) degrade vers les donnees
+        # du jour precedent plutot que de publier un mois vide ou tronque.
+        if s.nom in leads_extract.SITE_EXTRACT:
+            try:
+                d["leads"][mois] = leads_extract.bloc_leads_mois(s.nom, mois, nb, jours_reels)
+                journal.append(f"{mois} : {d['leads'][mois]['total']} leads extraits "
+                               f"automatiquement du back-office")
+            except Exception as e:
+                journal.append(f"{mois} : extraction leads en erreur "
+                               f"({type(e).__name__}: {e}), donnees precedentes conservees")
+                d["leads"].setdefault(mois, {"total": 0, "daily": []})
+        else:
+            # site non couvert par l'extraction automatique : comportement
+            # historique, preserve tel quel — jamais 0 qui affirmerait a
+            # tort « aucun lead ce jour-la ».
+            bloc_leads = d["leads"].setdefault(mois, {"total": 0, "daily": []})
+            serie = bloc_leads.setdefault("daily", [])
+            if len(serie) < jours_reels:
+                manquants = jours_reels - len(serie)
+                serie.extend([None] * manquants)
+                journal.append(f"{mois} : {manquants} jour(s) de leads non extraits "
+                               f"du back-office (site non couvert par l'automatisation)")
+            elif len(serie) > jours_reels:
+                d["meta"][mois]["days"] = len(serie)
 
     if mois_liste and mois_liste[-1] not in d["months"]:
         d["months"] = [m for m in mois_liste if m in d["trafficMonth"]]
