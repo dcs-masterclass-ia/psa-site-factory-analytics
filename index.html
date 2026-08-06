@@ -106,12 +106,17 @@ input[type=date]{color-scheme:dark}
       </sc-for>
     </div>
     <div style="display:flex;align-items:center;gap:12px">
-      <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
-        <span style="{{ refreshProgressStyle }}"></span>
-        <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
-        </span>
-      </button>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
+          <span style="{{ refreshProgressStyle }}"></span>
+          <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
+          </span>
+        </button>
+        <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
+          <span style="font-size:12px;font-weight:500;color:var(--muted2);white-space:nowrap">{{ lastUpdateLabel }}</span>
+        </sc-if>
+      </div>
       <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
         <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
@@ -727,6 +732,7 @@ class Component extends DCLogic {
         const r = await fetch("data/" + slug + ".json");
         if (r.ok) this.data[s] = await r.json();
       }));
+      await this.chargerPipelineInfo();
       this.setState({ sites: this.sitesList.slice(), booted: true });
     } catch (e) {
       this.setState({ error: String(e && e.message || e) });
@@ -887,6 +893,25 @@ class Component extends DCLogic {
     });
   }
 
+  async chargerPipelineInfo() {
+    try {
+      const r = await fetch("data/pipeline.json", { cache: "no-store" });
+      this.pipelineInfo = r.ok ? await r.json() : null;
+    } catch (e) { this.pipelineInfo = null; }
+  }
+
+  lastUpdateLabel() {
+    const iso = this.pipelineInfo && this.pipelineInfo.derniere_execution;
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (isNaN(d)) return null;
+    const hh = String(d.getHours()).padStart(2, "0"), mn = String(d.getMinutes()).padStart(2, "0");
+    const sameDay = d.toDateString() === new Date().toDateString();
+    if (sameDay) return "Données mises à jour aujourd'hui à " + hh + ":" + mn;
+    const jj = String(d.getDate()).padStart(2, "0"), moi = String(d.getMonth() + 1).padStart(2, "0");
+    return "Données mises à jour le " + jj + "/" + moi + " à " + hh + ":" + mn;
+  }
+
   /* recharge les donnees depuis le serveur sans perdre le filtre courant
      (site/periode/onglet) — contrairement a boot() qui reinitialise sites. */
   async rechargerDonnees() {
@@ -897,6 +922,7 @@ class Component extends DCLogic {
       const r = await fetch("data/" + slug + ".json", { cache: "no-store" });
       if (r.ok) this.data[s] = await r.json();
     }));
+    await this.chargerPipelineInfo();
     this.forceUpdate();
   }
 
@@ -970,6 +996,7 @@ class Component extends DCLogic {
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
         refreshBtnStyle: "position:relative;overflow:hidden;display:flex;align-items:center;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;opacity:.6;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)",
         refreshBtnHover: "", refreshIconStyle: "", refreshTitle: "Chargement…", refreshProgressStyle: "",
+        hasLastUpdate: false, lastUpdateLabel: "",
         scaleSizerRef: el => { this._sizerEl = el; },
         scaleCanvasRef: el => { this._canvasEl = el; } };
     }
@@ -1321,6 +1348,7 @@ class Component extends DCLogic {
       refreshIconStyle: st.refreshBusy ? "animation:spin 1s linear infinite" : "",
       refreshTitle: st.refreshBusy ? "Rafraîchissement en cours…" : "Relance l'extraction GA4/GSC puis redéploie (~4 minutes en moyenne).",
       refreshProgressStyle: "position:absolute;left:0;top:0;bottom:0;width:" + Math.round(st.refreshProgress * 100) + "%;background:rgba(255,255,255,.28);transition:width .4s linear",
+      hasLastUpdate: !!this.lastUpdateLabel(), lastUpdateLabel: this.lastUpdateLabel() || "",
       scrollToFunnel: () => document.getElementById("funnelAnchor")?.scrollIntoView({ behavior:"smooth" }),
       scrollToQueries: () => document.getElementById("queriesAnchor")?.scrollIntoView({ behavior:"smooth" }),
       scaleSizerRef: el => { this._sizerEl = el; },
