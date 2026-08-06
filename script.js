@@ -696,6 +696,27 @@ function clearCharts() {
 const ICON_GRID = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>`;
 const ICON_SPARKLE = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8L12 2z"/><path d="M19 14l.9 2.6L22.5 17.5l-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14z" opacity=".7"/></svg>`;
 
+/* carte "Insights IA", commune aux quatre rapports : chaque rapport a son
+   propre lot d'insights (voir pipeline/insights.py, un generateur par
+   domaine), mais le meme rendu — accent gauche colore par type, jamais
+   un encadre plein. Vide -> rien n'est rendu, pas de carte creuse. */
+function insightsCard(liste, sousTitre) {
+  if (!liste || !liste.length) return "";
+  return `<div class="card ai-insights">
+    <div class="card-head">
+      <div><h2 class="ai-title">${ICON_SPARKLE}Insights IA</h2><p>${esc(sousTitre)}</p></div>
+    </div>
+    <div class="card-body">
+      <div class="insight-list">
+        ${liste.map(i => `<div class="insight insight--${esc(i.type)}">
+          <div class="insight-titre">${esc(i.titre)}</div>
+          <div class="insight-detail">${esc(i.detail)}</div>
+        </div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+}
+
 /* bande d'icones : un monogramme par marque (2 lettres) + le pays en
    sous-texte, le nom complet et le volume de leads apparaissent au survol
    (voir data-tip) plutot que d'occuper la place en permanence. */
@@ -1172,6 +1193,8 @@ function renderAcquisition() {
         delta: ref && !st.sansGA4 ? delta(st.conv, ref.conv, "pts") : "" })}
     </div>
 
+    ${insightsCard((d.insights || {}).acquisition, "Signaux détectés automatiquement sur les derniers mois de trafic — tendance confirmée sur plusieurs mois, jamais un simple écart d'un mois sur l'autre.")}
+
     <div class="card">
       <div class="card-head">
         <div>
@@ -1446,6 +1469,8 @@ function renderLeads() {
         delta: ref && !st.sansGA4 ? delta(st.per1k, ref.per1k) : "" })}
     </div>
 
+    ${insightsCard((d.insights || {}).leads, "Signaux détectés automatiquement sur les derniers mois de leads — volumes, conversion et répartition par marque, jamais un simple écart d'un mois sur l'autre.")}
+
     <div class="card">
       <div class="card-head">
         <div>
@@ -1705,6 +1730,8 @@ function renderParcours() {
         delta: fmRef ? delta(fm.conversion_pct, fmRef.conversion_pct, "pts") : "" })}
       ${score({ label:"Perte à la première étape", value:pct(drop12), color:C.pink })}
     </div>
+
+    ${insightsCard((d.insights || {}).parcours, "Signaux détectés automatiquement sur les derniers mois du parcours — l'étape qui perd le plus de monde, la tendance de complétion, jamais un simple écart d'un mois sur l'autre.")}
 
     <div class="card">
       <div class="card-head">
@@ -2014,19 +2041,7 @@ function renderRecherche() {
       <p>Le total, les requêtes et les pages ne sont reconstruits qu'au mois complet ou au cumul. Choisissez un mois entier, ou la période cumulée, pour les voir. La série quotidienne ci-dessous reste valable sur n'importe quelle plage.</p>
     </div></div>`}
 
-    ${(d.insights || []).length ? `<div class="card" id="aiInsightsCard">
-      <div class="card-head">
-        <div><h2 class="ai-title">${ICON_SPARKLE}Insights IA</h2><p>Signaux détectés automatiquement sur les derniers mois de Search Console — jamais un simple écart en pourcentage sur un petit volume.</p></div>
-      </div>
-      <div class="card-body">
-        <div class="insight-list">
-          ${d.insights.map(i => `<div class="insight insight--${esc(i.type)}">
-            <div class="insight-titre">${esc(i.titre)}</div>
-            <div class="insight-detail">${esc(i.detail)}</div>
-          </div>`).join("")}
-        </div>
-      </div>
-    </div>` : ""}
+    ${insightsCard((d.insights || {}).recherche, "Signaux détectés automatiquement sur les derniers mois de Search Console — jamais un simple écart en pourcentage sur un petit volume.")}
 
     ${hasDaily ? `<div class="card">
       <div class="card-head">
@@ -2237,20 +2252,15 @@ async function rafraichirDonnees() {
 }
 
 /* le bouton Assistant IA n'appelle rien en direct : les insights sont deja
-   calcules cote pipeline (voir pipeline/insights.py) et vivent dans les
-   donnees du site. Cliquer navigue simplement jusqu'a la carte qui les
-   affiche, en changeant de rapport/site si besoin. */
+   calcules cote pipeline (voir pipeline/insights.py, un jeu par rapport)
+   et vivent dans les donnees du site. Cliquer scrolle jusqu'a la carte du
+   rapport actuellement affiche — chaque rapport a la sienne. */
 function wireAiButton() {
   const btn = $(".ai-btn");
   if (!btn) return;
   btn.addEventListener("click", () => {
     if (view.scope !== "site") return;
-    const alreadyThere = view.report === "recherche";
-    if (!alreadyThere) { view.report = "recherche"; render(); }
-    requestAnimationFrame(() => {
-      const carte = $("#aiInsightsCard");
-      (carte || $("#panel-recherche"))?.scrollIntoView({ behavior:"smooth", block:"start" });
-    });
+    $(".panel:not([hidden]) .ai-insights")?.scrollIntoView({ behavior:"smooth", block:"start" });
   });
 }
 
