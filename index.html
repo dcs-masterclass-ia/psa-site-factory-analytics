@@ -63,10 +63,10 @@
 
         <div class="login-fields">
           <label class="login-lbl">
-            <span class="login-lbl-txt">Adresse e-mail</span>
+            <span class="login-lbl-txt">Identifiant</span>
             <span class="login-inputwrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m3.5 7 8.5 6 8.5-6"></path></svg>
-              <input type="email" id="loginEmail" autocomplete="username" placeholder="Votre adresse e-mail" autofocus>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M4.5 20c1.4-4 4.4-6 7.5-6s6.1 2 7.5 6"></path></svg>
+              <input type="text" id="loginIdent" autocomplete="username" placeholder="Votre identifiant" autofocus>
             </span>
           </label>
 
@@ -97,7 +97,7 @@
             <span id="loginSubmitLabel">Se connecter</span>
           </button>
 
-          <p class="login-err" id="loginErr" hidden>Adresse e-mail ou mot de passe incorrect.</p>
+          <p class="login-err" id="loginErr" hidden>Identifiant ou mot de passe incorrect.</p>
 
           <div class="login-sep"><span></span><em>ou</em><span></span></div>
 
@@ -916,7 +916,7 @@ class Component extends DCLogic {
       submitBtn.disabled = true;
       spinner.hidden = false;
       label.textContent = "Connexion…";
-      const u = document.getElementById("loginEmail").value.trim();
+      const u = document.getElementById("loginIdent").value.trim();
       const p = pass.value;
       const h = await this.empreinte(`${u}:${p}`);
       if (h === AUTH_EMPREINTE) { ecrire("1"); afficher(); return; }
