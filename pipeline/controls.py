@@ -110,7 +110,7 @@ def controle(nouveau, ancien=None, modele=None):
         # top requetes et top pages) et `insights` (signaux IA sur ces
         # memes donnees Search Console). Toute AUTRE cle inattendue doit
         # continuer de bloquer la publication.
-        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights"}
+        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly"}
         sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - SCHEMA_ETENDU
         manq = set(modele) - set(nouveau)
         ok = not sup and not manq

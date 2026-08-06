@@ -18,7 +18,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, ga4, insights, search_console
+from pipeline import channel, detect, discover, funnel, ga4, insights, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -254,6 +254,19 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # tentes, Recherche uniquement s'il y a une propriete Search Console
     # reelle) — jamais invente sur des donnees absentes.
     d["insights"] = insights.genere_tous(s.nom, d, gsc_site)
+
+    # rapport hebdomadaire V2 : sessions/leads recalcules depuis les series
+    # deja assemblees ci-dessus, funnel via une requete GA4 par semaine
+    # ecoulee depuis la bascule. Ne bloque jamais le site en cas d'echec.
+    try:
+        v2w = v2_report.rapport_hebdo(cli, s, d, jour_fiable())
+        if v2w:
+            d["v2Weekly"] = v2w
+            journal.append(f"V2 hebdo : {len(v2w['weeks'])} semaine(s) depuis le {v2w['v2Date']}")
+        elif "v2Weekly" in d:
+            journal.append("V2 hebdo : pas assez de recul avant/après la bascule, conservé tel quel")
+    except Exception as e:
+        journal.append(f"V2 hebdo en erreur ({type(e).__name__}: {e})")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios
