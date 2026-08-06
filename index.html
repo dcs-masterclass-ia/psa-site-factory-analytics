@@ -853,9 +853,15 @@ class Component extends DCLogic {
 
   up(el, to, f) {
     if (!el) return;
+    // le ref est une closure neuve a chaque rendu (React le rappelle donc a
+    // chaque re-rendu, pas seulement au montage) — sans cette garde, tout
+    // setState frequent (ex. le ticker de progression du bouton Actualiser)
+    // relance le compteur en boucle et les chiffres tournent a l'infini.
+    if (el.__animTo === to) return;
+    el.__animTo = to;
     const t0 = performance.now(), dur = 800;
     const tick = now => {
-      if (!el.isConnected) return;
+      if (!el.isConnected || el.__animTo !== to) return;
       const p = Math.min(1, (now - t0) / dur);
       el.textContent = f(to * (1 - Math.pow(1 - p, 3)));
       if (p < 1) requestAnimationFrame(tick);
