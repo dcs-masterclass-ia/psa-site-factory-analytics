@@ -88,11 +88,16 @@ jobs:
           STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
           git commit -m "Rafraîchissement automatique — statut ${STATUT}" \
                      -m "$(git diff --cached --stat | tail -1)"
-          # une autre exécution a pu committer entre-temps
+          # une autre exécution a pu committer entre-temps : un rebase qui
+          # echoue laisse le fichier avec des marqueurs de conflit dedans, et
+          # sans nettoyage la tentative suivante echoue a l'identique — abort
+          # avant chaque essai pour repartir d'un etat propre a chaque fois.
           for i in 1 2 3; do
+            git rebase --abort 2>/dev/null || true
             git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
             sleep 5
           done
+          git rebase --abort 2>/dev/null || true
           echo "::error::Impossible de pousser après 3 tentatives."
           exit 1
 
@@ -103,9 +108,21 @@ jobs:
             echo "::notice::pipeline.json absent (rien n'a ete ecrit, probablement une simulation ou une erreur en amont)."
             exit 0
           fi
-          STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
+          # ne doit jamais faire echouer le job pour son propre compte : c'est
+          # une etape de diagnostic, pas un controle bloquant. Un fichier
+          # illisible ici (ex. push precedent avorte en plein rebase) doit se
+          # signaler proprement plutot que de planter sur le traceback.
+          STATUT=$(python -c "
+import json
+try:
+    print(json.load(open('data/pipeline.json'))['statut'])
+except Exception as e:
+    print(f'illisible:{type(e).__name__}')
+")
           if [ "$STATUT" = "echec" ]; then
             echo "::warning::Contrôle bloquant : les données de la veille ont été conservées. Le dashboard l'affiche."
+          elif [[ "$STATUT" == illisible:* ]]; then
+            echo "::warning::pipeline.json illisible a cette etape (${STATUT#illisible:}) — probablement un push avorte juste avant. La donnee sur origin/main n'est pas forcement affectee, mais verifier le job manuellement."
           fi
 
       - name: Effacer la clé
