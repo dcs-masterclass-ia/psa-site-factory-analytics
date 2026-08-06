@@ -603,6 +603,24 @@ function sparkPath(values) {
   return smoothPath(values, 120, 30, min, max === min ? min + 1 : max);
 }
 
+/* pose de nouveaux attributs geometriques (d, cx, cy...) sur un element SVG
+   et rejoue son animation CSS d'entree (drawLine/popIn) si la valeur a
+   reellement change — comme dans le modele fourni, ou chaque changement de
+   donnees (site, periode, filtre) redessine les courbes progressivement,
+   pas seulement le montage initial. */
+function setAnimatedAttrs(el, attrs) {
+  if (!el) return;
+  let changed = false;
+  for (const k in attrs) { if (el.getAttribute(k) !== String(attrs[k])) changed = true; }
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  if (changed && el.style.animation) {
+    const anim = el.style.animation;
+    el.style.animation = "none";
+    void el.getBoundingClientRect();
+    el.style.animation = anim;
+  }
+}
+
 class Component extends DCLogic {
   state = {
     tab: "ga4",
@@ -944,7 +962,7 @@ class Component extends DCLogic {
       label, value,
       card: "background:var(--card);border-radius:24px;padding:24px 26px 22px;height:172px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) " + (0.06 + i * 0.06) + "s both",
       sparkColor,
-      sparkRef: el => { if (el) el.setAttribute("d", sparkPath(spark)); },
+      sparkRef: el => setAnimatedAttrs(el, { d: sparkPath(spark) }),
       deltaStyle: deltaInfo.style, delta: deltaInfo.text, note,
     });
 
@@ -999,7 +1017,7 @@ class Component extends DCLogic {
       const vals = joursCanal.map(j => c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0));
       const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 280, 0, maxCanalVal);
       return {
-        ref: el => { if (el) el.setAttribute("d", d); },
+        ref: el => setAnimatedAttrs(el, { d }),
         color: CHAN_COLORS[i % CHAN_COLORS.length],
         style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08) + ";animation:drawLine 1.9s cubic-bezier(.35,.6,.3,1) " + (0.35 + i * .15) + "s forwards",
       };
@@ -1035,8 +1053,8 @@ class Component extends DCLogic {
     const gaugeDotX = (cx - R * Math.cos(gaugeAngle)).toFixed(1);
     const gaugeDotY = (cy - R * Math.sin(gaugeAngle)).toFixed(1);
     const gaugeArc = `M40 215 A150 150 0 0 1 ${gaugeDotX} ${gaugeDotY}`;
-    const gaugeArcRef = el => { if (el) el.setAttribute("d", gaugeArc); };
-    const gaugeDotRef = el => { if (el) { el.setAttribute("cx", gaugeDotX); el.setAttribute("cy", gaugeDotY); } };
+    const gaugeArcRef = el => setAnimatedAttrs(el, { d: gaugeArc });
+    const gaugeDotRef = el => setAnimatedAttrs(el, { cx: gaugeDotX, cy: gaugeDotY });
 
     // leads par projet d'achat
     const PROJ_COLORS = ["#FF6B6B", "#F2E85F", "#7B7BF0", "#4A9BF5"];
@@ -1115,10 +1133,10 @@ class Component extends DCLogic {
     const clicsFillPath = clicsLinePath ? clicsLinePath + ` L900 240 L0 240 Z` : "";
     const imprLinePath = clicsLinePath; // meme forme, echelle differente non disponible au jour le jour
     const imprFillPath = clicsFillPath;
-    const clicsLineRef = el => { if (el) el.setAttribute("d", clicsLinePath); };
-    const clicsFillRef = el => { if (el) el.setAttribute("d", clicsFillPath); };
-    const imprLineRef = el => { if (el) el.setAttribute("d", imprLinePath); };
-    const imprFillRef = el => { if (el) el.setAttribute("d", imprFillPath); };
+    const clicsLineRef = el => setAnimatedAttrs(el, { d: clicsLinePath });
+    const clicsFillRef = el => setAnimatedAttrs(el, { d: clicsFillPath });
+    const imprLineRef = el => setAnimatedAttrs(el, { d: imprLinePath });
+    const imprFillRef = el => setAnimatedAttrs(el, { d: imprFillPath });
     const gscAxisLabels = (() => {
       const n = gscDays.length; if (!n) return [];
       const step = Math.max(1, Math.floor(n/6)); const out = [];
