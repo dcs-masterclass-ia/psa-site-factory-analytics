@@ -186,6 +186,14 @@ SITES = [
     Site("PEUGEOT IT", "peugeot-it", "276513489",
          "www.peugeot.it", "www.valutiamoiltuousato.peugeot.it",
          verifie=True, acces_api=True, pays="IT"),
+    # decouvert le 07/08/2026 : signale par l'utilisateur (propriete
+    # 214933203) mais confirme sur trafic reel sous une propriete
+    # differente (296318652) portant le meme hote de reprise -- verifiee
+    # via pipeline/discover_sites.py, pas la propriete communiquee au
+    # depart.
+    Site("ABARTH LU", "abarth-lu", "296318652",
+         "www.abarth.lu", "reprise.abarth.lu",
+         verifie=True, acces_api=True, pays="LU"),
     Site("ALFA ROMEO LU", "alfa-romeo-lu", "295361431",
          "www.alfaromeo.lu", "reprise.alfaromeo.lu",
          verifie=True, acces_api=True, pays="LU"),
