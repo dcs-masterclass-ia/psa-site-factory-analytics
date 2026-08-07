@@ -16,7 +16,13 @@
       <div class="login-hero-blob login-hero-blob--b"></div>
 
       <div class="login-hero-brand">
-        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-blanc.webp" alt="Converge" style="width:190px;height:auto;display:block">
+        <!-- le fichier logo-converge-*.webp est un canvas 1536x1024 tres majoritairement
+             vide (le mot-symbole visible n'occupe qu'un petit cadre centre) ; un simple
+             width/height:auto le rend donc minuscule et mal aligne. On recadre precisement
+             sur le cadre reellement visible (mesure : bbox alpha (377,386)-(1129,554)). -->
+        <div style="width:232.8px;height:52px;overflow:hidden;position:relative">
+          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-blanc.webp" alt="Converge" style="position:absolute;top:-119.5px;left:-116.7px;width:475.4px;height:317px;max-width:none">
+        </div>
         <span class="login-hero-sep"></span>
         <div class="login-hero-tag">PSA Factory</div>
       </div>
@@ -209,11 +215,18 @@ input[type=date]{color-scheme:dark}
 
   <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
     <div style="display:flex;align-items:center;gap:16px">
+      <!-- recadre precisement sur le cadre visible du logo (voir commentaire
+           plus haut dans l'ecran de connexion) ; les deux variantes n'ont pas
+           exactement le meme cadrage source, d'ou des offsets differents. -->
       <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
-        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-blanc.webp" alt="Converge" style="height:40px;width:auto;display:block">
+        <div style="width:179px;height:40px;overflow:hidden;position:relative">
+          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-blanc.webp" alt="Converge" style="position:absolute;top:-91.9px;left:-89.8px;width:365.7px;height:243.8px;max-width:none">
+        </div>
       </sc-if>
       <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
-        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="height:40px;width:auto;display:block">
+        <div style="width:189.5px;height:40px;overflow:hidden;position:relative">
+          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
+        </div>
       </sc-if>
       <div style="width:1px;height:30px;background:var(--line)"></div>
       <div style="display:flex;flex-direction:column;gap:4px">
