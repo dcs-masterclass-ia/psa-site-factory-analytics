@@ -1,6 +1,6 @@
 {
- "derniere_execution": "2026-08-08T00:47:57+02:00",
- "commit": "3013907",
+ "derniere_execution": "2026-08-08T01:16:46+02:00",
+ "commit": "8498850",
  "jour_ga4_fiable": "2026-08-06",
  "mois_traites": [
   "2025-05",
@@ -20,7 +20,7 @@
   "2026-07",
   "2026-08"
  ],
- "statut": "echec",
+ "statut": "degrade",
  "sites": {
   "CITROEN AT": {
    "statut": "degrade",
@@ -251,14 +251,14 @@
    }
   },
   "DS ES": {
-   "statut": "echec",
+   "statut": "degrade",
    "hotes": {
     "parent": "www.dsautomobiles.es",
     "reprise": "www.tasacion.dsautomobiles.es"
    },
    "ga4_jusqu_au": "2026-08-06",
    "controles": {
-    "passes": 9,
+    "passes": 10,
     "total": 13
    }
   },
@@ -491,26 +491,26 @@
    }
   },
   "ABARTH LU": {
-   "statut": "echec",
+   "statut": "degrade",
    "hotes": {
     "parent": "www.abarth.lu",
     "reprise": "reprise.abarth.lu"
    },
    "ga4_jusqu_au": "2026-08-06",
    "controles": {
-    "passes": 7,
+    "passes": 8,
     "total": 13
    }
   },
   "ALFA ROMEO LU": {
-   "statut": "echec",
+   "statut": "degrade",
    "hotes": {
     "parent": "www.alfaromeo.lu",
     "reprise": "reprise.alfaromeo.lu"
    },
    "ga4_jusqu_au": "2026-08-06",
    "controles": {
-    "passes": 8,
+    "passes": 9,
     "total": 13
    }
   },
@@ -575,14 +575,14 @@
    }
   },
   "PEUGEOT LU": {
-   "statut": "echec",
+   "statut": "degrade",
    "hotes": {
     "parent": "www.peugeot.lu",
     "reprise": "reprise.peugeot.lu"
    },
    "ga4_jusqu_au": "2026-08-06",
    "controles": {
-    "passes": 8,
+    "passes": 9,
     "total": 13
    }
   },
@@ -921,7 +921,7 @@
   {
    "site": "PEUGEOT BE",
    "controle": "non_additivite_sous_3_5pct",
-   "detail": "2025-05 trafficMonth +65.1%; 2025-05 repriseMonth +50.1%; 2025-06 trafficMonth +73.3%; 2025-06 repriseMonth +61.1%; 2025-07 trafficMonth +71.1%; 2025-07 repriseMonth +57.6%; 2025-08 trafficMonth +15.5%; 2025-08 repriseMonth +7.0%; 2026-05 trafficMonth +152.2%; 2026-05 repriseMonth +201.8%; 2026-06 trafficMonth +141.1%; 2026-06 repriseMonth +159.8%; 2026-07 trafficMonth +153.5%; 2026-07 repriseMonth +170.9%; 2026-08 trafficMonth +762.2%; 2026-08 repriseMonth +1794.6%",
+   "detail": "2025-05 trafficMonth +65.1%; 2025-05 repriseMonth +50.1%; 2025-06 trafficMonth +73.3%; 2025-06 repriseMonth +61.1%; 2025-07 trafficMonth +71.1%; 2025-07 repriseMonth +57.6%; 2025-08 trafficMonth +15.6%; 2025-08 repriseMonth +7.0%; 2026-05 trafficMonth +152.2%; 2026-05 repriseMonth +201.8%; 2026-06 trafficMonth +141.1%; 2026-06 repriseMonth +159.8%; 2026-07 trafficMonth +153.5%; 2026-07 repriseMonth +170.9%; 2026-08 trafficMonth +762.8%; 2026-08 repriseMonth +1795.1%",
    "gravite": "avertissement"
   },
   {
@@ -939,7 +939,7 @@
   {
    "site": "PEUGEOT BE",
    "controle": "funnel_estimation_recalculee",
-   "detail": "2026-08 68->84 (+24%)",
+   "detail": "2026-08 68->86 (+26%)",
    "gravite": "avertissement"
   },
   {
@@ -1193,12 +1193,6 @@
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
-  },
-  {
-   "site": "DS ES",
-   "controle": "structure_identique",
-   "detail": "en trop [] / manquantes ['pagespeed']",
-   "gravite": "bloquant"
   },
   {
    "site": "FIAT ES",
@@ -1683,7 +1677,7 @@
   {
    "site": "JEEP IT",
    "controle": "non_additivite_sous_3_5pct",
-   "detail": "2025-05 trafficMonth +78.8%; 2025-05 repriseMonth +1061.9%; 2025-06 trafficMonth +96.9%; 2025-06 repriseMonth +999.2%; 2025-07 trafficMonth +91.3%; 2025-07 repriseMonth +313.3%; 2025-08 trafficMonth +16.0%; 2025-08 repriseMonth +162.3%; 2026-05 trafficMonth +126.7%; 2026-05 repriseMonth +13.2%; 2026-06 trafficMonth +108.9%; 2026-06 repriseMonth +9.8%; 2026-07 trafficMonth +121.0%; 2026-07 repriseMonth +33.3%; 2026-08 trafficMonth +650.1%; 2026-08 repriseMonth +61.9%",
+   "detail": "2025-05 trafficMonth +78.8%; 2025-05 repriseMonth +1061.9%; 2025-06 trafficMonth +96.9%; 2025-06 repriseMonth +999.2%; 2025-07 trafficMonth +91.3%; 2025-07 repriseMonth +313.3%; 2025-08 trafficMonth +16.0%; 2025-08 repriseMonth +162.7%; 2026-05 trafficMonth +126.7%; 2026-05 repriseMonth +13.2%; 2026-06 trafficMonth +108.9%; 2026-06 repriseMonth +9.8%; 2026-07 trafficMonth +121.0%; 2026-07 repriseMonth +33.3%; 2026-08 trafficMonth +651.7%; 2026-08 repriseMonth +61.6%",
    "gravite": "avertissement"
   },
   {
@@ -1801,12 +1795,6 @@
    "gravite": "avertissement"
   },
   {
-   "site": "ABARTH LU",
-   "controle": "structure_identique",
-   "detail": "en trop [] / manquantes ['pagespeed']",
-   "gravite": "bloquant"
-  },
-  {
    "site": "ALFA ROMEO LU",
    "controle": "non_additivite_sous_3_5pct",
    "detail": "2025-05 trafficMonth +55.2%; 2025-05 repriseMonth +88.1%; 2025-06 trafficMonth +141.5%; 2025-06 repriseMonth +245.3%; 2025-07 trafficMonth +148.3%; 2025-07 repriseMonth +94.5%; 2025-08 trafficMonth +22.5%; 2025-08 repriseMonth +9.9%; 2026-05 trafficMonth +173.1%; 2026-05 repriseMonth +115.5%; 2026-06 trafficMonth +72.4%; 2026-06 repriseMonth +40.8%; 2026-07 trafficMonth +71.0%; 2026-07 repriseMonth +106.7%; 2026-08 trafficMonth +443.4%; 2026-08 repriseMonth +1005.3%",
@@ -1831,15 +1819,9 @@
    "gravite": "avertissement"
   },
   {
-   "site": "ALFA ROMEO LU",
-   "controle": "structure_identique",
-   "detail": "en trop [] / manquantes ['pagespeed']",
-   "gravite": "bloquant"
-  },
-  {
    "site": "CITROEN LU",
    "controle": "non_additivite_sous_3_5pct",
-   "detail": "2025-05 trafficMonth +111.3%; 2025-05 repriseMonth +119.5%; 2025-06 trafficMonth +99.8%; 2025-06 repriseMonth +134.8%; 2025-07 trafficMonth +102.5%; 2025-07 repriseMonth +47.1%; 2025-08 trafficMonth +20.0%; 2025-08 repriseMonth +7.8%; 2026-05 trafficMonth +81.9%; 2026-05 repriseMonth +83.2%; 2026-06 trafficMonth +98.2%; 2026-06 repriseMonth +74.8%; 2026-07 trafficMonth +95.8%; 2026-07 repriseMonth +212.5%; 2026-08 trafficMonth +500.3%; 2026-08 repriseMonth +1234.4%",
+   "detail": "2025-05 trafficMonth +111.3%; 2025-05 repriseMonth +119.5%; 2025-06 trafficMonth +99.8%; 2025-06 repriseMonth +134.8%; 2025-07 trafficMonth +102.5%; 2025-07 repriseMonth +47.1%; 2025-08 trafficMonth +20.1%; 2025-08 repriseMonth +7.8%; 2026-05 trafficMonth +81.9%; 2026-05 repriseMonth +83.2%; 2026-06 trafficMonth +98.2%; 2026-06 repriseMonth +74.8%; 2026-07 trafficMonth +95.8%; 2026-07 repriseMonth +212.5%; 2026-08 trafficMonth +498.7%; 2026-08 repriseMonth +1234.4%",
    "gravite": "avertissement"
   },
   {
@@ -1997,12 +1979,6 @@
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
    "gravite": "avertissement"
-  },
-  {
-   "site": "PEUGEOT LU",
-   "controle": "structure_identique",
-   "detail": "en trop [] / manquantes ['pagespeed']",
-   "gravite": "bloquant"
   },
   {
    "site": "ALFA ROMEO PL",
@@ -2166,6 +2142,5 @@
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
    "gravite": "avertissement"
   }
- ],
- "blocage": "4 site(s) en echec de controle : DS ES, ABARTH LU, ALFA ROMEO LU, PEUGEOT LU. Donnees de la veille conservees."
+ ]
 }
