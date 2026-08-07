@@ -47,6 +47,7 @@ SITE_EXTRACT = {
     "ABARTH PT":     [(162, 2026)],
 
     "ALFA ROMEO BE": [(130, 2026), (132, 2026)],
+    "ALFA ROMEO DE": [(211, 2026)],
     "ALFA ROMEO ES": [(157, 2026)],
     "ALFA ROMEO FR": [(143, 2026)],
     "ALFA ROMEO IT": [(168, 2026)],
@@ -78,7 +79,7 @@ SITE_EXTRACT = {
     "FIAT FR":       [(137, 2026)],
     "FIAT IT":       [(166, 2026)],
     "FIAT LU":       [(124, 2026)],
-    "FIAT PL":       [(149, 2026)],
+    # FIAT PL (siteId 149) volontairement ecarte : aucun Site() GA4 en face.
 
     "JEEP BE":       [(127, 2026), (129, 2026)],
     "JEEP ES":       [(156, 2026)],
