@@ -2147,7 +2147,7 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Hermès"]].map(t => {
+    const tabs = [["ga4", "Google Analytics"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Hermès"]].map(t => {
       const on = st.tab === t[0];
       // le badge de l'onglet actif est toujours clair (var(--active-mark))
       // et celui d'un onglet inactif suit le theme (var(--soft), sombre en
