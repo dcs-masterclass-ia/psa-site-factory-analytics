@@ -237,27 +237,6 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
     </div>
-    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
-      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
-      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
-        <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
-          <span style="{{ t.markWrap }}">
-            <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
-              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
-            </sc-if>
-            <sc-if value="{{ t.isGsc }}" hint-placeholder-val="{{ true }}">
-              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
-            </sc-if>
-            <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
-            </sc-if>
-            <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
-              <div style="{{ t.hermesLogoWrapStyle }}"><img src="{{ t.hermesLogoSrc }}" alt="" style="{{ t.hermesLogoImgStyle }}"></div>
-            </sc-if>
-          </span>{{ t.label }}
-        </button>
-      </sc-for>
-    </div>
     <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
         <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
@@ -281,6 +260,39 @@ input[type=date]{color-scheme:dark}
         </sc-if>
       </button>
       <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.12)">{{ userInitials }}</button>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;margin-top:22px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .08s both">
+    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden">
+      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+        <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
+          <span style="{{ t.markWrap }}">
+            <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
+              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
+            </sc-if>
+            <sc-if value="{{ t.isGsc }}" hint-placeholder-val="{{ true }}">
+              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
+            </sc-if>
+            <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+            </sc-if>
+            <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ t.hermesLogoWrapStyle }}"><img src="{{ t.hermesLogoSrc }}" alt="" style="{{ t.hermesLogoImgStyle }}"></div>
+            </sc-if>
+          </span>{{ t.label }}
+        </button>
+      </sc-for>
+      <!-- Big Query : pas encore disponible, jamais cliquable, ne participe pas
+           au pill glissant (aucun etat "actif" possible pour cet onglet). -->
+      <button type="button" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:not-allowed;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 20px 0 24px;border-radius:999px;color:var(--muted2)">
+        <span style="width:32px;height:32px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;opacity:.7">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"></path><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg>
+        </span>
+        Big Query
+        <span style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:4px 10px">Bientôt</span>
+      </button>
     </div>
   </div>
 
