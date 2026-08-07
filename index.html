@@ -229,42 +229,8 @@ input[type=date]{color-scheme:dark}
           <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
         </div>
       </sc-if>
-      <div style="width:1px;height:30px;background:var(--line)"></div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <div style="font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.1px">Reprise</div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:14.5px;font-weight:500;color:var(--muted)">
-          <span style="width:7px;height:7px;border-radius:50%;background:#4ADE80;animation:blip 2s ease-in-out infinite"></span>{{ scopeLabel }} · {{ periodLabel }}
-        </div>
-      </div>
     </div>
-    <div style="display:flex;align-items:flex-start;gap:12px">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
-          <span style="{{ refreshProgressStyle }}"></span>
-          <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
-          </span>
-        </button>
-        <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
-          <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"></path></svg>{{ lastUpdateLabel }}
-          </span>
-        </sc-if>
-      </div>
-      <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
-        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
-        </sc-if>
-        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
-        </sc-if>
-      </button>
-      <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.12)">{{ userInitials }}</button>
-    </div>
-  </div>
-
-  <div style="display:flex;align-items:center;margin-top:22px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .08s both">
-    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden">
+    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
         <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
@@ -293,6 +259,30 @@ input[type=date]{color-scheme:dark}
         Big Query
         <span style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:4px 10px">Bientôt</span>
       </button>
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
+          <span style="{{ refreshProgressStyle }}"></span>
+          <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
+          </span>
+        </button>
+        <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
+          <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"></path></svg>{{ lastUpdateLabel }}
+          </span>
+        </sc-if>
+      </div>
+      <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
+        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
+        </sc-if>
+        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
+        </sc-if>
+      </button>
+      <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.12)">{{ userInitials }}</button>
     </div>
   </div>
 
