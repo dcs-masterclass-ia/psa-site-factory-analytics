@@ -1009,7 +1009,7 @@ function renderOverview() {
     <div class="scores">
       ${score({ label:"Sessions site parent", value: sansGA4 ? "—" : fmt(tTraf), color:C.eu,
         delta: cmp && !sansGA4 ? delta(tTraf / days, rTraf / daysRef) : "" })}
-      ${score({ label:"Sessions outil de reprise", value: sansGA4 ? "—" : fmt(tNet), color:C.jade,
+      ${score({ label:"Sessions site de reprise", value: sansGA4 ? "—" : fmt(tNet), color:C.jade,
         delta: cmp && !sansGA4 ? delta(tNet / days, rNet / daysRef) : "" })}
       ${score({ label:"Leads BO / sessions reprise",
         value: sansGA4 ? "—" : pct(tNet ? tLeads / tNet * 100 : null), color:C.tag,
@@ -1064,7 +1064,7 @@ function renderOverview() {
       <div class="card-head">
         <div>
           <h2>Le parc, site par site</h2>
-          <p>Chaque ligne suit la même chaîne : le site parent amène du trafic vers l'outil de reprise, qui produit des leads. Cliquez une ligne pour ouvrir le site.</p>
+          <p>Chaque ligne suit la même chaîne : le site parent amène du trafic vers le site de reprise, qui produit des leads. Cliquez une ligne pour ouvrir le site.</p>
         </div>
       </div>
       <div class="card-body flush"><table class="grid" id="ovTable"></table></div>
@@ -1185,7 +1185,7 @@ function renderAcquisition() {
     <div class="scores">
       ${score({ label:"Sessions site parent", value:fmt(st.traffic), color:C.eu,
         delta: ref ? delta(st.trafficPD, ref.trafficPD) : "" })}
-      ${score({ label:"Sessions outil de reprise", value:fmt(st.reprise), color:C.jade,
+      ${score({ label:"Sessions site de reprise", value:fmt(st.reprise), color:C.jade,
         delta: ref ? delta(st.reprisePD, ref.reprisePD) : "" })}
       ${score({ label:"Part vers la reprise", value:pct(st.part), color:C.tag,
         delta: ref ? delta(st.part, ref.part, "pts") : "" })}
@@ -1199,14 +1199,14 @@ function renderAcquisition() {
       <div class="card-head">
         <div>
           <h2>Deux niveaux, deux échelles</h2>
-          <p>Le site parent et l'outil de reprise n'ont pas le même ordre de grandeur. Ils sont tracés l'un sous l'autre, sur le même axe des jours, plutôt que superposés — les hauteurs ne se comparent pas, les formes si.</p>
+          <p>Le site parent et le site de reprise n'ont pas le même ordre de grandeur. Ils sont tracés l'un sous l'autre, sur le même axe des jours, plutôt que superposés — les hauteurs ne se comparent pas, les formes si.</p>
         </div>
       </div>
       <div class="card-body">
         <div class="twin-wrap">
           <div class="twin-tag"><i style="background:${C.eu}"></i>Sessions site parent</div>
           <div class="plot twin"><canvas id="acqTop"></canvas></div>
-          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions outil de reprise</div>
+          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions site de reprise</div>
           <div class="plot twin"><canvas id="acqBot"></canvas></div>
         </div>
       </div>
@@ -1228,7 +1228,7 @@ function renderAcquisition() {
         <div class="twin-wrap">
           <div class="twin-tag"><i style="background:${C.eu}"></i>Sessions site parent / jour</div>
           <div class="plot twin"><canvas id="moisSite"></canvas></div>
-          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions outil de reprise / jour</div>
+          <div class="twin-tag"><i style="background:${C.jade}"></i>Sessions site de reprise / jour</div>
           <div class="plot twin"><canvas id="moisReprise"></canvas></div>
           <div class="twin-tag"><i style="background:${C.pink}"></i>Leads BO / mois</div>
           <div class="plot twin"><canvas id="moisLeads"></canvas></div>
@@ -1284,7 +1284,7 @@ function renderAcquisition() {
   });
   draw("acqBot", {
     type:"line",
-    data:{ labels, datasets:[{ label:"Sessions outil de reprise", data:sr,
+    data:{ labels, datasets:[{ label:"Sessions site de reprise", data:sr,
       borderColor:C.jade, fill:true, backgroundColor:fondDegrade(C.jade, .2),
       borderWidth:2, tension:.4,
       pointRadius:0, pointHoverRadius:5, pointBackgroundColor:C.jade }] },
@@ -1976,7 +1976,7 @@ function renderSplitCards(d, v2, realV2) {
 }
 
 /* ------------------------------ recherche ------------------------------ */
-/* Search Console, mesuré sur l'outil de reprise uniquement (le site parent
+/* Search Console, mesuré sur le site de reprise uniquement (le site parent
    n'entre pas dans ce périmètre). Deux grains distincts, comme pour le
    funnel : la série quotidienne clics/impressions existe pour n'importe
    quelle période (elle vit dans d.daily, comme le trafic GA4), mais le
@@ -2016,7 +2016,7 @@ function renderRecherche() {
   if (!sm && !hasDaily) {
     host.innerHTML = `<div class="card"><div class="empty">
       <b>Search Console indisponible sur ${esc((metaOf(p) || {}).label || p)}</b>
-      <p>Aucune propriété Search Console n'a été trouvée pour l'outil de reprise de ce site, ou la période n'a pas encore été relevée.</p>
+      <p>Aucune propriété Search Console n'a été trouvée pour le site de reprise de ce site, ou la période n'a pas encore été relevée.</p>
     </div></div>`;
     return;
   }
@@ -2025,7 +2025,7 @@ function renderRecherche() {
   const daysRef = smRef ? ((metaOf(cmp) || {}).days || 1) : null;
 
   host.innerHTML = `
-    <div class="note" style="margin-bottom:16px">Mesuré sur <b>l'outil de reprise uniquement</b> — le site parent n'est pas dans ce périmètre. Indépendant de GA4 : ce sont les clics et impressions dans les résultats de recherche Google.</div>
+    <div class="note" style="margin-bottom:16px">Mesuré sur <b>le site de reprise uniquement</b> — le site parent n'est pas dans ce périmètre. Indépendant de GA4 : ce sont les clics et impressions dans les résultats de recherche Google.</div>
 
     ${sm ? `<div class="scores">
       ${score({ label:"Clics", value:fmt(sm.clics), color:C.eu,
@@ -2060,11 +2060,11 @@ function renderRecherche() {
 
     ${sm ? `<div class="search-grid">
       <div class="card">
-        <div class="card-head"><div><h2>Top requêtes</h2><p>Recherches Google ayant amené des clics vers l'outil de reprise.</p></div></div>
+        <div class="card-head"><div><h2>Top requêtes</h2><p>Recherches Google ayant amené des clics vers le site de reprise.</p></div></div>
         <div class="card-body flush"><div class="dimScroll"><table class="grid" id="reqTable"></table></div></div>
       </div>
       <div class="card">
-        <div class="card-head"><div><h2>Top pages</h2><p>Pages de l'outil de reprise cliquées depuis la recherche.</p></div></div>
+        <div class="card-head"><div><h2>Top pages</h2><p>Pages du site de reprise cliquées depuis la recherche.</p></div></div>
         <div class="card-body flush"><div class="dimScroll"><table class="grid" id="pageTable"></table></div></div>
       </div>
     </div>` : ""}`;

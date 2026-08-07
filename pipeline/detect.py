@@ -1,4 +1,4 @@
-"""Detection automatique de trafic automatise sur l'outil de reprise.
+"""Detection automatique de trafic automatise sur le site de reprise.
 
 Remplace la liste de dates ecrite a la main. La signature relevee sur le parc
 portugais en juin-juillet 2026 etait la suivante :

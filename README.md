@@ -12,7 +12,7 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
 | Onglet | Métrique | Source |
 |---|---|---|
 | **Leads** | Leads générés, dimensions (marque reprise, carburant, source, code marketing, mode d'entrée, projet d'achat, appareil) | Back-office PSA Site Factory |
-| **Trafic** | **Sessions** site parent et outil de reprise | Google Analytics 4 |
+| **Trafic** | **Sessions** site parent et site de reprise | Google Analytics 4 |
 | **Funnel** | **Utilisateurs actifs** par étape, comparaison pré/post V2 | Exploration de funnel GA4 |
 
 ## Points de méthode
@@ -20,14 +20,14 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
 - **Deux métriques distinctes.** Le trafic est en *sessions*, le funnel en
   *utilisateurs actifs* : l'exploration de funnel GA4 ne propose pas la métrique
   « sessions ». Les volumes des deux onglets ne sont donc pas comparables.
-- **Taux de conversion leads** = leads ÷ sessions de l'outil de reprise. C'est
-  sur l'outil que le lead est capté ; le site parent ne fait qu'y renvoyer du trafic.
+- **Taux de conversion leads** = leads ÷ sessions du site de reprise. C'est
+  sur ce site que le lead est capté ; le site parent ne fait qu'y renvoyer du trafic.
 - **Tout le trafic est en sessions**, extrait de GA4 via les onglets filtrés par
-  nom d'hôte (site parent d'un côté, outil de reprise de l'autre). Les données
+  nom d'hôte (site parent d'un côté, site de reprise de l'autre). Les données
   antérieures en *utilisateurs actifs* ont été retirées, de même que les
   indicateurs qui en dépendaient (nouveaux utilisateurs, durée d'engagement).
 - **Les libellés d'onglets GA4 ne sont pas fiables** : sur Citroën PT, l'onglet
-  nommé « Trafic V2 parent » contient en réalité l'outil de reprise et
+  nommé « Trafic V2 parent » contient en réalité le site de reprise et
   « Analyse traffic » le site parent. L'identification se fait sur le filtre
   hostname, jamais sur le nom.
 - **Juillet est partiel** : 28 jours pour les leads et la reprise, 27 pour le

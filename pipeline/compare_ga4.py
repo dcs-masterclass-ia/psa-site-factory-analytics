@@ -85,7 +85,7 @@ def main():
             if ratio > 3:
                 ligne(sortie)
                 ligne(sortie, f"> **{m}** : {ratio:.1f} sessions par utilisateur sur "
-                              f"l'outil de reprise. Au-dela de 3, un seul client ouvre "
+                              f"le site de reprise. Au-dela de 3, un seul client ouvre "
                               f"des centaines de sessions — signature de trafic automatise.")
                 ligne(sortie)
 

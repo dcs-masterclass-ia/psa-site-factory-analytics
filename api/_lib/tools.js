@@ -90,7 +90,7 @@ const TOOLS = [
   },
   {
     name: "ask_agent_analytics",
-    description: "Interroge l'Agent Analytics : trafic GA4 (site parent vs outil de reprise), funnel de conversion, sources d'acquisition, Search Console. A utiliser pour comprendre POURQUOI le trafic ou la conversion a evolue.",
+    description: "Interroge l'Agent Analytics : trafic GA4 (site parent vs site de reprise), funnel de conversion, sources d'acquisition, Search Console. A utiliser pour comprendre POURQUOI le trafic ou la conversion a evolue.",
     input_schema: {
       type: "object",
       properties: {
@@ -301,7 +301,7 @@ async function runTool(name, input) {
   }
   if (name === "ask_agent_analytics") {
     return await askSpecialist(
-      "Tu es l'Agent Analytics du dashboard PSA Site Factory. Analyse le trafic GA4 (site parent vs outil de reprise), le funnel de conversion et Search Console a partir des donnees JSON fournies. Reponds en francais, de facon factuelle et chiffree (cite les vrais chiffres du JSON), en 4 a 8 phrases, sans jamais inventer de donnee absente du JSON.",
+      "Tu es l'Agent Analytics du dashboard PSA Site Factory. Analyse le trafic GA4 (site parent vs site de reprise), le funnel de conversion et Search Console a partir des donnees JSON fournies. Reponds en francais, de facon factuelle et chiffree (cite les vrais chiffres du JSON), en 4 a 8 phrases, sans jamais inventer de donnee absente du JSON.",
       input.question, input.sites
     );
   }
