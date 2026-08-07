@@ -42,6 +42,17 @@ MOIS_HISTORIQUE = 16   # 07/08/2026 : fenetre glissante (etait un debut fixe
                         # echantillon d'un rapport a l'autre. Les trois
                         # sources restent donc alignees sur la meme fenetre.
 
+MOIS_RECENTS = 2        # 08/08/2026 : mois reellement retraites a chaque
+                         # execution (mois en cours + precedent) — le reste
+                         # de l'historique est repris tel quel du fichier
+                         # existant. Retraiter les 16 mois chaque jour coute
+                         # le meme temps qu'un backfill complet (~3h pour 60+
+                         # sites) pour un resultat identique sur des mois deja
+                         # consolides cote GA4. 2 mois laisse une marge large
+                         # devant le delai de consolidation GA4 (24-48h,
+                         # jour_fiable) et d'eventuels correctifs tardifs du
+                         # back-office leads sur le mois qui vient de finir.
+
 
 def mois_a_traiter(jusqu_a=None):
     """Les MOIS_HISTORIQUE derniers mois glissants jusqu'au mois courant
@@ -88,6 +99,22 @@ def stub_vide(nom):
     }
 
 
+def _decoupe_daily_existant(existant):
+    """Reconstruit, a partir des tableaux 'daily' deja ecrits a plat, la part
+    de chaque mois — meme decoupage que celui utilise pour les ecrire (les
+    jours sont concatenes dans l'ordre de existant['months'], meta[mois]
+    ['days'] jours consecutifs par mois)."""
+    daily = existant.get("daily") or {}
+    cles = ("d", "u", "rep", "sc", "si")
+    par_mois = {}
+    i = 0
+    for m in existant.get("months", []):
+        nb_jours = (existant.get("meta", {}).get(m) or {}).get("days", 0)
+        par_mois[m] = {c: (daily.get(c) or [])[i:i + nb_jours] for c in cles}
+        i += nb_jours
+    return par_mois
+
+
 def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     """Reconstruit la partie GA4 d'un site. Retourne (donnees, journal)."""
     journal = []
@@ -108,21 +135,44 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                        else "recherche : aucune propriete Search Console pour cet hote")
 
     d = json.loads(json.dumps(existant))      # copie
-    d["daily"] = {"d": [], "u": [], "rep": [], "sc": [], "si": []}
-    d["trafficMonth"], d["repriseMonth"] = {}, {}
+    d.setdefault("trafficMonth", {})
+    d.setdefault("repriseMonth", {})
     d.setdefault("funnelMonth", {})
-    d["searchMonth"] = {}
+    d.setdefault("searchMonth", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
                                           # dimension existe sur la propriete.
-    anomalies, ratios, parts = {}, {}, {}
+    d.setdefault("meta", {})
+    anomalies = dict(d.get("anomaly") or {})
+    ratios, parts = {}, {}
     methodes_funnel = {}
+    anciens_daily = _decoupe_daily_existant(existant)
+    nouveaux_daily = {}
+
+    # voir MOIS_RECENTS : un site jamais assemble n'a rien a conserver et
+    # recoit tout l'historique ; sinon, seuls les mois recents bougent
+    # encore, le reste est repris tel quel de l'existant (aucun appel API).
+    premiere_execution = not existant.get("months")
+    if premiere_execution:
+        mois_a_retraiter = list(mois_liste)
+    else:
+        recents = set(mois_liste[-MOIS_RECENTS:])
+        # garde-fou : un mois attendu dans la fenetre mais absent des
+        # donnees existantes (trou dans l'historique, jamais assemble) est
+        # retraite meme s'il est ancien, plutot que de publier un trou.
+        mois_manquants = {m for m in mois_liste
+                          if m not in anciens_daily or m not in d["trafficMonth"]}
+        mois_a_retraiter = [m for m in mois_liste if m in recents or m in mois_manquants]
+    conserves = [m for m in mois_liste if m not in mois_a_retraiter]
+    journal.append(
+        f"mois retraités : {', '.join(mois_a_retraiter)}"
+        + (f" — conservés tels quels : {', '.join(conserves)}" if conserves else ""))
 
     limite = jour_fiable().replace("-", "")
     limite_search = jour_fiable_gsc().replace("-", "")
 
-    for mois in mois_liste:
+    for mois in mois_a_retraiter:
         deb, f, nb = ga4.bornes(mois)
         if deb.replace("-", "") > limite:
             continue
@@ -157,7 +207,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             dim_canal, par_jour_canal = None, {}
             journal.append(f"{mois} : canal quotidien en erreur ({type(e).__name__})")
         if dim_canal:
-            d.setdefault("canalQuotidien", {})[mois] = par_jour_canal
+            d["canalQuotidien"][mois] = par_jour_canal
             journal.append(f"{mois} : canal quotidien via {dim_canal}")
         elif mois in d.get("canalQuotidien", {}):
             pass  # on garde la donnee du mois precedemment reussie
@@ -198,22 +248,24 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             prof_mois[(pays, nav, app)] = prof_mois.get((pays, nav, app), 0) + n
 
         an, m = int(mois[:4]), int(mois[5:7])
+        chunk = {"d": [], "u": [], "rep": [], "sc": [], "si": []}
         jours_reels = 0
         for j in range(1, nb + 1):
             cle = f"{an}{m:02d}{j:02d}"
             if cle > limite:
                 break
             cle_iso = f"{an}-{m:02d}-{j:02d}"
-            d["daily"]["d"].append(f"{m:02d}-{j:02d}")
-            d["daily"]["u"].append(jp.get(cle, 0))
-            d["daily"]["rep"].append(jr.get(cle, 0))
+            chunk["d"].append(f"{m:02d}-{j:02d}")
+            chunk["u"].append(jp.get(cle, 0))
+            chunk["rep"].append(jr.get(cle, 0))
             # None (pas 0) au-dela du decalage de publication Search Console :
             # « pas encore connu » n'est pas « zero clic », meme lecon que
             # pour les leads non encore extraits du back-office.
             vr = vue_recherche.get(cle_iso)
-            d["daily"]["sc"].append(vr["clics"] if vr else None)
-            d["daily"]["si"].append(vr["impressions"] if vr else None)
+            chunk["sc"].append(vr["clics"] if vr else None)
+            chunk["si"].append(vr["impressions"] if vr else None)
             jours_reels += 1
+        nouveaux_daily[mois] = chunk
 
         d["trafficMonth"][mois] = {"sessions": tp, "tdays": jours_reels}
         d["repriseMonth"][mois] = {"sessions": tr, "rdays": jours_reels}
@@ -225,6 +277,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             anomalies[mois] = a
             journal.append(f"{mois} : {int(a['sessions'])} sessions automatisees "
                            f"({a['part_pct']} %) sur {len(a['jours'])} journees")
+        elif mois in anomalies:
+            del anomalies[mois]     # reevalue et infirme sur un mois retraite
         ratios[mois] = round(sess / users, 1) if users else None
         parts[mois] = detect.part_etranger(prof_mois, s.pays)
 
@@ -270,9 +324,35 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             elif len(serie) > jours_reels:
                 d["meta"][mois]["days"] = len(serie)
 
-    if mois_liste and mois_liste[-1] not in d["months"]:
-        d["months"] = [m for m in mois_liste if m in d["trafficMonth"]]
+    # trafficMonth/repriseMonth/anomaly n'etaient jamais retraites hors
+    # fenetre (mois_a_retraiter ne les touche pas) mais restent copies de
+    # l'existant : sans ca ils s'accumuleraient indefiniment au fil des mois
+    # qui sortent de la fenetre glissante, contrairement au comportement
+    # d'avant (reset complet chaque jour).
+    fenetre = set(mois_liste)
+    for cle in ("trafficMonth", "repriseMonth"):
+        d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
+    anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
+
+    # recalcule sans condition : avec l'ancien garde-fou ("seulement si le
+    # mois courant manque"), une fenetre glissante qui perd un mois par le
+    # DEBUT (pas par la fin) ne redeclenchait jamais le recalcul — 8 sites
+    # sur les 59 deja traites sont restes figes a 5 mois affiches alors que
+    # trafficMonth en contenait 16 (decouvert le 08/08/2026 en testant ce
+    # correctif). Cout negligeable : liste de ~16 cles, aucun appel API.
+    d["months"] = [m for m in mois_liste if m in d["trafficMonth"]]
     d["periods"] = d["months"] + ["total"]
+
+    # reconstruction du tableau "daily" a plat : mois retraites depuis
+    # nouveaux_daily, mois conserves depuis la decoupe de l'existant — dans
+    # l'ordre de d["months"], seul ordre coherent avec meta[m]["days"].
+    d["daily"] = {"d": [], "u": [], "rep": [], "sc": [], "si": []}
+    for m in d["months"]:
+        chunk = nouveaux_daily.get(m) or anciens_daily.get(m)
+        if not chunk:
+            continue
+        for c in ("d", "u", "rep", "sc", "si"):
+            d["daily"][c].extend(chunk[c])
 
     cons = [m for m in d["months"] if not d["meta"].get(m, {}).get("provisional")]
     d["trafficMonth"]["total"] = {
