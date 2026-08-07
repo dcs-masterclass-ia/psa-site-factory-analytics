@@ -26,6 +26,43 @@ function siteContext(sites) {
   return out;
 }
 
+const SERIES_KEY = { sessions_parent: "u", sessions_reprise: "rep", gsc_clics: "sc", gsc_impressions: "si" };
+
+// Serie numerique quotidienne EXACTE (jamais interpretee/arrondie par un
+// modele) -- sert de source de verite a show_chart, pour que les
+// graphiques affiches a l'utilisateur reprennent les vrais chiffres.
+function getSeries(site, metric, months) {
+  const raw = loadSite(site);
+  if (!raw) return null;
+
+  if (metric === "leads") {
+    const dispo = Object.keys(raw.leads || {}).filter(m => m !== "total");
+    const mois = (months && months.length ? months : dispo).filter(m => raw.leads[m]).sort();
+    const labels = [], values = [];
+    for (const m of mois) {
+      const mm = m.slice(5, 7);
+      (raw.leads[m].daily || []).forEach((v, i) => {
+        labels.push(mm + "-" + String(i + 1).padStart(2, "0"));
+        values.push(v || 0);
+      });
+    }
+    return { labels, values };
+  }
+
+  const key = SERIES_KEY[metric];
+  if (!key) return null;
+  const d = raw.daily || {};
+  const allLabels = d.d || [];
+  const allValues = d[key] || [];
+  if (!months || !months.length) return { labels: allLabels, values: allValues.map(v => v || 0) };
+  const wantedMM = new Set(months.map(m => m.slice(5, 7)));
+  const labels = [], values = [];
+  allLabels.forEach((lab, i) => {
+    if (wantedMM.has(String(lab).slice(0, 2))) { labels.push(lab); values.push(allValues[i] || 0); }
+  });
+  return { labels, values };
+}
+
 async function askSpecialist(systemPrompt, question, sites) {
   const ctx = siteContext(sites);
   if (Object.keys(ctx).length === 0) {
@@ -87,6 +124,43 @@ const TOOLS = [
         sites: { type: "array", items: { type: "string" } },
       },
       required: ["question", "sites"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_series",
+    description: "Renvoie une serie numerique quotidienne EXACTE pour un site et une metrique -- toujours passer par cet outil avant show_chart, jamais recopier des chiffres approximes depuis la reponse d'un autre agent.",
+    input_schema: {
+      type: "object",
+      properties: {
+        site: { type: "string", description: "Nom exact du site (voir list_sites)." },
+        metric: { type: "string", enum: ["sessions_parent", "sessions_reprise", "leads", "gsc_clics", "gsc_impressions"] },
+        months: { type: "array", items: { type: "string" }, description: "Mois au format AAAA-MM (ex. 2026-07). Omis = tous les mois disponibles." },
+      },
+      required: ["site", "metric"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "show_chart",
+    description: "Affiche un graphique dans la reponse a l'utilisateur. N'utilise QUE des valeurs obtenues via get_series (jamais de valeurs inventees, arrondies ou estimees) -- recopie-les exactement. Utile quand une evolution se comprend mieux visuellement qu'en texte.",
+    input_schema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        type: { type: "string", enum: ["line", "bar"] },
+        labels: { type: "array", items: { type: "string" }, description: "Etiquettes de l'axe (ex. dates), meme longueur que chaque serie." },
+        series: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: { name: { type: "string" }, values: { type: "array", items: { type: "number" } } },
+            required: ["name", "values"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["title", "type", "labels", "series"],
       additionalProperties: false,
     },
   },
@@ -242,6 +316,10 @@ async function runTool(name, input) {
       "Tu es l'Agent UX du dashboard PSA Site Factory. Identifie les points de friction du parcours (chute entre etapes du funnel, ecarts mobile/desktop) a partir des donnees JSON fournies, et propose 1 a 3 actions concretes. Reponds en francais, factuel et chiffre, sans jamais inventer de donnee absente du JSON.",
       input.question, input.sites
     );
+  }
+  if (name === "get_series") {
+    const result = getSeries(input.site, input.metric, input.months);
+    return result || { error: "Site ou metrique inconnu -- verifie avec list_sites." };
   }
   if (name === "ask_agent_dashboard") {
     return await runDashboardAgent(input.spec || "");
