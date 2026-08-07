@@ -27,10 +27,13 @@ MOTIFS_REPRISE = (
     r"wir-kaufen-ihr-auto", r"\btradein\b", r"trade-in",
 )
 
-# hotes a ecarter d'office : recette, preproduction, boutique, outils tiers
+# hotes a ecarter d'office : recette, preproduction, boutique, outils tiers.
+# "sklep" (PL) ajoute le 07/08/2026 : sur Citroen PL, la boutique en ligne
+# (sklep.citroen.pl, 476k sessions) depassait le site vitrine et se faisait
+# choisir comme hote parent a sa place -- meme famille que store/shop.
 MOTIFS_EXCLUS = (
     r"recette", r"preprod", r"staging", r"\.dev\b", r"localhost",
-    r"^store\.", r"\bshop\b", r"googleusercontent", r"translate\.goog",
+    r"^store\.", r"\bshop\b", r"\bsklep\b", r"googleusercontent", r"translate\.goog",
 )
 
 PART_MINIMALE_PARENT = 0.30   # le parent doit peser au moins 30 % du trafic
