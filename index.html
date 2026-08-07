@@ -960,7 +960,7 @@ input[type=date]{color-scheme:dark}
               <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ true }}">
                 <div style="white-space:pre-wrap;font-size:15px;font-weight:500;line-height:1.55">{{ m.text }}</div>
               </sc-if>
-              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ m.isAssistantMsg }}" hint-placeholder-val="{{ false }}">
                 <div class="hermes-md" ref="{{ m.mdRef }}" style="font-size:15px;font-weight:500;line-height:1.6"></div>
               </sc-if>
               <sc-if value="{{ m.hasCharts }}" hint-placeholder-val="{{ false }}">
@@ -2677,7 +2677,7 @@ class Component extends DCLogic {
       const charts = (m.charts || []).map(buildChatChart).filter(Boolean);
       return {
         text: m.text,
-        isUser,
+        isUser, isAssistantMsg: !isUser,
         mdRef: el => { if (el) el.innerHTML = renderMarkdown(m.text); },
         hasAgents: !!m.hasAgents,
         agentBadges: m.agentBadges || [],
