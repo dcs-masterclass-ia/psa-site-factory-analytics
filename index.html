@@ -818,31 +818,92 @@ input[type=date]{color-scheme:dark}
       </div>
 
       <sc-if value="{{ hasV2Rows }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:22px;overflow-x:auto">
-        <div style="min-width:1400px">
-          <div style="display:grid;grid-template-columns:130px 130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
-            <span>Marque</span><span>Période</span><span style="text-align:right">Sess. parent</span><span style="text-align:right">Sess. reprise</span><span style="text-align:right">Leads</span><span style="text-align:right">Leads/j</span><span style="text-align:right">Accueil</span><span style="text-align:right">Version</span><span style="text-align:right">Kilométrage</span><span style="text-align:right">Coordonnées</span><span style="text-align:right">PDV</span><span style="text-align:right">Estimation</span><span style="text-align:right">Δ vs V1</span>
-          </div>
-          <sc-for list="{{ v2Rows }}" as="r" hint-placeholder-count="12">
-            <div style="{{ r.rowStyle }}">
-              <div style="display:grid;grid-template-columns:130px 130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:13px 14px;border-radius:12px;align-items:center">
-                <span style="font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.site }}</span>
-                <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ r.periode }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.sessionsParent }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.sessionsReprise }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.leads }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.leadsParJour }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.steps.0 }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.steps.1 }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.steps.2 }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.steps.3 }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ r.steps.4 }}</span>
-                <span style="text-align:right;font-size:14.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ r.conversion }}</span>
-                <span style="text-align:right;font-variant-numeric:tabular-nums;{{ r.deltaStyle }}">{{ r.delta }}</span>
+      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+        <sc-for list="{{ v2Cards }}" as="r" hint-placeholder-count="8">
+          <div style="{{ r.wrapStyle }}">
+            <button onClick="{{ r.toggle }}" style="width:100%;text-align:left;font-family:inherit;border:none;cursor:pointer;background:var(--soft);border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <div style="min-width:0">
+                  <div style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.site }}</div>
+                  <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px">{{ r.weeksLabel }}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex:none">
+                  <span style="{{ r.badgeStyle }}">{{ r.badgeText }}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="{{ r.chevronStyle }}"><path d="m6 9 6 6 6-6"></path></svg>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
+                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.leadsParJour }}</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
+                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.sessionsReprise }}</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Conversion</div>
+                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.conversion }}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:600;color:var(--text2);padding-top:12px;border-top:1px solid var(--line)">
+                <span>Mobile {{ r.mobilePct }}</span>
+                <span style="{{ r.mobileDeltaStyle }}">{{ r.mobileDeltaText }}</span>
+              </div>
+            </button>
+
+            <sc-if value="{{ r.expanded }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;animation:riseIn .35s cubic-bezier(.2,.7,.3,1) both">
+              <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px">Funnel semaine par semaine — {{ r.site }}</div>
+              <div style="overflow-x:auto">
+                <div style="min-width:1200px">
+                  <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
+                    <span>Période</span><span style="text-align:right">Sess. parent</span><span style="text-align:right">Sess. reprise</span><span style="text-align:right">Leads</span><span style="text-align:right">Leads/j</span><span style="text-align:right">Accueil</span><span style="text-align:right">Version</span><span style="text-align:right">Kilométrage</span><span style="text-align:right">Coordonnées</span><span style="text-align:right">PDV</span><span style="text-align:right">Estimation</span><span style="text-align:right">Δ vs V1</span>
+                  </div>
+                  <sc-for list="{{ r.rows }}" as="row" hint-placeholder-count="6">
+                    <div style="{{ row.rowStyle }}">
+                      <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
+                        <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ row.periode }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsParent }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsReprise }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leads }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leadsParJour }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.0 }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.1 }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.2 }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.3 }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.4 }}</span>
+                        <span style="text-align:right;font-size:14.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ row.conversion }}</span>
+                        <span style="text-align:right;font-variant-numeric:tabular-nums;{{ row.deltaStyle }}">{{ row.delta }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:20px 0 12px">Répartition mobile / desktop</div>
+              <div style="overflow-x:auto">
+                <div style="min-width:560px">
+                  <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
+                    <span>Période</span><span style="text-align:right">Mobile</span><span style="text-align:right">Desktop</span><span style="text-align:right">Autres</span><span style="text-align:right">Δ Mobile vs V1</span>
+                  </div>
+                  <sc-for list="{{ r.deviceRows }}" as="dr" hint-placeholder-count="6">
+                    <div style="{{ dr.rowStyle }}">
+                      <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
+                        <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ dr.periode }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ dr.mobilePct }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ dr.desktopPct }}</span>
+                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ dr.autresPct }}</span>
+                        <span style="text-align:right;font-variant-numeric:tabular-nums;{{ dr.mobileDeltaStyle }}">{{ dr.mobileDelta }}</span>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
               </div>
             </div>
-          </sc-for>
-        </div>
+            </sc-if>
+          </div>
+        </sc-for>
       </div>
       </sc-if>
       <sc-if value="{{ noV2Rows }}" hint-placeholder-val="{{ true }}">
@@ -1353,9 +1414,11 @@ class Component extends DCLogic {
     const rows = this._v2RawRows || [];
     if (!rows.length) return;
     const cols = ["marque", "periode", "debut", "fin", "jours", "sessionsParent", "sessionsReprise", "leads", "leadsParJour",
-      "accueil", "version", "kilometrage", "coordonnees", "pointDeVente", "estimation", "conversionPct", "deltaPts"];
+      "accueil", "version", "kilometrage", "coordonnees", "pointDeVente", "estimation", "conversionPct", "deltaPts",
+      "mobilePct", "desktopPct", "mobileDeltaPts"];
     const header = ["Marque", "Période", "Début", "Fin", "Jours", "Sessions parent", "Sessions reprise", "Leads", "Leads/jour",
-      "Accueil %", "Version %", "Kilométrage %", "Coordonnées %", "Point de vente %", "Estimation %", "Conversion %", "Δ pts vs V1"];
+      "Accueil %", "Version %", "Kilométrage %", "Coordonnées %", "Point de vente %", "Estimation %", "Conversion %", "Δ pts vs V1",
+      "Mobile %", "Desktop %", "Δ Mobile pts vs V1"];
     const esc = v => {
       if (v == null) return "";
       const s = String(v);
@@ -1435,7 +1498,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", v2Rows: [], hasV2Rows: false, noV2Rows: true, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
@@ -1662,14 +1725,39 @@ class Component extends DCLogic {
     // independant de la periode choisie dans l'interface : chaque site a sa
     // propre reference V1 (tout l'historique avant sa bascule) et sa propre
     // liste de semaines depuis sa bascule, deja calculees par le pipeline
-    // (pipeline/v2_report.py) — jamais recalcule cote client.
-    const v2Rows = [], v2RawRows = [];
+    // (pipeline/v2_report.py) — jamais recalcule cote client. Une card par
+    // site (repliee par defaut, cliquable pour deplier le detail) plutot
+    // qu'un seul grand tableau : la densite d'info par ligne y devenait
+    // illisible des que plusieurs sites etaient selectionnes a la fois.
+    const v2RawRows = [];
     const V2_STEP_KEYS = ["accueil", "version", "kilometrage", "coordonnees", "pointDeVente", "estimation"];
+    if (!this._v2Expanded) this._v2Expanded = {};
+    // BP (appareil) n'a que 3 familles utiles a l'oeil : mobile, desktop, le
+    // reste. Le regroupement se fait ici, sur le libelle brut remonte par le
+    // pipeline (pipeline/leads_extract.py), plutot que de figer une liste de
+    // valeurs exactes cote pipeline — robuste a une orthographe ou une casse
+    // du back-office qu'on n'a pas pu verifier a l'avance.
+    const bucketDevice = leadsParDevice => {
+      const out = { mobile: 0, desktop: 0, autres: 0 };
+      for (const [k, v] of Object.entries(leadsParDevice || {})) {
+        const kl = k.toLowerCase();
+        if (kl.includes("mobile")) out.mobile += v;
+        else if (kl.includes("desktop")) out.desktop += v;
+        else out.autres += v;
+      }
+      return out;
+    };
+    const v2Cards = [];
     for (const s of st.sites) {
       const siteData = this.data[s];
       const w = siteData && siteData.v2Weekly;
       if (!w || !w.baseline) continue;
       const baseConv = w.baseline.conversionPct;
+      const baseDevice = bucketDevice(w.baseline.leadsParDevice);
+      const baseDeviceTotal = baseDevice.mobile + baseDevice.desktop + baseDevice.autres;
+      const baseMobilePct = baseDeviceTotal ? baseDevice.mobile / baseDeviceTotal * 100 : null;
+
+      const rows = [], deviceRows = [], siteRaw = [];
       const ajoute = (periode, label, isBaseline) => {
         const steps = periode.funnel || [];
         const first = steps[0];
@@ -1679,30 +1767,71 @@ class Component extends DCLogic {
         });
         const delta = (!isBaseline && periode.conversionPct != null && baseConv != null)
           ? periode.conversionPct - baseConv : null;
+        const dv = bucketDevice(periode.leadsParDevice);
+        const dvTotal = dv.mobile + dv.desktop + dv.autres;
+        const mobilePct = dvTotal ? dv.mobile / dvTotal * 100 : null;
+        const desktopPct = dvTotal ? dv.desktop / dvTotal * 100 : null;
+        const mobileDelta = (!isBaseline && mobilePct != null && baseMobilePct != null)
+          ? mobilePct - baseMobilePct : null;
         const raw = {
           marque: s, periode: label, debut: periode.debut, fin: periode.fin, jours: periode.jours,
           sessionsParent: periode.sessionsParent, sessionsReprise: periode.sessionsReprise,
           leads: periode.leads, leadsParJour: periode.leadsPerDay,
           conversionPct: periode.conversionPct, deltaPts: delta,
+          mobilePct, desktopPct, mobileDeltaPts: mobileDelta,
         };
         V2_STEP_KEYS.forEach((k, i) => { raw[k] = stepPcts[i]; });
         v2RawRows.push(raw);
-        v2Rows.push({
-          isBaseline, site: s, periode: label,
+        siteRaw.push(raw);
+        rows.push({
+          isBaseline, periode: label,
           sessionsParent: fmt(periode.sessionsParent), sessionsReprise: fmt(periode.sessionsReprise),
           leads: fmt(periode.leads), leadsParJour: dec(periode.leadsPerDay, 1),
           steps: stepPcts.map(p => p == null ? "—" : dec(p, 0) + " %"),
           conversion: periode.conversionPct != null ? dec(periode.conversionPct, 1) + " %" : "—",
           delta: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 1) + " pts",
           deltaStyle: "font-weight:700;font-variant-numeric:tabular-nums;color:" + (delta == null ? "var(--muted)" : delta >= 0 ? "var(--pos)" : "var(--neg)"),
-          rowStyle: (isBaseline ? "background:var(--soft);" : "") + "animation:riseIn .5s ease " + Math.min(0.6, v2Rows.length * 0.03) + "s both",
+          rowStyle: (isBaseline ? "background:var(--soft);" : "") + "animation:riseIn .4s ease " + Math.min(0.5, rows.length * 0.03) + "s both",
+        });
+        deviceRows.push({
+          isBaseline, periode: label,
+          mobilePct: mobilePct == null ? "—" : dec(mobilePct, 0) + " %",
+          desktopPct: desktopPct == null ? "—" : dec(desktopPct, 0) + " %",
+          autresPct: dvTotal ? dec(dv.autres / dvTotal * 100, 0) + " %" : "—",
+          mobileDelta: mobileDelta == null ? "—" : (mobileDelta >= 0 ? "+" : "") + dec(mobileDelta, 1) + " pts",
+          mobileDeltaStyle: "font-weight:700;font-variant-numeric:tabular-nums;color:" + (mobileDelta == null ? "var(--muted)" : mobileDelta >= 0 ? "var(--pos)" : "var(--neg)"),
+          rowStyle: isBaseline ? "background:var(--soft);" : "",
         });
       };
       ajoute(w.baseline, "V1 (référence)", true);
       for (const wk of w.weeks) ajoute(wk, wk.label, false);
+
+      const latest = siteRaw[siteRaw.length - 1];
+      const hasWeeks = w.weeks.length > 0;
+      const expanded = !!this._v2Expanded[s];
+      v2Cards.push({
+        site: s, expanded,
+        toggle: () => { this._v2Expanded[s] = !this._v2Expanded[s]; this.forceUpdate(); },
+        wrapStyle: "grid-column:" + (expanded ? "1 / -1" : "auto") + ";animation:riseIn .5s cubic-bezier(.2,.7,.3,1) " + Math.min(0.5, v2Cards.length * 0.05) + "s both",
+        chevronStyle: "transform:rotate(" + (expanded ? "180deg" : "0deg") + ");transition:transform .25s ease;color:var(--muted);flex:none",
+        weeksLabel: hasWeeks ? w.weeks.length + " semaine" + (w.weeks.length > 1 ? "s" : "") + " suivies depuis la V2" : "Référence V1 uniquement",
+        latestPeriodLabel: latest.periode,
+        badgeText: !hasWeeks || latest.deltaPts == null ? "—" : (latest.deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(latest.deltaPts), 1) + " pts",
+        badgeStyle: "font-size:14px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;color:" +
+          (!hasWeeks || latest.deltaPts == null ? "var(--muted)" : latest.deltaPts >= 0 ? "var(--pos)" : "var(--neg)") + ";background:" +
+          (!hasWeeks || latest.deltaPts == null ? "var(--soft)" : latest.deltaPts >= 0 ? "var(--pos-bg)" : "var(--neg-bg)"),
+        leadsParJour: dec(latest.leadsParJour, 1),
+        sessionsReprise: fmt(latest.sessionsReprise),
+        conversion: latest.conversionPct != null ? dec(latest.conversionPct, 1) + " %" : "—",
+        mobilePct: latest.mobilePct == null ? "—" : dec(latest.mobilePct, 0) + " %",
+        mobileDeltaText: !hasWeeks || latest.mobileDeltaPts == null ? "" : "(" + (latest.mobileDeltaPts >= 0 ? "+" : "") + dec(latest.mobileDeltaPts, 1) + " pts vs V1)",
+        mobileDeltaStyle: "font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" +
+          (!hasWeeks || latest.mobileDeltaPts == null ? "var(--muted)" : latest.mobileDeltaPts >= 0 ? "var(--pos)" : "var(--neg)"),
+        rows, deviceRows,
+      });
     }
     this._v2RawRows = v2RawRows;
-    const hasV2Rows = v2Rows.length > 0, noV2Rows = !hasV2Rows;
+    const hasV2Rows = v2Cards.length > 0, noV2Rows = !hasV2Rows;
 
     const compPct = agg.funnelSteps && agg.funnelSteps.length ? (agg.funnelSteps[agg.funnelSteps.length-1].users / (agg.funnelSteps[0].users || 1) * 100) : 0;
     const gaugeFrac = Math.max(0, Math.min(1, compPct / 100));
@@ -1840,7 +1969,7 @@ class Component extends DCLogic {
       tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       funnel, projects, audience, leadCells, queries, pages,
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2",
-      v2Rows, hasV2Rows, noV2Rows, v2ExportCsv: () => this.exportV2Csv(),
+      v2Cards, hasV2Rows, noV2Rows, v2ExportCsv: () => this.exportV2Csv(),
       isLight: st.theme === "light", isDark: st.theme === "dark",
       toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
