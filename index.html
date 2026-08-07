@@ -225,6 +225,7 @@ input[type=date]{color-scheme:dark}
 @keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes drawLine{to{stroke-dashoffset:0}}
+@keyframes revealClip{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 -2% 0 0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
 @keyframes cellIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 @keyframes growW{from{width:0}}
@@ -412,7 +413,7 @@ input[type=date]{color-scheme:dark}
           <svg width="100%" height="100%" viewBox="0 0 900 300" preserveAspectRatio="none" style="position:absolute;inset:0">
             <g stroke="var(--grid)" stroke-width="1"><path d="M0 60 H900"></path><path d="M0 120 H900"></path><path d="M0 180 H900"></path><path d="M0 240 H900"></path></g>
             <sc-for list="{{ channelPaths }}" as="cp" hint-placeholder-count="5">
-              <path style="{{ cp.style }}" ref="{{ cp.ref }}" fill="none" stroke="{{ cp.color }}" stroke-width="2.6" stroke-linecap="round" vector-effect="non-scaling-stroke" stroke-dasharray="1400" stroke-dashoffset="1400"></path>
+              <path style="{{ cp.style }}" ref="{{ cp.ref }}" fill="none" stroke="{{ cp.color }}" stroke-width="2.6" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
             </sc-for>
           </svg>
         </div>
@@ -697,9 +698,9 @@ input[type=date]{color-scheme:dark}
             </defs>
             <g stroke="var(--grid)" stroke-width="1"><path d="M0 60 H900"></path><path d="M0 120 H900"></path><path d="M0 180 H900"></path></g>
             <path ref="{{ imprFillRef }}" fill="url(#gscImpFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.2s forwards"></path>
-            <path ref="{{ imprLineRef }}" fill="none" stroke="#7B4DF0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="1800" stroke-dashoffset="1800" style="animation:drawLine 2s cubic-bezier(.35,.6,.3,1) .4s forwards"></path>
+            <path ref="{{ imprLineRef }}" fill="none" stroke="#7B4DF0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="animation:revealClip 2s cubic-bezier(.35,.6,.3,1) .4s forwards"></path>
             <path ref="{{ clicsFillRef }}" fill="url(#gscClkFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.3s forwards"></path>
-            <path ref="{{ clicsLineRef }}" fill="none" stroke="#4285F4" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="1800" stroke-dashoffset="1800" style="animation:drawLine 2s cubic-bezier(.35,.6,.3,1) .55s forwards"></path>
+            <path ref="{{ clicsLineRef }}" fill="none" stroke="#4285F4" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="animation:revealClip 2s cubic-bezier(.35,.6,.3,1) .55s forwards"></path>
           </svg>
         </div>
         <div style="display:flex;justify-content:space-between;padding-top:16px;font-size:14px;font-weight:500;color:var(--muted);animation:fadeIn .8s ease 1.2s both">
@@ -967,6 +968,32 @@ function setAnimatedAttrs(el, attrs) {
       void el.getBoundingClientRect();
       el.style.animation = anim;
     });
+  }
+}
+
+/* pose le "d" d'une courbe dont le dessin progressif se fait par clip-path
+   (revealClip), pas par stroke-dasharray. Sert aux graphiques dont le viewBox
+   est etire de façon non uniforme (preserveAspectRatio="none" sur un
+   conteneur dont la largeur et la hauteur ne suivent pas le meme ratio que le
+   viewBox — canal quotidien, GSC) : combine a vector-effect:non-scaling-stroke,
+   getTotalLength() y sous-estime la longueur reellement affichee a l'ecran
+   (l'ecart grandit avec les portions tres pentues), et le budget de trait
+   calcule dessus s'epuisait avant la fin du trace — la courbe semblait
+   s'arreter avant le bord droit du graphique alors que les donnees allaient
+   bien jusque-la (constate le 07/08/2026 sur "Suivi des sessions par canal").
+   Un clip-path en pourcentage se base sur la boite de l'element telle que
+   rendue a l'ecran : aucune longueur a estimer, donc aucun risque de sous-
+   estimation, quel que soit l'etirement du viewBox. */
+function setRevealedPath(el, d) {
+  if (!el) return;
+  const s = String(d);
+  if (el.getAttribute("d") === s) return;
+  el.setAttribute("d", s);
+  if (el.style.animation) {
+    const anim = el.style.animation;
+    el.style.animation = "none";
+    void el.getBoundingClientRect();
+    el.style.animation = anim;
   }
 }
 
@@ -1562,9 +1589,9 @@ class Component extends DCLogic {
       const vals = joursCanal.map(j => c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0));
       const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 280, 0, maxCanalVal);
       return {
-        ref: el => setAnimatedAttrs(el, { d }),
+        ref: el => setRevealedPath(el, d),
         color: CHAN_COLORS[i % CHAN_COLORS.length],
-        style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08) + ";animation:drawLine 1.9s cubic-bezier(.35,.6,.3,1) " + (0.35 + i * .15) + "s forwards",
+        style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08) + ";animation:revealClip 1.9s cubic-bezier(.35,.6,.3,1) " + (0.35 + i * .15) + "s forwards",
       };
     });
     const channelAxisLabels = (() => {
@@ -1764,9 +1791,9 @@ class Component extends DCLogic {
     const clicsFillPath = clicsLinePath ? clicsLinePath + ` L900 240 L0 240 Z` : "";
     const imprLinePath = clicsLinePath; // meme forme, echelle differente non disponible au jour le jour
     const imprFillPath = clicsFillPath;
-    const clicsLineRef = el => setAnimatedAttrs(el, { d: clicsLinePath });
+    const clicsLineRef = el => setRevealedPath(el, clicsLinePath);
     const clicsFillRef = el => setAnimatedAttrs(el, { d: clicsFillPath });
-    const imprLineRef = el => setAnimatedAttrs(el, { d: imprLinePath });
+    const imprLineRef = el => setRevealedPath(el, imprLinePath);
     const imprFillRef = el => setAnimatedAttrs(el, { d: imprFillPath });
     const gscAxisLabels = (() => {
       const n = gscDays.length; if (!n) return [];
