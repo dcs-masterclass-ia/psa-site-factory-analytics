@@ -755,12 +755,17 @@ input[type=date]{color-scheme:dark}
           </svg>
           <sc-if value="{{ hasGscHover }}" hint-placeholder-val="{{ false }}">
             <div style="position:absolute;top:0;bottom:0;width:1px;background:var(--line);pointer-events:none;{{ gscHover.guideStyle }}"></div>
-            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#4285F4;box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ gscHover.dotStyle }}"></span>
+            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#7B4DF0;box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ gscHover.imprDotStyle }}"></span>
+            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#4285F4;box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ gscHover.clicsDotStyle }}"></span>
             <div style="{{ gscHover.tooltipStyle }}">
               <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">{{ gscHover.label }}</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2);padding:2px 0">
                 <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#4285F4;display:inline-block"></span>Clics</span>
                 <span style="font-variant-numeric:tabular-nums;color:var(--text);font-weight:800">{{ gscHover.clicsText }}</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2);padding:2px 0">
+                <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#7B4DF0;display:inline-block"></span>Impressions</span>
+                <span style="font-variant-numeric:tabular-nums;color:var(--text);font-weight:800">{{ gscHover.imprText }}</span>
               </div>
             </div>
           </sc-if>
@@ -1463,7 +1468,7 @@ class Component extends DCLogic {
     const out = {
       traffic: 0, reprise: 0, leads: 0, leadsDaily: {}, brand: new Map(), project: new Map(),
       funnelSteps: null, funnelDays: 0, canal: {}, trafficDaily: {}, gscClics: 0, gscImpr: 0, gscCtrSum: 0, gscPosSum: 0, gscN: 0,
-      gscDaily: {}, queries: new Map(), pages: new Map(), insightsAcq: [], insightsRech: [], ownBrand: 0,
+      gscDaily: {}, gscImprDaily: {}, queries: new Map(), pages: new Map(), insightsAcq: [], insightsRech: [], ownBrand: 0,
       v2Steps: null, v2SiteCount: 0, v2PreLabel: null, v2PostLabel: null,
     };
     for (const s of this.state.sites) {
@@ -1481,7 +1486,7 @@ class Component extends DCLogic {
         out.trafficDaily[jourTraf].parent += d.daily.u[i] || 0;
         out.trafficDaily[jourTraf].reprise += d.daily.rep[i] || 0;
         if (d.daily.sc && d.daily.sc[i] != null) { out.gscClics += d.daily.sc[i]; out.gscDaily[d.daily.d[i]] = (out.gscDaily[d.daily.d[i]] || 0) + d.daily.sc[i]; }
-        if (d.daily.si && d.daily.si[i] != null) out.gscImpr += d.daily.si[i];
+        if (d.daily.si && d.daily.si[i] != null) { out.gscImpr += d.daily.si[i]; out.gscImprDaily[d.daily.d[i]] = (out.gscImprDaily[d.daily.d[i]] || 0) + d.daily.si[i]; }
       }
       // leads / jour, reconstruits mois par mois comme dans le modele existant
       for (const mois of Object.keys(d.leads || {})) {
@@ -2286,11 +2291,13 @@ class Component extends DCLogic {
     const ctrMoy = agg.gscN ? agg.gscCtrSum / agg.gscN : 0;
     const posMoy = agg.gscN ? agg.gscPosSum / agg.gscN : 0;
 
+    const gscImprSeries = gscDays.map(j => agg.gscImprDaily[j] || 0);
+
     const cmpCtrMoy = cmp && cmp.gscN ? cmp.gscCtrSum / cmp.gscN : null;
     const cmpPosMoy = cmp && cmp.gscN ? cmp.gscPosSum / cmp.gscN : null;
     const gscKpis = [
       { label:"Clics", to: agg.gscClics, fmt: fmt, color:"#4285F4", spark: gscClicsSeries, deltaInfo: deltaBadge(agg.gscClics, cmp && cmp.gscClics, "") },
-      { label:"Impressions", to: agg.gscImpr, fmt: fmt, color:"#7B4DF0", spark: gscClicsSeries, deltaInfo: deltaBadge(agg.gscImpr, cmp && cmp.gscImpr, "") },
+      { label:"Impressions", to: agg.gscImpr, fmt: fmt, color:"#7B4DF0", spark: gscImprSeries, deltaInfo: deltaBadge(agg.gscImpr, cmp && cmp.gscImpr, "") },
       { label:"CTR moyen", to: ctrMoy, fmt: x => dec(x,2) + " %", color:"#34A853", spark: gscClicsSeries, deltaInfo: deltaBadge(ctrMoy, cmpCtrMoy, "pts") },
       { label:"Position moyenne", to: posMoy, fmt: x => dec(x,1), color:"#FBBC04", spark: gscClicsSeries, deltaInfo: deltaBadge(posMoy, cmpPosMoy, "pts", true) },
     ].map((k, i) => {
@@ -2299,12 +2306,17 @@ class Component extends DCLogic {
       return c;
     });
 
-    const maxGsc = Math.max(1, ...gscClicsSeries);
-    const imprSeries = gscDays.map(() => 0); // impressions quotidiennes non conservees par jour au-dela du total mensuel
-    const clicsLinePath = smoothPath(gscClicsSeries.length > 1 ? gscClicsSeries : [0,0], 900, 240, 0, maxGsc);
+    // clics et impressions n'ont pas du tout la meme grandeur (les
+    // impressions comptent chaque apparition dans les resultats de
+    // recherche, ~20x plus nombreuses que les clics) : partager une echelle
+    // aurait ecrase la courbe des clics a plat en bas du graphe. Chacune
+    // garde donc sa propre echelle, comme le trafic parent/reprise plus haut.
+    const maxGscClics = Math.max(1, ...gscClicsSeries);
+    const maxGscImpr = Math.max(1, ...gscImprSeries);
+    const clicsLinePath = smoothPath(gscClicsSeries.length > 1 ? gscClicsSeries : [0,0], 900, 240, 0, maxGscClics);
     const clicsFillPath = clicsLinePath ? clicsLinePath + ` L900 240 L0 240 Z` : "";
-    const imprLinePath = clicsLinePath; // meme forme, echelle differente non disponible au jour le jour
-    const imprFillPath = clicsFillPath;
+    const imprLinePath = smoothPath(gscImprSeries.length > 1 ? gscImprSeries : [0,0], 900, 240, 0, maxGscImpr);
+    const imprFillPath = imprLinePath ? imprLinePath + ` L900 240 L0 240 Z` : "";
     const clicsLineRef = el => revealPath(el, clicsLinePath, 550, 2000);
     const clicsFillRef = el => setAnimatedAttrs(el, { d: clicsFillPath });
     const imprLineRef = el => revealPath(el, imprLinePath, 400, 2000);
@@ -2316,12 +2328,9 @@ class Component extends DCLogic {
       return out;
     })();
 
-    // survol : seuls les clics ont une vraie valeur jour par jour (les
-    // impressions ne sont conservees qu'en total mensuel, cf. plus haut) —
-    // pas d'affichage d'un chiffre d'impressions invente pour le survol.
     const gscHoverData = gscDays.map(j => {
       const mm = parseInt(j.slice(0, 2), 10), dd = parseInt(j.slice(3, 5), 10);
-      return { label: dd + " " + (MONTHS[mm - 1] || ""), clics: agg.gscDaily[j] || 0 };
+      return { label: dd + " " + (MONTHS[mm - 1] || ""), clics: agg.gscDaily[j] || 0, impr: agg.gscImprDaily[j] || 0 };
     });
     this._gscHoverData = gscHoverData;
     this._gscHoverN = gscDays.length;
@@ -2333,10 +2342,11 @@ class Component extends DCLogic {
       const flip = xPct > 62;
       gscHover = {
         guideStyle: "left:" + xPct.toFixed(2) + "%",
-        dotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, hv.clics / maxGsc)) * 100).toFixed(2) + "% - 4px)",
+        clicsDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, hv.clics / maxGscClics)) * 100).toFixed(2) + "% - 4px)",
+        imprDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, hv.impr / maxGscImpr)) * 100).toFixed(2) + "% - 4px)",
         tooltipStyle: "position:absolute;top:6px;z-index:2;" + (flip ? "right:calc(" + (100 - xPct).toFixed(2) + "% + 16px)" : "left:calc(" + xPct.toFixed(2) + "% + 16px)") +
-          ";background:var(--pop);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 20px 50px -12px var(--shadow);pointer-events:none;min-width:140px",
-        label: hv.label, clicsText: fmt(hv.clics),
+          ";background:var(--pop);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 20px 50px -12px var(--shadow);pointer-events:none;min-width:160px",
+        label: hv.label, clicsText: fmt(hv.clics), imprText: fmt(hv.impr),
       };
     }
 
