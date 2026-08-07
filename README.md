@@ -75,6 +75,22 @@ data/index.json     liste des sites
 data/<site>.json    données par site (4 mois : leads, trafic, reprise, funnel)
 ```
 
+## Connexion et assistant IA
+
+- **Connexion** : Google Sign-In restreint au domaine `ALLOWED_DOMAIN` (voir
+  `middleware.js`, `api/auth.js`). Un cookie de session signé (HttpOnly)
+  protège `data/*.json`, `/api/agent` et `/api/refresh` — la protection est
+  côté serveur, pas un simple écran client.
+- **Assistant IA** (onglet « Assistant IA ») : `api/agent.js` orchestre 4
+  agents spécialisés (`api/_lib/tools.js`) — Analytics, Business, UX (lecture
+  des `data/*.json`, aucun appel GA4/GSC supplémentaire) et Dashboard (ouvre
+  une pull request GitHub pour toute modification du dashboard — jamais de
+  push direct sur `main`).
+- Variables d'environnement Vercel requises : `GOOGLE_CLIENT_ID`,
+  `ALLOWED_DOMAIN`, `AUTH_COOKIE_SECRET`, `ANTHROPIC_API_KEY`,
+  `GITHUB_PR_TOKEN` (en plus de `GITHUB_TOKEN`/`GITHUB_REPO` déjà utilisés par
+  `api/refresh.js`).
+
 ## Déploiement
 
 Site statique : aucun build. Sur Vercel, importer le dépôt et laisser le
