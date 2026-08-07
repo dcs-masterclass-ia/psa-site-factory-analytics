@@ -55,62 +55,17 @@
         </div>
       </div>
 
-      <form class="login-formwrap" id="loginForm" autocomplete="off">
+      <div class="login-formwrap">
         <div class="login-formhead">
           <div class="login-formtitle">Connexion</div>
-          <div class="login-formsub">Identifiez-vous pour accéder aux tableaux de bord GA4 et Search Console.</div>
+          <div class="login-formsub">Accès réservé aux comptes Google de l'équipe — identifiez-vous pour accéder aux tableaux de bord GA4 et Search Console.</div>
         </div>
 
         <div class="login-fields">
-          <label class="login-lbl">
-            <span class="login-lbl-txt">Identifiant</span>
-            <span class="login-inputwrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M4.5 20c1.4-4 4.4-6 7.5-6s6.1 2 7.5 6"></path></svg>
-              <input type="text" id="loginIdent" autocomplete="username" placeholder="Votre identifiant" autofocus>
-            </span>
-          </label>
-
-          <label class="login-lbl">
-            <span class="login-lbl-row">
-              <span class="login-lbl-txt">Mot de passe</span>
-              <a href="#" class="login-link">Mot de passe oublié ?</a>
-            </span>
-            <span class="login-inputwrap">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="3"></rect><path d="M8 10V7.5a4 4 0 0 1 8 0V10"></path></svg>
-              <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••••••">
-              <button type="button" class="login-reveal-btn" id="loginRevealBtn" aria-label="Afficher le mot de passe">
-                <svg class="login-eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12C3.5 9.1 7.5 5 12 5s8.5 4.1 9.5 7c-1 2.9-5 7-9.5 7s-8.5-4.1-9.5-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <svg class="login-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.8 2.8"></path><path d="M6.7 6.8C4.6 8.2 3 10.3 2.5 12c1 2.9 5 7 9.5 7 1.8 0 3.4-.6 4.8-1.5M9.9 5.2A9 9 0 0 1 12 5c4.5 0 8.5 4.1 9.5 7-.4 1.2-1.3 2.7-2.6 4"></path></svg>
-              </button>
-            </span>
-          </label>
-
-          <button type="button" class="login-remember" id="loginRememberBtn">
-            <span class="login-remember-box is-on" id="loginRememberBox">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>
-            </span>
-            <span class="login-remember-txt">Rester connecté 30 jours</span>
-          </button>
-
-          <button type="submit" class="login-submit" id="loginSubmitBtn">
-            <span class="login-spinner" id="loginSpinner" hidden></span>
-            <span id="loginSubmitLabel">Se connecter</span>
-          </button>
-
-          <p class="login-err" id="loginErr" hidden>Identifiant ou mot de passe incorrect.</p>
-
-          <div class="login-sep"><span></span><em>ou</em><span></span></div>
-
-          <button type="button" class="login-google-btn" title="Bientôt disponible">
-            <span class="login-google-mark">
-              <span class="login-google-o"></span>
-              <span class="login-google-check"></span>
-              <span class="login-google-dot"></span>
-            </span>
-            Continuer avec Google
-          </button>
+          <div id="loginGoogleTarget" class="login-google-target"></div>
+          <p class="login-err" id="loginErr" hidden></p>
         </div>
-      </form>
+      </div>
 
       <div class="login-foot">
         <span>© 2026 Miracle · PSA Factory — Données hébergées dans l'UE</span>
@@ -202,6 +157,7 @@
   .login-sep em{font-style:normal;font-size:13.5px;font-weight:600;color:var(--muted2)}
   .login-google-btn{display:flex;align-items:center;justify-content:center;gap:13px;height:58px;border:none;border-radius:16px;background:var(--soft);color:var(--text);font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;transition:background .2s ease,transform .2s ease}
   .login-google-btn:hover{background:var(--hover);transform:translateY(-2px)}
+  .login-google-target{display:flex;justify-content:center;margin-top:8px;min-height:44px}
   .login-google-mark{width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;position:relative;flex:none}
   .login-google-o{width:11px;height:11px;border-radius:50%;border:2.6px solid #4285F4;box-sizing:border-box;display:block}
   .login-google-check{position:absolute;right:4px;bottom:5px;width:7px;height:2.6px;border-radius:2px;background:#34A853;transform:rotate(45deg)}
@@ -274,6 +230,9 @@ input[type=date]{color-scheme:dark}
             <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
             </sc-if>
+            <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 3.5-.7L21 21l-1.1-3.5A9 9 0 0 0 12 3Z"></path><circle cx="8.5" cy="12" r="1" fill="#F5411E" stroke="none"></circle><circle cx="12" cy="12" r="1" fill="#F5411E" stroke="none"></circle><circle cx="15.5" cy="12" r="1" fill="#F5411E" stroke="none"></circle></svg>
+            </sc-if>
           </span>{{ t.label }}
         </button>
       </sc-for>
@@ -300,7 +259,7 @@ input[type=date]{color-scheme:dark}
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
         </sc-if>
       </button>
-      <span style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800">PS</span>
+      <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.12)">{{ userInitials }}</button>
     </div>
   </div>
 
@@ -936,6 +895,57 @@ input[type=date]{color-scheme:dark}
   </div>
   </sc-if>
 
+  <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
+  <div style="margin-top:24px">
+    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;min-height:560px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+      <div style="display:flex;align-items:center;gap:11px">
+        <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 3.5-.7L21 21l-1.1-3.5A9 9 0 0 0 12 3Z"></path></svg>
+        </span>
+        <div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">Assistant IA — Agent KAM</div>
+          <div style="font-size:13.5px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
+        </div>
+      </div>
+
+      <div style="flex:1;min-height:0;overflow:auto;margin:22px 0;display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:40px 20px;text-align:center">
+            <div style="font-size:15px;font-weight:500;color:var(--muted)">Pose une question, ex. « Pourquoi Opel Portugal est en baisse depuis lundi, quel impact business, quelles actions proposer ? »</div>
+          </div>
+        </sc-if>
+        <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
+          <div style="{{ m.rowStyle }}">
+            <div style="{{ m.bubbleStyle }}">
+              <div style="white-space:pre-wrap;font-size:15px;font-weight:500;line-height:1.55">{{ m.text }}</div>
+              <sc-if value="{{ m.hasAgents }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ m.agentBadges }}" as="ag" hint-placeholder-count="2">
+                    <span style="font-size:11.5px;font-weight:700;color:var(--muted);background:var(--soft2);border-radius:999px;padding:4px 10px">{{ ag }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;font-weight:600">
+            <span style="width:8px;height:8px;border-radius:50%;background:#F5411E;animation:blip 1s ease-in-out infinite"></span>Les agents analysent…
+          </div>
+        </sc-if>
+      </div>
+
+      <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;padding-top:16px;border-top:1px solid var(--line)">
+        <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none">
+        <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;gap:10px;background:#F5411E;border:none;border-radius:16px;padding:0 22px;height:52px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;opacity:{{ chatSendOpacity }}">
+          Envoyer
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+  </sc-if>
+
   <sc-if value="{{ hasV2Modal }}" hint-placeholder-val="{{ false }}">
   <div style="{{ v2Modal.wrapStyle }}">
   <div style="{{ v2Modal.backdropStyle }}" onClick="{{ v2Modal.close }}"></div>
@@ -1307,6 +1317,10 @@ class Component extends DCLogic {
     refreshLabel: "Actualiser",
     refreshProgress: 0,
     tabSwitching: false,
+    chatMessages: [],   // { role: "user"|"assistant", text, agents: [] }
+    chatInput: "",
+    chatBusy: false,
+    chatHistory: [],    // messages Claude bruts (envoyes/renvoyes par /api/agent, pour la continuite de conversation)
   };
 
   applyTheme() { document.documentElement.setAttribute("data-theme", this.state.theme); }
@@ -1363,20 +1377,59 @@ class Component extends DCLogic {
     if (sig !== this._sig) { this._sig = sig; this.runCounters(); }
   }
 
-  /* ---------------------------- connexion (client-side, comme avant) ---------------------------- */
-  async empreinte(t) {
-    const b = new TextEncoder().encode(t);
-    const buf = await crypto.subtle.digest("SHA-256", b);
-    return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, "0")).join("");
+  /* ---------------------------- connexion (Google reel, restreint au domaine) ---------------------------- */
+  // le cookie psf_session (HttpOnly) est la seule chose qui protege
+  // reellement les donnees (verifiee par middleware.js sur /data et
+  // /api/agent) ; psf_user_email est un cookie non-HttpOnly pose uniquement
+  // pour l'affichage cote client (initiales, email dans l'en-tete).
+  lireEmailCookie() {
+    const m = document.cookie.split("; ").find(c => c.startsWith("psf_user_email="));
+    return m ? decodeURIComponent(m.split("=").slice(1).join("=")) : "";
+  }
+  userInitials() {
+    const local = (this._userEmail || "").split("@")[0];
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    const init = parts.slice(0, 2).map(p => p[0].toUpperCase()).join("");
+    return init || "?";
+  }
+  async logout() {
+    try { await fetch("/api/logout", { method: "POST" }); } catch (e) {}
+    location.reload();
+  }
+
+  /* ---------------------------- assistant multi-agent (Agent KAM) ---------------------------- */
+  setChatInput(e) { this.setState({ chatInput: e.target.value }); }
+  async sendChatMessage(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const question = (this.state.chatInput || "").trim();
+    if (!question || this.state.chatBusy) return;
+    const messages = this.state.chatMessages.concat([{ role: "user", text: question, hasAgents: false, agentBadges: [] }]);
+    this.setState({ chatMessages: messages, chatInput: "", chatBusy: true });
+    try {
+      const r = await fetch("/api/agent", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ question, history: this.state.chatHistory }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error || "Erreur de l'assistant.");
+      const agents = json.agentsConsultes || [];
+      this.setState({
+        chatMessages: messages.concat([{ role: "assistant", text: json.answer || "(pas de réponse)", hasAgents: agents.length > 0, agentBadges: agents }]),
+        chatHistory: json.history || this.state.chatHistory,
+        chatBusy: false,
+      });
+    } catch (e) {
+      this.setState({
+        chatMessages: messages.concat([{ role: "assistant", text: "Erreur : " + (e && e.message ? e.message : e), hasAgents: false, agentBadges: [] }]),
+        chatBusy: false,
+      });
+    }
   }
   wireLogin() {
-    const AUTH_EMPREINTE = "fd98a33cea628c0865faf7df0f9dabcbbb9f9fad73130bbc9e2fad8a060f7af3";
-    const AUTH_CLE = "psf_auth_ok";
-    const lire = () => { try { return localStorage.getItem(AUTH_CLE); } catch (e) { return null; } };
-    const ecrire = v => { try { localStorage.setItem(AUTH_CLE, v); } catch (e) {} };
     const ecran = document.getElementById("loginScreen");
-    const afficher = () => { if (ecran) ecran.remove(); };
-    if (lire() === "1") { afficher(); return; }
+    this._userEmail = this.lireEmailCookie();
+    if (this._userEmail) { if (ecran) ecran.remove(); return; }
     if (!ecran) return;
 
     // thème du seul écran de connexion — independant de celui du dashboard,
@@ -1386,44 +1439,54 @@ class Component extends DCLogic {
       ecran.setAttribute("data-theme", ecran.getAttribute("data-theme") === "dark" ? "light" : "dark");
     });
 
-    // afficher / masquer le mot de passe
-    const pass = document.getElementById("loginPass");
-    document.getElementById("loginRevealBtn")?.addEventListener("click", () => {
-      pass.type = pass.type === "password" ? "text" : "password";
+    this.mountGoogleSignIn(ecran);
+  }
+  chargerGis() {
+    if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+    if (this._gisPromise) return this._gisPromise;
+    this._gisPromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://accounts.google.com/gsi/client";
+      s.async = true; s.defer = true;
+      s.onload = resolve; s.onerror = () => reject(new Error("chargement du script Google echoue"));
+      document.head.appendChild(s);
     });
-
-    // rester connecté (purement visuel pour l'instant — la session est deja
-    // persistee dans localStorage independamment de cette case)
-    const rememberBox = document.getElementById("loginRememberBox");
-    let remember = true;
-    document.getElementById("loginRememberBtn")?.addEventListener("click", () => {
-      remember = !remember;
-      rememberBox?.classList.toggle("is-on", remember);
-    });
-
-    const form = document.getElementById("loginForm");
-    if (!form) return;
-    form.addEventListener("submit", async e => {
-      e.preventDefault();
-      const submitBtn = document.getElementById("loginSubmitBtn");
-      const spinner = document.getElementById("loginSpinner");
-      const label = document.getElementById("loginSubmitLabel");
-      const errEl = document.getElementById("loginErr");
-      errEl.hidden = true;
-      submitBtn.disabled = true;
-      spinner.hidden = false;
-      label.textContent = "Connexion…";
-      const u = document.getElementById("loginIdent").value.trim();
-      const p = pass.value;
-      const h = await this.empreinte(`${u}:${p}`);
-      if (h === AUTH_EMPREINTE) { ecrire("1"); afficher(); return; }
-      errEl.hidden = false;
-      pass.value = "";
-      pass.focus();
-      submitBtn.disabled = false;
-      spinner.hidden = true;
-      label.textContent = "Se connecter";
-    });
+    return this._gisPromise;
+  }
+  async mountGoogleSignIn(ecran) {
+    const errEl = document.getElementById("loginErr");
+    const montrer = msg => { if (errEl) { errEl.textContent = msg; errEl.hidden = false; } };
+    try {
+      const cfg = await (await fetch("/api/config")).json();
+      if (!cfg.googleClientId) { montrer("Connexion Google non configurée côté serveur."); return; }
+      await this.chargerGis();
+      google.accounts.id.initialize({
+        client_id: cfg.googleClientId,
+        callback: cred => this.handleGoogleCredential(cred),
+      });
+      const target = document.getElementById("loginGoogleTarget");
+      if (target) {
+        google.accounts.id.renderButton(target, { theme: "outline", size: "large", shape: "pill", text: "continue_with", width: 320 });
+      }
+    } catch (e) {
+      montrer("Connexion Google indisponible pour le moment.");
+    }
+  }
+  async handleGoogleCredential(cred) {
+    const errEl = document.getElementById("loginErr");
+    const montrer = msg => { if (errEl) { errEl.textContent = msg; errEl.hidden = false; } };
+    try {
+      const r = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ credential: cred.credential }),
+      });
+      const json = await r.json();
+      if (r.ok && json.ok) { location.reload(); return; }
+      montrer(json.error || "Connexion refusée.");
+    } catch (e) {
+      montrer("Erreur de connexion.");
+    }
   }
 
   /* ---------------------------- chargement des donnees ---------------------------- */
@@ -1772,7 +1835,9 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+        chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
+        setChatInput: () => {}, sendChatMessage: () => {},
         tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
@@ -1782,6 +1847,7 @@ class Component extends DCLogic {
         hasV2: false, noV2: true, v2SubLabel: "", v2BadgeStyle: "", v2BadgeText: "",
         tabFadeStyle: "margin-top:24px", tabIndicatorRef: () => {},
         toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true,
+        logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
         refreshBtnStyle: "position:relative;overflow:hidden;display:flex;align-items:center;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;opacity:.6;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)",
         refreshBtnHover: "", refreshIconStyle: "", refreshTitle: "Chargement…", refreshProgressStyle: "",
@@ -1807,10 +1873,10 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"]].map(t => {
+    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Assistant IA"]].map(t => {
       const on = st.tab === t[0];
       return {
-        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2",
+        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isAssistantTab: t[0] === "assistant",
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
         style: "position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:color .28s ease;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
@@ -2379,16 +2445,32 @@ class Component extends DCLogic {
     this._compEl = el => { this.__compEl = el; if (el) this.up(el, compPct, x => dec(x,1)); };
     this._dailyAvgEl = el => { this.__dailyAvgEl = el; if (el) this.up(el, dailyAvg, x => fmt(x)); };
 
+    const chatMessages = st.chatMessages.map(m => {
+      const isUser = m.role === "user";
+      return {
+        text: m.text,
+        hasAgents: !!m.hasAgents,
+        agentBadges: m.agentBadges || [],
+        rowStyle: "display:flex;justify-content:" + (isUser ? "flex-end" : "flex-start"),
+        bubbleStyle: "max-width:72%;padding:14px 18px;border-radius:18px;box-sizing:border-box;" +
+          (isUser ? "background:#F5411E;color:#fff;border-bottom-right-radius:6px" : "background:var(--soft);color:var(--text);border-bottom-left-radius:6px"),
+      };
+    });
+
     return {
       tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror,
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
       funnel, projects, audience, leadCells, queries, pages,
-      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2",
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant",
       v2Cards, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
+      chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
+      chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
+      setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
       isLight: st.theme === "light", isDark: st.theme === "dark",
       toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
+      logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
       ga4Insights,
       hasGsc, noGsc: !hasGsc,
