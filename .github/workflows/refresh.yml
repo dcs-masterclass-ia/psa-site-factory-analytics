@@ -36,7 +36,10 @@ concurrency:
 jobs:
   rafraichir:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 30 min suffisait pour 8 sites sur ~5 mois. Etendu le 07/08/2026 avec le
+    # passage a 63 sites sur l'historique complet depuis janvier 2025
+    # (DEBUT_HISTORIQUE, pipeline/build.py) : ~30x plus d'appels GA4/GSC.
+    timeout-minutes: 340
 
     steps:
       # jeton personnel plutot que le GITHUB_TOKEN par defaut : Vercel bloque
