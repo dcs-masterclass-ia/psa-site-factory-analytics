@@ -119,8 +119,15 @@ def controle(nouveau, ancien=None, modele=None):
         # tout site qui n'a pas encore de V2 documentee — leur absence n'est
         # pas une anomalie de structure.
         V2_OPTIONNEL = {"v2", "v2_date", "v2channels", "v2steps", "traffic_metric", "v2Weekly"}
+        # "pagespeed" est ecrit par pipeline/pagespeed.py, un processus
+        # separe et volontairement pas quotidien (voir ce module) : un site
+        # jamais encore mesure ne l'a pas, ce n'est pas une anomalie de
+        # structure. Decouvert le 08/08/2026 : des que le modele (opel-fr,
+        # deja mesure) a eu la cle, tout site pas encore mesure s'est mis a
+        # bloquer structure_identique, meme perimetre que V2_OPTIONNEL.
+        PAGESPEED_OPTIONNEL = {"pagespeed"}
         sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - SCHEMA_ETENDU
-        manq = set(modele) - set(nouveau) - V2_OPTIONNEL
+        manq = set(modele) - set(nouveau) - V2_OPTIONNEL - PAGESPEED_OPTIONNEL
         ok = not sup and not manq
         r.ajoute("structure_identique", ok, True,
                  "" if ok else f"en trop {sorted(sup)} / manquantes {sorted(manq)}")
