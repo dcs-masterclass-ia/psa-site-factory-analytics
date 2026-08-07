@@ -275,11 +275,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         "rdays": sum(d["repriseMonth"][m]["rdays"] for m in cons)}
     # meta["total"] n'est ecrit qu'une fois : sites historiques, le libelle a
     # ete saisi a la main et reste tel quel (setdefault ne l'ecrase pas).
-    # Pour un site jamais assemble, l'evite un KeyError dans controle()
-    # (longueur_daily_egale_days lit meta[m]["days"] pour m="total" aussi).
+    # Pour un site jamais assemble, evite un KeyError dans controle()
+    # (longueur_daily_egale_days lit meta[m]["days"] pour m="total" aussi) —
+    # "days" doit valoir la longueur reelle de leads["total"]["daily"], pas
+    # un total GA4 : ce controle verifie la coherence de la serie leads,
+    # jamais maintenue automatiquement pour la periode "total" (voir
+    # stub_vide), donc figee a 0 tant qu'aucune extraction leads n'existe.
     d["meta"].setdefault("total", {
         "label": "Total",
-        "days": sum(d["trafficMonth"][m]["tdays"] for m in cons),
+        "days": len(d["leads"]["total"]["daily"]),
         "partial": len(cons) < len(d["months"]),
     })
 
