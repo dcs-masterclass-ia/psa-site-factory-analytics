@@ -13,6 +13,7 @@ const { loadSite, listSites } = require("./data");
 const { getFile, createBranch, updateFile, createPullRequest } = require("./github");
 
 const SPECIALIST_MODEL = "claude-sonnet-5";
+const SPECIALIST_EFFORT = "medium"; // reponses ciblees en 4-8 phrases, pas besoin d'effort eleve
 const DASHBOARD_MODEL = "claude-opus-5";
 const MAX_DASHBOARD_ITERATIONS = 6;
 
@@ -37,7 +38,8 @@ async function askSpecialist(systemPrompt, question, sites) {
       role: "user",
       content: `Question : ${question}\n\nDonnees disponibles (JSON) pour ${Object.keys(ctx).join(", ")} :\n${JSON.stringify(ctx)}`,
     }],
-    maxTokens: 2000,
+    effort: SPECIALIST_EFFORT,
+    maxTokens: 1200,
   });
   const text = (resp.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
   return text || "Pas de reponse exploitable.";
