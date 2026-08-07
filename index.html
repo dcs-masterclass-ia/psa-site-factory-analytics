@@ -225,7 +225,6 @@ input[type=date]{color-scheme:dark}
 @keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes drawLine{to{stroke-dashoffset:0}}
-@keyframes revealClip{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 -2% 0 0)}}
 @keyframes popIn{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.06)}100%{opacity:1;transform:scale(1)}}
 @keyframes cellIn{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:scale(1)}}
 @keyframes growW{from{width:0}}
@@ -698,9 +697,9 @@ input[type=date]{color-scheme:dark}
             </defs>
             <g stroke="var(--grid)" stroke-width="1"><path d="M0 60 H900"></path><path d="M0 120 H900"></path><path d="M0 180 H900"></path></g>
             <path ref="{{ imprFillRef }}" fill="url(#gscImpFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.2s forwards"></path>
-            <path ref="{{ imprLineRef }}" fill="none" stroke="#7B4DF0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="animation:revealClip 2s cubic-bezier(.35,.6,.3,1) .4s forwards"></path>
+            <path ref="{{ imprLineRef }}" fill="none" stroke="#7B4DF0" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
             <path ref="{{ clicsFillRef }}" fill="url(#gscClkFill)" stroke="none" style="opacity:0;animation:fadeIn .9s ease 1.3s forwards"></path>
-            <path ref="{{ clicsLineRef }}" fill="none" stroke="#4285F4" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke" style="animation:revealClip 2s cubic-bezier(.35,.6,.3,1) .55s forwards"></path>
+            <path ref="{{ clicsLineRef }}" fill="none" stroke="#4285F4" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
           </svg>
         </div>
         <div style="display:flex;justify-content:space-between;padding-top:16px;font-size:14px;font-weight:500;color:var(--muted);animation:fadeIn .8s ease 1.2s both">
@@ -971,30 +970,41 @@ function setAnimatedAttrs(el, attrs) {
   }
 }
 
-/* pose le "d" d'une courbe dont le dessin progressif se fait par clip-path
-   (revealClip), pas par stroke-dasharray. Sert aux graphiques dont le viewBox
-   est etire de façon non uniforme (preserveAspectRatio="none" sur un
-   conteneur dont la largeur et la hauteur ne suivent pas le meme ratio que le
-   viewBox — canal quotidien, GSC) : combine a vector-effect:non-scaling-stroke,
-   getTotalLength() y sous-estime la longueur reellement affichee a l'ecran
-   (l'ecart grandit avec les portions tres pentues), et le budget de trait
-   calcule dessus s'epuisait avant la fin du trace — la courbe semblait
-   s'arreter avant le bord droit du graphique alors que les donnees allaient
-   bien jusque-la (constate le 07/08/2026 sur "Suivi des sessions par canal").
-   Un clip-path en pourcentage se base sur la boite de l'element telle que
-   rendue a l'ecran : aucune longueur a estimer, donc aucun risque de sous-
-   estimation, quel que soit l'etirement du viewBox. */
-function setRevealedPath(el, d) {
+/* pose le "d" d'une courbe et dessine son entree progressive a la main,
+   image par image, plutot que via une animation CSS de clip-path. Sert aux
+   graphiques dont le viewBox est etire de façon non uniforme
+   (preserveAspectRatio="none" sur un conteneur dont la largeur et la hauteur
+   ne suivent pas le meme ratio que le viewBox — canal quotidien, GSC) :
+   - stroke-dasharray anime : combine a vector-effect:non-scaling-stroke,
+     getTotalLength() y sous-estime la longueur reellement affichee a l'ecran,
+     le budget de trait s'epuisait avant la fin (constate le 07/08/2026).
+   - clip-path anime en CSS (@keyframes) : l'interpolation fluide d'un
+     clip-path par le moteur du navigateur n'est pas fiable partout — la
+     courbe apparaissait d'un coup, sans dessin progressif, alors meme que
+     les DevTools Chromium montraient une interpolation correcte (constate le
+     07/08/2026 sur Safari, juste apres le correctif precedent).
+   En calculant nous-memes chaque valeur intermediaire (comme le compteur des
+   KPI en haut de page, qui lui n'a jamais eu ce probleme), le rendu ne depend
+   plus de l'interpolation CSS d'un navigateur en particulier. */
+function revealPath(el, d, delayMs, durationMs) {
   if (!el) return;
   const s = String(d);
-  if (el.getAttribute("d") === s) return;
+  if (el.__revealD === s) return;
+  el.__revealD = s;
   el.setAttribute("d", s);
-  if (el.style.animation) {
-    const anim = el.style.animation;
-    el.style.animation = "none";
-    void el.getBoundingClientRect();
-    el.style.animation = anim;
-  }
+  const token = {};
+  el.__revealToken = token;
+  el.style.clipPath = "inset(0 100% 0 0)";
+  const t0 = performance.now() + delayMs;
+  const tick = now => {
+    if (el.__revealToken !== token || !el.isConnected) return;
+    const p = Math.min(1, Math.max(0, (now - t0) / durationMs));
+    const eased = 1 - Math.pow(1 - p, 3);
+    const right = (1 - eased) * 100 - eased * 2; // 100% (cache) -> -2% (marge pour le bout arrondi du trait)
+    el.style.clipPath = "inset(0 " + right.toFixed(3) + "% 0 0)";
+    if (p < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 class Component extends DCLogic {
@@ -1589,9 +1599,9 @@ class Component extends DCLogic {
       const vals = joursCanal.map(j => c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0));
       const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 280, 0, maxCanalVal);
       return {
-        ref: el => setRevealedPath(el, d),
+        ref: el => revealPath(el, d, (0.35 + i * .15) * 1000, 1900),
         color: CHAN_COLORS[i % CHAN_COLORS.length],
-        style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08) + ";animation:revealClip 1.9s cubic-bezier(.35,.6,.3,1) " + (0.35 + i * .15) + "s forwards",
+        style: "transition:opacity .3s ease;opacity:" + (this._chan[c] ? 1 : .08),
       };
     });
     const channelAxisLabels = (() => {
@@ -1791,9 +1801,9 @@ class Component extends DCLogic {
     const clicsFillPath = clicsLinePath ? clicsLinePath + ` L900 240 L0 240 Z` : "";
     const imprLinePath = clicsLinePath; // meme forme, echelle differente non disponible au jour le jour
     const imprFillPath = clicsFillPath;
-    const clicsLineRef = el => setRevealedPath(el, clicsLinePath);
+    const clicsLineRef = el => revealPath(el, clicsLinePath, 550, 2000);
     const clicsFillRef = el => setAnimatedAttrs(el, { d: clicsFillPath });
-    const imprLineRef = el => setRevealedPath(el, imprLinePath);
+    const imprLineRef = el => revealPath(el, imprLinePath, 400, 2000);
     const imprFillRef = el => setAnimatedAttrs(el, { d: imprFillPath });
     const gscAxisLabels = (() => {
       const n = gscDays.length; if (!n) return [];
