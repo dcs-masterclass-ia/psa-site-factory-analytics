@@ -237,7 +237,8 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
     </div>
-    <div style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
+    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
+      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
         <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
           <span style="{{ t.markWrap }}">
@@ -1568,8 +1569,18 @@ class Component extends DCLogic {
     const el = this._tabBtnEls && this._tabBtnEls[this.state.tab];
     const ind = this._tabIndicatorEl;
     if (!el || !ind) return;
-    ind.style.transform = "translateX(" + el.offsetLeft + "px)";
-    ind.style.width = el.offsetWidth + "px";
+    let left = el.offsetLeft;
+    let width = el.offsetWidth;
+    // garde-fou : quelle que soit la mesure du bouton, le pill ne doit
+    // jamais deborder du conteneur (meme marge de 6px que le padding).
+    const bar = this._tabBarEl;
+    if (bar) {
+      if (left < 6) left = 6;
+      const maxRight = bar.clientWidth - 6;
+      if (left + width > maxRight) width = Math.max(0, maxRight - left);
+    }
+    ind.style.transform = "translateX(" + left + "px)";
+    ind.style.width = width + "px";
   }
   switchTab(next) {
     if (this.state.tab === next || this.state.tabSwitching) return;
@@ -2106,7 +2117,7 @@ class Component extends DCLogic {
         hasMirror: false, chartHover: null, hasChartHover: false, hoverChannelMove: () => {}, hoverChannelLeave: () => {},
         gscHover: null, hasGscHover: false, hoverGscMove: () => {}, hoverGscLeave: () => {},
         hasV2: false, noV2: true, v2SubLabel: "", v2BadgeStyle: "", v2BadgeText: "",
-        tabFadeStyle: "margin-top:24px",
+        tabFadeStyle: "margin-top:24px", tabIndicatorRef: () => {}, tabBarRef: () => {},
         toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true,
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
@@ -2147,7 +2158,7 @@ class Component extends DCLogic {
         hermesLogoSrc: hermes.src, hermesLogoWrapStyle: hermes.wrapStyle, hermesLogoImgStyle: hermes.imgStyle,
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
-        style: "position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;outline:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:background .28s ease,color .28s ease,transform .35s cubic-bezier(.34,1.3,.4,1);transform:" + (on ? "scale(1)" : "scale(.97)") + ";background:" + (on ? "var(--active-bg)" : "transparent") + ";color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+        style: "position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:color .28s ease;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
         markWrap: "width:32px;height:32px;border-radius:10px;background:" + (on ? "var(--active-mark)" : "var(--soft)") + ";display:flex;align-items:center;justify-content:center;transition:background .28s ease",
       };
     });
@@ -2797,6 +2808,8 @@ class Component extends DCLogic {
       convText: dec(convPct, 2) + " %", partText: dec(agg.traffic ? agg.reprise/agg.traffic*100 : 0, 1) + " %",
       hasV2, noV2, v2SubLabel, v2BadgeStyle, v2BadgeText,
       tabFadeStyle,
+      tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
+      tabBarRef: el => { this._tabBarEl = el; },
       ownBrandShare, heatmapDaysLabel: last90.length + " derniers jours",
       gscAxisLabels, clicsLineRef, clicsFillRef, imprLineRef, imprFillRef,
       gscHover, hasGscHover: !!gscHover,
