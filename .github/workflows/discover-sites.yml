@@ -1,0 +1,63 @@
+name: Découverte de sites GA4/Search Console
+
+# Manuel uniquement. Lecture seule : n'écrit jamais dans data/ ni dans
+# pipeline/sites.py -- affiche un rapport a copier/relire a la main
+# (cf. pipeline/discover_sites.py). Reutilise le meme secret que le
+# rafraichissement quotidien, aucune permission d'ecriture necessaire.
+
+on:
+  workflow_dispatch:
+    inputs:
+      debut:
+        description: "Début de la plage de mesure (AAAA-MM-JJ, vide = auto)"
+        required: false
+        default: ""
+      fin:
+        description: "Fin de la plage de mesure (AAAA-MM-JJ, vide = auto)"
+        required: false
+        default: ""
+
+jobs:
+  decouvrir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          python -c "import json,os;json.load(open(os.environ['RUNNER_TEMP']+'/ga4.json'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Lister les sites accessibles
+        run: |
+          ARGS=""
+          if [ -n "${{ inputs.debut }}" ]; then ARGS="$ARGS --debut ${{ inputs.debut }}"; fi
+          if [ -n "${{ inputs.fin }}" ]; then ARGS="$ARGS --fin ${{ inputs.fin }}"; fi
+          SORTIE="$RUNNER_TEMP/rapport.txt"
+          python -m pipeline.discover_sites $ARGS | tee "$SORTIE"
+          {
+            echo '```'
+            cat "$SORTIE"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Effacer la clé
+        if: always()
+        run: rm -f "$RUNNER_TEMP/ga4.json"
