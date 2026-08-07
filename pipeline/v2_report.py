@@ -80,6 +80,31 @@ def _agrege_leads(leads_par_mois, debut, fin):
     return total
 
 
+def _agrege_leads_par_device(leads_par_mois, debut, fin):
+    """Meme principe que _agrege_leads, mais une somme par valeur brute de
+    la colonne BP (mobile/desktop/tablette...) — le regroupement/libelle
+    final se fait cote dashboard, generique, pas ici."""
+    out = {}
+    for mois, bloc in (leads_par_mois or {}).items():
+        if mois == "total":
+            continue
+        try:
+            an, m = int(mois[:4]), int(mois[5:7])
+        except (ValueError, IndexError):
+            continue
+        for valeur, serie in (bloc.get("dailyDevice") or {}).items():
+            for i, v in enumerate(serie):
+                if v is None:
+                    continue
+                try:
+                    dj = date(an, m, i + 1)
+                except ValueError:
+                    continue
+                if debut <= dj <= fin:
+                    out[valeur] = out.get(valeur, 0) + v
+    return out
+
+
 def _label_semaine(debut, fin):
     if debut.month == fin.month:
         return f"{debut.day}–{fin.day} {MOIS_ABREGES[debut.month - 1]}"
@@ -135,6 +160,7 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
     sp_avant = _agrege_jours(jours_mmjj, daily.get("u") or [], annee, avant_debut, avant_fin)
     sr_avant = _agrege_jours(jours_mmjj, daily.get("rep") or [], annee, avant_debut, avant_fin)
     lv_avant = _agrege_leads(d.get("leads"), avant_debut, avant_fin)
+    dv_avant = _agrege_leads_par_device(d.get("leads"), avant_debut, avant_fin)
     steps_avant, conv_avant = _funnel_periode(cli, s.propriete, hote_reprise, avant_debut, avant_fin)
 
     baseline = {
@@ -142,7 +168,7 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
         "sessionsParent": sp_avant, "sessionsReprise": sr_avant, "leads": lv_avant,
         "sessionsReprisePerDay": round(sr_avant / jours_avant, 1) if jours_avant else 0,
         "leadsPerDay": round(lv_avant / jours_avant, 2) if jours_avant else 0,
-        "funnel": steps_avant, "conversionPct": conv_avant,
+        "funnel": steps_avant, "conversionPct": conv_avant, "leadsParDevice": dv_avant,
     }
 
     # ---- une entree par semaine ecoulee depuis la bascule ----
@@ -152,6 +178,7 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
         sp = _agrege_jours(jours_mmjj, daily.get("u") or [], annee, deb, fin)
         sr = _agrege_jours(jours_mmjj, daily.get("rep") or [], annee, deb, fin)
         lv = _agrege_leads(d.get("leads"), deb, fin)
+        dv = _agrege_leads_par_device(d.get("leads"), deb, fin)
         steps, conv = _funnel_periode(cli, s.propriete, hote_reprise, deb, fin)
         semaines.append({
             "debut": deb.isoformat(), "fin": fin.isoformat(), "jours": jours_semaine,
@@ -159,7 +186,7 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
             "sessionsParent": sp, "sessionsReprise": sr, "leads": lv,
             "sessionsReprisePerDay": round(sr / jours_semaine, 1) if jours_semaine else 0,
             "leadsPerDay": round(lv / jours_semaine, 2) if jours_semaine else 0,
-            "funnel": steps, "conversionPct": conv,
+            "funnel": steps, "conversionPct": conv, "leadsParDevice": dv,
         })
 
     return {"v2Date": v2_date_iso, "baseline": baseline, "weeks": semaines}

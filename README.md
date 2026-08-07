@@ -11,7 +11,7 @@ OPEL FR · OPEL PT · PEUGEOT PT · DS PT · CITROEN PT
 
 | Onglet | Métrique | Source |
 |---|---|---|
-| **Leads** | Leads générés, dimensions (marque reprise, carburant, source, code marketing, mode d'entrée, projet d'achat) | Back-office PSA Site Factory |
+| **Leads** | Leads générés, dimensions (marque reprise, carburant, source, code marketing, mode d'entrée, projet d'achat, appareil) | Back-office PSA Site Factory |
 | **Trafic** | **Sessions** site parent et outil de reprise | Google Analytics 4 |
 | **Funnel** | **Utilisateurs actifs** par étape, comparaison pré/post V2 | Exploration de funnel GA4 |
 

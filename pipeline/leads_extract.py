@@ -17,7 +17,7 @@ import io
 import os
 import urllib.parse
 import urllib.request
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import date
 
 BASE = "https://api-psa-site-factory.autobiz.com/v1/public/extract/extraction_report.csv"
@@ -50,6 +50,11 @@ COL_DOUBLON = "DOUBLON"
 COL_TEST = "TEST"
 COL_TEST_INTERNE = "TEST_INTERNE"
 COL_MODE = "MODE"
+# BP = appareil (mobile / desktop / tablette). Valeurs non normalisees ici :
+# le pipeline transporte le libelle brut du back-office tel quel, le
+# regroupement (mobile/desktop/autres) se fait cote dashboard, generique,
+# sans supposer la casse ou l'orthographe exacte de la colonne source.
+COL_DEVICE = "BP"
 
 
 def token():
@@ -105,11 +110,17 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
     lignes = [l for l in _telecharge(site_nom, debut, fin) if _valide(l)] if bornes > 0 else []
 
     daily = [0] * bornes
-    brand, fuel, project, source, code = (Counter() for _ in range(5))
+    brand, fuel, project, source, code, device = (Counter() for _ in range(6))
     entree = {"Avec immatriculation": 0, "Marque / modele": 0}
+    # comptage jour par jour et par appareil, meme principe que `daily` mais
+    # une serie par valeur trouvee dans BP — sert au rapport hebdomadaire V2
+    # (pipeline/v2_report.py) a isoler la part mobile/desktop sur une plage
+    # de dates arbitraire, pas seulement sur le mois entier.
+    daily_device = defaultdict(lambda: [0] * bornes)
 
     for l in lignes:
         d = (l.get(COL_DATE) or "")[:10]
+        jour = None
         try:
             jour = date.fromisoformat(d).day
             if 1 <= jour <= bornes:
@@ -126,6 +137,10 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
             source[l[COL_SOURCE]] += 1
         if l.get(COL_CODE):
             code[l[COL_CODE]] += 1
+        if l.get(COL_DEVICE):
+            device[l[COL_DEVICE]] += 1
+            if jour is not None and 1 <= jour <= bornes:
+                daily_device[l[COL_DEVICE]][jour - 1] += 1
         if l.get(COL_PLATE) == "YES":
             entree["Avec immatriculation"] += 1
         elif l.get(COL_PLATE) == "NO":
@@ -136,4 +151,5 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
         "brand": _top(brand), "fuel": _top(fuel),
         "entry": entree, "project": _top(project),
         "source": _top(source), "code": _top(code),
+        "device": _top(device), "dailyDevice": dict(daily_device),
     }
