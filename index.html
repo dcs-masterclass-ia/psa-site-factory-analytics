@@ -940,7 +940,7 @@ input[type=date]{color-scheme:dark}
             <span style="height:1px;flex:1;background:var(--line)"></span>
             <span style="font-size:12.5px;font-weight:700;color:var(--muted2)">{{ g.count }}</span>
           </div>
-          <div style="margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+          <div style="margin-top:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
         <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
           <div style="background:var(--soft);border-radius:24px;padding:24px 24px 22px;display:flex;flex-direction:column;gap:18px;transition:transform .22s cubic-bezier(.2,.8,.3,1)" style-hover="transform:translateY(-4px)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
@@ -968,20 +968,65 @@ input[type=date]{color-scheme:dark}
                 <span style="font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Desktop</span>
               </div>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding-top:14px;border-top:1px solid var(--line)">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding-top:14px;border-top:1px solid var(--line)">
               <div style="text-align:center">
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">LCP</div>
-                <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.lcp }}</div>
+                <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">LCP</div>
+                <div style="font-size:14.5px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.lcp }}</div>
               </div>
               <div style="text-align:center">
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">CLS</div>
-                <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.cls }}</div>
+                <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">CLS</div>
+                <div style="font-size:14.5px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.cls }}</div>
               </div>
               <div style="text-align:center">
-                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">TBT</div>
-                <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.tbt }}</div>
+                <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">TBT</div>
+                <div style="font-size:14.5px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.tbt }}</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">FCP</div>
+                <div style="font-size:14.5px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.fcp }}</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">SI</div>
+                <div style="font-size:14.5px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.si }}</div>
               </div>
             </div>
+
+            <sc-if value="{{ r.hasSecondaires }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;border-top:1px solid var(--line)">
+              <sc-for list="{{ r.secondaires }}" as="sec" hint-placeholder-count="3">
+                <div style="text-align:center;flex:1">
+                  <div style="font-size:17px;{{ sec.style }}">{{ sec.value }}</div>
+                  <div style="font-size:10.5px;font-weight:600;color:var(--muted);margin-top:2px">{{ sec.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ r.hasTerrain }}" hint-placeholder-val="{{ false }}">
+            <div style="background:var(--soft2);border-radius:14px;padding:12px 14px">
+              <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--text2)">
+                <span style="width:7px;height:7px;border-radius:50%;background:#4ADE80;display:inline-block;flex:none"></span>
+                {{ r.terrainLabel }} · {{ r.terrainCategorie }}
+              </div>
+              <div style="display:flex;gap:16px;margin-top:8px;font-size:13px;font-weight:600;color:var(--text2)">
+                <span>LCP <b style="color:var(--text)">{{ r.terrainLcp }}</b></span>
+                <span>CLS <b style="color:var(--text)">{{ r.terrainCls }}</b></span>
+                <span>INP <b style="color:var(--text)">{{ r.terrainInp }}</b></span>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">À corriger en priorité</div>
+              <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;font-size:13.5px">
+                  <span style="color:var(--text2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.titre }}</span>
+                  <span style="color:#F5A524;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums">-{{ o.gain }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
           </div>
         </sc-for>
           </div>
@@ -2859,6 +2904,16 @@ class Component extends DCLogic {
       const badgeBg = pire == null ? "var(--soft2)" : pire >= 90 ? "rgba(34,197,94,.16)" : pire >= 50 ? "rgba(245,165,36,.16)" : "rgba(239,68,68,.16)";
       const badgeFg = pire == null ? "var(--muted)" : pire >= 90 ? "#22C55E" : pire >= 50 ? "#F5A524" : "#EF4444";
       const badgeTxt = pire == null ? "Non mesuré" : pire >= 90 ? "Bon" : pire >= 50 ? "À améliorer" : "Mauvais";
+      const secondaires = m ? [
+        ["Accessibilité", m.accessibilite], ["Bonnes pratiques", m.bonnesPratiques], ["SEO", m.seo],
+      ].map(([label, v]) => ({
+        label, value: v == null ? "—" : String(v),
+        style: "color:" + perfScoreColor(v) + ";font-weight:800;font-variant-numeric:tabular-nums",
+      })) : [];
+      const terrain = m && m.terrain;
+      const opportunites = ((m && m.opportunites) || []).map(o => ({
+        titre: o.titre, gain: o.gainMs >= 1000 ? (o.gainMs / 1000).toFixed(1) + " s" : Math.round(o.gainMs) + " ms",
+      }));
       return {
         name: n, hasData: !!ps,
         mobile: perfRing(m && m.score),
@@ -2868,6 +2923,16 @@ class Component extends DCLogic {
         lcp: m && m.lcp != null ? (m.lcp / 1000).toFixed(1) + " s" : "—",
         cls: m && m.cls != null ? m.cls.toFixed(2) : "—",
         tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
+        fcp: m && m.fcp != null ? (m.fcp / 1000).toFixed(1) + " s" : "—",
+        si: m && m.si != null ? (m.si / 1000).toFixed(1) + " s" : "—",
+        secondaires, hasSecondaires: secondaires.length > 0,
+        hasTerrain: !!terrain,
+        terrainLabel: terrain ? (terrain.origine ? "Terrain réel — origine du site" : "Terrain réel — cette page") : "",
+        terrainCategorie: terrain ? (terrain.categorie === "FAST" ? "Rapide" : terrain.categorie === "AVERAGE" ? "Moyen" : terrain.categorie === "SLOW" ? "Lent" : "") : "",
+        terrainLcp: terrain && terrain.lcp != null ? (terrain.lcp / 1000).toFixed(1) + " s" : "—",
+        terrainCls: terrain && terrain.cls != null ? terrain.cls.toFixed(2) : "—",
+        terrainInp: terrain && terrain.inp != null ? Math.round(terrain.inp) + " ms" : "—",
+        opportunites, hasOpportunites: opportunites.length > 0,
         releveLabel: ps ? "Relevé le " + ps.releve : "Non mesuré",
         sortKey: m && m.score != null ? m.score : 999,
         pays: paysDeSite(n),
