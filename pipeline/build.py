@@ -33,18 +33,26 @@ def esc_md(t):
     return str(t).replace("|", "\\|").replace("\n", " ")
 
 
-DEBUT_HISTORIQUE = (2025, 1)   # 07/08/2026 : etendu a janvier 2025 (etait
-                                # avril 2026) pour des analyses sur plus de
-                                # recul. GA4 ne renverra rien avant la
-                                # creation reelle de chaque propriete ; Search
-                                # Console ne conserve que les 16 derniers mois
-                                # cote Google, quel que soit ce debut.
+MOIS_HISTORIQUE = 16   # 07/08/2026 : fenetre glissante (etait un debut fixe
+                        # a janvier 2025). Search Console ne conserve que les
+                        # 16 derniers mois cote Google, quel que soit ce
+                        # qu'on demande ; au-dela, GA4 et les leads auraient
+                        # plus de recul que Search Console, avec des mois
+                        # "Total" qui ne compareraient plus le meme
+                        # echantillon d'un rapport a l'autre. Les trois
+                        # sources restent donc alignees sur la meme fenetre.
 
 
 def mois_a_traiter(jusqu_a=None):
-    """Tous les mois depuis DEBUT_HISTORIQUE jusqu'au mois courant inclus."""
+    """Les MOIS_HISTORIQUE derniers mois glissants jusqu'au mois courant
+    inclus (meme fenetre que la limite de retention de Search Console)."""
     fin = jusqu_a or datetime.now(PARIS).date()
-    liste, an, m = [], *DEBUT_HISTORIQUE
+    an, m = fin.year, fin.month
+    for _ in range(MOIS_HISTORIQUE - 1):
+        m -= 1
+        if m < 1:
+            an, m = an - 1, 12
+    liste = []
     while (an, m) <= (fin.year, fin.month):
         liste.append(f"{an}-{m:02d}")
         m += 1
