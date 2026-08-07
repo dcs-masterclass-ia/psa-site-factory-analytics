@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Converge — Reprise</title>
+<link rel="icon" type="image/png" href="./favicon.png">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -236,7 +237,7 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
     </div>
-    <div style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px">
+    <div style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden">
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
         <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
@@ -251,7 +252,7 @@ input[type=date]{color-scheme:dark}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
             </sc-if>
             <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
-              <img src="{{ t.hermesLogo }}" alt="" width="20" height="20" style="display:block;object-fit:contain">
+              <div style="{{ t.hermesLogoWrapStyle }}"><img src="{{ t.hermesLogoSrc }}" alt="" style="{{ t.hermesLogoImgStyle }}"></div>
             </sc-if>
           </span>{{ t.label }}
         </button>
@@ -923,7 +924,7 @@ input[type=date]{color-scheme:dark}
 
       <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
         <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
-          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" width="19" height="19" style="display:block;object-fit:contain">
+          <div style="width:20.7px;height:19px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" style="position:absolute;top:-5.4px;left:-12px;width:44.6px;height:29.7px;max-width:none"></div>
         </span>
         <div>
           <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">Hermès</div>
@@ -935,7 +936,7 @@ input[type=date]{color-scheme:dark}
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:20px 10px">
             <span style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
-              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" width="32" height="32" style="display:block;object-fit:contain">
+              <div style="width:34.9px;height:32px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" style="position:absolute;top:-9px;left:-20.1px;width:75px;height:50px;max-width:none"></div>
             </span>
             <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px;max-width:520px">Que souhaitez-vous comprendre aujourd'hui ?</div>
             <div style="font-size:15px;font-weight:500;color:var(--muted);max-width:480px;line-height:1.5">Pose une question sur le trafic, les leads ou le parcours de reprise. Hermès croisera les agents pertinents.</div>
@@ -1294,6 +1295,25 @@ function renderMarkdown(text) {
 const CHAT_CHART_COLORS = ["#F5411E", "#4ADE80", "#60A5FA", "#F9AB00"];
 const HERMES_LOGO_BLANC = "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp";
 const HERMES_LOGO_NOIR = "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-noir.webp";
+// meme probleme que le logo Converge : canvas 1536x1024 tres majoritairement
+// vide, le pictogramme visible n'occupe qu'un petit cadre centre (mesure via
+// le canal alpha : blanc (412,185)-(1126,840), noir (415,187)-(1092,822)).
+// hermesCrop precalcule le recadrage (conteneur overflow:hidden + image
+// agrandie/positionnee) pour une hauteur cible donnee.
+function hermesCrop(src, bbox, targetH) {
+  const [x0, y0, x1, y1] = bbox;
+  const s = targetH / (y1 - y0);
+  const wrapW = (x1 - x0) * s;
+  return {
+    src,
+    wrapStyle: "width:" + wrapW.toFixed(1) + "px;height:" + targetH + "px;overflow:hidden;position:relative",
+    imgStyle: "position:absolute;top:-" + (y0 * s).toFixed(1) + "px;left:-" + (x0 * s).toFixed(1) + "px;width:" + (1536 * s).toFixed(1) + "px;height:" + (1024 * s).toFixed(1) + "px;max-width:none",
+  };
+}
+const HERMES_LOGO_CROP = {
+  tabBlanc: hermesCrop(HERMES_LOGO_BLANC, [412, 185, 1126, 840], 20),
+  tabNoir: hermesCrop(HERMES_LOGO_NOIR, [415, 187, 1092, 822], 20),
+};
 function buildChatChart(spec) {
   if (!spec) return null;
   const series = (spec.series || []).filter(s => Array.isArray(s.values) && s.values.length > 1);
@@ -2117,9 +2137,15 @@ class Component extends DCLogic {
 
     const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Hermès"]].map(t => {
       const on = st.tab === t[0];
+      // le badge de l'onglet actif est toujours clair (var(--active-mark))
+      // et celui d'un onglet inactif suit le theme (var(--soft), sombre en
+      // theme sombre) -- il faut donc l'icone noire sur badge clair, blanche
+      // sur badge sombre, pas juste "blanc en theme sombre".
+      const badgeIsLight = on ? st.theme === "dark" : st.theme === "light";
+      const hermes = badgeIsLight ? HERMES_LOGO_CROP.tabNoir : HERMES_LOGO_CROP.tabBlanc;
       return {
         label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isAssistantTab: t[0] === "assistant",
-        hermesLogo: st.theme === "dark" ? HERMES_LOGO_BLANC : HERMES_LOGO_NOIR,
+        hermesLogoSrc: hermes.src, hermesLogoWrapStyle: hermes.wrapStyle, hermesLogoImgStyle: hermes.imgStyle,
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
         style: "position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:color .28s ease;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
