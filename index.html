@@ -932,8 +932,16 @@ input[type=date]{color-scheme:dark}
       </div>
 
       <sc-if value="{{ hasPerfRows }}" hint-placeholder-val="{{ true }}">
-      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
-        <sc-for list="{{ perfRows }}" as="r" hint-placeholder-count="8">
+      <div style="margin-top:8px">
+      <sc-for list="{{ perfGroups }}" as="g" hint-placeholder-count="3">
+        <div style="margin-top:30px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap">{{ g.label }}</span>
+            <span style="height:1px;flex:1;background:var(--line)"></span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--muted2)">{{ g.count }}</span>
+          </div>
+          <div style="margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
           <div style="background:var(--soft);border-radius:24px;padding:24px 24px 22px;display:flex;flex-direction:column;gap:18px;transition:transform .22s cubic-bezier(.2,.8,.3,1)" style-hover="transform:translateY(-4px)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
               <div style="min-width:0">
@@ -976,6 +984,9 @@ input[type=date]{color-scheme:dark}
             </div>
           </div>
         </sc-for>
+          </div>
+        </div>
+      </sc-for>
       </div>
       </sc-if>
       <sc-if value="{{ noPerfRows }}" hint-placeholder-val="{{ false }}">
@@ -2169,7 +2180,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance", perfRows: [], hasPerfRows: false, noPerfRows: true, v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
@@ -2859,8 +2870,15 @@ class Component extends DCLogic {
         tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
         releveLabel: ps ? "Relevé le " + ps.releve : "Non mesuré",
         sortKey: m && m.score != null ? m.score : 999,
+        pays: paysDeSite(n),
       };
     }).sort((a, b) => a.sortKey - b.sortKey);
+    const perfByPays = {};
+    for (const r of perfRows) (perfByPays[r.pays] = perfByPays[r.pays] || []).push(r);
+    const perfGroups = Object.keys(perfByPays).sort((a, b) =>
+      (PAYS_LABEL[a] || a).localeCompare(PAYS_LABEL[b] || b)
+    ).map(p => ({ pays: p, label: PAYS_LABEL[p] || p, rows: perfByPays[p],
+      count: perfByPays[p].length + (perfByPays[p].length > 1 ? " sites" : " site") }));
 
     const chatScopeSites = ALL.map(n => ({
       name: n, on: st.chatScope.includes(n),
@@ -2882,7 +2900,7 @@ class Component extends DCLogic {
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
       showScopeBar: st.tab !== "assistant" && st.tab !== "performance",
       v2Cards, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
-      perfRows, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
+      perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
