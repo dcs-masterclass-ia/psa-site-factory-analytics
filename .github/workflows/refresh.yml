@@ -1,8 +1,11 @@
 name: Rafraîchissement automatique des données
 
-# Tourne seul, tous les jours ouvrés en fin de matinée.
-# 09:00 UTC = 11:00 à Paris en été, 10:00 en hiver — cron ne gère pas l'heure
-# d'été, décalage assumé.
+# Tourne seul, tous les jours (weekend inclus) à minuit.
+# 22:00 UTC = minuit à Paris en été, 23:00 en hiver — cron ne gère pas l'heure
+# d'été, décalage assumé (même limitation que l'ancien horaire de 9h).
+#
+# Un seul run couvre les trois sources : BO (leads via leads_extract.py),
+# GA4 (funnel, trafic, canaux) et GSC (search_console.py, insights.py).
 #
 # Les données ne sont écrites que si tous les contrôles bloquants passent.
 # data/pipeline.json est écrit dans tous les cas : c'est le canal d'alerte du
@@ -10,7 +13,7 @@ name: Rafraîchissement automatique des données
 
 on:
   schedule:
-    - cron: "0 9 * * 1-5"
+    - cron: "0 22 * * *"
   workflow_dispatch:
     inputs:
       simulation:
