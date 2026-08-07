@@ -22,19 +22,86 @@ from datetime import date
 
 BASE = "https://api-psa-site-factory.autobiz.com/v1/public/extract/extraction_report.csv"
 
-# (siteId, settings) tel que releve dans l'interface d'extraction du
+# [(siteId, settings), ...] tel que releve dans l'interface d'extraction du
 # back-office — aucune formule deductible entre les deux (deux sites
-# differents peuvent partager le meme settings), chaque valeur a ete
-# verifiee individuellement le 06/08/2026.
+# differents peuvent partager le meme settings). La Belgique publie un
+# site distinct par langue (.fr et .nl) sous un seul nom de domaine cote
+# GA4 : les deux siteId sont donc additionnes pour retrouver le meme
+# perimetre que le site "<MARQUE> BE" du pipeline GA4. Chaque valeur a ete
+# identifiee le 07-08/08/2026 en interrogeant l'API d'extraction elle-meme
+# (colonnes COUNTRY / SITE NAME du CSV), jamais devinee depuis le
+# regroupement par marque fourni.
 SITE_EXTRACT = {
-    "OPEL FR":       (15, 2016),
-    "OPEL PT":       (52, 2011),
-    "CITROEN PT":    (94, 2013),
-    "PEUGEOT PT":    (95, 2013),
-    "DS PT":         (96, 2013),
-    "FIAT PT":       (160, 2026),
-    "JEEP PT":       (161, 2026),
-    "ALFA ROMEO PT": (163, 2026),
+    "OPEL FR":       [(15, 2016)],
+    "OPEL PT":       [(52, 2011)],
+    "CITROEN PT":    [(94, 2013)],
+    "PEUGEOT PT":    [(95, 2013)],
+    "DS PT":         [(96, 2013)],
+    "FIAT PT":       [(160, 2026)],
+    "JEEP PT":       [(161, 2026)],
+    "ALFA ROMEO PT": [(163, 2026)],
+
+    "ABARTH BE":     [(134, 2026), (136, 2026)],
+    "ABARTH ES":     [(154, 2026)],
+    "ABARTH IT":     [(170, 2026)],
+    "ABARTH PT":     [(162, 2026)],
+
+    "ALFA ROMEO BE": [(130, 2026), (132, 2026)],
+    "ALFA ROMEO ES": [(157, 2026)],
+    "ALFA ROMEO FR": [(143, 2026)],
+    "ALFA ROMEO IT": [(168, 2026)],
+    "ALFA ROMEO LU": [(131, 2026)],
+    "ALFA ROMEO PL": [(150, 2026)],
+
+    "CITROEN AT":    [(44, 2015)],
+    "CITROEN BE":    [(73, 2016), (75, 2016)],
+    "CITROEN DE":    [(87, 2016)],
+    "CITROEN ES":    [(33, 2014)],
+    "CITROEN FR":    [(2, 2016)],
+    "CITROEN IT":    [(72, 2014)],
+    "CITROEN LU":    [(76, 2016)],
+    "CITROEN PL":    [(148, 2016)],
+
+    "DS BE":         [(82, 2011), (83, 2011)],
+    "DS DE":         [(49, 2016)],
+    "DS ES":         [(35, 2011)],
+    "DS FR":         [(5, 2016)],
+    "DS GB":         [(173, 2016)],
+    "DS IT":         [(77, 2014)],
+    "DS LU":         [(84, 2011)],
+
+    # pas d'entree "fr" fournie pour la Belgique cote FIAT (seule .nl a ete
+    # communiquee) : perimetre incomplet en l'etat, a corriger si l'ID
+    # manquant est retrouve.
+    "FIAT BE":       [(121, 2026)],
+    "FIAT ES":       [(155, 2026)],
+    "FIAT FR":       [(137, 2026)],
+    "FIAT IT":       [(166, 2026)],
+    "FIAT LU":       [(124, 2026)],
+    "FIAT PL":       [(149, 2026)],
+
+    "JEEP BE":       [(127, 2026), (129, 2026)],
+    "JEEP ES":       [(156, 2026)],
+    "JEEP FR":       [(138, 2026)],
+    "JEEP IT":       [(167, 2026)],
+    "JEEP LU":       [(128, 2026)],
+    "JEEP PL":       [(152, 2026)],
+
+    "OPEL AT":       [(43, 2015)],
+    "OPEL BE":       [(63, 2016), (64, 2016)],
+    "OPEL DE":       [(88, 2016)],
+    "OPEL ES":       [(46, 2014)],
+    "OPEL IT":       [(50, 2014)],
+    "OPEL LU":       [(89, 2016)],
+    "OPEL PL":       [(153, 2016)],
+
+    "PEUGEOT AT":    [(45, 2015)],
+    "PEUGEOT BE":    [(91, 2011), (92, 2011)],
+    "PEUGEOT DE":    [(85, 2016)],
+    "PEUGEOT ES":    [(21, 2014)],
+    "PEUGEOT FR":    [(4, 2016)],
+    "PEUGEOT IT":    [(51, 2014)],
+    "PEUGEOT LU":    [(93, 2011)],
 }
 
 # colonnes du CSV effectivement exploitees -- jamais les colonnes PII
@@ -66,8 +133,7 @@ def token():
     return t
 
 
-def _telecharge(site_nom, debut, fin):
-    site_id, settings = SITE_EXTRACT[site_nom]
+def _telecharge_un(site_id, settings, debut, fin):
     params = {
         "extract": "1", "iframeLeads": "0",
         "dateBegin": debut, "dateEnd": fin,
@@ -76,10 +142,20 @@ def _telecharge(site_nom, debut, fin):
     }
     url = BASE + "?" + urllib.parse.urlencode(params)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
+    with urllib.request.urlopen(req, timeout=60) as resp:
         data = resp.read()
     texte = data.decode("utf-8-sig", errors="replace")
     return list(csv.DictReader(io.StringIO(texte), delimiter=";"))
+
+
+def _telecharge(site_nom, debut, fin):
+    """Concatene les lignes de tous les siteId du site (plusieurs pour la
+    Belgique : .fr et .nl partagent un seul site GA4 mais deux sites
+    back-office distincts)."""
+    lignes = []
+    for site_id, settings in SITE_EXTRACT[site_nom]:
+        lignes.extend(_telecharge_un(site_id, settings, debut, fin))
+    return lignes
 
 
 def _valide(ligne):
