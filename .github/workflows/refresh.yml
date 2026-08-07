@@ -120,7 +120,24 @@ jobs:
           # avant chaque essai pour repartir d'un etat propre a chaque fois.
           for i in 1 2 3; do
             git rebase --abort 2>/dev/null || true
-            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            if git pull --rebase --autostash origin main; then
+              git push origin HEAD:main && exit 0
+            fi
+            # data/pipeline.json est entierement regenere a chaque run (pas
+            # une fusion ligne a ligne signifiante) : deux executions qui se
+            # chevauchent (ex. refresh.yml scope + refresh.yml complet,
+            # observe le 07/08/2026) finissent quasi toujours par se
+            # percuter dessus. Si c'est le SEUL fichier en conflit, garder
+            # notre version (la plus recente) et continuer plutot
+            # qu'abandonner tout le run pour ça.
+            CONFLITS=$(git diff --name-only --diff-filter=U)
+            if [ "$CONFLITS" = "data/pipeline.json" ]; then
+              git checkout --theirs data/pipeline.json
+              git add data/pipeline.json
+              if git rebase --continue && git push origin HEAD:main; then
+                exit 0
+              fi
+            fi
             sleep 5
           done
           git rebase --abort 2>/dev/null || true
