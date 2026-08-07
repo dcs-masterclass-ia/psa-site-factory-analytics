@@ -429,7 +429,7 @@ input[type=date]{color-scheme:dark}
             <svg width="100%" height="100%" viewBox="0 0 900 180" preserveAspectRatio="none" style="position:absolute;inset:0">
               <defs>
                 <linearGradient id="mirrorParentFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--text)" stop-opacity=".18"></stop><stop offset="100%" style="stop-color:var(--text)" stop-opacity="0"></stop></linearGradient>
-                <linearGradient id="mirrorRepriseFill" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#F5411E" stop-opacity=".26"></stop><stop offset="100%" stop-color="#F5411E" stop-opacity="0"></stop></linearGradient>
+                <linearGradient id="mirrorRepriseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F5411E" stop-opacity=".26"></stop><stop offset="100%" stop-color="#F5411E" stop-opacity="0"></stop></linearGradient>
               </defs>
               <line x1="0" y1="90" x2="900" y2="90" stroke="var(--line)" stroke-width="1"></line>
               <path ref="{{ mirrorParentAreaRef }}" fill="url(#mirrorParentFill)" stroke="none"></path>
@@ -1955,18 +1955,23 @@ class Component extends DCLogic {
     // ---- trafic site parent vs site reprise, en miroir sous le detail par
     // canal : les deux volumes n'ont rien de comparable (le parent se compte
     // en milliers, la reprise en centaines), un partage d'echelle aurait
-    // ecrase l'un des deux — chacun garde donc sa propre echelle, ancree a
-    // une ligne centrale commune, le parent poussant vers le haut et la
-    // reprise vers le bas. ----
+    // ecrase l'un des deux — chacun garde donc sa propre echelle, chacun dans
+    // sa propre moitie de cadre. Les deux montent vers la ligne centrale
+    // quand la valeur augmente (comme une jauge qui se remplit) : la
+    // premiere version faisait descendre la reprise vers le bas quand elle
+    // augmentait — techniquement correct (plus loin du centre = plus haut),
+    // mais lu a l'envers par a peu pres tout le monde, un pic de trafic
+    // ressemblant a un creux. "Plus haut = plus de trafic" partout, sans
+    // exception, meme dans la moitie du bas. ----
     const parentVals = joursCanal.map(j => (agg.trafficDaily[j] || {}).parent || 0);
     const repriseVals = joursCanal.map(j => (agg.trafficDaily[j] || {}).reprise || 0);
     const maxParentJour = Math.max(1, ...parentVals);
     const maxRepriseJour = Math.max(1, ...repriseVals);
     const MIRROR_H = 90;
     const parentLine = smoothPathFrom(parentVals.length > 1 ? parentVals : [0, 0], 900, MIRROR_H, MIRROR_H, maxParentJour, -1);
-    const repriseLine = smoothPathFrom(repriseVals.length > 1 ? repriseVals : [0, 0], 900, MIRROR_H, MIRROR_H, maxRepriseJour, 1);
+    const repriseLine = smoothPathFrom(repriseVals.length > 1 ? repriseVals : [0, 0], 900, MIRROR_H, MIRROR_H * 2, maxRepriseJour, -1);
     const parentArea = parentLine ? parentLine + ` L900 ${MIRROR_H} L0 ${MIRROR_H} Z` : "";
-    const repriseArea = repriseLine ? repriseLine + ` L900 ${MIRROR_H} L0 ${MIRROR_H} Z` : "";
+    const repriseArea = repriseLine ? repriseLine + ` L900 ${MIRROR_H * 2} L0 ${MIRROR_H * 2} Z` : "";
     const mirrorParentRef = el => revealPath(el, parentLine, 200, 1300);
     const mirrorRepriseRef = el => revealPath(el, repriseLine, 350, 1300);
     const mirrorParentAreaRef = el => revealPath(el, parentArea, 200, 1300);
@@ -2008,7 +2013,7 @@ class Component extends DCLogic {
           style: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, c.value / maxCanalVal)) * (280 / 300) * 100).toFixed(2) + "% - 4px);background:" + c.color,
         })),
         parentDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + (50 - Math.min(50, hv.parent / maxParentJour * 50)).toFixed(2) + "% - 4px)",
-        repriseDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + (50 + Math.min(50, hv.reprise / maxRepriseJour * 50)).toFixed(2) + "% - 4px)",
+        repriseDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + (100 - Math.min(50, hv.reprise / maxRepriseJour * 50)).toFixed(2) + "% - 4px)",
         tooltipStyle: "position:absolute;top:6px;z-index:2;" + (flip ? "right:calc(" + (100 - xPct).toFixed(2) + "% + 16px)" : "left:calc(" + xPct.toFixed(2) + "% + 16px)") +
           ";background:var(--pop);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:0 20px 50px -12px var(--shadow);pointer-events:none;min-width:170px",
         rows: hv.chans.map(c => ({ name: c.name, dotStyle: "width:7px;height:7px;border-radius:50%;background:" + c.color, value: fmt(c.value) })),
