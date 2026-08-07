@@ -193,6 +193,13 @@ input[type=date]{color-scheme:dark}
 @keyframes modalBackdropIn{from{opacity:0}to{opacity:1}}
 @keyframes modalBackdropOut{from{opacity:1}to{opacity:0}}
 @keyframes modalPanelIn{from{opacity:0;transform:scale(.94) translateY(18px)}to{opacity:1;transform:none}}
+.hermes-md p{margin:0 0 10px}
+.hermes-md p:last-child{margin-bottom:0}
+.hermes-md strong{font-weight:800;color:var(--text)}
+.hermes-md ul,.hermes-md ol{margin:0 0 10px;padding-left:20px}
+.hermes-md ul:last-child,.hermes-md ol:last-child{margin-bottom:0}
+.hermes-md li{margin-bottom:4px;line-height:1.5}
+.hermes-md .chat-md-h{font-weight:800;color:var(--text);margin:4px 0 8px;font-size:15.5px}
 @keyframes modalPanelOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.96) translateY(10px)}}
 </style>
 </helmet>
@@ -263,6 +270,7 @@ input[type=date]{color-scheme:dark}
     </div>
   </div>
 
+  <sc-if value="{{ showScopeBar }}" hint-placeholder-val="{{ true }}">
   <div style="display:flex;align-items:center;gap:14px;margin-top:22px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .05s both">
     <div style="position:relative">
       <button onClick="{{ togglePicker }}" style="{{ pickerBtn }}">
@@ -328,6 +336,7 @@ input[type=date]{color-scheme:dark}
       <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
     </div>
   </div>
+  </sc-if>
 
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
   <div style="{{ tabFadeStyle }}">
@@ -897,27 +906,98 @@ input[type=date]{color-scheme:dark}
 
   <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px">
-    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;min-height:560px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
-      <div style="display:flex;align-items:center;gap:11px">
+    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;min-height:680px;height:calc(100vh - 220px);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both;overflow:hidden">
+
+      <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
         <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 3.5-.7L21 21l-1.1-3.5A9 9 0 0 0 12 3Z"></path></svg>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path><circle cx="12" cy="12" r="4.2"></circle></svg>
         </span>
         <div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">Assistant IA — Agent KAM</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">Hermès</div>
           <div style="font-size:13.5px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
         </div>
       </div>
 
-      <div style="flex:1;min-height:0;overflow:auto;margin:22px 0;display:flex;flex-direction:column;gap:16px">
+      <div style="flex:1;min-height:0;overflow:auto;padding:26px 30px;display:flex;flex-direction:column;gap:18px">
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
-          <div style="padding:40px 20px;text-align:center">
-            <div style="font-size:15px;font-weight:500;color:var(--muted)">Pose une question, ex. « Pourquoi Opel Portugal est en baisse depuis lundi, quel impact business, quelles actions proposer ? »</div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:20px 10px">
+            <span style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"></path><circle cx="12" cy="12" r="4.2"></circle></svg>
+            </span>
+            <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px;max-width:520px">Que souhaitez-vous comprendre aujourd'hui ?</div>
+            <div style="font-size:15px;font-weight:500;color:var(--muted);max-width:480px;line-height:1.5">Pose une question sur le trafic, les leads ou le parcours de reprise. Hermès croisera les agents pertinents.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;width:100%;max-width:680px;text-align:left">
+              <sc-for list="{{ quickQuestions }}" as="q" hint-placeholder-count="4">
+                <button onClick="{{ q.pick }}" style="display:flex;align-items:flex-start;gap:12px;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:16px 18px;cursor:pointer;font-family:inherit;transition:background .18s ease,transform .18s ease" style-hover="background:var(--hover);transform:translateY(-2px)">
+                  <span style="width:34px;height:34px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none;color:#F5411E">
+                    <sc-if value="{{ q.isBars }}" hint-placeholder-val="{{ true }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg></sc-if>
+                    <sc-if value="{{ q.isFunnel }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 9v6l-4 2v-8Z"></path></svg></sc-if>
+                    <sc-if value="{{ q.isCompare }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"></path><path d="M4 7h16"></path><path d="m16 21 4-4-4-4"></path><path d="M20 17H4"></path></svg></sc-if>
+                    <sc-if value="{{ q.isSearch }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></sc-if>
+                  </span>
+                  <span>
+                    <div style="font-size:14.5px;font-weight:700;color:var(--text)">{{ q.title }}</div>
+                    <div style="margin-top:3px;font-size:13px;font-weight:500;color:var(--muted);line-height:1.4">{{ q.desc }}</div>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
           </div>
         </sc-if>
+
         <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
           <div style="{{ m.rowStyle }}">
             <div style="{{ m.bubbleStyle }}">
-              <div style="white-space:pre-wrap;font-size:15px;font-weight:500;line-height:1.55">{{ m.text }}</div>
+              <sc-if value="{{ m.hasAttachments }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+                  <sc-for list="{{ m.attachmentNames }}" as="fn" hint-placeholder-count="1">
+                    <span style="font-size:11.5px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:4px 10px;display:flex;align-items:center;gap:5px">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>{{ fn }}
+                    </span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ true }}">
+                <div style="white-space:pre-wrap;font-size:15px;font-weight:500;line-height:1.55">{{ m.text }}</div>
+              </sc-if>
+              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+                <div class="hermes-md" ref="{{ m.mdRef }}" style="font-size:15px;font-weight:500;line-height:1.6"></div>
+              </sc-if>
+              <sc-if value="{{ m.hasCharts }}" hint-placeholder-val="{{ false }}">
+                <sc-for list="{{ m.charts }}" as="ch" hint-placeholder-count="1">
+                  <div style="margin-top:12px;background:var(--card);border-radius:14px;padding:14px 16px;box-sizing:border-box">
+                    <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px">{{ ch.title }}</div>
+                    <sc-if value="{{ ch.isLine }}" hint-placeholder-val="{{ true }}">
+                      <svg width="100%" height="90" viewBox="0 0 560 130" preserveAspectRatio="none" style="display:block;overflow:visible">
+                        <sc-for list="{{ ch.paths }}" as="p" hint-placeholder-count="1">
+                          <path d="{{ p.d }}" fill="none" stroke="{{ p.color }}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+                        </sc-for>
+                      </svg>
+                      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-weight:600;color:var(--muted2)">
+                        <sc-for list="{{ ch.axis }}" as="al" hint-placeholder-count="3"><span>{{ al }}</span></sc-for>
+                      </div>
+                      <sc-if value="{{ ch.hasLegend }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+                          <sc-for list="{{ ch.legend }}" as="lg" hint-placeholder-count="2">
+                            <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted)"><span style="width:7px;height:7px;border-radius:50%;background:{{ lg.color }};display:inline-block"></span>{{ lg.name }}</span>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+                    <sc-if value="{{ ch.isBar }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:flex-end;gap:6px;height:90px">
+                        <sc-for list="{{ ch.bars }}" as="b" hint-placeholder-count="4">
+                          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;min-width:0">
+                            <span style="font-size:10px;font-weight:700;color:var(--text);white-space:nowrap">{{ b.value }}</span>
+                            <div style="{{ b.barStyle }}"></div>
+                            <span style="font-size:9.5px;font-weight:600;color:var(--muted2);white-space:nowrap">{{ b.label }}</span>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </sc-if>
               <sc-if value="{{ m.hasAgents }}" hint-placeholder-val="{{ false }}">
                 <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
                   <sc-for list="{{ m.agentBadges }}" as="ag" hint-placeholder-count="2">
@@ -935,13 +1015,51 @@ input[type=date]{color-scheme:dark}
         </sc-if>
       </div>
 
-      <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;padding-top:16px;border-top:1px solid var(--line)">
-        <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none">
-        <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;gap:10px;background:#F5411E;border:none;border-radius:16px;padding:0 22px;height:52px;color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;opacity:{{ chatSendOpacity }}">
-          Envoyer
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
-        </button>
-      </form>
+      <div style="padding:18px 30px 24px;border-top:1px solid var(--line)">
+        <sc-if value="{{ hasChatAttachments }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <sc-for list="{{ chatAttachmentChips }}" as="a" hint-placeholder-count="1">
+              <span style="display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:999px;padding:6px 8px 6px 14px;font-size:12.5px;font-weight:600;color:var(--text)">
+                {{ a.name }}<span style="color:var(--muted2);font-weight:500">{{ a.sizeLabel }}</span>
+                <button onClick="{{ a.remove }}" style="width:20px;height:20px;border-radius:50%;border:none;background:var(--hover);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                </button>
+              </span>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="position:relative">
+          <sc-if value="{{ chatScopeOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:0;bottom:56px;width:360px;background:var(--pop);border-radius:18px;padding:16px 18px;box-shadow:0 30px 70px -20px var(--shadow);animation:dropIn .2s ease both;z-index:10">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Périmètre de la conversation</div>
+                <button onClick="{{ clearChatScope }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;height:30px;padding:0 12px;border-radius:999px;cursor:pointer">Tous les sites</button>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ chatScopeSites }}" as="s" hint-placeholder-count="8">
+                  <button onClick="{{ s.toggle }}" style="{{ s.style }}">{{ s.name }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;align-items:center">
+            <input ref="{{ chatFileInputRef }}" type="file" accept="image/*,application/pdf" multiple hidden onChange="{{ attachFiles }}">
+            <button type="button" onClick="{{ openChatFilePicker }}" title="Joindre un fichier" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:44px;padding:0 16px;border-radius:999px;cursor:pointer;flex:none" style-hover="background:var(--hover)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>Joindre
+            </button>
+            <button type="button" onClick="{{ toggleChatScopePicker }}" title="Choisir le périmètre" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:44px;padding:0 16px;border-radius:999px;cursor:pointer;flex:none;white-space:nowrap" style-hover="background:var(--hover)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>{{ chatScopeLabel }}
+            </button>
+            <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none;min-width:0">
+            <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#F5411E;border:none;color:#fff;cursor:pointer;flex:none;opacity:{{ chatSendOpacity }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
+            </button>
+          </form>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:500;color:var(--muted2)">Les réponses doivent être vérifiées avant toute communication client.</div>
+      </div>
     </div>
   </div>
   </sc-if>
@@ -1128,6 +1246,68 @@ function decale(md, n) { const d = new Date(mdToYmd(md)); d.setDate(d.getDate() 
 
 /* somme d'une serie de valeurs {jour: {canal: v}} restreinte a une plage */
 function joursDans(dJours, debut, fin) { return dJours.filter(j => j >= debut && j <= fin); }
+
+/* Rendu markdown minimal pour les reponses de l'assistant Hermes (gras,
+   italique, listes a puces/numerotees, paragraphes) -- echappe le HTML
+   AVANT d'inserer les balises de mise en forme, jamais l'inverse, pour
+   qu'un texte genere par le modele ne puisse jamais injecter de HTML. */
+function inlineMd(s) {
+  s = esc(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, "$1<em>$2</em>");
+  return s;
+}
+function renderMarkdown(text) {
+  const blocks = String(text || "").split(/\n{2,}/);
+  return blocks.map(block => {
+    const lines = block.split("\n").filter(l => l.trim().length);
+    if (!lines.length) return "";
+    if (lines.every(l => /^[-*]\s+/.test(l.trim()))) {
+      return "<ul>" + lines.map(l => "<li>" + inlineMd(l.trim().replace(/^[-*]\s+/, "")) + "</li>").join("") + "</ul>";
+    }
+    if (lines.every(l => /^\d+[.)]\s+/.test(l.trim()))) {
+      return "<ol>" + lines.map(l => "<li>" + inlineMd(l.trim().replace(/^\d+[.)]\s+/, "")) + "</li>").join("") + "</ol>";
+    }
+    if (lines.length === 1 && /^#{1,4}\s+/.test(lines[0].trim())) {
+      return '<div class="chat-md-h">' + inlineMd(lines[0].trim().replace(/^#{1,4}\s+/, "")) + "</div>";
+    }
+    return "<p>" + lines.map(inlineMd).join("<br>") + "</p>";
+  }).join("");
+}
+
+/* Graphique compact pour une reponse Hermes -- reprend smoothPath (plus
+   bas) pour les courbes, un rendu barres simple sinon. Les valeurs
+   viennent toujours de get_series cote serveur (jamais generees ici). */
+const CHAT_CHART_COLORS = ["#F5411E", "#4ADE80", "#60A5FA", "#F9AB00"];
+function buildChatChart(spec) {
+  if (!spec) return null;
+  const series = (spec.series || []).filter(s => Array.isArray(s.values) && s.values.length > 1);
+  if (!series.length) return null;
+  const labels = spec.labels || [];
+
+  if (spec.type === "bar" && series.length === 1) {
+    let values = series[0].values, barLabels = labels;
+    const MAX_BARS = 15;
+    if (values.length > MAX_BARS) {
+      const step = Math.ceil(values.length / MAX_BARS);
+      values = values.filter((_, i) => i % step === 0);
+      barLabels = labels.filter((_, i) => i % step === 0);
+    }
+    const max = Math.max(...values.map(v => Math.abs(v || 0)), 1);
+    const bars = values.map((v, i) => {
+      const pct = Math.max(3, Math.round((Math.abs(v || 0) / max) * 100));
+      return { value: fmt(v), label: barLabels[i] || "", barStyle: "width:100%;border-radius:4px 4px 0 0;background:#F5411E;height:" + pct + "%" };
+    });
+    return { title: spec.title || "", isBar: true, isLine: false, bars, legend: [], hasLegend: false };
+  }
+
+  const all = series.flatMap(s => s.values);
+  const min = Math.min(0, ...all), max = Math.max(...all, 1);
+  const paths = series.map((s, i) => ({ d: smoothPath(s.values, 560, 130, min, max), color: CHAT_CHART_COLORS[i % CHAT_CHART_COLORS.length] }));
+  const legend = series.map((s, i) => ({ name: s.name, color: CHAT_CHART_COLORS[i % CHAT_CHART_COLORS.length] }));
+  const axis = [labels[0] || "", labels[Math.floor((labels.length - 1) / 2)] || "", labels[labels.length - 1] || ""];
+  return { title: spec.title || "", isBar: false, isLine: true, paths, legend, hasLegend: legend.length > 1, axis };
+}
 
 /* lissage identique en esprit a la reference : une courbe douce a partir
    de N points, echantillonnee sur une largeur fixe. */
@@ -1321,6 +1501,9 @@ class Component extends DCLogic {
     chatInput: "",
     chatBusy: false,
     chatHistory: [],    // messages Claude bruts (envoyes/renvoyes par /api/agent, pour la continuite de conversation)
+    chatScope: [],      // sites selectionnes pour la conversation (vide = laisse Hermes deduire)
+    chatScopeOpen: false,
+    chatAttachments: [], // { name, mediaType, dataBase64, sizeLabel }
   };
 
   applyTheme() { document.documentElement.setAttribute("data-theme", this.state.theme); }
@@ -1397,31 +1580,71 @@ class Component extends DCLogic {
     location.reload();
   }
 
-  /* ---------------------------- assistant multi-agent (Agent KAM) ---------------------------- */
+  /* ---------------------------- assistant multi-agent "Hermès" (Agent KAM) ---------------------------- */
   setChatInput(e) { this.setState({ chatInput: e.target.value }); }
+  pickQuickQuestion(text) { this.setState({ chatInput: text }, () => this.sendChatMessage()); }
+  toggleChatScopePicker() { this.setState(s => ({ chatScopeOpen: !s.chatScopeOpen })); }
+  toggleChatScopeSite(name) {
+    this.setState(s => {
+      const on = s.chatScope.includes(name);
+      return { chatScope: on ? s.chatScope.filter(n => n !== name) : s.chatScope.concat([name]) };
+    });
+  }
+  clearChatScope() { this.setState({ chatScope: [] }); }
+
+  attachFiles(e) {
+    const files = Array.from((e.target && e.target.files) || []);
+    e.target.value = "";
+    const MAX = 3, MAX_BYTES = 4 * 1024 * 1024;
+    const allowed = /^(image\/|application\/pdf$)/;
+    for (const f of files) {
+      if (this.state.chatAttachments.length >= MAX) { alert("Maximum 3 pièces jointes."); break; }
+      if (!allowed.test(f.type)) { alert(f.name + " : type non supporté (images ou PDF uniquement)."); continue; }
+      if (f.size > MAX_BYTES) { alert(f.name + " : fichier trop volumineux (4 Mo max)."); continue; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataBase64 = String(reader.result).split(",")[1] || "";
+        const sizeLabel = f.size > 1024 * 1024 ? (f.size / (1024 * 1024)).toFixed(1) + " Mo" : Math.round(f.size / 1024) + " Ko";
+        this.setState(s => ({ chatAttachments: s.chatAttachments.concat([{ name: f.name, mediaType: f.type, dataBase64, sizeLabel }]) }));
+      };
+      reader.readAsDataURL(f);
+    }
+  }
+  removeAttachment(idx) {
+    this.setState(s => ({ chatAttachments: s.chatAttachments.filter((_, i) => i !== idx) }));
+  }
+
   async sendChatMessage(e) {
     if (e && e.preventDefault) e.preventDefault();
     const question = (this.state.chatInput || "").trim();
     if (!question || this.state.chatBusy) return;
-    const messages = this.state.chatMessages.concat([{ role: "user", text: question, hasAgents: false, agentBadges: [] }]);
-    this.setState({ chatMessages: messages, chatInput: "", chatBusy: true });
+    const attachments = this.state.chatAttachments;
+    const scope = this.state.chatScope;
+    const messages = this.state.chatMessages.concat([{
+      role: "user", text: question, hasAgents: false, agentBadges: [], charts: [],
+      attachmentNames: attachments.map(a => a.name),
+    }]);
+    this.setState({ chatMessages: messages, chatInput: "", chatAttachments: [], chatBusy: true });
     try {
       const r = await fetch("/api/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question, history: this.state.chatHistory }),
+        body: JSON.stringify({ question, history: this.state.chatHistory, scope, attachments }),
       });
       const json = await r.json();
       if (!r.ok) throw new Error(json.error || "Erreur de l'assistant.");
       const agents = json.agentsConsultes || [];
       this.setState({
-        chatMessages: messages.concat([{ role: "assistant", text: json.answer || "(pas de réponse)", hasAgents: agents.length > 0, agentBadges: agents }]),
+        chatMessages: messages.concat([{
+          role: "assistant", text: json.answer || "(pas de réponse)",
+          hasAgents: agents.length > 0, agentBadges: agents, charts: json.charts || [], attachmentNames: [],
+        }]),
         chatHistory: json.history || this.state.chatHistory,
         chatBusy: false,
       });
     } catch (e) {
       this.setState({
-        chatMessages: messages.concat([{ role: "assistant", text: "Erreur : " + (e && e.message ? e.message : e), hasAgents: false, agentBadges: [] }]),
+        chatMessages: messages.concat([{ role: "assistant", text: "Erreur : " + (e && e.message ? e.message : e), hasAgents: false, agentBadges: [], charts: [], attachmentNames: [] }]),
         chatBusy: false,
       });
     }
@@ -1835,9 +2058,13 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
-        setChatInput: () => {}, sendChatMessage: () => {},
+        setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
+        chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
+        toggleChatScopePicker: () => {}, clearChatScope: () => {},
+        chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
+        chatFileInputRef: () => {}, openChatFilePicker: () => {},
         tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
@@ -1873,7 +2100,7 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Assistant IA"]].map(t => {
+    const tabs = [["ga4", "Google Analytics 4"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Hermès"]].map(t => {
       const on = st.tab === t[0];
       return {
         label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isAssistantTab: t[0] === "assistant",
@@ -2447,15 +2674,43 @@ class Component extends DCLogic {
 
     const chatMessages = st.chatMessages.map(m => {
       const isUser = m.role === "user";
+      const charts = (m.charts || []).map(buildChatChart).filter(Boolean);
       return {
         text: m.text,
+        isUser,
+        mdRef: el => { if (el) el.innerHTML = renderMarkdown(m.text); },
         hasAgents: !!m.hasAgents,
         agentBadges: m.agentBadges || [],
+        charts, hasCharts: charts.length > 0,
+        attachmentNames: m.attachmentNames || [],
+        hasAttachments: (m.attachmentNames || []).length > 0,
         rowStyle: "display:flex;justify-content:" + (isUser ? "flex-end" : "flex-start"),
-        bubbleStyle: "max-width:72%;padding:14px 18px;border-radius:18px;box-sizing:border-box;" +
+        bubbleStyle: "max-width:" + (isUser ? "72%" : "88%") + ";padding:14px 18px;border-radius:18px;box-sizing:border-box;" +
           (isUser ? "background:#F5411E;color:#fff;border-bottom-right-radius:6px" : "background:var(--soft);color:var(--text);border-bottom-left-radius:6px"),
       };
     });
+
+    const QUICK_QUESTIONS = [
+      { title: "Comparer une performance", desc: "Évolution du trafic, des leads et de la conversion.",
+        icon: "bars", text: "Compare l'évolution du trafic, des leads et de la conversion sur les 4 dernières semaines, avec un graphique." },
+      { title: "Analyser un funnel", desc: "Identifier les étapes de rupture du parcours.",
+        icon: "funnel", text: "Quelles sont les étapes du funnel où on perd le plus d'utilisateurs, et pourquoi ?" },
+      { title: "Comparer V1 vs V2", desc: "Impact du nouvel outil de reprise sur la conversion.",
+        icon: "compare", text: "Compare la performance V1 et V2 : trafic, leads et taux de conversion." },
+      { title: "Rechercher une cause", desc: "Croiser trafic, leads et funnel pour expliquer une variation.",
+        icon: "search", text: "Pourquoi les leads ont-ils varié récemment ? Croise trafic, funnel et sources, et propose des actions." },
+    ].map(q => ({ ...q, isBars: q.icon === "bars", isFunnel: q.icon === "funnel", isCompare: q.icon === "compare", isSearch: q.icon === "search", pick: () => this.pickQuickQuestion(q.text) }));
+
+    const chatScopeSites = ALL.map(n => ({
+      name: n, on: st.chatScope.includes(n),
+      toggle: () => this.toggleChatScopeSite(n),
+      style: "display:flex;align-items:center;gap:8px;border:none;background:" + (st.chatScope.includes(n) ? "var(--hover)" : "var(--soft)") + ";color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease",
+    }));
+    const chatScopeLabel = st.chatScope.length === 0 ? "Périmètre : tous les sites" : "Périmètre : " + st.chatScope.length + " site(s)";
+
+    const chatAttachmentChips = st.chatAttachments.map((a, i) => ({
+      name: a.name, sizeLabel: a.sizeLabel, remove: () => this.removeAttachment(i),
+    }));
 
     return {
       tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
@@ -2463,11 +2718,18 @@ class Component extends DCLogic {
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
       funnel, projects, audience, leadCells, queries, pages,
-      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant",
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant",
       v2Cards, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
+      quickQuestions: QUICK_QUESTIONS,
+      chatScopeOpen: st.chatScopeOpen, chatScopeLabel, chatScopeSites,
+      toggleChatScopePicker: () => this.toggleChatScopePicker(), clearChatScope: () => this.clearChatScope(),
+      chatAttachmentChips, hasChatAttachments: chatAttachmentChips.length > 0,
+      attachFiles: e => this.attachFiles(e),
+      chatFileInputRef: el => { this._chatFileInputEl = el; },
+      openChatFilePicker: () => this._chatFileInputEl && this._chatFileInputEl.click(),
       isLight: st.theme === "light", isDark: st.theme === "dark",
       toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
       logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
