@@ -1273,21 +1273,18 @@ input[type=date]{color-scheme:dark}
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1880,&quot;height&quot;:1720}}">
 /* ============================== donnees reelles du site (identique au modele existant) ============================== */
 
-const HOSTS = {
-  "OPEL FR":       { pays:"F", host:"reprise.opel.fr" },
-  "OPEL PT":       { pays:"P", host:"retoma.opel.pt" },
-  "CITROEN PT":    { pays:"P", host:"retoma-citroen.pt" },
-  "PEUGEOT PT":    { pays:"P", host:"retoma.peugeot.pt" },
-  "DS PT":         { pays:"P", host:"retoma.dsautomobiles.pt" },
-  "FIAT PT":       { pays:"P", host:"retoma.fiat.pt" },
-  "JEEP PT":       { pays:"P", host:"retoma.jeep.pt" },
-  "ALFA ROMEO PT": { pays:"P", host:"retoma.alfaromeo.pt" },
+// La marque et le pays se lisent dans le nom du site lui-meme
+// ("<MARQUE> <PAYS>", ex. "ALFA ROMEO BE") : convention garantie par
+// pipeline/sites.py, le dernier mot est toujours le code pays. Remplace
+// d'anciennes tables HOSTS/BRAND_OF codees en dur pour les 8 sites
+// d'origine uniquement -- plantaient (Cannot read properties of undefined)
+// des que data/index.json a liste les sites ajoutes ensuite (07/08/2026).
+function marqueDeSite(n) { return n.split(" ").slice(0, -1).join(" "); }
+function paysDeSite(n) { return n.split(" ").pop(); }
+const PAYS_LABEL = {
+  AT: "Autriche", BE: "Belgique", DE: "Allemagne", ES: "Espagne", FR: "France",
+  GB: "Royaume-Uni", IT: "Italie", LU: "Luxembourg", PL: "Pologne", PT: "Portugal",
 };
-const BRAND_OF = {
-  "OPEL FR":"OPEL", "OPEL PT":"OPEL", "CITROEN PT":"CITROEN", "PEUGEOT PT":"PEUGEOT",
-  "DS PT":"DS AUTOMOBILES", "FIAT PT":"FIAT", "JEEP PT":"JEEP", "ALFA ROMEO PT":"ALFA ROMEO",
-};
-const PAYS_LABEL = { F:"France", P:"Portugal" };
 
 const nf = new Intl.NumberFormat("fr-FR");
 const nf1 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 });
@@ -1875,7 +1872,7 @@ class Component extends DCLogic {
         if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
           for (const [n, v] of (d.leads[mois].brand || [])) out.brand.set(n, (out.brand.get(n) || 0) + v);
           for (const [n, v] of (d.leads[mois].project || [])) out.project.set(n, (out.project.get(n) || 0) + v);
-          const own = BRAND_OF[s];
+          const own = marqueDeSite(s);
           for (const [n, v] of (d.leads[mois].brand || [])) if (String(n).toUpperCase() === own) out.ownBrand += v;
         }
       }
@@ -2172,9 +2169,10 @@ class Component extends DCLogic {
 
     const ALL = this.sitesList;
     const inSel = n => st.sites.includes(n);
-    const paysGroups = ["F", "P"].map(p => [p, ALL.filter(n => (HOSTS[n] || {}).pays === p)]).filter(g => g[1].length);
+    const paysPresents = [...new Set(ALL.map(paysDeSite))];
+    const paysGroups = paysPresents.map(p => [p, ALL.filter(n => paysDeSite(n) === p)]).filter(g => g[1].length);
     const brandGroups = ALL.reduce((acc, n) => {
-      const b = BRAND_OF[n];
+      const b = marqueDeSite(n);
       const g = acc.find(x => x[0] === b);
       if (g) g[1].push(n); else acc.push([b, [n]]);
       return acc;
@@ -2225,7 +2223,7 @@ class Component extends DCLogic {
           (on ? "#F5411E" : "var(--soft)") + ";color:" + (on ? "#ffffff" : "var(--text2)"),
       };
     };
-    const marketChips = paysGroups.map(g => chip(PAYS_LABEL[g[0]], g[1], g[1].length));
+    const marketChips = paysGroups.map(g => chip(PAYS_LABEL[g[0]] || g[0], g[1], g[1].length));
     const familyChips = brandGroups.map(g => chip(g[0].charAt(0) + g[0].slice(1).toLowerCase(), g[1], g[1].length));
 
     const brandRows = ALL.map(n => {
