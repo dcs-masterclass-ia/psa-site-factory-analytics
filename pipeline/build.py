@@ -474,6 +474,23 @@ def main():
         for chemin, contenu in a_ecrire.items():
             chemin.write_text(json.dumps(contenu, ensure_ascii=False, separators=(",", ":")))
             print(f"ecrit  {chemin.name}")
+
+        # data/index.json liste les sites que le dashboard doit charger.
+        # Aucun script ne le regenerait jusqu'ici (decouvert le 07/08/2026,
+        # reste bloque sur les 8 sites d'origine malgre les 56 ajoutes) :
+        # recalcule desormais a chaque ecriture, a partir des fichiers
+        # data/<slug>.json reellement presents sur disque, jamais de la
+        # seule liste SITES (un site en echec de controle garde son fichier
+        # de la veille et doit rester visible, un site jamais publie ne
+        # doit pas apparaitre et faire 404 cote dashboard).
+        ordre = {s.nom: i for i, s in enumerate(SITES)}
+        presents = {s.slug: s.nom for s in SITES}
+        noms_index = sorted(
+            (presents[f.stem] for f in DATA.glob("*.json") if f.stem in presents),
+            key=lambda n: ordre[n])
+        (DATA / "index.json").write_text(
+            json.dumps({"sites": noms_index}, ensure_ascii=False, separators=(",", ":")))
+        print(f"ecrit  index.json ({len(noms_index)} site(s))")
     else:
         print("Controle bloquant : aucune donnee ecrite, on garde celles de la veille.")
         ecrit_recap(f"\n**Contrôle bloquant : aucune donnée écrite, celles de la veille sont conservées.**")
