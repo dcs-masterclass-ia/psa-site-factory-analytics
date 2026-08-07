@@ -361,19 +361,26 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d["repriseMonth"]["total"] = {
         "sessions": sum(d["repriseMonth"][m]["sessions"] for m in cons),
         "rdays": sum(d["repriseMonth"][m]["rdays"] for m in cons)}
-    # meta["total"] n'est ecrit qu'une fois : sites historiques, le libelle a
-    # ete saisi a la main et reste tel quel (setdefault ne l'ecrase pas).
-    # Pour un site jamais assemble, evite un KeyError dans controle()
-    # (longueur_daily_egale_days lit meta[m]["days"] pour m="total" aussi) —
-    # "days" doit valoir la longueur reelle de leads["total"]["daily"], pas
-    # un total GA4 : ce controle verifie la coherence de la serie leads,
-    # jamais maintenue automatiquement pour la periode "total" (voir
-    # stub_vide), donc figee a 0 tant qu'aucune extraction leads n'existe.
-    d["meta"].setdefault("total", {
-        "label": "Total",
-        "days": len(d["leads"]["total"]["daily"]),
-        "partial": len(cons) < len(d["months"]),
-    })
+    # leads["total"] n'etait ecrit nulle part dans le pipeline (seulement lu,
+    # par ce recalcul et par le controle cumul_egale_somme_mois) — reste
+    # figee a la valeur de stub_vide (0) indefiniment. Passait inapercu tant
+    # que l'ancien bug de d["months"] (voir plus haut) limitait "cons" a une
+    # fenetre courte qui, par coincidence, correspondait a l'ancien total
+    # fige ; le corriger a immediatement fait echouer cumul_egale_somme_mois
+    # sur OPEL FR/CITROEN AT (decouvert le 08/08/2026). Meme perimetre que
+    # trafficMonth["total"] : uniquement les mois consolides.
+    d["leads"]["total"] = {
+        "total": sum(d["leads"][m]["total"] for m in cons if m in d["leads"]),
+        "daily": [v for m in cons for v in (d["leads"].get(m, {}).get("daily") or [])],
+    }
+    # meta["total"]["label"] : sites historiques, saisi a la main, jamais
+    # ecrase. "days"/"partial" doivent en revanche suivre leads["total"]
+    # recalcule juste au-dessus, sous peine de rompre a leur tour
+    # longueur_daily_egale_days (lu pour m="total" aussi).
+    d["meta"].setdefault("total", {})
+    d["meta"]["total"]["label"] = d["meta"]["total"].get("label", "Total")
+    d["meta"]["total"]["days"] = len(d["leads"]["total"]["daily"])
+    d["meta"]["total"]["partial"] = len(cons) < len(d["months"])
 
     # total recalcule via un appel dedie sur la periode entiere, jamais
     # somme des tops mensuels : meme lecon que la vue cumulee des leads,
