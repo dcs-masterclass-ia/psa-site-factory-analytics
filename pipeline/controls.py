@@ -111,8 +111,16 @@ def controle(nouveau, ancien=None, modele=None):
         # memes donnees Search Console). Toute AUTRE cle inattendue doit
         # continuer de bloquer la publication.
         SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly"}
+        # cles liees a la bascule V2 : les 5 premieres sont saisies a la main
+        # pour les sites deja passes en V2 (date de bascule, etapes/canaux
+        # releves manuellement) et jamais produites par le pipeline
+        # (v2_report.py les lit via `.get`, jamais ne les ecrit) ; v2Weekly
+        # en depend (rapport_hebdo renvoie None sans v2_date). Absentes de
+        # tout site qui n'a pas encore de V2 documentee — leur absence n'est
+        # pas une anomalie de structure.
+        V2_OPTIONNEL = {"v2", "v2_date", "v2channels", "v2steps", "traffic_metric", "v2Weekly"}
         sup = {k for k in nouveau if not k.startswith("_")} - set(modele) - SCHEMA_ETENDU
-        manq = set(modele) - set(nouveau)
+        manq = set(modele) - set(nouveau) - V2_OPTIONNEL
         ok = not sup and not manq
         r.ajoute("structure_identique", ok, True,
                  "" if ok else f"en trop {sorted(sup)} / manquantes {sorted(manq)}")

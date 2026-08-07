@@ -33,10 +33,18 @@ def esc_md(t):
     return str(t).replace("|", "\\|").replace("\n", " ")
 
 
+DEBUT_HISTORIQUE = (2025, 1)   # 07/08/2026 : etendu a janvier 2025 (etait
+                                # avril 2026) pour des analyses sur plus de
+                                # recul. GA4 ne renverra rien avant la
+                                # creation reelle de chaque propriete ; Search
+                                # Console ne conserve que les 16 derniers mois
+                                # cote Google, quel que soit ce debut.
+
+
 def mois_a_traiter(jusqu_a=None):
-    """Tous les mois depuis avril 2026 jusqu'au mois courant inclus."""
+    """Tous les mois depuis DEBUT_HISTORIQUE jusqu'au mois courant inclus."""
     fin = jusqu_a or datetime.now(PARIS).date()
-    liste, an, m = [], 2026, 4
+    liste, an, m = [], *DEBUT_HISTORIQUE
     while (an, m) <= (fin.year, fin.month):
         liste.append(f"{an}-{m:02d}")
         m += 1
@@ -52,6 +60,24 @@ def jour_fiable():
 
 def jour_fiable_gsc():
     return (datetime.now(PARIS).date() - timedelta(days=DECALAGE_GSC)).isoformat()
+
+
+def stub_vide(nom):
+    """Structure minimale pour un site jamais encore assemble (pas de
+    data/<slug>.json existant) : seules les cles que assemble() lit avant de
+    les ecrire lui-meme (months/meta/leads) doivent preexister. Le reste
+    (daily/trafficMonth/repriseMonth/funnelMonth) est reinitialise par
+    assemble() de toute facon."""
+    return {
+        "site": nom,
+        "months": [],
+        "meta": {},
+        "leads": {"total": {"total": 0, "daily": []}},
+        "daily": {"d": [], "u": [], "rep": [], "sc": [], "si": []},
+        "trafficMonth": {},
+        "repriseMonth": {},
+        "funnelMonth": {},
+    }
 
 
 def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
@@ -78,6 +104,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d["trafficMonth"], d["repriseMonth"] = {}, {}
     d.setdefault("funnelMonth", {})
     d["searchMonth"] = {}
+    d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
+                                          # attendue par structure_identique,
+                                          # remplie plus bas seulement si la
+                                          # dimension existe sur la propriete.
     anomalies, ratios, parts = {}, {}, {}
     methodes_funnel = {}
 
@@ -243,6 +273,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d["repriseMonth"]["total"] = {
         "sessions": sum(d["repriseMonth"][m]["sessions"] for m in cons),
         "rdays": sum(d["repriseMonth"][m]["rdays"] for m in cons)}
+    # meta["total"] n'est ecrit qu'une fois : sites historiques, le libelle a
+    # ete saisi a la main et reste tel quel (setdefault ne l'ecrase pas).
+    # Pour un site jamais assemble, l'evite un KeyError dans controle()
+    # (longueur_daily_egale_days lit meta[m]["days"] pour m="total" aussi).
+    d["meta"].setdefault("total", {
+        "label": "Total",
+        "days": sum(d["trafficMonth"][m]["tdays"] for m in cons),
+        "partial": len(cons) < len(d["months"]),
+    })
 
     # total recalcule via un appel dedie sur la periode entiere, jamais
     # somme des tops mensuels : meme lecon que la vue cumulee des leads,
@@ -352,7 +391,11 @@ def main():
             continue
 
         chemin = DATA / f"{s.slug}.json"
-        existant = json.loads(chemin.read_text())
+        if chemin.exists():
+            existant = json.loads(chemin.read_text())
+        else:
+            existant = stub_vide(s.nom)
+            print(f"{s.nom} : premiere execution, aucun {chemin.name} existant — structure vide initialisee")
         try:
             d, journal = assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant)
         except discover.Ambigu as e:
