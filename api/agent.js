@@ -11,7 +11,12 @@ const { callClaude } = require("./_lib/anthropic");
 const { TOOLS, runTool } = require("./_lib/tools");
 const { verifySessionFromRequest } = require("./_lib/auth");
 
-const KAM_MODEL = "claude-opus-5";
+// Sonnet 5 + effort medium : qualite proche d'Opus sur ce type de travail
+// agentique (orchestration + synthese), pour une fraction du cout -- le
+// "vrai" raisonnement analytique est fait par les agents specialistes
+// (api/_lib/tools.js), le KAM orchestre et synthetise.
+const KAM_MODEL = "claude-sonnet-5";
+const KAM_EFFORT = "medium";
 const MAX_ITERATIONS = 6;
 
 const SYSTEM = `Tu es Agent KAM, l'orchestrateur de l'assistant du dashboard PSA Site Factory. Les personnes qui te parlent sont des Key Account Managers qui suivent la performance de sites de reprise automobile (trafic, leads, conversion).
@@ -65,7 +70,7 @@ module.exports = async function handler(req, res) {
         messages,
         tools: TOOLS,
         thinking: { type: "adaptive" },
-        effort: "high",
+        effort: KAM_EFFORT,
         maxTokens: 4096,
       });
       messages.push({ role: "assistant", content: resp.content });
