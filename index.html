@@ -262,18 +262,10 @@ input[type=date]{color-scheme:dark}
         <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
           <span style="{{ t.markWrap }}">
             <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
-              <span style="display:flex;align-items:flex-end;gap:2px">
-                <i style="width:4px;height:7px;border-radius:2px;background:#F9AB00;display:block"></i>
-                <i style="width:4px;height:11px;border-radius:2px;background:#F9AB00;display:block"></i>
-                <i style="width:4px;height:15px;border-radius:2px;background:#E37400;display:block"></i>
-              </span>
+              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
             </sc-if>
             <sc-if value="{{ t.isGsc }}" hint-placeholder-val="{{ true }}">
-              <span style="position:relative;width:20px;height:20px;display:block">
-                <span style="position:absolute;left:1px;top:1px;width:13px;height:13px;border-radius:50%;border:3px solid #4285F4;box-sizing:border-box;display:block"></span>
-                <span style="position:absolute;right:2px;bottom:3px;width:9px;height:3px;border-radius:2px;background:#34A853;transform:rotate(45deg)"></span>
-                <span style="position:absolute;right:0px;bottom:0px;width:5px;height:5px;border-radius:2px;background:#FBBC04"></span>
-              </span>
+              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
             </sc-if>
             <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
@@ -282,7 +274,7 @@ input[type=date]{color-scheme:dark}
         </button>
       </sc-for>
     </div>
-    <div style="display:flex;align-items:center;gap:12px">
+    <div style="display:flex;align-items:flex-start;gap:12px">
       <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
         <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
           <span style="{{ refreshProgressStyle }}"></span>
