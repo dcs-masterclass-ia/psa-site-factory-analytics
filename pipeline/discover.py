@@ -88,7 +88,7 @@ def deduire(liste, pays=None):
         raise Ambigu(f"le candidat parent {hote_parent} ne pese que "
                      f"{part * 100:.0f}% du trafic, sous le seuil de 30%")
 
-    # l'outil de reprise doit etre plus petit que le site parent
+    # le site de reprise doit etre plus petit que le site parent
     if sess_reprise > sess_parent:
         raise Ambigu(f"{hote_reprise} ({sess_reprise}) depasse {hote_parent} "
                      f"({sess_parent}) : hierarchie inattendue")

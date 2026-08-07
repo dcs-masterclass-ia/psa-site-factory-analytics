@@ -1,9 +1,9 @@
-"""Rapport hebdomadaire de performance de la V2 de l'outil de reprise.
+"""Rapport hebdomadaire de performance de la V2 du site de reprise.
 
 Compare chaque semaine depuis la bascule vers la V2 a la reference V1 :
 tout l'historique disponible avant la bascule. Trois familles de mesures :
 
-  - sessions site parent et sessions outil de reprise : recalculees a
+  - sessions site parent et sessions site de reprise : recalculees a
     partir des series quotidiennes deja assemblees par build.py, aucun
     appel GA4 supplementaire.
   - leads : idem, a partir du back-office deja extrait.

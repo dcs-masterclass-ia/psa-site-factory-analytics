@@ -938,7 +938,7 @@ input[type=date]{color-scheme:dark}
   <div style="margin-top:24px">
     <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
       <div>
-        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des outils de reprise</div>
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des sites de reprise</div>
         <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
       </div>
 
@@ -2374,7 +2374,7 @@ class Component extends DCLogic {
     const leadsDailySeries = Object.keys(agg.leadsDaily).sort().map(k => agg.leadsDaily[k]);
 
     const ga4Kpis = [
-      { label:"Sessions outil de reprise", to: agg.reprise, fmt: fmt, color:"#4ADE80", ref: el => { this._el_sessions = el; },
+      { label:"Sessions site de reprise", to: agg.reprise, fmt: fmt, color:"#4ADE80", ref: el => { this._el_sessions = el; },
         deltaInfo: deltaBadge(agg.reprise, cmp && cmp.reprise, ""), note:"vs période N-1", spark: leadsDailySeries },
       { label:"Leads", to: agg.leads, fmt: fmt, color:"#F5411E", ref: el => { this._el_leads = el; },
         deltaInfo: deltaBadge(agg.leads, cmp && cmp.leads, ""), note:"vs période N-1", spark: leadsDailySeries },
@@ -2887,7 +2887,7 @@ class Component extends DCLogic {
         icon: "bars", text: "Compare l'évolution du trafic, des leads et de la conversion sur les 4 dernières semaines, avec un graphique." },
       { title: "Analyser un funnel", desc: "Identifier les étapes de rupture du parcours.",
         icon: "funnel", text: "Quelles sont les étapes du funnel où on perd le plus d'utilisateurs, et pourquoi ?" },
-      { title: "Comparer V1 vs V2", desc: "Impact du nouvel outil de reprise sur la conversion.",
+      { title: "Comparer V1 vs V2", desc: "Impact du nouveau site de reprise sur la conversion.",
         icon: "compare", text: "Compare la performance V1 et V2 : trafic, leads et taux de conversion." },
       { title: "Rechercher une cause", desc: "Croiser trafic, leads et funnel pour expliquer une variation.",
         icon: "search", text: "Pourquoi les leads ont-ils varié récemment ? Croise trafic, funnel et sources, et propose des actions." },

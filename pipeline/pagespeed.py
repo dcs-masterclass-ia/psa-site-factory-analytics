@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Performance des outils de reprise via l'API PageSpeed Insights (Lighthouse).
+"""Performance des sites de reprise via l'API PageSpeed Insights (Lighthouse).
 
 Mesure toujours l'hote de reprise (hote_reprise), jamais le site parent : la
 meme logique que le reste du pipeline, qui suit systematiquement l'outil de
