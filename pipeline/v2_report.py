@@ -82,7 +82,7 @@ def _agrege_leads(leads_par_mois, debut, fin):
 
 def _agrege_leads_par_device(leads_par_mois, debut, fin):
     """Meme principe que _agrege_leads, mais une somme par valeur brute de
-    la colonne BP (mobile/desktop/tablette...) — le regroupement/libelle
+    la colonne DEVICE (mobile/desktop/tablette...) — le regroupement/libelle
     final se fait cote dashboard, generique, pas ici."""
     out = {}
     for mois, bloc in (leads_par_mois or {}).items():
