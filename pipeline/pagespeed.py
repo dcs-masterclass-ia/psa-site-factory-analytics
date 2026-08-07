@@ -40,14 +40,37 @@ PARIS = timezone(timedelta(hours=2))
 BASE = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 STRATEGIES = ("mobile", "desktop")
 
-# id d'audit Lighthouse -> cle de sortie. Ce sont les memes metriques que
-# l'onglet "Performance" de l'outil PageSpeed Insights web.
+# les 4 categories Lighthouse : demandees en une seule requete (categories
+# repetees dans l'URL), un seul chargement de page pour les quatre plutot
+# que 4 appels separes.
+CATEGORIES = ("performance", "accessibility", "best-practices", "seo")
+
+# id d'audit Lighthouse -> (cle de sortie, decimales). Ce sont les memes
+# metriques que l'onglet "Performance" de l'outil PageSpeed Insights web.
+# cumulative-layout-shift est un ratio sans unite (ex. 0.94) : arrondir a
+# l'entier comme les autres (en millisecondes) l'ecrasait a 0 ou 1, perdant
+# toute la valeur -- bug reel trouve le 08/08/2026 en testant sur OPEL FR.
 AUDITS = {
-    "largest-contentful-paint": "lcp",
-    "cumulative-layout-shift": "cls",
-    "total-blocking-time": "tbt",
-    "first-contentful-paint": "fcp",
-    "speed-index": "si",
+    "largest-contentful-paint": ("lcp", 0),
+    "cumulative-layout-shift": ("cls", 3),
+    "total-blocking-time": ("tbt", 0),
+    "first-contentful-paint": ("fcp", 0),
+    "speed-index": ("si", 0),
+}
+
+# jusqu'a combien d'"opportunities" (recommandations chiffrees, gain
+# estime en ms) on garde par mesure -- trie par gain decroissant, le reste
+# est du bruit pour une lecture rapide.
+MAX_OPPORTUNITES = 5
+
+# CrUX (donnees terrain, vrais utilisateurs Chrome) : cle de la reponse ->
+# cle de sortie. CUMULATIVE_LAYOUT_SHIFT_SCORE est renvoye par Google en
+# centiemes (12 = 0.12), diviser par 100 pour rester comparable au CLS
+# labo. Les autres sont deja en millisecondes.
+METRIQUES_CRUX = {
+    "LARGEST_CONTENTFUL_PAINT_MS": ("lcp", 1),
+    "CUMULATIVE_LAYOUT_SHIFT_SCORE": ("cls", 100),
+    "INTERACTION_TO_NEXT_PAINT": ("inp", 1),
 }
 
 DELAI_ENTRE_APPELS = 1.0   # secondes ; courtoisie envers le quota (25000/jour,
@@ -64,21 +87,55 @@ def cle_api():
 def _requete(url_cible, strategie, timeout=90):
     params = {
         "url": url_cible, "strategy": strategie,
-        "category": "performance", "key": cle_api(),
+        "category": CATEGORIES, "key": cle_api(),
     }
-    url = BASE + "?" + urllib.parse.urlencode(params)
+    url = BASE + "?" + urllib.parse.urlencode(params, doseq=True)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read())
 
 
+def _opportunites(audits):
+    """Recommandations chiffrees, triees par gain de temps estime decroissant.
+    Seuls les audits Lighthouse de type "opportunity" avec un gain reel
+    (overallSavingsMs > 0) sont retenus -- le reste (diagnostics sans gain
+    chiffrable) est du bruit pour une lecture rapide."""
+    trouvees = []
+    for a in audits.values():
+        details = a.get("details") or {}
+        gain = details.get("overallSavingsMs")
+        if details.get("type") == "opportunity" and gain:
+            trouvees.append({"titre": a.get("title", "?"), "gainMs": round(gain)})
+    trouvees.sort(key=lambda o: -o["gainMs"])
+    return trouvees[:MAX_OPPORTUNITES]
+
+
+def _terrain(rep):
+    """Donnees CrUX (vrais utilisateurs Chrome), quand Google en a assez
+    pour les publier -- loadingExperience (l'URL precise) en priorite,
+    originLoadingExperience (tout le domaine) en repli. None si aucune des
+    deux n'existe : jamais de donnee terrain inventee a partir du labo."""
+    exp, origine = rep.get("loadingExperience"), False
+    if not exp or not exp.get("metrics"):
+        exp, origine = rep.get("originLoadingExperience"), True
+    if not exp or not exp.get("metrics"):
+        return None
+    m = exp["metrics"]
+    sortie = {"origine": origine, "categorie": exp.get("overall_category")}
+    for cle_api_crux, (cle, diviseur) in METRIQUES_CRUX.items():
+        v = m.get(cle_api_crux, {}).get("percentile")
+        sortie[cle] = round(v / diviseur, 2) if v is not None else None
+    return sortie
+
+
 def mesure(hote, strategie):
     """Une mesure Lighthouse pour un hote et une strategie donnes.
 
-    Retourne {"score": 0-100, "lcp": ms, "cls": ratio, "tbt": ms, "fcp": ms,
-    "si": ms} ou None si l'audit echoue (URL injoignable, quota depasse,
-    reponse mal formee) — jamais une exception qui remonte : un site en
-    echec ne doit pas bloquer les autres."""
+    Retourne un dict (score performance + accessibilite/bonnes pratiques/
+    SEO, LCP/CLS/TBT/FCP/SI labo, opportunites chiffrees, donnees terrain
+    CrUX si disponibles) ou None si l'audit echoue entierement (URL
+    injoignable, quota depasse, reponse mal formee) — jamais une exception
+    qui remonte : un site en echec ne doit pas bloquer les autres."""
     url_cible = f"https://{hote}/"
     try:
         rep = _requete(url_cible, strategie)
@@ -88,15 +145,27 @@ def mesure(hote, strategie):
     lh = rep.get("lighthouseResult")
     if not lh:
         return None
-    perf = lh.get("categories", {}).get("performance", {}).get("score")
+    cats = lh.get("categories", {})
+    perf = cats.get("performance", {}).get("score")
     if perf is None:
         return None
 
+    def score_cat(nom):
+        v = cats.get(nom, {}).get("score")
+        return round(v * 100) if v is not None else None
+
     audits = lh.get("audits", {})
-    sortie = {"score": round(perf * 100)}
-    for audit_id, cle in AUDITS.items():
+    sortie = {
+        "score": round(perf * 100),
+        "accessibilite": score_cat("accessibility"),
+        "bonnesPratiques": score_cat("best-practices"),
+        "seo": score_cat("seo"),
+        "opportunites": _opportunites(audits),
+        "terrain": _terrain(rep),
+    }
+    for audit_id, (cle, decimales) in AUDITS.items():
         val = audits.get(audit_id, {}).get("numericValue")
-        sortie[cle] = round(val) if val is not None else None
+        sortie[cle] = None if val is None else (round(val, decimales) if decimales else round(val))
     return sortie
 
 
