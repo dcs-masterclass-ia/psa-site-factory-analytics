@@ -134,22 +134,25 @@ def main():
     ap.add_argument("--hote", help="hote de reprise, ex. reprise.opel.fr")
     ap.add_argument("--tous", action="store_true",
                     help="mesure tous les sites exploitables de pipeline.sites")
+    ap.add_argument("--sites", nargs="*",
+                    help="sous-ensemble de sites (nom ou slug) a mesurer, pour un rafraichissement cible")
     ap.add_argument("--ecrire", action="store_true",
-                    help="avec --tous : ecrit le resultat dans data/<slug>.json")
+                    help="avec --tous/--sites : ecrit le resultat dans data/<slug>.json")
     a = ap.parse_args()
 
-    if not a.hote and not a.tous:
-        sys.exit("Choisir --hote ou --tous")
+    if not a.hote and not a.tous and not a.sites:
+        sys.exit("Choisir --hote, --tous ou --sites")
 
     if a.hote:
         r = mesure_site(a.hote)
         print(json.dumps(r, ensure_ascii=False, indent=2))
         return 0
 
-    from pipeline.sites import exploitables
+    from pipeline.sites import exploitables, site as trouve_site
+    cibles = [trouve_site(x) for x in a.sites] if a.sites else exploitables()
     recap = os.environ.get("GITHUB_STEP_SUMMARY")
     lignes_recap = ["## Performance PageSpeed Insights\n", "| Site | Mobile | Desktop |", "|---|---:|---:|"]
-    for s in exploitables():
+    for s in cibles:
         r = mesure_site(s.hote_reprise)
         m, d = r["mobile"], r["desktop"]
         m_s = str(m["score"]) if m else "?"

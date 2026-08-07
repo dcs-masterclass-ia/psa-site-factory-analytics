@@ -1,18 +1,22 @@
 name: Performance PageSpeed Insights
 
-# Hebdomadaire : la performance d'un site ne bouge pas d'un jour a l'autre,
-# et chaque audit Lighthouse prend 10 a 30s cote Google (64 sites x 2
-# strategies = jusqu'a une heure) -- volontairement separe du rafraichissement
-# quotidien (refresh.yml) pour ne pas l'alourdir davantage.
+# Manuel uniquement, pas de cron : la mesure se fait a la demande (relevé
+# ponctuel a l'instant T, ou plus tard site par site depuis une action du
+# dashboard), pas en tache de fond automatique. Chaque audit Lighthouse
+# prend 10 a 30s cote Google (jusqu'a une heure pour les 64 sites) -- reste
+# separe du rafraichissement quotidien (refresh.yml) pour ne pas l'alourdir.
 #
 # Purement additif : ecrit uniquement la cle "pagespeed" de data/<site>.json,
 # jamais le reste (pas de controle bloquant a la build.py, rien d'autre a
 # perdre en cas d'echec partiel).
 
 on:
-  schedule:
-    - cron: "0 4 * * 1"   # lundi 04:00 UTC
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites a mesurer (slugs separes par un espace, vide = tous)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -38,7 +42,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Mesurer tous les sites
+      - name: Mesurer les sites
         env:
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: |
@@ -46,7 +50,11 @@ jobs:
             echo "::error::Le secret PAGESPEED_API_KEY est vide ou absent."
             exit 1
           fi
-          python -m pipeline.pagespeed --tous --ecrire
+          if [ -n "${{ inputs.sites }}" ]; then
+            python -m pipeline.pagespeed --sites ${{ inputs.sites }} --ecrire
+          else
+            python -m pipeline.pagespeed --tous --ecrire
+          fi
 
       - name: Committer si quelque chose a changé
         run: |
@@ -57,7 +65,7 @@ jobs:
             echo "Aucun changement, pas de commit."
             exit 0
           fi
-          git commit -m "Performance PageSpeed Insights hebdomadaire"
+          git commit -m "Performance PageSpeed Insights"
           for i in 1 2 3; do
             git rebase --abort 2>/dev/null || true
             git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
