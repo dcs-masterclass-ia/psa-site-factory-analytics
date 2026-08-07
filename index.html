@@ -234,6 +234,10 @@ input[type=date]{color-scheme:dark}
 @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes dropIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes modalBackdropIn{from{opacity:0}to{opacity:1}}
+@keyframes modalBackdropOut{from{opacity:1}to{opacity:0}}
+@keyframes modalPanelIn{from{opacity:0;transform:scale(.94) translateY(18px)}to{opacity:1;transform:none}}
+@keyframes modalPanelOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.96) translateY(10px)}}
 </style>
 </helmet>
 <div style="min-height:100vh;padding:48px 24px;background:#9fb2a5;box-sizing:border-box;overflow-x:hidden">
@@ -810,91 +814,42 @@ input[type=date]{color-scheme:dark}
       </div>
 
       <sc-if value="{{ hasV2Rows }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
         <sc-for list="{{ v2Cards }}" as="r" hint-placeholder-count="8">
-          <div style="{{ r.wrapStyle }}">
-            <button onClick="{{ r.toggle }}" style="width:100%;text-align:left;font-family:inherit;border:none;cursor:pointer;background:var(--soft);border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-                <div style="min-width:0">
-                  <div style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.site }}</div>
-                  <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px">{{ r.weeksLabel }}</div>
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;flex:none">
-                  <span style="{{ r.badgeStyle }}">{{ r.badgeText }}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="{{ r.chevronStyle }}"><path d="m6 9 6 6 6-6"></path></svg>
-                </div>
+          <button onClick="{{ r.openModal }}" style="{{ r.wrapStyle }};width:100%;text-align:left;font-family:inherit;border:none;cursor:pointer;background:var(--soft);border-radius:24px;padding:26px 26px 24px;display:flex;flex-direction:column;gap:18px;transition:transform .22s cubic-bezier(.2,.8,.3,1),background .22s ease" style-hover="transform:translateY(-4px);background:var(--hover)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <div style="min-width:0">
+                <div style="font-size:18px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.site }}</div>
+                <div style="font-size:12.5px;font-weight:600;color:var(--muted);margin-top:3px">{{ r.weeksLabel }}</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
-                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.leadsParJour }}</div>
-                </div>
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
-                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.sessionsReprise }}</div>
-                </div>
-                <div>
-                  <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Conversion</div>
-                  <div style="font-size:18px;font-weight:800;color:var(--text);margin-top:3px;font-variant-numeric:tabular-nums">{{ r.conversion }}</div>
-                </div>
+              <span style="{{ r.badgeStyle }}">{{ r.badgeText }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 10px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
+                <div style="font-size:21px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.leadsParJour }}</div>
               </div>
-              <div style="display:flex;align-items:baseline;gap:8px;font-size:13px;font-weight:600;color:var(--text2);padding-top:12px;border-top:1px solid var(--line)">
-                <span>Mobile {{ r.mobilePct }}</span>
-                <span style="{{ r.mobileDeltaStyle }}">{{ r.mobileDeltaText }}</span>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
+                <div style="font-size:21px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.sessionsReprise }}</div>
               </div>
-            </button>
-
-            <sc-if value="{{ r.expanded }}" hint-placeholder-val="{{ false }}">
-            <div style="margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;animation:riseIn .35s cubic-bezier(.2,.7,.3,1) both">
-              <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:12px">Funnel semaine par semaine — {{ r.site }}</div>
-              <div style="overflow-x:auto">
-                <div style="min-width:1200px">
-                  <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
-                    <span>Période</span><span style="text-align:right">Sess. parent</span><span style="text-align:right">Sess. reprise</span><span style="text-align:right">Leads</span><span style="text-align:right">Leads/j</span><span style="text-align:right">Accueil</span><span style="text-align:right">Version</span><span style="text-align:right">Kilométrage</span><span style="text-align:right">Coordonnées</span><span style="text-align:right">PDV</span><span style="text-align:right">Estimation</span><span style="text-align:right">Δ vs V1</span>
-                  </div>
-                  <sc-for list="{{ r.rows }}" as="row" hint-placeholder-count="6">
-                    <div style="{{ row.rowStyle }}">
-                      <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
-                        <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ row.periode }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsParent }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsReprise }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leads }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leadsParJour }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.0 }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.1 }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.2 }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.3 }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.4 }}</span>
-                        <span style="text-align:right;font-size:14.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ row.conversion }}</span>
-                        <span style="text-align:right;font-variant-numeric:tabular-nums;{{ row.deltaStyle }}">{{ row.delta }}</span>
-                      </div>
-                    </div>
-                  </sc-for>
-                </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Conversion</div>
+                <div style="font-size:21px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.conversion }}</div>
               </div>
-
-              <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:20px 0 12px">Répartition mobile / desktop</div>
-              <div style="overflow-x:auto">
-                <div style="min-width:560px">
-                  <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
-                    <span>Période</span><span style="text-align:right">Mobile</span><span style="text-align:right">Desktop</span><span style="text-align:right">Autres</span><span style="text-align:right">Δ Mobile vs V1</span>
-                  </div>
-                  <sc-for list="{{ r.deviceRows }}" as="dr" hint-placeholder-count="6">
-                    <div style="{{ dr.rowStyle }}">
-                      <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
-                        <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ dr.periode }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ dr.mobilePct }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ dr.desktopPct }}</span>
-                        <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ dr.autresPct }}</span>
-                        <span style="text-align:right;font-variant-numeric:tabular-nums;{{ dr.mobileDeltaStyle }}">{{ dr.mobileDelta }}</span>
-                      </div>
-                    </div>
-                  </sc-for>
-                </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Mobile</div>
+                <div style="font-size:21px;font-weight:800;color:var(--text);margin-top:4px;font-variant-numeric:tabular-nums">{{ r.mobilePct }}</div>
               </div>
             </div>
-            </sc-if>
-          </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700;color:var(--text2);padding-top:14px;border-top:1px solid var(--line)">
+              <span style="{{ r.mobileDeltaStyle }}">{{ r.mobileDeltaText }}</span>
+              <span style="display:flex;align-items:center;gap:5px;color:var(--muted);font-weight:600">
+                Voir l'analyse
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+              </span>
+            </div>
+          </button>
         </sc-for>
       </div>
       </sc-if>
@@ -904,6 +859,131 @@ input[type=date]{color-scheme:dark}
         </div>
       </sc-if>
     </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ hasV2Modal }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ v2Modal.wrapStyle }}">
+  <div style="{{ v2Modal.backdropStyle }}" onClick="{{ v2Modal.close }}"></div>
+  <div style="{{ v2Modal.panelStyle }}">
+    <button onClick="{{ v2Modal.close }}" title="Fermer" style="position:absolute;top:26px;right:26px;width:38px;height:38px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:56px">
+      <div>
+        <div style="font-size:27px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ v2Modal.site }}</div>
+        <div style="margin-top:5px;font-size:14px;font-weight:600;color:var(--muted)">{{ v2Modal.weeksLabel }}</div>
+      </div>
+      <span style="{{ v2Modal.badgeStyle }}">{{ v2Modal.badgeText }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px">
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
+        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.leadsParJour }}</div>
+      </div>
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
+        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.sessionsReprise }}</div>
+      </div>
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Conversion</div>
+        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.conversion }}</div>
+      </div>
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Mobile</div>
+        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.mobilePct }}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ v2Modal.hasCharts }}" hint-placeholder-val="{{ false }}">
+    <div style="font-size:15px;font-weight:800;color:var(--text);margin:32px 0 16px">Sessions et leads — V1 vs V2</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div style="background:var(--soft);border-radius:18px;padding:20px 22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text2)">Sessions site parent / jour</div>
+          <span style="{{ v2Modal.chartSessions.deltaStyle }}">{{ v2Modal.chartSessions.deltaText }}</span>
+        </div>
+        <div style="position:relative;height:130px;margin-top:16px">
+          <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
+            <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
+            <path ref="{{ v2Modal.chartSessions.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
+            <path ref="{{ v2Modal.chartSessions.ref }}" fill="none" stroke="#4ADE80" stroke-width="2.8" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px;font-weight:700">
+          <span style="color:var(--muted)">V1 : {{ v2Modal.chartSessions.v1ValText }}</span>
+          <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartSessions.v2ValText }}</span>
+        </div>
+      </div>
+      <div style="background:var(--soft);border-radius:18px;padding:20px 22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="font-size:13px;font-weight:700;color:var(--text2)">Leads / jour</div>
+          <span style="{{ v2Modal.chartLeads.deltaStyle }}">{{ v2Modal.chartLeads.deltaText }}</span>
+        </div>
+        <div style="position:relative;height:130px;margin-top:16px">
+          <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
+            <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
+            <path ref="{{ v2Modal.chartLeads.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
+            <path ref="{{ v2Modal.chartLeads.ref }}" fill="none" stroke="#F5411E" stroke-width="2.8" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px;font-weight:700">
+          <span style="color:var(--muted)">V1 : {{ v2Modal.chartLeads.v1ValText }}</span>
+          <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartLeads.v2ValText }}</span>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:30px 0 12px">Funnel semaine par semaine</div>
+    <div style="overflow-x:auto">
+      <div style="min-width:1200px">
+        <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
+          <span>Période</span><span style="text-align:right">Sess. parent</span><span style="text-align:right">Sess. reprise</span><span style="text-align:right">Leads</span><span style="text-align:right">Leads/j</span><span style="text-align:right">Accueil</span><span style="text-align:right">Version</span><span style="text-align:right">Kilométrage</span><span style="text-align:right">Coordonnées</span><span style="text-align:right">PDV</span><span style="text-align:right">Estimation</span><span style="text-align:right">Δ vs V1</span>
+        </div>
+        <sc-for list="{{ v2Modal.rows }}" as="row" hint-placeholder-count="6">
+          <div style="{{ row.rowStyle }}">
+            <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
+              <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ row.periode }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsParent }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsReprise }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leads }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leadsParJour }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.0 }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.1 }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.2 }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.3 }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.4 }}</span>
+              <span style="text-align:right;font-size:14.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ row.conversion }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;{{ row.deltaStyle }}">{{ row.delta }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:24px 0 12px">Répartition mobile / desktop</div>
+    <div style="overflow-x:auto">
+      <div style="min-width:560px">
+        <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
+          <span>Période</span><span style="text-align:right">Mobile</span><span style="text-align:right">Desktop</span><span style="text-align:right">Autres</span><span style="text-align:right">Δ Mobile vs V1</span>
+        </div>
+        <sc-for list="{{ v2Modal.deviceRows }}" as="dr" hint-placeholder-count="6">
+          <div style="{{ dr.rowStyle }}">
+            <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
+              <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ dr.periode }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ dr.mobilePct }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ dr.desktopPct }}</span>
+              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ dr.autresPct }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums;{{ dr.mobileDeltaStyle }}">{{ dr.mobileDelta }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
   </div>
   </sc-if>
 
@@ -963,6 +1043,43 @@ function sparkPath(values) {
   if (!values || values.length < 2) return "M0 30 L120 30";
   const min = Math.min(...values), max = Math.max(...values);
   return smoothPath(values, 120, 30, min, max === min ? min + 1 : max);
+}
+
+/* courbe V1 (reference, plate) vs V2 (une valeur par semaine ecoulee depuis
+   la bascule) pour la modale de detail du rapport V2 — siteRaw contient une
+   entree par periode (isBaseline + une par semaine), valueFn en extrait la
+   grandeur comparee (ex : sessions parent par jour). Le tracé V2 se dessine
+   via revealPath (cf. plus haut : un clip-path anime a la main, immunise
+   contre les soucis d'echelle non uniforme rencontres sur les autres
+   graphiques), la reference V1 est une simple ligne pointillee statique. */
+function buildV2Chart(siteRaw, valueFn, unite) {
+  const weeks = siteRaw.filter(r => !r.isBaseline);
+  const baseline = siteRaw.find(r => r.isBaseline);
+  if (!weeks.length || !baseline) return null;
+  const v2Vals = weeks.map(r => { const v = valueFn(r); return v == null ? 0 : v; });
+  const v1Val = valueFn(baseline) || 0;
+  const W = 460, H = 130;
+  const max = Math.max(...v2Vals, v1Val, 1) * 1.1;
+  const v2Path = smoothPath(v2Vals.length > 1 ? v2Vals : [v2Vals[0] || 0, v2Vals[0] || 0], W, H, 0, max);
+  const v1Y = (H - v1Val / max * H).toFixed(1);
+  const v1Path = `M0 ${v1Y} L${W} ${v1Y}`;
+  const lastVal = v2Vals[v2Vals.length - 1];
+  const deltaPct = v1Val ? (lastVal - v1Val) / v1Val * 100 : null;
+  return {
+    ref: el => revealPath(el, v2Path, 250, 1000),
+    // ligne V1 : juste une reference statique en pointilles (pas de dessin
+    // progressif) — setAnimatedAttrs ne convient pas ici, elle y ecraserait
+    // le style "5 4" en dur avec le dasharray calcule pour l'animation de
+    // tracé des courbes (pensee pour drawLine/revealPath, pas pour un trait
+    // pointille fixe), rendant la ligne invisible faute d'animation qui
+    // ramene son stroke-dashoffset a 0.
+    v1Ref: el => { if (el) el.setAttribute("d", v1Path); },
+    w: W, h: H,
+    v1ValText: dec(v1Val, 1) + " " + unite, v2ValText: dec(lastVal, 1) + " " + unite,
+    deltaText: deltaPct == null ? "—" : (deltaPct >= 0 ? "+" : "") + dec(deltaPct, 0) + " %",
+    deltaStyle: "font-weight:800;font-variant-numeric:tabular-nums;color:" + (deltaPct == null ? "var(--muted)" : deltaPct >= 0 ? "var(--pos)" : "var(--neg)"),
+    axisLabels: weeks.map(r => r.periode),
+  };
 }
 
 /* distingue visuellement une alerte d'une opportunite dans les cartes
@@ -1402,6 +1519,25 @@ class Component extends DCLogic {
     this.forceUpdate();
   }
 
+  /* modale de detail V2 : fermeture differee (220ms) pour laisser l'animation
+     de sortie (modalPanelOut/modalBackdropOut) se jouer avant de retirer le
+     noeud du DOM — sans ca la modale disparaitrait d'un coup. */
+  openV2Modal(site) {
+    this._v2ModalSite = site;
+    this._v2ModalClosing = false;
+    this.forceUpdate();
+  }
+  closeV2Modal() {
+    if (!this._v2ModalSite) return;
+    this._v2ModalClosing = true;
+    this.forceUpdate();
+    setTimeout(() => {
+      this._v2ModalSite = null;
+      this._v2ModalClosing = false;
+      this.forceUpdate();
+    }, 220);
+  }
+
   exportV2Csv() {
     const rows = this._v2RawRows || [];
     if (!rows.length) return;
@@ -1490,7 +1626,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
@@ -1718,12 +1854,13 @@ class Component extends DCLogic {
     // propre reference V1 (tout l'historique avant sa bascule) et sa propre
     // liste de semaines depuis sa bascule, deja calculees par le pipeline
     // (pipeline/v2_report.py) — jamais recalcule cote client. Une card par
-    // site (repliee par defaut, cliquable pour deplier le detail) plutot
-    // qu'un seul grand tableau : la densite d'info par ligne y devenait
-    // illisible des que plusieurs sites etaient selectionnes a la fois.
+    // site plutot qu'un seul grand tableau : la densite d'info par ligne y
+    // devenait illisible des que plusieurs sites etaient selectionnes a la
+    // fois. Le detail (funnel, appareil, courbes V1 vs V2) s'ouvre dans une
+    // modale plutot qu'en ligne : a 8 sites, une card qui se deplie sur
+    // place repousse toutes les suivantes plus bas a chaque clic.
     const v2RawRows = [];
     const V2_STEP_KEYS = ["accueil", "version", "kilometrage", "coordonnees", "pointDeVente", "estimation"];
-    if (!this._v2Expanded) this._v2Expanded = {};
     // DEVICE (appareil) n'a que 3 familles utiles a l'oeil : mobile, desktop, le
     // reste. Le regroupement se fait ici, sur le libelle brut remonte par le
     // pipeline (pipeline/leads_extract.py), plutot que de figer une liste de
@@ -1766,7 +1903,7 @@ class Component extends DCLogic {
         const mobileDelta = (!isBaseline && mobilePct != null && baseMobilePct != null)
           ? mobilePct - baseMobilePct : null;
         const raw = {
-          marque: s, periode: label, debut: periode.debut, fin: periode.fin, jours: periode.jours,
+          marque: s, periode: label, isBaseline, debut: periode.debut, fin: periode.fin, jours: periode.jours,
           sessionsParent: periode.sessionsParent, sessionsReprise: periode.sessionsReprise,
           leads: periode.leads, leadsParJour: periode.leadsPerDay,
           conversionPct: periode.conversionPct, deltaPts: delta,
@@ -1800,12 +1937,12 @@ class Component extends DCLogic {
 
       const latest = siteRaw[siteRaw.length - 1];
       const hasWeeks = w.weeks.length > 0;
-      const expanded = !!this._v2Expanded[s];
+      const chartSessions = hasWeeks ? buildV2Chart(siteRaw, r => r.jours ? r.sessionsParent / r.jours : null, "sess./j") : null;
+      const chartLeads = hasWeeks ? buildV2Chart(siteRaw, r => r.leadsParJour, "leads/j") : null;
       v2Cards.push({
-        site: s, expanded,
-        toggle: () => { this._v2Expanded[s] = !this._v2Expanded[s]; this.forceUpdate(); },
-        wrapStyle: "grid-column:" + (expanded ? "1 / -1" : "auto") + ";animation:riseIn .5s cubic-bezier(.2,.7,.3,1) " + Math.min(0.5, v2Cards.length * 0.05) + "s both",
-        chevronStyle: "transform:rotate(" + (expanded ? "180deg" : "0deg") + ");transition:transform .25s ease;color:var(--muted);flex:none",
+        site: s,
+        openModal: () => this.openV2Modal(s),
+        wrapStyle: "animation:riseIn .5s cubic-bezier(.2,.7,.3,1) " + Math.min(0.5, v2Cards.length * 0.05) + "s both",
         weeksLabel: hasWeeks ? w.weeks.length + " semaine" + (w.weeks.length > 1 ? "s" : "") + " suivies depuis la V2" : "Référence V1 uniquement",
         latestPeriodLabel: latest.periode,
         badgeText: !hasWeeks || latest.deltaPts == null ? "—" : (latest.deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(latest.deltaPts), 1) + " pts",
@@ -1819,11 +1956,29 @@ class Component extends DCLogic {
         mobileDeltaText: !hasWeeks || latest.mobileDeltaPts == null ? "" : "(" + (latest.mobileDeltaPts >= 0 ? "+" : "") + dec(latest.mobileDeltaPts, 1) + " pts vs V1)",
         mobileDeltaStyle: "font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" +
           (!hasWeeks || latest.mobileDeltaPts == null ? "var(--muted)" : latest.mobileDeltaPts >= 0 ? "var(--pos)" : "var(--neg)"),
-        rows, deviceRows,
+        rows, deviceRows, chartSessions, chartLeads, hasCharts: !!(chartSessions && chartLeads),
       });
     }
     this._v2RawRows = v2RawRows;
     const hasV2Rows = v2Cards.length > 0, noV2Rows = !hasV2Rows;
+
+    // ---- modale de detail : construite a part, sur la meme donnee que la
+    // card correspondante, seulement quand une card est ouverte ----
+    const v2ModalCard = this._v2ModalSite ? v2Cards.find(c => c.site === this._v2ModalSite) : null;
+    const v2Modal = v2ModalCard ? {
+      ...v2ModalCard,
+      close: () => this.closeV2Modal(),
+      // enveloppe fixe centree en flex plutot que inset:0+margin:auto : avec
+      // top/bottom a 0 et une hauteur en contenu (max-height, pas height),
+      // le centrage vertical par marges automatiques n'est pas garanti par
+      // la spec CSS — le flex centering est le seul procede fiable partout.
+      wrapStyle: "position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box",
+      backdropStyle: "position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:" +
+        (this._v2ModalClosing ? "modalBackdropOut" : "modalBackdropIn") + " .22s ease both",
+      panelStyle: "position:relative;z-index:1;width:min(1160px,100%);max-height:100%;overflow-y:auto;background:var(--card);border-radius:28px;padding:36px 40px 44px;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 60px 140px -30px var(--shadow),0 0 100px -16px rgba(245,65,30,.4);animation:" +
+        (this._v2ModalClosing ? "modalPanelOut" : "modalPanelIn") + " .32s cubic-bezier(.2,.8,.3,1.05) both",
+    } : null;
+    const hasV2Modal = !!v2Modal;
 
     const compPct = agg.funnelSteps && agg.funnelSteps.length ? (agg.funnelSteps[agg.funnelSteps.length-1].users / (agg.funnelSteps[0].users || 1) * 100) : 0;
     const gaugeFrac = Math.max(0, Math.min(1, compPct / 100));
@@ -1961,7 +2116,7 @@ class Component extends DCLogic {
       tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       funnel, projects, audience, leadCells, queries, pages,
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2",
-      v2Cards, hasV2Rows, noV2Rows, v2ExportCsv: () => this.exportV2Csv(),
+      v2Cards, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       isLight: st.theme === "light", isDark: st.theme === "dark",
       toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
