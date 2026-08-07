@@ -232,7 +232,7 @@ input[type=date]{color-scheme:dark}
     </div>
     <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
-      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
         <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
           <span style="{{ t.markWrap }}">
             <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
@@ -243,6 +243,9 @@ input[type=date]{color-scheme:dark}
             </sc-if>
             <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
+            </sc-if>
+            <sc-if value="{{ t.isPerfTab }}" hint-placeholder-val="{{ false }}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="m14.1 12.9 4.2-4.2"></path><path d="M3 13a9 9 0 0 1 18 0"></path></svg>
             </sc-if>
             <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
               <div style="{{ t.hermesLogoWrapStyle }}"><img src="{{ t.hermesLogoSrc }}" alt="" style="{{ t.hermesLogoImgStyle }}"></div>
@@ -914,6 +917,43 @@ input[type=date]{color-scheme:dark}
       <sc-if value="{{ noV2Rows }}" hint-placeholder-val="{{ true }}">
         <div style="padding:60px 20px;text-align:center">
           <div style="font-size:15px;font-weight:500;color:var(--muted)">Aucune donnée V2 disponible pour ce périmètre — sélectionne un ou plusieurs sites déjà basculés en V2.</div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isPerf }}" hint-placeholder-val="{{ false }}">
+  <div style="margin-top:24px">
+    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+      <div>
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des outils de reprise</div>
+        <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
+      </div>
+
+      <sc-if value="{{ hasPerfRows }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top:22px">
+        <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr .8fr .8fr 1fr;gap:14px;padding:12px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:600;color:var(--muted)">
+          <span>Site</span><span style="text-align:right">Mobile</span><span style="text-align:right">Desktop</span>
+          <span style="text-align:right">LCP</span><span style="text-align:right">CLS</span><span style="text-align:right">TBT</span>
+          <span style="text-align:right">Relevé</span>
+        </div>
+        <sc-for list="{{ perfRows }}" as="r" hint-placeholder-count="10">
+          <div style="display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr .8fr .8fr 1fr;gap:14px;align-items:center;padding:14px 12px;border-bottom:1px solid var(--line)">
+            <span style="font-size:16px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+            <span style="text-align:right;{{ r.mobile.style }}">{{ r.mobile.label }}</span>
+            <span style="text-align:right;{{ r.desktop.style }}">{{ r.desktop.label }}</span>
+            <span style="text-align:right;font-size:15px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.lcp }}</span>
+            <span style="text-align:right;font-size:15px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.cls }}</span>
+            <span style="text-align:right;font-size:15px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ r.tbt }}</span>
+            <span style="text-align:right;font-size:13.5px;font-weight:500;color:var(--muted2)">{{ r.releve }}</span>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{ noPerfRows }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:60px 20px;text-align:center">
+          <div style="font-size:15px;font-weight:500;color:var(--muted)">Aucun relevé de performance disponible pour le moment.</div>
         </div>
       </sc-if>
     </div>
@@ -2105,7 +2145,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant", v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance", perfRows: [], hasPerfRows: false, noPerfRows: true, v2Cards: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
@@ -2147,7 +2187,7 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    const tabs = [["ga4", "Google Analytics"], ["gsc", "Search Console"], ["v2", "V2"], ["assistant", "Hermès"]].map(t => {
+    const tabs = [["ga4", "Google Analytics"], ["gsc", "Search Console"], ["v2", "V2"], ["performance", "Performance"], ["assistant", "Hermès"]].map(t => {
       const on = st.tab === t[0];
       // le badge de l'onglet actif est toujours clair (var(--active-mark))
       // et celui d'un onglet inactif suit le theme (var(--soft), sombre en
@@ -2156,7 +2196,7 @@ class Component extends DCLogic {
       const badgeIsLight = on ? st.theme === "dark" : st.theme === "light";
       const hermes = badgeIsLight ? HERMES_LOGO_CROP.tabNoir : HERMES_LOGO_CROP.tabBlanc;
       return {
-        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isAssistantTab: t[0] === "assistant",
+        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isPerfTab: t[0] === "performance", isAssistantTab: t[0] === "assistant",
         hermesLogoSrc: hermes.src, hermesLogoWrapStyle: hermes.wrapStyle, hermesLogoImgStyle: hermes.imgStyle,
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
@@ -2755,6 +2795,27 @@ class Component extends DCLogic {
         icon: "search", text: "Pourquoi les leads ont-ils varié récemment ? Croise trafic, funnel et sources, et propose des actions." },
     ].map(q => ({ ...q, isBars: q.icon === "bars", isFunnel: q.icon === "funnel", isCompare: q.icon === "compare", isSearch: q.icon === "search", pick: () => this.pickQuickQuestion(q.text) }));
 
+    const perfScoreColor = score => score == null ? "var(--muted2)" : score >= 90 ? "#22C55E" : score >= 50 ? "#F5A524" : "#EF4444";
+    const perfScoreCell = score => ({
+      label: score == null ? "—" : String(score),
+      style: "font-size:20px;font-weight:800;letter-spacing:-.3px;font-variant-numeric:tabular-nums;color:" + perfScoreColor(score),
+    });
+    const perfRows = ALL.map(n => {
+      const d = this.data[n];
+      const ps = d && d.pagespeed;
+      const m = ps && ps.mobile, de = ps && ps.desktop;
+      return {
+        name: n, hasData: !!ps,
+        mobile: perfScoreCell(m && m.score),
+        desktop: perfScoreCell(de && de.score),
+        lcp: m && m.lcp != null ? (m.lcp / 1000).toFixed(1) + " s" : "—",
+        cls: m && m.cls != null ? m.cls.toFixed(2) : "—",
+        tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
+        releve: ps ? ps.releve : "non mesuré",
+        sortKey: m && m.score != null ? m.score : 999,
+      };
+    }).sort((a, b) => a.sortKey - b.sortKey);
+
     const chatScopeSites = ALL.map(n => ({
       name: n, on: st.chatScope.includes(n),
       toggle: () => this.toggleChatScopeSite(n),
@@ -2772,8 +2833,10 @@ class Component extends DCLogic {
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
       funnel, projects, audience, leadCells, queries, pages,
-      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant",
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
+      showScopeBar: st.tab !== "assistant" && st.tab !== "performance",
       v2Cards, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
+      perfRows, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
