@@ -13,9 +13,19 @@ supposition. Un trou signale vaut mieux qu'un chiffre faux.
 
 import re
 
-# un hote de reprise porte "retoma" (marches lusophones et hispanophones) ou
-# "reprise" (marches francophones) dans son sous-domaine
-MOTIFS_REPRISE = (r"\bretoma\b", r"\breprise\b", r"retoma-", r"reprise-")
+# le mot pour "reprise" (ou son equivalent -- rachat/estimation du vehicule)
+# change de sous-domaine selon le marche ; liste communiquee marche par
+# marche (jamais devinee) : "retoma" (PT/ES sur certaines marques),
+# "reprise"/"overname" (FR/BE), "tasacion" (ES), "valutazioneusato" /
+# "valutiamoiltuousato" (IT), "odkup" (PL), "autoankauf" /
+# "kauft-dein-auto" / "kauft-ihr-auto" / "wir-kaufen-ihr-auto" (DE/AT),
+# "tradein" (UK).
+MOTIFS_REPRISE = (
+    r"\bretoma\b", r"\breprise\b", r"retoma-", r"reprise-",
+    r"overname", r"tasacion", r"valutazioneusato", r"valutiamoiltuousato",
+    r"odkup", r"autoankauf", r"kauft-dein-auto", r"kauft-ihr-auto",
+    r"wir-kaufen-ihr-auto", r"\btradein\b", r"trade-in",
+)
 
 # hotes a ecarter d'office : recette, preproduction, boutique, outils tiers
 MOTIFS_EXCLUS = (
