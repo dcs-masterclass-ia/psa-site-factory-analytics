@@ -50,11 +50,13 @@ COL_DOUBLON = "DOUBLON"
 COL_TEST = "TEST"
 COL_TEST_INTERNE = "TEST_INTERNE"
 COL_MODE = "MODE"
-# BP = appareil (mobile / desktop / tablette). Valeurs non normalisees ici :
-# le pipeline transporte le libelle brut du back-office tel quel, le
-# regroupement (mobile/desktop/autres) se fait cote dashboard, generique,
-# sans supposer la casse ou l'orthographe exacte de la colonne source.
-COL_DEVICE = "BP"
+# appareil (mobile / desktop / tablette). "BP" est la lettre de colonne
+# Excel vue dans l'export, pas le nom du champ — verifie le 07/08/2026 sur un
+# export reel OPEL FR : l'en-tete CSV est "DEVICE", valeurs "mobile"/"desktop"
+# en minuscules. Le pipeline transporte le libelle brut tel quel malgre tout ;
+# le regroupement (mobile/desktop/autres) se fait cote dashboard, generique,
+# sans supposer la casse exacte.
+COL_DEVICE = "DEVICE"
 
 
 def token():
@@ -113,7 +115,7 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
     brand, fuel, project, source, code, device = (Counter() for _ in range(6))
     entree = {"Avec immatriculation": 0, "Marque / modele": 0}
     # comptage jour par jour et par appareil, meme principe que `daily` mais
-    # une serie par valeur trouvee dans BP — sert au rapport hebdomadaire V2
+    # une serie par valeur trouvee dans DEVICE — sert au rapport hebdomadaire V2
     # (pipeline/v2_report.py) a isoler la part mobile/desktop sur une plage
     # de dates arbitraire, pas seulement sur le mois entier.
     daily_device = defaultdict(lambda: [0] * bornes)

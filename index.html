@@ -1732,7 +1732,7 @@ class Component extends DCLogic {
     const v2RawRows = [];
     const V2_STEP_KEYS = ["accueil", "version", "kilometrage", "coordonnees", "pointDeVente", "estimation"];
     if (!this._v2Expanded) this._v2Expanded = {};
-    // BP (appareil) n'a que 3 familles utiles a l'oeil : mobile, desktop, le
+    // DEVICE (appareil) n'a que 3 familles utiles a l'oeil : mobile, desktop, le
     // reste. Le regroupement se fait ici, sur le libelle brut remonte par le
     // pipeline (pipeline/leads_extract.py), plutot que de figer une liste de
     // valeurs exactes cote pipeline — robuste a une orthographe ou une casse
