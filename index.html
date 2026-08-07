@@ -941,51 +941,69 @@ input[type=date]{color-scheme:dark}
     </div>
     </sc-if>
 
-    <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:30px 0 12px">Funnel semaine par semaine</div>
-    <div style="overflow-x:auto">
-      <div style="min-width:1330px">
-        <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px 110px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
-          <span>Période</span><span style="text-align:right">Sess. parent</span><span style="text-align:right">Sess. reprise</span><span style="text-align:right">Leads</span><span style="text-align:right">Leads/j</span><span style="text-align:right">Accueil</span><span style="text-align:right">Version</span><span style="text-align:right">Kilométrage</span><span style="text-align:right">Coordonnées</span><span style="text-align:right">PDV</span><span style="text-align:right">Estimation</span><span style="text-align:right">Conversion</span><span style="text-align:right">Δ vs V1</span>
-        </div>
-        <sc-for list="{{ v2Modal.rows }}" as="row" hint-placeholder-count="6">
-          <div style="{{ row.rowStyle }}">
-            <div style="display:grid;grid-template-columns:130px 100px 100px 80px 80px 74px 74px 90px 100px 74px 90px 100px 110px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
-              <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ row.periode }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsParent }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.sessionsReprise }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leads }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ row.leadsParJour }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.0 }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.1 }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.2 }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.3 }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.4 }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ row.steps.5 }}</span>
-              <span style="text-align:right;font-size:14.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ row.conversion }}</span>
-              <span style="text-align:right;font-variant-numeric:tabular-nums;{{ row.deltaStyle }}">{{ row.delta }}</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:32px">
+      <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">Funnel — dernière semaine vs V1</div>
+        <sc-if value="{{ v2Modal.hasFunnelCompact }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ v2Modal.funnelCompact }}" as="fs" hint-placeholder-count="6">
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px">
+                <span style="font-size:12.5px;font-weight:700;color:var(--text2)">{{ fs.name }}</span>
+                <span style="display:flex;align-items:center;gap:9px">
+                  <span style="font-size:13.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ fs.v2Text }}</span>
+                  <span style="{{ fs.deltaStyle }}">{{ fs.deltaText }}</span>
+                </span>
+              </div>
+              <div style="position:relative;height:8px;background:var(--card);border-radius:4px">
+                <div style="{{ fs.barStyle }}"></div>
+                <div style="{{ fs.markerStyle }}"></div>
+              </div>
             </div>
-          </div>
-        </sc-for>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:7px;margin-top:18px;font-size:11.5px;font-weight:600;color:var(--muted)">
+          <span style="width:10px;height:2px;background:var(--text2);display:inline-block;border-radius:1px"></span>
+          Repère : niveau V1
+        </div>
+        </sc-if>
       </div>
-    </div>
 
-    <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin:24px 0 12px">Répartition mobile / desktop</div>
-    <div style="overflow-x:auto">
-      <div style="min-width:560px">
-        <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:0 14px 12px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">
-          <span>Période</span><span style="text-align:right">Mobile</span><span style="text-align:right">Desktop</span><span style="text-align:right">Autres</span><span style="text-align:right">Δ Mobile vs V1</span>
+      <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
+        <div style="font-size:14px;font-weight:800;color:var(--text)">Répartition par appareil</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:20px">
+          <span style="font-size:32px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ v2Modal.deviceMobilePct }}</span>
+          <span style="{{ v2Modal.mobileDeltaStyle }}">{{ v2Modal.mobileDeltaText }}</span>
         </div>
-        <sc-for list="{{ v2Modal.deviceRows }}" as="dr" hint-placeholder-count="6">
-          <div style="{{ dr.rowStyle }}">
-            <div style="display:grid;grid-template-columns:130px 100px 100px 100px 130px;gap:10px;padding:12px 14px;border-radius:12px;align-items:center">
-              <span style="font-size:13.5px;font-weight:600;color:var(--text2);white-space:nowrap">{{ dr.periode }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ dr.mobilePct }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2);font-variant-numeric:tabular-nums">{{ dr.desktopPct }}</span>
-              <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums">{{ dr.autresPct }}</span>
-              <span style="text-align:right;font-variant-numeric:tabular-nums;{{ dr.mobileDeltaStyle }}">{{ dr.mobileDelta }}</span>
-            </div>
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">part mobile, dernière semaine</div>
+        <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:18px">
+          <div style="{{ v2Modal.deviceMobileBarStyle }}"></div>
+          <div style="{{ v2Modal.deviceDesktopBarStyle }}"></div>
+          <div style="{{ v2Modal.deviceAutresBarStyle }}"></div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;font-weight:600;color:var(--text2)">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#4A9BF5;display:inline-block"></span>Mobile {{ v2Modal.deviceMobilePct }}</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#7B7BF0;display:inline-block"></span>Desktop {{ v2Modal.deviceDesktopPct }}</span>
+          <sc-if value="{{ v2Modal.hasAutres }}" hint-placeholder-val="{{ false }}">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--muted2);display:inline-block"></span>Autres {{ v2Modal.deviceAutresPct }}</span>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ v2Modal.hasChartMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
+          <div style="font-size:12px;font-weight:700;color:var(--text2)">Évolution de la part mobile</div>
+          <div style="position:relative;height:80px;margin-top:10px">
+            <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
+              <path ref="{{ v2Modal.chartMobile.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
+              <path ref="{{ v2Modal.chartMobile.ref }}" fill="none" stroke="#4A9BF5" stroke-width="2.4" stroke-linecap="round"></path>
+            </svg>
           </div>
-        </sc-for>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;font-weight:700">
+            <span style="color:var(--muted)">V1 : {{ v2Modal.chartMobile.v1ValText }}</span>
+            <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartMobile.v2ValText }}</span>
+          </div>
+        </div>
+        </sc-if>
       </div>
     </div>
   </div>
@@ -1891,7 +1909,7 @@ class Component extends DCLogic {
       const baseDeviceTotal = baseDevice.mobile + baseDevice.desktop + baseDevice.autres;
       const baseMobilePct = baseDeviceTotal ? baseDevice.mobile / baseDeviceTotal * 100 : null;
 
-      const rows = [], deviceRows = [], siteRaw = [];
+      const siteRaw = [];
       const ajoute = (periode, label, isBaseline) => {
         const steps = periode.funnel || [];
         const first = steps[0];
@@ -1917,25 +1935,6 @@ class Component extends DCLogic {
         V2_STEP_KEYS.forEach((k, i) => { raw[k] = stepPcts[i]; });
         v2RawRows.push(raw);
         siteRaw.push(raw);
-        rows.push({
-          isBaseline, periode: label,
-          sessionsParent: fmt(periode.sessionsParent), sessionsReprise: fmt(periode.sessionsReprise),
-          leads: fmt(periode.leads), leadsParJour: dec(periode.leadsPerDay, 1),
-          steps: stepPcts.map(p => p == null ? "—" : dec(p, 0) + " %"),
-          conversion: periode.conversionPct != null ? dec(periode.conversionPct, 1) + " %" : "—",
-          delta: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 1) + " pts",
-          deltaStyle: "font-weight:700;font-variant-numeric:tabular-nums;color:" + (delta == null ? "var(--muted)" : delta >= 0 ? "var(--pos)" : "var(--neg)"),
-          rowStyle: (isBaseline ? "background:var(--soft);" : "") + "animation:riseIn .4s ease " + Math.min(0.5, rows.length * 0.03) + "s both",
-        });
-        deviceRows.push({
-          isBaseline, periode: label,
-          mobilePct: mobilePct == null ? "—" : dec(mobilePct, 0) + " %",
-          desktopPct: desktopPct == null ? "—" : dec(desktopPct, 0) + " %",
-          autresPct: dvTotal ? dec(dv.autres / dvTotal * 100, 0) + " %" : "—",
-          mobileDelta: mobileDelta == null ? "—" : (mobileDelta >= 0 ? "+" : "") + dec(mobileDelta, 1) + " pts",
-          mobileDeltaStyle: "font-weight:700;font-variant-numeric:tabular-nums;color:" + (mobileDelta == null ? "var(--muted)" : mobileDelta >= 0 ? "var(--pos)" : "var(--neg)"),
-          rowStyle: isBaseline ? "background:var(--soft);" : "",
-        });
       };
       ajoute(w.baseline, "V1 (référence)", true);
       for (const wk of w.weeks) ajoute(wk, wk.label, false);
@@ -1944,6 +1943,29 @@ class Component extends DCLogic {
       const hasWeeks = w.weeks.length > 0;
       const chartSessions = hasWeeks ? buildV2Chart(siteRaw, r => r.jours ? r.sessionsParent / r.jours : null, "sess./j") : null;
       const chartLeads = hasWeeks ? buildV2Chart(siteRaw, r => r.leadsParJour, "leads/j") : null;
+      const chartMobile = hasWeeks ? buildV2Chart(siteRaw, r => r.mobilePct, "%") : null;
+      // funnel condense : dernière semaine vs V1, une barre par étape plutôt
+      // qu'un tableau d'une ligne par semaine — le detail semaine par semaine
+      // du volume est deja dans les courbes sessions/leads juste au-dessus,
+      // ce qui manquait ici c'est la FORME de l'entonnoir, pas son historique.
+      const baseline0 = siteRaw[0];
+      const funnelCompact = hasWeeks ? V2_STEP_KEYS.map((k, i) => {
+        const v1 = baseline0[k], v2 = latest[k];
+        const delta = (v1 != null && v2 != null) ? v2 - v1 : null;
+        return {
+          name: V2_STEP_LABELS[i],
+          v2Text: v2 == null ? "—" : dec(v2, 0) + " %",
+          barStyle: "position:absolute;inset:0;border-radius:4px;width:" + Math.max(0, Math.min(100, v2 || 0)) + "%;background:linear-gradient(90deg,#F5411E,#F9AB00);animation:growW .8s cubic-bezier(.3,.8,.3,1) " + (0.1 + i * 0.06) + "s both",
+          markerStyle: v1 == null ? "display:none" : "position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--text2);left:" + Math.max(0, Math.min(100, v1)).toFixed(1) + "%",
+          deltaText: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 0) + " pts",
+          deltaStyle: "font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:" + (delta == null ? "var(--muted)" : delta >= 0 ? "var(--pos)" : "var(--neg)"),
+        };
+      }) : [];
+      // repartition appareil condensee : barre segmentee de la derniere
+      // semaine plutot qu'un tableau d'une ligne par semaine — le delta
+      // mobile vs V1 est deja calcule pour la card (mobileDeltaText).
+      const dMobile = latest.mobilePct || 0, dDesktop = latest.desktopPct || 0;
+      const dAutres = (latest.mobilePct != null && latest.desktopPct != null) ? Math.max(0, 100 - dMobile - dDesktop) : 0;
       const convOk = hasWeeks && latest.deltaPts != null;
       const convColor = !convOk ? "var(--muted)" : latest.deltaPts >= 0 ? "var(--pos)" : "var(--neg)";
       const mobOk = hasWeeks && latest.mobileDeltaPts != null;
@@ -1972,7 +1994,13 @@ class Component extends DCLogic {
         mobilePct: latest.mobilePct == null ? "—" : dec(latest.mobilePct, 0) + " %",
         mobileDeltaText: !mobOk ? "" : (latest.mobileDeltaPts >= 0 ? "+" : "") + dec(latest.mobileDeltaPts, 1) + " pts vs V1",
         mobileDeltaStyle: "font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" + mobColor,
-        rows, deviceRows, chartSessions, chartLeads, hasCharts: !!(chartSessions && chartLeads),
+        chartSessions, chartLeads, chartMobile, hasCharts: !!(chartSessions && chartLeads), hasChartMobile: !!chartMobile,
+        funnelCompact, hasFunnelCompact: funnelCompact.length > 0,
+        deviceMobilePct: dec(dMobile, 0) + " %", deviceDesktopPct: dec(dDesktop, 0) + " %", deviceAutresPct: dec(dAutres, 0) + " %",
+        hasAutres: dAutres >= 1,
+        deviceMobileBarStyle: "width:" + dMobile.toFixed(1) + "%;background:#4A9BF5;animation:growW .8s cubic-bezier(.3,.8,.3,1) .1s both",
+        deviceDesktopBarStyle: "width:" + dDesktop.toFixed(1) + "%;background:#7B7BF0;animation:growW .8s cubic-bezier(.3,.8,.3,1) .18s both",
+        deviceAutresBarStyle: "width:" + dAutres.toFixed(1) + "%;background:var(--muted2);animation:growW .8s cubic-bezier(.3,.8,.3,1) .26s both",
       });
     }
     this._v2RawRows = v2RawRows;
