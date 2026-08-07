@@ -213,22 +213,31 @@ def _via_mot_cle(cli, pid, hote, debut, fin):
 
 
 def funnel_mensuel(cli, pid, hote, debut, fin):
-    """Retourne (steps, methode) ou (None, motif_echec)."""
+    """Retourne (steps, methode) ou (None, motif_echec).
+
+    Python supprime la variable d'un `except ... as e` a la sortie du bloc
+    (pour ne pas garder la traceback en vie) : la reutiliser dans un except
+    suivant leve UnboundLocalError. D'ou motifs{}, rempli avant que chaque
+    variable ne disparaisse -- bug reel du 07/08/2026, une erreur GA4
+    transitoire (504 DeadlineExceeded) sur la derniere piste faisait perdre
+    tout le site au lieu de simplement marquer le mois sans funnel."""
+    motifs = {}
     try:
         return _via_alpha(pid, hote, debut, fin), \
                "runFunnelReport (API alpha, entonnoir strict)"
     except Exception as e_alpha:
-        pass
+        motifs["alpha"] = str(e_alpha)
     try:
         return _via_step_name(cli, pid, hote, debut, fin), \
                "dimension step_name (repli fidele a l'exploration GA4)"
     except Exception as e_step:
-        pass
+        motifs["step_name"] = str(e_step)
     try:
         return _via_mot_cle(cli, pid, hote, debut, fin), \
                "repli par mot-cle sur eventName (approximation)"
     except Exception as e_mot:
-        return None, f"alpha: {e_alpha} | step_name: {e_step} | mot-cle: {e_mot}"
+        motifs["mot_cle"] = str(e_mot)
+    return None, f"alpha: {motifs['alpha']} | step_name: {motifs['step_name']} | mot-cle: {motifs['mot_cle']}"
 
 
 def bloc_funnel(cli, pid, hote, debut, fin, jours):
