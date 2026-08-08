@@ -2908,7 +2908,7 @@ class Component extends DCLogic {
         label: t[1],
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
-        style: "position:relative;z-index:1;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "500" : "400") + ";height:50px;padding:0 22px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+        style: "position:relative;z-index:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "600" : "400") + ";height:50px;padding:0 22px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
       };
     });
     const tabFadeStyle = "margin-top:24px;transition:opacity .2s ease,transform .32s cubic-bezier(.3,.7,.4,1);opacity:" + (st.tabSwitching ? "0" : "1") + ";transform:" + (st.tabSwitching ? "translateY(6px) scale(.99)" : "translateY(0) scale(1)");
