@@ -40,9 +40,8 @@ function getSeries(site, metric, months) {
     const mois = (months && months.length ? months : dispo).filter(m => raw.leads[m]).sort();
     const labels = [], values = [];
     for (const m of mois) {
-      const mm = m.slice(5, 7);
       (raw.leads[m].daily || []).forEach((v, i) => {
-        labels.push(mm + "-" + String(i + 1).padStart(2, "0"));
+        labels.push(m + "-" + String(i + 1).padStart(2, "0"));
         values.push(v || 0);
       });
     }
@@ -55,10 +54,14 @@ function getSeries(site, metric, months) {
   const allLabels = d.d || [];
   const allValues = d[key] || [];
   if (!months || !months.length) return { labels: allLabels, values: allValues.map(v => v || 0) };
-  const wantedMM = new Set(months.map(m => m.slice(5, 7)));
+  // dates completes "YYYY-MM-DD" (voir pipeline/build.py, migre le 08/08/2026) :
+  // comparer sur les 7 premiers caracteres ("YYYY-MM"), jamais sur le seul
+  // numero de mois -- deux annees differentes partagent le meme "MM" des que
+  // la fenetre depasse 12 mois.
+  const wanted = new Set(months);
   const labels = [], values = [];
   allLabels.forEach((lab, i) => {
-    if (wantedMM.has(String(lab).slice(0, 2))) { labels.push(lab); values.push(allValues[i] || 0); }
+    if (wanted.has(String(lab).slice(0, 7))) { labels.push(lab); values.push(allValues[i] || 0); }
   });
   return { labels, values };
 }

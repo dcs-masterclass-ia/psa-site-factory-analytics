@@ -44,7 +44,7 @@ def dimension_canal(cli, pid, hote, debut, fin):
 
 
 def canal_quotidien(cli, pid, hote, debut, fin):
-    """Retourne (dimension_utilisee, {'MM-DD': {canal: sessions}}) ou (None, {})."""
+    """Retourne (dimension_utilisee, {'YYYY-MM-DD': {canal: sessions}}) ou (None, {})."""
     dim = dimension_canal(cli, pid, hote, debut, fin)
     if not dim:
         return None, {}
@@ -54,8 +54,10 @@ def canal_quotidien(cli, pid, hote, debut, fin):
     for date, canal, sess in lignes:
         if len(date) != 8 or not date.isdigit():
             continue
-        md = f"{date[4:6]}-{date[6:]}"
-        par_jour.setdefault(md, {})[canal.strip() or "(non défini)"] = int(sess)
+        # annee incluse (pas seulement "MM-DD") : indispensable des que la
+        # fenetre depasse 12 mois, memes raisons que pipeline/build.py.
+        ymd = f"{date[:4]}-{date[4:6]}-{date[6:]}"
+        par_jour.setdefault(ymd, {})[canal.strip() or "(non défini)"] = int(sess)
     return dim, par_jour
 
 

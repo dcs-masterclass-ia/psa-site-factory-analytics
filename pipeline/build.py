@@ -119,6 +119,13 @@ def _decoupe_daily_existant(existant):
     for m in existant.get("months", []):
         nb_jours = (existant.get("meta", {}).get(m) or {}).get("days", 0)
         par_mois[m] = {c: (daily.get(c) or [])[i:i + nb_jours] for c in cles}
+        # migration "MM-DD" (ancien format, 5 caracteres) -> "YYYY-MM-DD" :
+        # decouvert le 08/08/2026, une fenetre de 16 mois fait forcement
+        # revenir le meme "MM-DD" deux fois (ex. aout 2025 ET aout 2026),
+        # ce que le dashboard ne peut pas distinguer sans l'annee. Idempotent
+        # (les jours deja au nouveau format ne sont pas retouches) : chaque
+        # site se migre tout seul, au premier passage qui reutilise ce mois.
+        par_mois[m]["d"] = [v if len(v) == 10 else f"{m[:4]}-{v}" for v in par_mois[m]["d"]]
         i += nb_jours
     return par_mois
 
@@ -151,6 +158,13 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
                                           # dimension existe sur la propriete.
+    # migration "MM-DD" -> "YYYY-MM-DD", memes raisons que _decoupe_daily_existant
+    # ci-dessus : les mois preserves tels quels (non retraites ce run)
+    # gardaient sinon indefiniment leurs anciennes cles sans annee.
+    for _mois_c, _jours_c in d["canalQuotidien"].items():
+        for _jour_c in list(_jours_c):
+            if len(_jour_c) == 5:
+                _jours_c[f"{_mois_c[:4]}-{_jour_c}"] = _jours_c.pop(_jour_c)
     d.setdefault("meta", {})
     anomalies = dict(d.get("anomaly") or {})
     ratios, parts = {}, {}
@@ -263,7 +277,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             if cle > limite:
                 break
             cle_iso = f"{an}-{m:02d}-{j:02d}"
-            chunk["d"].append(f"{m:02d}-{j:02d}")
+            # date complete (annee incluse), pas "MM-DD" : indispensable des
+            # que la fenetre depasse 12 mois, sinon deux annees partagent le
+            # meme "MM-DD" et deviennent indistinguables cote dashboard.
+            chunk["d"].append(cle_iso)
             chunk["u"].append(jp.get(cle, 0))
             chunk["rep"].append(jr.get(cle, 0))
             # None (pas 0) au-dela du decalage de publication Search Console :
