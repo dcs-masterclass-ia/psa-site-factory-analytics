@@ -12,7 +12,14 @@ const { callClaude } = require("./anthropic");
 const { loadSite, listSites } = require("./data");
 const { getFile, createBranch, updateFile, createPullRequest } = require("./github");
 
-const SPECIALIST_MODEL = "claude-sonnet-5";
+// Haiku 4.5, pas Sonnet : les agents specialistes resument/interpretent des
+// donnees deja fournies (JSON du site) sur une tache ciblee et courte,
+// jamais une orchestration -- Sonnet etait surdimensionne pour ce role.
+// Concerne ask_agent_analytics/business/ux (chat reactif) ET la veille
+// quotidienne (scripts/hermes_watch.js), qui reutilise askSpecialist.
+// KAM_MODEL (api/agent.js, orchestration+synthese) et DASHBOARD_MODEL
+// (edition de code) restent inchanges, role different.
+const SPECIALIST_MODEL = "claude-haiku-4-5";
 const SPECIALIST_EFFORT = "medium"; // reponses ciblees en 4-8 phrases, pas besoin d'effort eleve
 const DASHBOARD_MODEL = "claude-opus-5";
 const MAX_DASHBOARD_ITERATIONS = 6;
