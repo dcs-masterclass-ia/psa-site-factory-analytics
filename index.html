@@ -1055,9 +1055,9 @@ input[type=date]{color-scheme:dark}
   </sc-if>
 
   <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
-  <div style="margin-top:24px;display:flex;gap:20px;align-items:flex-start">
-   <div style="flex:1 1 70%;min-width:0">
-    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;min-height:680px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+  <div style="margin-top:24px;display:flex;gap:20px;align-items:stretch">
+   <div style="flex:1 1 70%;min-width:0;display:flex;flex-direction:column">
+    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;flex:1;min-height:680px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
 
       <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
         <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
@@ -1214,8 +1214,8 @@ input[type=date]{color-scheme:dark}
     </div>
    </div>
 
-   <div style="flex:1 1 30%;min-width:280px;position:sticky;top:20px">
-    <div style="background:var(--card);border-radius:26px;box-sizing:border-box;min-height:680px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
+   <div style="flex:1 1 30%;min-width:280px;position:sticky;top:20px;display:flex;flex-direction:column">
+    <div style="background:var(--card);border-radius:26px;box-sizing:border-box;flex:1;min-height:680px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
       <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line)">
         <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div>
         <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--muted)">Hermès analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div>
