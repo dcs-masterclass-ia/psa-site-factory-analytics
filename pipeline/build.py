@@ -6,7 +6,14 @@ detection de trafic automatise — et **preserve** la partie leads, qui reste
 produite depuis le back-office. Rien n'est efface : ce qui n'est pas
 regenerable est repris tel quel du fichier existant.
 
-Aucune ecriture si un controle bloquant echoue. L'etat est ecrit dans
+Aucune ecriture si un controle bloquant echoue -- pour CE site : l'ecriture
+est incrementale, site par site, commit et pousse des qu'un site est pret
+(voir _commit_et_pousse). Un site en echec de controle ou un push qui rate
+ne bloque plus les autres -- perte reelle constatee deux fois le
+07-08/08/2026 avec l'ancienne ecriture en un seul bloc a la fin du run :
+d'abord un push final en echec qui a fait perdre ~2h de calcul GA4/GSC/leads
+pour 52 sites, puis un controle bloquant sur seulement 4 sites qui a annule
+l'ecriture des 48 autres, pourtant publiables. L'etat est ecrit dans
 data/pipeline.json a chaque execution, succes comme echec, parce que c'est le
 canal d'alerte du dashboard : un echec muet serait pire qu'un echec.
 """
@@ -14,6 +21,7 @@ canal d'alerte du dashboard : un echec muet serait pire qu'un echec.
 import argparse
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -432,6 +440,57 @@ def nettoie(d):
     return {k: v for k, v in d.items() if not k.startswith("_")}
 
 
+def _git(*args):
+    return subprocess.run(["git", *args], cwd=RACINE, capture_output=True, text=True)
+
+
+def _configure_git():
+    _git("config", "user.name", "dcs-masterclass-ia")
+    _git("config", "user.email", "m.foureau@autobiz.com")
+
+
+def _commit_et_pousse(chemins, message):
+    """Committe et pousse un petit sous-ensemble de fichiers deja ecrits sur
+    disque (chemins relatifs a RACINE, ex. "data/opel-fr.json"). Ne leve
+    jamais : un push qui echoue est journalise puis le run continue avec le
+    site suivant, jamais un fichier deja ecrit ne doit faire perdre le
+    travail des autres sites.
+
+    Retourne (succes: bool, detail: str). "detail" est vide en succes."""
+    rel = [str(c) for c in chemins]
+    r = _git("add", *rel)
+    if r.returncode != 0:
+        return False, f"git add : {r.stderr.strip()}"
+    r = _git("commit", "-m", message)
+    if r.returncode != 0:
+        if "nothing to commit" in (r.stdout + r.stderr):
+            return True, ""
+        return False, f"git commit : {r.stderr.strip()}"
+    for _tentative in range(3):
+        r = _git("push", "origin", "HEAD:main")
+        if r.returncode == 0:
+            return True, ""
+        _git("fetch", "origin", "main")
+        rebase = _git("rebase", "origin/main")
+        if rebase.returncode != 0:
+            conflits = [c for c in _git("diff", "--name-only", "--diff-filter=U").stdout.split() if c]
+            # "--theirs" pendant un rebase designe le commit rejoue, donc
+            # notre travail local -- meme piege/logique que dans
+            # refresh.yml. Uniquement s'il n'y a pas d'autre fichier en
+            # conflit que ceux de CE commit : sinon, un autre changement
+            # imprevu est en jeu, on abandonne plutot que d'ecraser a l'aveugle.
+            if conflits and set(conflits) <= set(rel):
+                _git("checkout", "--theirs", *conflits)
+                _git("add", *conflits)
+                if _git("rebase", "--continue").returncode != 0:
+                    _git("rebase", "--abort")
+                    return False, f"rebase --continue en echec sur {conflits}"
+            else:
+                _git("rebase", "--abort")
+                return False, f"conflit sur {conflits or '(indetermine)'}"
+    return False, "push impossible apres 3 tentatives"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sites", nargs="*", help="par defaut : tous ceux qui ont l'acces API")
@@ -477,7 +536,10 @@ def main():
         "sites": {},
         "anomalies": [],
     }
-    rapports, a_ecrire = [], {}
+    rapports, sites_ecrits, sites_bloques = [], [], []
+
+    if a.ecrire:
+        _configure_git()
 
     for s in SITES:
         if not s.acces_api:
@@ -534,7 +596,20 @@ def main():
             ecrit_recap(f"\n<details><summary>{s.nom} — détail</summary>\n\n"
                        + "\n".join(f"- {esc_md(l)}" for l in journal) + "\n\n</details>")
         if r.publiable:
-            a_ecrire[chemin] = nettoie(d)
+            sites_ecrits.append(s.nom)
+            if a.ecrire:
+                chemin.write_text(json.dumps(nettoie(d), ensure_ascii=False, separators=(",", ":")))
+                ok, detail = _commit_et_pousse(
+                    [chemin.relative_to(RACINE).as_posix()],
+                    f"Rafraîchissement automatique — {s.nom}")
+                if ok:
+                    print(f"ecrit+pousse  {chemin.name}")
+                else:
+                    print(f"{s.nom} : ECRIT MAIS PUSH EN ECHEC — {detail}")
+                    etat["anomalies"].append({"site": s.nom, "controle": "push_git",
+                                              "detail": detail, "gravite": "avertissement"})
+        else:
+            sites_bloques.append(s.nom)
 
     ecrit_recap("\n### Contrôles\n")
     ecrit_recap("```")
@@ -542,11 +617,15 @@ def main():
     ecrit_recap("```")
     print(affiche(rapports))
 
-    bloques = [r.site for r in rapports if not r.publiable]
-    if bloques:
+    # ecriture desormais incrementale (voir la boucle ci-dessus) : un site
+    # bloque ne concerne plus que lui-meme, jamais les autres -- "echec" ne
+    # veut donc plus dire "rien n'a ete ecrit", mais "au moins un site ne
+    # l'a pas ete". Le detail par site reste dans etat["sites"][nom]["statut"].
+    if sites_bloques:
         etat["statut"] = "echec"
-        etat["blocage"] = (f"{len(bloques)} site(s) en echec de controle : "
-                           f"{', '.join(bloques)}. Donnees de la veille conservees.")
+        etat["blocage"] = (f"{len(sites_bloques)} site(s) en echec de controle : "
+                           f"{', '.join(sites_bloques)}. Donnees de la veille conservees pour ces "
+                           f"sites uniquement, les {len(sites_ecrits)} autre(s) mis a jour normalement.")
     elif etat["anomalies"]:
         etat["statut"] = "degrade"
 
@@ -556,35 +635,29 @@ def main():
         ecrit_recap(f"\n_Mode simulation : rien n'a été écrit. Statut calculé : **{etat['statut']}**._")
         return 0
 
-    # les donnees ne sont ecrites que si tout passe ; l'etat l'est toujours
-    if etat["statut"] != "echec":
-        for chemin, contenu in a_ecrire.items():
-            chemin.write_text(json.dumps(contenu, ensure_ascii=False, separators=(",", ":")))
-            print(f"ecrit  {chemin.name}")
-
-        # data/index.json liste les sites que le dashboard doit charger.
-        # Aucun script ne le regenerait jusqu'ici (decouvert le 07/08/2026,
-        # reste bloque sur les 8 sites d'origine malgre les 56 ajoutes) :
-        # recalcule desormais a chaque ecriture, a partir des fichiers
-        # data/<slug>.json reellement presents sur disque, jamais de la
-        # seule liste SITES (un site en echec de controle garde son fichier
-        # de la veille et doit rester visible, un site jamais publie ne
-        # doit pas apparaitre et faire 404 cote dashboard).
-        ordre = {s.nom: i for i, s in enumerate(SITES)}
-        presents = {s.slug: s.nom for s in SITES}
-        noms_index = sorted(
-            (presents[f.stem] for f in DATA.glob("*.json") if f.stem in presents),
-            key=lambda n: ordre[n])
-        (DATA / "index.json").write_text(
-            json.dumps({"sites": noms_index}, ensure_ascii=False, separators=(",", ":")))
-        print(f"ecrit  index.json ({len(noms_index)} site(s))")
-    else:
-        print("Controle bloquant : aucune donnee ecrite, on garde celles de la veille.")
-        ecrit_recap(f"\n**Contrôle bloquant : aucune donnée écrite, celles de la veille sont conservées.**")
+    # data/index.json liste les sites que le dashboard doit charger.
+    # Recalcule a chaque execution, a partir des fichiers data/<slug>.json
+    # reellement presents sur disque, jamais de la seule liste SITES (un
+    # site en echec de controle garde son fichier de la veille et doit
+    # rester visible, un site jamais publie ne doit pas apparaitre et faire
+    # 404 cote dashboard).
+    ordre = {s.nom: i for i, s in enumerate(SITES)}
+    presents = {s.slug: s.nom for s in SITES}
+    noms_index = sorted(
+        (presents[f.stem] for f in DATA.glob("*.json") if f.stem in presents),
+        key=lambda n: ordre[n])
+    chemin_index = DATA / "index.json"
+    chemin_index.write_text(json.dumps({"sites": noms_index}, ensure_ascii=False, separators=(",", ":")))
+    ok, detail = _commit_et_pousse(["data/index.json"], "Rafraîchissement automatique — index.json")
+    print(f"ecrit+pousse  index.json ({len(noms_index)} site(s))" if ok
+          else f"index.json : ECRIT MAIS PUSH EN ECHEC — {detail}")
 
     (DATA / "pipeline.json").write_text(
         json.dumps(etat, ensure_ascii=False, indent=1))
-    print("ecrit  pipeline.json")
+    ok, detail = _commit_et_pousse(["data/pipeline.json"],
+                                   f"Rafraîchissement automatique — statut {etat['statut']}")
+    print("ecrit+pousse  pipeline.json" if ok
+          else f"pipeline.json : ECRIT MAIS PUSH EN ECHEC — {detail}")
     return 0
 
 
