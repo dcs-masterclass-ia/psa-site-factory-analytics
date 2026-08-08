@@ -9,6 +9,10 @@
  */
 
 const REPO = process.env.GITHUB_REPO || "dcs-masterclass-ia/psa-site-factory-analytics";
+// meme principe que api/refresh.js : "main" en Production, la branche de la
+// Preview (ex. "staging") ailleurs -- l'Agent Dashboard invoque depuis une
+// Preview cree sa branche et sa PR contre CETTE branche, jamais contre main.
+const BASE_REF = process.env.VERCEL_GIT_COMMIT_REF || "main";
 
 function authHeaders() {
   const token = process.env.GITHUB_PR_TOKEN;
@@ -36,11 +40,11 @@ async function api(pathSuffix, opts = {}) {
 }
 
 async function getDefaultBranchSha() {
-  const ref = await api("/git/ref/heads/main");
+  const ref = await api(`/git/ref/heads/${BASE_REF}`);
   return ref.object.sha;
 }
 
-async function getFile(filePath, ref = "main") {
+async function getFile(filePath, ref = BASE_REF) {
   const data = await api(`/contents/${filePath}?ref=${encodeURIComponent(ref)}`);
   const content = Buffer.from(data.content, "base64").toString("utf8");
   return { content, sha: data.sha };
@@ -70,7 +74,7 @@ async function updateFile(filePath, branchName, content, sha, message) {
 async function createPullRequest(branchName, title, body) {
   const pr = await api("/pulls", {
     method: "POST",
-    body: JSON.stringify({ title, head: branchName, base: "main", body }),
+    body: JSON.stringify({ title, head: branchName, base: BASE_REF, body }),
   });
   return { url: pr.html_url, number: pr.number };
 }

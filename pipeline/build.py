@@ -474,6 +474,12 @@ def _commit_et_pousse(chemins, message):
     travail des autres sites.
 
     Retourne (succes: bool, detail: str). "detail" est vide en succes."""
+    # branche cible lue dynamiquement (jamais "main" en dur) : GITHUB_REF_NAME
+    # est fournie automatiquement par Actions et vaut deja la bonne branche,
+    # que le declenchement soit schedule (-> main) ou workflow_dispatch
+    # --ref staging (-> staging) -- c'est ce qui permet a un run de pipeline
+    # lance depuis la preprod de ne jamais toucher aux donnees de prod.
+    branche = os.environ.get("GITHUB_REF_NAME", "main")
     rel = [str(c) for c in chemins]
     r = _git("add", *rel)
     if r.returncode != 0:
@@ -484,11 +490,11 @@ def _commit_et_pousse(chemins, message):
             return True, ""
         return False, f"git commit : {r.stderr.strip()}"
     for _tentative in range(3):
-        r = _git("push", "origin", "HEAD:main")
+        r = _git("push", "origin", f"HEAD:{branche}")
         if r.returncode == 0:
             return True, ""
-        _git("fetch", "origin", "main")
-        rebase = _git("rebase", "origin/main")
+        _git("fetch", "origin", branche)
+        rebase = _git("rebase", f"origin/{branche}")
         if rebase.returncode != 0:
             conflits = [c for c in _git("diff", "--name-only", "--diff-filter=U").stdout.split() if c]
             # "--theirs" pendant un rebase designe le commit rejoue, donc

@@ -66,9 +66,12 @@ jobs:
             exit 0
           fi
           git commit -m "Performance PageSpeed Insights"
+          # $GITHUB_REF_NAME (fournie par Actions) plutot que "main" en dur :
+          # un declenchement --ref staging pousse alors sur staging, jamais
+          # sur main -- meme principe que pipeline/build.py._commit_et_pousse.
           for i in 1 2 3; do
             git rebase --abort 2>/dev/null || true
-            git pull --rebase --autostash origin main && git push origin HEAD:main && exit 0
+            git pull --rebase --autostash origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             sleep 5
           done
           echo "::error::Echec du push apres 3 tentatives."

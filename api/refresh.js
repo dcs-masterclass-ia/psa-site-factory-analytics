@@ -20,7 +20,12 @@
 
 const REPO = process.env.GITHUB_REPO || "dcs-masterclass-ia/psa-site-factory-analytics";
 const WORKFLOW = "refresh.yml";
-const REF = "main";
+// VERCEL_GIT_COMMIT_REF (fournie automatiquement par Vercel a chaque
+// deploiement) vaut "main" en Production et le nom de la branche sur une
+// Preview -- le bouton "Actualiser" clique depuis la Preview "staging"
+// declenche donc deja refresh.yml --ref staging, qui (voir build.py et les
+// autres workflows) n'ecrit alors que sur staging, jamais sur main.
+const REF = process.env.VERCEL_GIT_COMMIT_REF || "main";
 
 // garde-fou anti-abus : pas de nouveau declenchement si le precedent date de
 // moins de 2 minutes, ou est encore en cours. Aucun stockage necessaire : on
