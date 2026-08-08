@@ -780,11 +780,11 @@ input[type=date]{color-scheme:dark}
         <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Marques reprises</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">part des véhicules estimés</div></div>
         <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:flex-end;gap:16px">
-          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="5">
+          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="4">
             <div style="{{ b.colWrap }}">
               <div style="font-size:15px;font-weight:600;color:var(--text)">{{ b.pctLabel }}</div>
               <div style="{{ b.bar }}"></div>
-              <div style="font-size:12px;color:#4b5563;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ b.name }}</div>
+              <div style="font-size:12px;color:#4b5563;text-align:center;max-width:100%">{{ b.name }}</div>
             </div>
           </sc-for>
           <sc-if value="{{ hasBrandOther }}" hint-placeholder-val="{{ false }}">
@@ -798,7 +798,7 @@ input[type=date]{color-scheme:dark}
         </sc-if>
         <div style="display:flex;gap:14px;margin-top:auto">
           <div style="flex:1;background:#fff8ec;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
-            <div style="width:56px;height:56px;border-radius:50%;background:{{ ownBrandRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b45309">{{ ownBrandShare }}</div></div>
+            <div style="width:56px;height:56px;border-radius:50%;background:{{ ownBrandRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b45309">{{ ownBrandSharePct }}</div></div>
             <div><div style="font-size:13.5px;font-weight:600;color:#7a4a02">Marque du site</div><div style="font-size:12.5px;color:#b08a3c;line-height:1.4">Reprises de la marque du site</div></div>
           </div>
           <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
@@ -3221,7 +3221,7 @@ class Component extends DCLogic {
     const repriseVals = joursCanal.map(j => (agg.trafficDaily[j] || {}).reprise || 0);
     const maxParentJour = Math.max(1, ...parentVals);
     const maxRepriseJour = Math.max(1, ...repriseVals);
-    const MIRROR_H = 90;
+    const MIRROR_H = 46;
     const parentLine = smoothPathFrom(parentVals.length > 1 ? parentVals : [0, 0], 900, MIRROR_H, MIRROR_H, maxParentJour, -1);
     const repriseLine = smoothPathFrom(repriseVals.length > 1 ? repriseVals : [0, 0], 900, MIRROR_H, MIRROR_H * 2, maxRepriseJour, -1);
     const parentArea = parentLine ? parentLine + ` L900 ${MIRROR_H} L0 ${MIRROR_H} Z` : "";
@@ -3704,9 +3704,10 @@ class Component extends DCLogic {
     // (motif hachure, comme la maquette) plutot que tronque silencieusement.
     const brandListAll = [...agg.brand.entries()].sort((a,b) => b[1]-a[1]);
     const totalLeadsAllBrands = brandListAll.reduce((s,[,v]) => s + v, 0) || 1;
-    const brandList = brandListAll.slice(0, 5);
-    const brandOtherTotal = brandListAll.slice(5).reduce((s,[,v]) => s + v, 0);
-    const ownBrandShare = dec(agg.ownBrand / totalLeadsAllBrands * 100, 0) + " % marque du site";
+    const brandList = brandListAll.slice(0, 4);
+    const brandOtherTotal = brandListAll.slice(4).reduce((s,[,v]) => s + v, 0);
+    const ownBrandSharePct = dec(agg.ownBrand / totalLeadsAllBrands * 100, 0) + " %";
+    const ownBrandShare = ownBrandSharePct + " marque du site";
     const own = currentSite ? marqueDeSite(currentSite).toUpperCase() : "";
     const BRAND_BAR_COLORS = [["#f59e0b", "#ffd479"], ["#f2ac33", "#ffe0a3"], ["#eeb655", "#ffe8bd"], ["#f0c477", "#fff0d6"], ["#f0c477", "#fff0d6"]];
     const brandBars = brandList.map(([name, v], i) => {
@@ -4202,7 +4203,7 @@ class Component extends DCLogic {
       tabFadeStyle,
       tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
       tabBarRef: el => { this._tabBarEl = el; },
-      ownBrandShare, heatmapDaysLabel: last90.length + " derniers jours",
+      ownBrandShare, ownBrandSharePct, heatmapDaysLabel: last90.length + " derniers jours",
       gscAxisLabels, clicsLineRef, clicsFillRef, imprLineRef, imprFillRef,
       gscHover, hasGscHover: !!gscHover,
       hoverGscMove: e => this.hoverGscMove(e), hoverGscLeave: () => this.hoverGscLeave(),
