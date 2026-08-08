@@ -204,16 +204,19 @@ if (document.documentElement.getAttribute("data-env") === "preprod") {
 <helmet data-dc-atomics>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--page:#9fb2a5;--bg:#0d0d0d;--card:#1a1a1a;--pop:#181818;--soft:#242424;--soft2:#262626;--soft3:#2e2e2e;--hover:#303030;--text:#ffffff;--text2:#c9c9c9;--muted:#8b8b8b;--muted2:#7d7d7d;--grid:#242424;--line:#262626;--tick:#3a3a3a;--cell0:#2c3a30;--active-bg:#ffffff;--active-fg:#141414;--active-mark:#f2f2f2;--pos:#4ADE80;--neg:#ff7a6b;--pos-bg:rgba(74,222,128,.13);--neg-bg:rgba(255,122,107,.13);--warn:#F9AB00;--warn-bg:rgba(249,171,0,.13);--shadow:rgba(0,0,0,.55)}
-:root[data-theme=light]{--page:#dfe6df;--bg:#ffffff;--card:#f3f5f2;--pop:#ffffff;--soft:#e7eae5;--soft2:#dfe3dc;--soft3:#d5dad2;--hover:#dbe0d8;--text:#15181a;--text2:#3f4448;--muted:#6d7378;--muted2:#8b9196;--grid:#e2e6e0;--line:#e2e6e0;--tick:#c2c8c1;--cell0:#dfe8e0;--active-bg:#15181a;--active-fg:#ffffff;--active-mark:#2b2f32;--pos:#0f7a3d;--neg:#b8341f;--pos-bg:rgba(15,122,61,.12);--neg-bg:rgba(184,52,31,.12);--warn:#9a6800;--warn-bg:rgba(154,104,0,.13);--shadow:rgba(70,85,72,.28)}
-/* Préprod (branche staging) : accent violet a la place du noir/blanc, pour
+/* Theme clair unique (refonte du 08/08/2026, maquette KamIA) : plus de
+   :root[data-theme=light] distinct ni de bascule -- une seule palette,
+   directement les tokens de la maquette. Les onglets pas encore refaits
+   restent lisibles entre-temps puisqu'ils lisent les memes variables. */
+:root{--page:#ededef;--bg:#ededef;--card:#ffffff;--pop:#ffffff;--soft:#f6f7f9;--soft2:#f2f3f5;--soft3:#eaecf1;--hover:#eceef2;--text:#14161a;--text2:#3f4653;--muted:#6b7280;--muted2:#9aa0aa;--grid:#f2f3f5;--line:#f0f0f2;--tick:#e6e8ee;--cell0:#f2f3f5;--active-bg:#14161a;--active-fg:#ffffff;--active-mark:#2a2f3a;--pos:#12b981;--neg:#f4485c;--pos-bg:rgba(18,185,129,.13);--neg-bg:rgba(244,72,92,.13);--warn:#f59e0b;--warn-bg:rgba(245,158,11,.13);--shadow:rgba(17,17,26,.16);--accent:#3b5ae0}
+/* Préprod (branche staging) : accent violet a la place du bleu/noir, pour
    ne jamais confondre visuellement avec la prod. data-env pose par le script
    juste apres <body>, base sur le hostname (aucune donnee serveur requise). */
-:root[data-env=preprod]{--active-bg:#7c5cff;--active-fg:#ffffff;--active-mark:#6a4ce0}
-html,body{margin:0;padding:0;background:var(--page);font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s ease}
-a{color:#F5411E;text-decoration:none}a:hover{color:#ff6a45}
+:root[data-env=preprod]{--active-bg:#7c5cff;--active-fg:#ffffff;--active-mark:#6a4ce0;--accent:#7c5cff}
+html,body{margin:0;padding:0;background:var(--page);font-family:'Outfit',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}a:hover{filter:brightness(1.15)}
 input[type=date]{color-scheme:dark}
 @keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -240,131 +243,81 @@ input[type=date]{color-scheme:dark}
 @keyframes modalPanelOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.96) translateY(10px)}}
 </style>
 </helmet>
-<div style="min-height:100vh;padding:48px 24px;background:#9fb2a5;box-sizing:border-box;overflow-x:hidden">
-<div ref="{{ scaleSizerRef }}" style="width:100%;max-width:1780px;margin:0 auto;overflow:hidden">
-<div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);border-radius:34px;padding:36px 44px 44px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);animation:fadeIn .5s ease both;transform-origin:top left">
+<div style="min-height:100vh;background:var(--bg);box-sizing:border-box;overflow-x:hidden">
+<div ref="{{ scaleSizerRef }}" style="width:100%;overflow:hidden">
+<div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
-    <div style="display:flex;align-items:center;gap:16px">
-      <!-- recadre precisement sur le cadre visible du logo (voir commentaire
-           plus haut dans l'ecran de connexion) ; les deux variantes n'ont pas
-           exactement le meme cadrage source, d'ou des offsets differents. -->
-      <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
-        <div style="width:179px;height:40px;overflow:hidden;position:relative">
-          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-blanc.webp" alt="Converge" style="position:absolute;top:-91.9px;left:-89.8px;width:365.7px;height:243.8px;max-width:none">
-        </div>
-      </sc-if>
-      <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
-        <div style="width:189.5px;height:40px;overflow:hidden;position:relative">
-          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
-        </div>
-      </sc-if>
+  <header style="display:flex;align-items:center;gap:20px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
+    <div style="display:flex;align-items:center;gap:11px;flex:none">
+      <div style="width:38px;height:38px;border-radius:13px;background:linear-gradient(140deg,#6d8bff,var(--accent) 60%,#7c3aed);box-shadow:0 10px 24px -8px rgba(59,90,224,.55);display:flex;align-items:center;justify-content:center;flex:none">
+        <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 14.5 7.2 9l3.1 3.3L17 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="17" cy="4.5" r="2" fill="#fff"></circle></svg>
+      </div>
+      <div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">Converge</div>
     </div>
-    <div ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;overflow:hidden;flex-shrink:0">
+
+    <nav ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;flex:none">
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
-        <button onClick="{{ t.pick }}" ref="{{ t.ref }}" style="{{ t.style }}">
-          <span style="{{ t.markWrap }}">
-            <sc-if value="{{ t.isGa4 }}" hint-placeholder-val="{{ true }}">
-              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
-            </sc-if>
-            <sc-if value="{{ t.isGsc }}" hint-placeholder-val="{{ true }}">
-              <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="20" height="20" style="display:block;object-fit:contain">
-            </sc-if>
-            <sc-if value="{{ t.isV2Tab }}" hint-placeholder-val="{{ false }}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
-            </sc-if>
-            <sc-if value="{{ t.isPerfTab }}" hint-placeholder-val="{{ false }}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5411E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path><path d="m14.1 12.9 4.2-4.2"></path><path d="M3 13a9 9 0 0 1 18 0"></path></svg>
-            </sc-if>
-            <sc-if value="{{ t.isAssistantTab }}" hint-placeholder-val="{{ false }}">
-              <div style="{{ t.hermesLogoWrapStyle }}"><img src="{{ t.hermesLogoSrc }}" alt="" style="{{ t.hermesLogoImgStyle }}"></div>
-            </sc-if>
-          </span>{{ t.label }}
-        </button>
+        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">{{ t.label }}</div>
       </sc-for>
       <!-- Big Query : pas encore disponible, jamais cliquable, ne participe pas
            au pill glissant (aucun etat "actif" possible pour cet onglet). -->
-      <button type="button" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:not-allowed;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 20px 0 24px;border-radius:999px;color:var(--muted2)">
-        <span style="width:32px;height:32px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;opacity:.7">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"></path><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"></path></svg>
-        </span>
+      <div role="button" aria-disabled="true" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:10px;font-family:inherit;font-size:14px;font-weight:400;height:50px;padding:0 20px 0 22px;border-radius:999px;color:var(--muted2);cursor:not-allowed;white-space:nowrap">
         Big Query
-        <span style="font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:4px 10px">Bientôt</span>
-      </button>
-    </div>
-    <div style="display:flex;align-items:flex-start;gap:12px">
-      <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
-        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
-          <span style="{{ refreshProgressStyle }}"></span>
-          <span style="position:relative;display:flex;align-items:center;gap:11px">{{ refreshLabel }}
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
-          </span>
-        </button>
-        <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
-          <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"></path></svg>{{ lastUpdateLabel }}
-          </span>
-        </sc-if>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:3px 9px">Bientôt</span>
       </div>
-      <button onClick="{{ toggleTheme }}" title="Thème clair / sombre" style="width:50px;height:50px;border-radius:50%;background:var(--card);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">
-        <sc-if value="{{ isLight }}" hint-placeholder-val="{{ false }}">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"></path></svg>
-        </sc-if>
-        <sc-if value="{{ isDark }}" hint-placeholder-val="{{ true }}">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"></circle><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.9 4.9l1.7 1.7M17.4 17.4l1.7 1.7M19.1 4.9l-1.7 1.7M6.6 17.4l-1.7 1.7"></path></svg>
-        </sc-if>
-      </button>
-      <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#F5411E,#8a2008);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.12)">{{ userInitials }}</button>
-    </div>
-  </div>
+    </nav>
 
-  <sc-if value="{{ showScopeBar }}" hint-placeholder-val="{{ true }}">
-  <div style="display:flex;align-items:center;gap:14px;margin-top:22px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .05s both">
+    <div style="flex:1"></div>
+
     <div style="position:relative">
-      <button onClick="{{ togglePicker }}" style="{{ pickerBtn }}">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--text2)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"></path></svg>
-        <span style="font-size:15.5px;font-weight:600;color:var(--text)">{{ scopeLabel }}</span>
-        <span style="font-size:14px;font-weight:500;color:var(--muted)">{{ scopeDetail }}</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-      </button>
-      <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute;left:0;top:60px;width:560px;background:var(--pop);border-radius:22px;padding:22px 24px 20px;box-shadow:0 40px 80px -20px var(--shadow);animation:dropIn .22s ease both">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-            <div style="font-size:16px;font-weight:700;color:var(--text)">Périmètre d'analyse</div>
-            <div style="display:flex;gap:8px">
-              <button onClick="{{ selectAll }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">Tout</button>
-              <button onClick="{{ clearAll }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease" style-hover="background:var(--hover)">Aucun</button>
+      <div style="display:flex;align-items:center;gap:11px;background:#fff;border-radius:100px;padding:11px 20px;width:260px;box-shadow:0 4px 20px rgba(17,17,26,.04);box-sizing:border-box">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" onFocus="{{ openSitePicker }}" placeholder="Rechercher un site…" style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:400">
+      </div>
+      <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:56px;left:0;width:340px;z-index:60;background:#fff;border-radius:22px;padding:12px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:400px;overflow:auto">
+          <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
+          <sc-for list="{{ sitePickerRows }}" as="s" hint-placeholder-count="6">
+            <div onClick="{{ s.pick }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;cursor:pointer" style-hover="background:#f5f5f6">
+              <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }};flex:none"></div>
+              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+              <div style="font-size:12.5px;font-weight:600;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
             </div>
-          </div>
-          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par pays</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
-            <sc-for list="{{ marketChips }}" as="m" hint-placeholder-count="2">
-              <button onClick="{{ m.toggle }}" style="{{ m.style }}">{{ m.name }}<span style="opacity:.6;font-weight:600">{{ m.count }}</span></button>
-            </sc-for>
-          </div>
-          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par marque</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px">
-            <sc-for list="{{ familyChips }}" as="fa" hint-placeholder-count="7">
-              <button onClick="{{ fa.toggle }}" style="{{ fa.style }}">{{ fa.name }}<span style="opacity:.6;font-weight:600">{{ fa.count }}</span></button>
-            </sc-for>
-          </div>
-          <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Par site</div>
-          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;max-height:264px;overflow:auto">
-            <sc-for list="{{ brandRows }}" as="b" hint-placeholder-count="8">
-              <button onClick="{{ b.toggle }}" style="{{ b.style }}">
-                <span style="{{ b.box }}">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"></path></svg>
-                </span>
-                <span style="flex:1;text-align:left;font-size:14.5px;font-weight:600;color:var(--text)">{{ b.name }}</span>
-                <span style="font-size:13px;font-weight:600;color:var(--muted2)">{{ b.leads }}</span>
-              </button>
-            </sc-for>
-          </div>
+          </sc-for>
+          <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
+          </sc-if>
         </div>
       </sc-if>
     </div>
 
+    <div onClick="{{ openSitePicker }}" role="button" tabindex="0" style="position:relative;display:flex;align-items:center;gap:12px;background:#fff;border-radius:100px;padding:8px 18px 8px 9px;box-shadow:0 4px 20px rgba(17,17,26,.04);cursor:pointer;flex:none">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none">{{ currentSiteInitials }}</div>
+      <div><div style="font-size:14px;font-weight:600;letter-spacing:-.2px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:11.5px;color:#9aa0aa;font-weight:400;white-space:nowrap">{{ currentSiteRank }}</div></div>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex:none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.6" stroke-linecap="round"></path></svg>
+    </div>
+
+    <div style="display:flex;align-items:flex-start;gap:10px;flex:none">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="{{ refreshBtnStyle }}" style-hover="{{ refreshBtnHover }}">
+          <span style="{{ refreshProgressStyle }}"></span>
+          <span style="position:relative;display:flex;align-items:center;gap:9px">{{ refreshLabel }}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
+          </span>
+        </button>
+        <sc-if value="{{ hasLastUpdate }}" hint-placeholder-val="{{ false }}">
+          <span style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--muted2);letter-spacing:.01em;white-space:nowrap">
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"></path></svg>{{ lastUpdateLabel }}
+          </span>
+        </sc-if>
+      </div>
+      <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111318,#3a3f4a);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.25)">{{ userInitials }}</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ showScopeBar }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;align-items:center;gap:14px;margin-top:18px;position:relative;z-index:30;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .05s both">
     <div style="display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:5px">
       <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
         <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
@@ -393,16 +346,21 @@ input[type=date]{color-scheme:dark}
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
       <sc-for list="{{ ga4Kpis }}" as="k" hint-placeholder-count="4">
         <div style="{{ k.card }}">
-          <div style="font-size:15.5px;font-weight:600;color:var(--muted)">{{ k.label }}</div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">{{ k.label }}</div>
+            <div style="width:40px;height:40px;border-radius:50%;background:{{ k.iconGrad }};box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="{{ k.iconPath }}" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+          </div>
           <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto">
-            <div ref="{{ k.ref }}" style="font-size:36px;font-weight:800;color:var(--text);letter-spacing:-1.3px;line-height:1;white-space:nowrap">{{ k.value }}</div>
-            <svg width="116" height="34" viewBox="0 0 120 36" style="overflow:visible;flex:none">
+            <div ref="{{ k.ref }}" style="font-size:32px;font-weight:600;color:var(--text);letter-spacing:-1.2px;line-height:1;white-space:nowrap">{{ k.value }}</div>
+            <svg width="100" height="32" viewBox="0 0 120 36" style="overflow:visible;flex:none">
               <path ref="{{ k.sparkRef }}" fill="none" stroke="{{ k.sparkColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="240" stroke-dashoffset="240" style="animation:drawLine 1.4s cubic-bezier(.35,.6,.3,1) .5s forwards"></path>
             </svg>
           </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:14px">
+          <div style="display:flex;align-items:center;gap:8px">
             <span style="{{ k.deltaStyle }}">{{ k.delta }}</span>
-            <span style="font-size:14px;font-weight:500;color:var(--muted2)">{{ k.note }}</span>
+            <span style="font-size:13px;font-weight:500;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.note }}</span>
           </div>
         </div>
       </sc-for>
@@ -440,23 +398,23 @@ input[type=date]{color-scheme:dark}
           <sc-if value="{{ hasMirror }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:center;gap:16px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--muted)">
             <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--text);opacity:.6;display:inline-block"></span>Site parent</span>
-            <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#F5411E;display:inline-block"></span>Outil de reprise</span>
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--neg);display:inline-block"></span>Outil de reprise</span>
           </div>
           <div style="position:relative;height:170px;margin-top:8px">
             <svg width="100%" height="100%" viewBox="0 0 900 180" preserveAspectRatio="none" style="position:absolute;inset:0">
               <defs>
                 <linearGradient id="mirrorParentFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" style="stop-color:var(--text)" stop-opacity=".18"></stop><stop offset="100%" style="stop-color:var(--text)" stop-opacity="0"></stop></linearGradient>
-                <linearGradient id="mirrorRepriseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#F5411E" stop-opacity=".26"></stop><stop offset="100%" stop-color="#F5411E" stop-opacity="0"></stop></linearGradient>
+                <linearGradient id="mirrorRepriseFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--neg)" stop-opacity=".26"></stop><stop offset="100%" stop-color="var(--neg)" stop-opacity="0"></stop></linearGradient>
               </defs>
               <line x1="0" y1="90" x2="900" y2="90" stroke="var(--line)" stroke-width="1"></line>
               <path ref="{{ mirrorParentAreaRef }}" fill="url(#mirrorParentFill)" stroke="none"></path>
               <path ref="{{ mirrorRepriseAreaRef }}" fill="url(#mirrorRepriseFill)" stroke="none"></path>
               <path ref="{{ mirrorParentRef }}" fill="none" style="stroke:var(--text)" stroke-width="2.2" stroke-linecap="round" opacity=".6"></path>
-              <path ref="{{ mirrorRepriseRef }}" fill="none" stroke="#F5411E" stroke-width="2.2" stroke-linecap="round"></path>
+              <path ref="{{ mirrorRepriseRef }}" fill="none" stroke="var(--neg)" stroke-width="2.2" stroke-linecap="round"></path>
             </svg>
             <sc-if value="{{ hasChartHover }}" hint-placeholder-val="{{ false }}">
               <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:var(--text);box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ chartHover.parentDotStyle }}"></span>
-              <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#F5411E;box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ chartHover.repriseDotStyle }}"></span>
+              <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:var(--neg);box-shadow:0 0 0 2px var(--card);pointer-events:none;{{ chartHover.repriseDotStyle }}"></span>
             </sc-if>
           </div>
           </sc-if>
@@ -490,15 +448,14 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
 
-      <div style="background:linear-gradient(155deg,#FA4B22,#D62F0C);border-radius:26px;padding:26px 28px 26px;min-height:460px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
-        <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(8px);animation:floatY 6s ease-in-out infinite"></div>
-        <div style="display:flex;align-items:center;gap:11px;position:relative">
-          <span style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:26px;padding:26px 28px 26px;min-height:460px;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(17,17,26,.045);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#a8b6ff,var(--accent) 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.9 5.6L19.5 9l-4.4 3.6 1.4 5.9L12 15.3 7.5 18.5l1.4-5.9L4.5 9l5.6-1.4z"></path></svg>
           </span>
-          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.3px">Analyse IA des performances</div>
+          <div style="font-size:19px;font-weight:600;letter-spacing:-.3px;color:var(--text)">Analyse KamIA</div>
         </div>
-        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;margin:20px 0;position:relative;overflow:auto">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;margin:20px 0;overflow:auto">
           <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
             <sc-for list="{{ ga4Insights }}" as="i" hint-placeholder-count="3">
               <div style="{{ i.wrap }}">
@@ -516,21 +473,19 @@ input[type=date]{color-scheme:dark}
                   </span>
                   <div style="{{ i.tagStyle }}">{{ i.tag }}</div>
                 </div>
-                <div style="margin-top:8px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+                <div style="margin-top:8px;font-size:14.5px;font-weight:500;color:var(--text2);line-height:1.55;text-wrap:pretty">{{ i.text }}</div>
               </div>
             </sc-for>
           </sc-if>
-          <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
-          </sc-if>
         </div>
         <sc-if value="{{ noGa4Insights }}" hint-placeholder-val="{{ false }}">
-          <div style="position:relative;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;margin-bottom:16px">
-            <div style="font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94)">Pas assez de tendance confirmée sur la période pour un insight fiable — sélectionne un mois complet ou plus de sites.</div>
+          <div style="background:var(--soft);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:14.5px;font-weight:500;color:var(--text2)">Pas assez de tendance confirmée sur la période pour un insight fiable — sélectionne un mois complet ou plus de sites.</div>
           </div>
         </sc-if>
-        <button onClick="{{ scrollToFunnel }}" style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:16.5px;font-weight:700;color:#141414;cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le parcours complet
-          <span style="width:34px;height:34px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+        <button onClick="{{ scrollToFunnel }}" style="display:flex;align-items:center;gap:14px;background:var(--active-bg);border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:15.5px;font-weight:600;color:var(--active-fg);cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le parcours complet
+          <span style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--active-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
           </span>
         </button>
       </div>
@@ -715,6 +670,42 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
     </div>
+
+    <sc-if value="{{ hasVolConvChart }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border-radius:30px;padding:32px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;margin-top:20px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,var(--pos));box-shadow:0 10px 22px -8px rgba(18,185,129,.45);display:flex;align-items:center;justify-content:center;flex:none">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 14 9 8.4l3 2.6L16.5 5" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        </div>
+        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Volume vs conversion tradein</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Sessions reprise mensuelles et taux de conversion sur les 12 derniers mois</div></div>
+        <div style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)"><span style="width:12px;height:12px;border-radius:4px;background:var(--soft3)"></span>Sessions</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)"><span style="width:18px;height:3px;border-radius:2px;background:var(--pos)"></span>Conversion</div>
+      </div>
+      <div style="display:flex;gap:14px">
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Sessions cumulées</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--text)">{{ volConvTotal }}</div><div style="font-size:12px;color:var(--muted2)">12 mois</div></div>
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Conversion moyenne</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--text)">{{ volConvAvgConv }} %</div><div style="font-size:12px;color:var(--muted2)">pondérée sur la période</div></div>
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Dernier mois</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvLastLabel }}</div><div style="font-size:12px;color:var(--muted2)">{{ volConvLastMonthLabel }}</div></div>
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Évolution</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvProgress }} pts</div><div style="font-size:12px;color:var(--muted2)">sur 12 mois</div></div>
+      </div>
+      <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block">
+        <line x1="52" y1="252" x2="1224" y2="252" stroke="var(--line)"></line>
+        <sc-if value="{{ volConvChart.hasV2Marker }}" hint-placeholder-val="{{ false }}">
+        <line ref="{{ volConvChart.v2Ref }}" y1="14" y2="252" stroke="var(--muted2)" stroke-width="1.6" stroke-dasharray="5 6"></line>
+        </sc-if>
+        <sc-for list="{{ volConvChart.bars }}" as="bar" hint-placeholder-count="12">
+          <rect ref="{{ bar.ref }}" rx="8" fill="{{ bar.barFill }}"></rect>
+          <text ref="{{ bar.labelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12.5" font-weight="600" fill="var(--muted2)"></text>
+          <text ref="{{ bar.monthLabelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="13" fill="var(--muted2)"></text>
+        </sc-for>
+        <path ref="{{ volConvChart.lineRef }}" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+        <sc-for list="{{ volConvChart.points }}" as="pt" hint-placeholder-count="12">
+          <circle ref="{{ pt.dotRef }}" r="4" fill="#fff" stroke="var(--pos)" stroke-width="2.4"></circle>
+          <text ref="{{ pt.labelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12.5" font-weight="600" fill="var(--pos)"></text>
+        </sc-for>
+      </svg>
+    </div>
+    </sc-if>
   </div>
   </sc-if>
 
@@ -792,15 +783,14 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
 
-      <div style="background:linear-gradient(155deg,#FA4B22,#D62F0C);border-radius:26px;padding:26px 28px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
-        <div style="position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12);filter:blur(8px);animation:floatY 6s ease-in-out infinite"></div>
-        <div style="display:flex;align-items:center;gap:11px;position:relative">
-          <span style="width:34px;height:34px;border-radius:11px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:26px;padding:26px 28px;height:502px;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(17,17,26,.045);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="display:flex;align-items:center;gap:11px">
+          <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#a8b6ff,var(--accent) 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.9 5.6L19.5 9l-4.4 3.6 1.4 5.9L12 15.3 7.5 18.5l1.4-5.9L4.5 9l5.6-1.4z"></path></svg>
           </span>
-          <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.3px">Analyse IA · visibilité SEO</div>
+          <div style="font-size:19px;font-weight:600;letter-spacing:-.3px;color:var(--text)">KamIA · visibilité SEO</div>
         </div>
-        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;margin:20px 0;position:relative;overflow:auto">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;margin:20px 0;overflow:auto">
           <sc-if value="{{ hasGscInsights }}" hint-placeholder-val="{{ true }}">
             <sc-for list="{{ seoInsights }}" as="i" hint-placeholder-count="3">
               <div style="{{ i.wrap }}">
@@ -818,19 +808,19 @@ input[type=date]{color-scheme:dark}
                   </span>
                   <div style="{{ i.tagStyle }}">{{ i.tag }}</div>
                 </div>
-                <div style="margin-top:8px;font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94);line-height:1.5;text-wrap:pretty">{{ i.text }}</div>
+                <div style="margin-top:8px;font-size:14.5px;font-weight:500;color:var(--text2);line-height:1.55;text-wrap:pretty">{{ i.text }}</div>
               </div>
             </sc-for>
           </sc-if>
         </div>
         <sc-if value="{{ noGscInsights }}" hint-placeholder-val="{{ false }}">
-          <div style="position:relative;background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;margin-bottom:16px">
-            <div style="font-size:15.5px;font-weight:500;color:rgba(255,255,255,.94)">Pas assez de tendance confirmée sur la période pour un insight fiable.</div>
+          <div style="background:var(--soft);border-radius:16px;padding:14px 16px;margin-bottom:16px">
+            <div style="font-size:14.5px;font-weight:500;color:var(--text2)">Pas assez de tendance confirmée sur la période pour un insight fiable.</div>
           </div>
         </sc-if>
-        <button onClick="{{ scrollToQueries }}" style="position:relative;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:16.5px;font-weight:700;color:#141414;cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le détail
-          <span style="width:34px;height:34px;border-radius:50%;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+        <button onClick="{{ scrollToQueries }}" style="display:flex;align-items:center;gap:14px;background:var(--active-bg);border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:15.5px;font-weight:600;color:var(--active-fg);cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le détail
+          <span style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--active-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
           </span>
         </button>
       </div>
@@ -970,6 +960,11 @@ input[type=date]{color-scheme:dark}
       <div>
         <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des sites de reprise</div>
         <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px">
+          <sc-for list="{{ perfFilterChips }}" as="f" hint-placeholder-count="4">
+            <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
+          </sc-for>
+        </div>
       </div>
 
       <sc-if value="{{ hasPerfRows }}" hint-placeholder-val="{{ true }}">
@@ -1054,7 +1049,15 @@ input[type=date]{color-scheme:dark}
             </div>
 
             <div style="min-height:94px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">À corriger en priorité</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">À corriger en priorité</div>
+                <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ r.genererTicket }}" disabled="{{ r.ticketBusy }}" title="Rédiger un ticket Jira avec l'IA à partir de ces optimisations" style="display:flex;align-items:center;gap:4px;border:none;background:var(--soft2);color:var(--text2);font-family:inherit;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;flex:none;opacity:{{ r.ticketBtnOpacity }}">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                  {{ r.ticketBtnLabel }}
+                </button>
+                </sc-if>
+              </div>
               <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:6px">
                 <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
@@ -1096,10 +1099,10 @@ input[type=date]{color-scheme:dark}
 
       <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
         <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
-          <div style="width:20.7px;height:19px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" style="position:absolute;top:-5.4px;left:-12px;width:44.6px;height:29.7px;max-width:none"></div>
+          <div style="width:20.7px;height:19px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-5.4px;left:-12px;width:44.6px;height:29.7px;max-width:none"></div>
         </span>
         <div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">Hermès</div>
+          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">KamIA</div>
           <div style="font-size:13.5px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
         </div>
       </div>
@@ -1108,10 +1111,10 @@ input[type=date]{color-scheme:dark}
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:20px 10px">
             <span style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
-              <div style="width:34.9px;height:32px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="Hermès" style="position:absolute;top:-9px;left:-20.1px;width:75px;height:50px;max-width:none"></div>
+              <div style="width:34.9px;height:32px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-9px;left:-20.1px;width:75px;height:50px;max-width:none"></div>
             </span>
             <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px;max-width:520px">Que souhaitez-vous comprendre aujourd'hui ?</div>
-            <div style="font-size:15px;font-weight:500;color:var(--muted);max-width:480px;line-height:1.5">Pose une question sur le trafic, les leads ou le parcours de reprise. Hermès croisera les agents pertinents.</div>
+            <div style="font-size:15px;font-weight:500;color:var(--muted);max-width:480px;line-height:1.5">Pose une question sur le trafic, les leads ou le parcours de reprise. KamIA croisera les agents pertinents.</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;width:100%;max-width:680px;text-align:left">
               <sc-for list="{{ quickQuestions }}" as="q" hint-placeholder-count="4">
                 <button onClick="{{ q.pick }}" style="display:flex;align-items:flex-start;gap:12px;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:16px 18px;cursor:pointer;font-family:inherit;transition:background .18s ease,transform .18s ease" style-hover="background:var(--hover);transform:translateY(-2px)">
@@ -1253,7 +1256,7 @@ input[type=date]{color-scheme:dark}
     <div style="background:var(--card);border-radius:26px;box-sizing:border-box;height:720px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
       <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line)">
         <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div>
-        <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--muted)">Hermès analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div>
+        <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--muted)">KamIA analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div>
         <sc-if value="{{ watchLastUpdate }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:8px;font-size:11.5px;font-weight:600;color:var(--muted2)">Dernière veille : {{ watchLastUpdate }}</div>
         </sc-if>
@@ -1494,14 +1497,51 @@ input[type=date]{color-scheme:dark}
     </sc-if>
 
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
-      <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px">Analyse d'Hermès</div>
+      <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px">Analyse KamIA</div>
       <div class="hermes-md" ref="{{ watchModal.analyseRef }}" style="font-size:14.5px;font-weight:500;line-height:1.65;color:var(--text2)"></div>
     </div>
 
     <button onClick="{{ watchModal.askFollowUp }}" style="margin-top:24px;display:flex;align-items:center;gap:8px;border:none;background:#F5411E;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;height:44px;padding:0 20px;border-radius:999px;cursor:pointer">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-      Approfondir avec Hermès
+      Approfondir avec KamIA
     </button>
+  </div>
+  </div>
+  </sc-if>
+
+  <!-- ticket Jira genere par l'IA depuis l'onglet Performance : meme
+       mecanique que v2Modal/watchModal juste au-dessus. -->
+  <sc-if value="{{ hasPerfTicketModal }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ perfTicketModal.wrapStyle }}">
+  <div style="{{ perfTicketModal.backdropStyle }}" onClick="{{ perfTicketModal.close }}"></div>
+  <div style="{{ perfTicketModal.panelStyle }}">
+    <button onClick="{{ perfTicketModal.close }}" title="Fermer" style="position:absolute;top:26px;right:26px;width:38px;height:38px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+
+    <div style="padding-right:56px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Ticket Jira — {{ perfTicketModal.site }}</div>
+      <div style="margin-top:6px;font-size:12.5px;font-weight:500;color:var(--muted2)">Rédigé par l'IA à partir des mesures PageSpeed — à relire avant envoi. La création directe dans Jira n'est pas encore branchée : copiez ce texte dans un nouveau ticket pour l'instant.</div>
+    </div>
+
+    <sc-if value="{{ perfTicketModal.hasError }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:20px;background:var(--neg-bg);border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;color:var(--neg)">{{ perfTicketModal.error }}</div>
+    </sc-if>
+
+    <sc-if value="{{ perfTicketModal.hasContent }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:20px;background:var(--soft);border-radius:16px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Titre</div>
+      <div style="margin-top:6px;font-size:15px;font-weight:700;color:var(--text)">{{ perfTicketModal.title }}</div>
+    </div>
+    <div style="margin-top:12px;background:var(--soft);border-radius:16px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Corps du ticket</div>
+      <div style="margin-top:8px;font-size:13.5px;font-weight:500;line-height:1.65;color:var(--text2);white-space:pre-wrap">{{ perfTicketModal.body }}</div>
+    </div>
+    <button onClick="{{ perfTicketModal.copy }}" style="margin-top:20px;display:flex;align-items:center;gap:8px;border:none;background:#F5411E;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;height:44px;padding:0 20px;border-radius:999px;cursor:pointer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
+      {{ perfTicketModal.copyLabel }}
+    </button>
+    </sc-if>
   </div>
   </div>
   </sc-if>
@@ -1709,6 +1749,52 @@ function buildV2Chart(siteRaw, valueFn, unite) {
    analysee, une seule courbe continue (pas de reference V1 en pointilles
    comme buildV2Chart, il n'y a pas de "reference" ici) avec un repere
    vertical separant les deux moities. */
+/* graphe combine "Volume vs conversion tradein" (Vue d'ensemble, maquette
+   KamIA du 08/08/2026) : barres = sessions reprise mensuelles (echelle de
+   gauche), ligne = taux de conversion mensuel (echelle de droite, propre
+   a chaque serie pour rester lisible quelle que soit l'amplitude relative
+   des deux). Repere V2 optionnel (trait pointille) si le site a bascule. */
+function buildVolumeConvChart(rows, v2Idx) {
+  const W = 1280, H = 310, top = 14, base = 252, axisR = 1224;
+  const n = rows.length;
+  if (!n) return null;
+  const colW = (axisR - 52) / n;
+  const maxSess = Math.max(1, ...rows.map(r => r.sessions));
+  const maxConv = Math.max(.01, ...rows.map(r => r.conv)) * 1.15;
+  // geometrie posee via ref/setAnimatedAttrs (pas {{ }} direct sur des
+  // attributs numeriques SVG : deja observe non fiable sur ce moteur de
+  // template pour d/x1/x2, cf. buildWatchChart/sparkline plus haut) --
+  // seuls les libelles texte passent par {{ }} normalement.
+  const bars = rows.map((r, i) => {
+    const h = (r.sessions / maxSess) * (base - top);
+    const x = 52 + i * colW + colW * 0.18;
+    const w = colW * 0.64;
+    return {
+      barFill: (v2Idx >= 0 && i > v2Idx) ? "#dde4ff" : "var(--soft3)",
+      ref: el => setAnimatedAttrs(el, { x: x.toFixed(1), y: (base - h).toFixed(1), width: w.toFixed(1), height: h.toFixed(1) }),
+      // {{ }} ne s'interpole pas dans le contenu d'un <text> SVG (deja
+      // rencontre pour perfRing/sparklines) : position ET texte poses ici,
+      // imperativement, comme partout ailleurs dans le fichier pour ce cas.
+      labelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", (base - h - 10).toFixed(1)); el.textContent = fmt(r.sessions); },
+      monthLabelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", (base + 26).toFixed(1)); el.textContent = r.label; },
+    };
+  });
+  const points = rows.map((r, i) => {
+    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
+    return {
+      dotRef: el => setAnimatedAttrs(el, { cx: cx.toFixed(1), cy: cy.toFixed(1) }),
+      labelRef: el => { if (!el) return; el.setAttribute("x", cx.toFixed(1)); el.setAttribute("y", (cy - 14).toFixed(1)); el.textContent = dec(r.conv, 2) + " %"; },
+    };
+  });
+  const linePath = points.length ? rows.map((r, i) => {
+    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
+    return (i === 0 ? "M" : "L") + cx.toFixed(1) + "," + cy.toFixed(1);
+  }).join(" ") : "";
+  const lineRef = el => revealPath(el, linePath, 200, 900);
+  const v2X = v2Idx >= 0 && v2Idx < n - 1 ? (52 + (v2Idx + 1) * colW) : null;
+  const v2Ref = v2X == null ? null : el => setAnimatedAttrs(el, { x1: v2X.toFixed(1), x2: v2X.toFixed(1) });
+  return { bars, points, lineRef, v2Ref, hasV2Marker: v2X != null, w: W, h: H };
+}
 function watchTrendValues(siteData, periodeRecente) {
   if (!siteData || !siteData.daily || !periodeRecente) return null;
   const [debutRecent, finRecent] = String(periodeRecente).split("..");
@@ -1737,11 +1823,15 @@ function buildWatchChart(values) {
    blocs identiques ne se differenciant que par un mot en majuscules. */
 function insightVisuals(type) {
   const isAttention = type === "attention", isOpportunite = type === "opportunite", isInfo = !isAttention && !isOpportunite;
-  const accent = isAttention ? "#FFD166" : isOpportunite ? "#B9FBC0" : "#ffffff";
+  // maquette KamIA du 08/08/2026 : encarts clairs teintes par type plutot
+  // que blanc-sur-degrade-rouge -- meme principe que les badges de gravite
+  // du panneau "Constats automatiques" (onglet KamIA).
+  const accent = isAttention ? "#f4485c" : isOpportunite ? "#12b981" : "#3b82f6";
+  const tint = isAttention ? "#fff7f6" : isOpportunite ? "#f2fbf6" : "#eef4ff";
   return {
-    isAttention, isOpportunite, isInfo,
-    tagStyle: "font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:" + accent,
-    iconBadge: "width:26px;height:26px;border-radius:8px;flex:none;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:" + accent,
+    isAttention, isOpportunite, isInfo, tint,
+    tagStyle: "background:#fff;color:" + accent + ";font-size:11px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;border-radius:999px;padding:4px 10px",
+    iconBadge: "width:26px;height:26px;border-radius:8px;flex:none;background:#fff;display:flex;align-items:center;justify-content:center;color:" + accent,
     borderColor: accent,
   };
 }
@@ -1835,9 +1925,9 @@ class Component extends DCLogic {
     dateFrom: "2026-07-01",
     dateTo: "2026-07-31",
     compare: true,
-    pickerOpen: false,
-    theme: "dark",
-    sites: [],           // rempli au chargement : tous les sites par defaut
+    pickerOpen: false,   // ouverture du selecteur de site (barre de recherche/profil, en-tete)
+    siteSearch: "",      // texte tape dans la barre de recherche du selecteur de site
+    sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
     dim: "brand",
     booted: false,
     error: null,
@@ -1851,11 +1941,11 @@ class Component extends DCLogic {
     chatHistory: [],    // messages Claude bruts (envoyes/renvoyes par /api/agent, pour la continuite de conversation)
     chatScope: [],      // sites selectionnes pour la conversation (vide = laisse Hermes deduire)
     watchFilter: "tous", // filtre du panneau "Constats automatiques" : tous | important | a_surveiller
+    perfFilter: "tous", // filtre de l'onglet Performance : tous | bon | a_ameliorer | mauvais | non_mesure
+    perfTicketBusySite: null, // nom du site en cours de generation de ticket (une seule a la fois)
     chatScopeOpen: false,
     chatAttachments: [], // { name, mediaType, dataBase64, sizeLabel }
   };
-
-  applyTheme() { document.documentElement.setAttribute("data-theme", this.state.theme); }
 
   /* le canevas est concu a largeur fixe (1780px, comme le modele fourni) ;
      on le reduit proportionnellement (transform:scale) pour qu'il tienne
@@ -1865,7 +1955,11 @@ class Component extends DCLogic {
     const sizer = this._sizerEl, canvas = this._canvasEl;
     if (!sizer || !canvas) return;
     const naturalWidth = 1780;
-    const scale = Math.min(1, sizer.clientWidth / naturalWidth);
+    // plus de plafond a 1 : le dashboard doit remplir toute la largeur
+    // disponible (demande explicite), pas rester encadre/centre des que
+    // l'ecran depasse 1780px -- meme mecanique de mise a l'echelle, juste
+    // symetrique (agrandit comme elle retrecissait deja).
+    const scale = sizer.clientWidth / naturalWidth;
     canvas.style.transform = "scale(" + scale + ")";
     sizer.style.height = (canvas.offsetHeight * scale) + "px";
   }
@@ -1904,7 +1998,6 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
-    this.applyTheme();
     this.wireLogin();
     this.boot();
     this._onResize = () => { this.fitScale(); this.updateTabIndicator(); };
@@ -1912,7 +2005,6 @@ class Component extends DCLogic {
     requestAnimationFrame(() => { this.fitScale(); this.updateTabIndicator(); });
   }
   componentDidUpdate() {
-    this.applyTheme();
     this.fitScale();
     this.updateTabIndicator();
     const sig = this.periodSignature();
@@ -2084,7 +2176,10 @@ class Component extends DCLogic {
       }));
       await this.chargerPipelineInfo();
       await this.chargerHermesWatch();
-      this.setState({ sites: this.sitesList.slice(), booted: true });
+      // navigation site par site (refonte du 08/08/2026) : un seul site par
+      // defaut, plus "tous les sites" comme avant -- le premier de la liste
+      // (index.json), un choix arbitraire mais stable.
+      this.setState({ sites: this.sitesList.slice(0, 1), booted: true });
     } catch (e) {
       this.setState({ error: String(e && e.message || e) });
     }
@@ -2340,6 +2435,58 @@ class Component extends DCLogic {
   setWatchFilter(value) {
     this.setState({ watchFilter: value });
   }
+  setPerfFilter(value) {
+    this.setState({ perfFilter: value });
+  }
+  /* genere un ticket Jira (titre + corps copiable) pour un site via
+     /api/perf-ticket -- une seule generation a la fois (perfTicketBusySite),
+     resultat (ou erreur) affiche dans la meme modale pour rester simple. */
+  async genererTicketPerf(site) {
+    if (this.state.perfTicketBusySite) return;
+    this.setState({ perfTicketBusySite: site });
+    try {
+      const r = await fetch("/api/perf-ticket", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site }),
+      });
+      const json = await r.json();
+      this.setState({ perfTicketBusySite: null });
+      if (!r.ok) { this.openPerfTicketModal({ site, error: json.error || "Erreur lors de la generation." }); return; }
+      if (json.empty) { this.openPerfTicketModal({ site, error: "Aucune optimisation a signaler pour ce site." }); return; }
+      this.openPerfTicketModal({ site, title: json.title, body: json.body });
+    } catch (e) {
+      this.setState({ perfTicketBusySite: null });
+      this.openPerfTicketModal({ site, error: (e && e.message) || String(e) });
+    }
+  }
+  /* meme mecanique que openV2Modal/openWatchModal. */
+  openPerfTicketModal(data) {
+    this._perfTicketModal = data;
+    this._perfTicketModalClosing = false;
+    this._perfTicketCopied = false;
+    this.forceUpdate();
+  }
+  closePerfTicketModal() {
+    if (!this._perfTicketModal) return;
+    this._perfTicketModalClosing = true;
+    this.forceUpdate();
+    setTimeout(() => {
+      this._perfTicketModal = null;
+      this._perfTicketModalClosing = false;
+      this.forceUpdate();
+    }, 220);
+  }
+  copierTicket() {
+    const t = this._perfTicketModal;
+    if (!t || !t.body) return;
+    const texte = (t.title ? t.title + "\n\n" : "") + t.body;
+    navigator.clipboard.writeText(texte).then(() => {
+      this._perfTicketCopied = true;
+      this.forceUpdate();
+      setTimeout(() => { this._perfTicketCopied = false; this.forceUpdate(); }, 1800);
+    });
+  }
 
   /* survol du graphe canal/trafic : l'index survole est stocke sur l'instance
      (pas dans le state React) pour eviter un cycle de diff a chaque pixel de
@@ -2462,6 +2609,7 @@ class Component extends DCLogic {
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
         watchModal: null, hasWatchModal: false,
         watchFilterChips: [],
+        perfFilterChips: [], perfTicketModal: null, hasPerfTicketModal: false,
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
@@ -2474,8 +2622,13 @@ class Component extends DCLogic {
         gscHover: null, hasGscHover: false, hoverGscMove: () => {}, hoverGscLeave: () => {},
         hasV2: false, noV2: true, v2SubLabel: "", v2BadgeStyle: "", v2BadgeText: "",
         tabFadeStyle: "margin-top:24px", tabIndicatorRef: () => {}, tabBarRef: () => {},
-        toggleTheme: () => {}, togglePicker: () => {}, isLight:false, isDark:true,
+        togglePicker: () => {},
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
+        siteSearch: "", setSiteSearch: () => {}, openSitePicker: () => {}, sitePickerOpen: false,
+        sitePickerRows: [], sitePickerEmpty: true, sitePickerHeading: "Sites à surveiller",
+        currentSiteLabel: "Chargement…", currentSiteInitials: "··", currentSiteRank: "",
+        volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
+        volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
         refreshBtnStyle: "position:relative;overflow:hidden;display:flex;align-items:center;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;opacity:.6;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)",
         refreshBtnHover: "", refreshIconStyle: "", refreshTitle: "Chargement…", refreshProgressStyle: "",
@@ -2502,24 +2655,47 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    const tabs = [["ga4", "Google Analytics"], ["gsc", "Search Console"], ["v2", "V2"], ["performance", "Performance"], ["assistant", "Hermès"]].map(t => {
+    // pills texte seul (maquette KamIA du 08/08/2026) : plus d'icone par
+    // onglet (logos GA4/GSC/Hermes), le curseur glissant (tabIndicatorRef)
+    // suffit a marquer l'onglet actif -- meme mecanique qu'avant, juste
+    // sans le petit badge d'icone.
+    const tabs = [["ga4", "GA4"], ["gsc", "Search Console"], ["v2", "V2"], ["performance", "Performance"], ["assistant", "KamIA"]].map(t => {
       const on = st.tab === t[0];
-      // le badge de l'onglet actif est toujours clair (var(--active-mark))
-      // et celui d'un onglet inactif suit le theme (var(--soft), sombre en
-      // theme sombre) -- il faut donc l'icone noire sur badge clair, blanche
-      // sur badge sombre, pas juste "blanc en theme sombre".
-      const badgeIsLight = on ? st.theme === "dark" : st.theme === "light";
-      const hermes = badgeIsLight ? HERMES_LOGO_CROP.tabNoir : HERMES_LOGO_CROP.tabBlanc;
       return {
-        label: t[1], isGa4: t[0] === "ga4", isGsc: t[0] === "gsc", isV2Tab: t[0] === "v2", isPerfTab: t[0] === "performance", isAssistantTab: t[0] === "assistant",
-        hermesLogoSrc: hermes.src, hermesLogoWrapStyle: hermes.wrapStyle, hermesLogoImgStyle: hermes.imgStyle,
+        label: t[1],
         pick: () => this.switchTab(t[0]),
         ref: el => this.tabRef(el, t[0]),
-        style: "position:relative;z-index:1;display:flex;align-items:center;gap:12px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;height:50px;padding:0 24px;border-radius:999px;transition:color .28s ease;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
-        markWrap: "width:32px;height:32px;border-radius:10px;background:" + (on ? "var(--active-mark)" : "var(--soft)") + ";display:flex;align-items:center;justify-content:center;transition:background .28s ease",
+        style: "position:relative;z-index:1;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "500" : "400") + ";height:50px;padding:0 22px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
       };
     });
     const tabFadeStyle = "margin-top:24px;transition:opacity .2s ease,transform .32s cubic-bezier(.3,.7,.4,1);opacity:" + (st.tabSwitching ? "0" : "1") + ";transform:" + (st.tabSwitching ? "translateY(6px) scale(.99)" : "translateY(0) scale(1)");
+
+    // selecteur de site (en-tete, remplace l'ancien picker multi-sites) :
+    // recherche textuelle + liste, toujours EXACTEMENT un site selectionne.
+    // Le delta (7j vs 7j precedents sur les sessions reprise) reutilise le
+    // meme principe que pipeline/watch.py, calcule ici cote client car les
+    // 64 sites sont deja charges en memoire (this.data).
+    const currentSite = st.sites[0] || null;
+    const siteDeltaCache = ALL.map(n => {
+      const d = this.data[n] && this.data[n].daily;
+      if (!d || !d.rep || d.rep.length < 14) return { name: n, delta: null };
+      const recent = d.rep.slice(-7).reduce((a, v) => a + (v || 0), 0);
+      const precedent = d.rep.slice(-14, -7).reduce((a, v) => a + (v || 0), 0);
+      const delta = precedent > 0 ? ((recent - precedent) / precedent) * 100 : null;
+      return { name: n, delta };
+    });
+    const search = (st.siteSearch || "").trim().toLowerCase();
+    const sitePickerRows = (search
+      ? siteDeltaCache.filter(s => s.name.toLowerCase().includes(search)).sort((a, b) => a.name.localeCompare(b.name))
+      : siteDeltaCache.slice().sort((a, b) => Math.abs(b.delta || 0) - Math.abs(a.delta || 0))
+    ).slice(0, search ? 30 : 8).map(s => ({
+      host: s.name,
+      delta: s.delta == null ? "—" : (s.delta >= 0 ? "+" : "") + Math.round(s.delta) + " %",
+      dot: s.delta == null ? "var(--muted2)" : s.delta >= 0 ? "var(--pos)" : "var(--neg)",
+      pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "" }),
+    }));
+    const currentSiteIdx = currentSite ? ALL.indexOf(currentSite) : -1;
+    const currentSiteInitials = currentSite ? (marqueDeSite(currentSite)[0] || "") + (paysDeSite(currentSite)[0] || "") : "··";
 
     const periods = ["7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
       const on = st.period === label;
@@ -2581,9 +2757,13 @@ class Component extends DCLogic {
       ? range.debut + " → " + range.fin
       : "derniers " + st.period;
 
-    const kpiCard = (label, value, spark, sparkColor, deltaInfo, note, i) => ({
-      label, value,
-      card: "background:var(--card);border-radius:24px;padding:24px 26px 22px;height:172px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) " + (0.06 + i * 0.06) + "s both",
+    // maquette KamIA du 08/08/2026 : badge icone degrade en haut de chaque
+    // carte KPI (purement decoratif, une couleur par metrique) en plus du
+    // sparkline deja existant -- meme mecanisme de dessin anime (sparkPath/
+    // setAnimatedAttrs), juste la carte autour qui change.
+    const kpiCard = (label, value, spark, sparkColor, deltaInfo, note, i, iconGrad, iconPath) => ({
+      label, value, iconGrad, iconPath,
+      card: "background:#fff;border-radius:30px;padding:24px 26px 22px;height:182px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;box-shadow:0 4px 24px rgba(17,17,26,.045);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) " + (0.06 + i * 0.06) + "s both",
       sparkColor,
       sparkRef: el => setAnimatedAttrs(el, { d: sparkPath(spark) }),
       deltaStyle: deltaInfo.style, delta: deltaInfo.text, note,
@@ -2595,21 +2775,67 @@ class Component extends DCLogic {
     const trafficPerDay = agg.traffic, cmpTraffic = cmp ? cmp.traffic : null;
 
     const leadsDailySeries = Object.keys(agg.leadsDaily).sort().map(k => agg.leadsDaily[k]);
+    const parentDailySeries = Object.keys(agg.trafficDaily).sort().map(k => agg.trafficDaily[k].parent);
+    const repriseDailySeries = Object.keys(agg.trafficDaily).sort().map(k => agg.trafficDaily[k].reprise);
+
+    // rang du site sur le taux de conversion, parmi les 64 -- reutilise
+    // aggregate() tel quel (n'a besoin que de state.sites/data) applique a
+    // chaque site un par un, plutot que dupliquer la logique d'agregation.
+    // Cout non negligeable (64 agregations) : seulement quand l'onglet Vue
+    // d'ensemble est actif, pas a chaque rendu des autres onglets.
+    let convRankLabel = "", convMedianLabel = "";
+    if (st.tab === "ga4") {
+      const tauxParSite = ALL.map(n => {
+        const a = this.aggregate.call({ state: { sites: [n] }, data: this.data }, range.debut, range.fin);
+        return { site: n, taux: a.reprise ? a.leads / a.reprise * 100 : null };
+      }).filter(x => x.taux != null);
+      tauxParSite.sort((a, b) => b.taux - a.taux);
+      const rang = tauxParSite.findIndex(x => x.site === currentSite) + 1;
+      if (rang > 0) convRankLabel = rang + "e sur " + tauxParSite.length;
+      if (tauxParSite.length) {
+        const mid = Math.floor(tauxParSite.length / 2);
+        const mediane = tauxParSite.length % 2 ? tauxParSite[mid].taux : (tauxParSite[mid - 1].taux + tauxParSite[mid].taux) / 2;
+        convMedianLabel = "médiane parc " + dec(mediane, 2) + " %";
+      }
+    }
 
     const ga4Kpis = [
-      { label:"Sessions site de reprise", to: agg.reprise, fmt: fmt, color:"#4ADE80", ref: el => { this._el_sessions = el; },
-        deltaInfo: deltaBadge(agg.reprise, cmp && cmp.reprise, ""), note:"vs période N-1", spark: leadsDailySeries },
-      { label:"Leads", to: agg.leads, fmt: fmt, color:"#F5411E", ref: el => { this._el_leads = el; },
-        deltaInfo: deltaBadge(agg.leads, cmp && cmp.leads, ""), note:"vs période N-1", spark: leadsDailySeries },
-      { label:"Leads / jour", to: leadsPerDay, fmt: fmt, color:"#F9AB00", ref: el => { this._el_daily = el; },
-        deltaInfo: deltaBadge(leadsPerDay, cmpLeadsPerDay, ""), note:"moyenne période", spark: leadsDailySeries },
-      { label:"Leads BO / sessions reprise", to: convPct, fmt: x => dec(x,2) + " %", color:"#7B7BF0", ref: el => { this._el_conv = el; },
-        deltaInfo: deltaBadge(convPct, cmpConvPct, "pts"), note:"leads → reprise", spark: leadsDailySeries },
+      { label:"Sessions parent", to: agg.traffic, fmt: fmt, color:"#3b5ae0", ref: el => { this._el_parent = el; },
+        deltaInfo: deltaBadge(agg.traffic, cmp && cmp.traffic, ""), note:"vs période N-1", spark: parentDailySeries,
+        iconGrad:"linear-gradient(140deg,#7d99ff,#3b5ae0)", iconPath:"M4 15V9m6 6V5m6 10v-8" },
+      { label:"Sessions reprise", to: agg.reprise, fmt: fmt, color:"#f4485c", ref: el => { this._el_sessions = el; },
+        deltaInfo: deltaBadge(agg.reprise, cmp && cmp.reprise, ""), note:"vs période N-1", spark: repriseDailySeries,
+        iconGrad:"linear-gradient(140deg,#ff8b95,#f4485c)", iconPath:"M3 6h11m0 0-3-3m3 3-3 3M17 14H6m0 0 3-3m-3 3 3 3" },
+      { label:"Leads", to: agg.leads, fmt: fmt, color:"#12b981", ref: el => { this._el_leads = el; },
+        deltaInfo: deltaBadge(agg.leads, cmp && cmp.leads, ""), note: fmt(Math.round(leadsPerDay)) + " leads/jour", spark: leadsDailySeries,
+        iconGrad:"linear-gradient(140deg,#5fe0a4,#12b981)", iconPath:"M10 7a3.1 3.1 0 1 1 0 6.2A3.1 3.1 0 0 1 10 7Zm-5.5 9.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" },
+      { label:"Leads BO / sessions reprise", to: convPct, fmt: x => dec(x,2) + " %", color:"#8b5cf6", ref: el => { this._el_conv = el; },
+        deltaInfo: deltaBadge(convPct, cmpConvPct, "pts"), note: convRankLabel || convMedianLabel, spark: leadsDailySeries,
+        iconGrad:"linear-gradient(140deg,#c8a2ff,#8b5cf6)", iconPath:"M10 6.4V10l2.6 1.7" },
     ].map((k, i) => {
-      const c = kpiCard(k.label, k.fmt(k.to), k.spark, k.color, k.deltaInfo, k.note, i);
+      const c = kpiCard(k.label, k.fmt(k.to), k.spark, k.color, k.deltaInfo, k.note, i, k.iconGrad, k.iconPath);
       c.ref = el => { if (el) this.up(el, k.to, k.fmt); };
       return c;
     });
+
+    // "Volume vs conversion tradein" (nouveau bloc maquette) : toujours les
+    // 12 derniers mois du site, independant de la periode choisie en
+    // en-tete (comme dans la maquette, ou ce graphe a son propre "12 mois").
+    const rawSite = this.data[currentSite];
+    const last12Months = rawSite ? rawSite.months.slice(-12) : [];
+    const volConvRows = last12Months.map(m => {
+      const sess = ((rawSite.repriseMonth || {})[m] || {}).sessions || 0;
+      const leadsTot = ((rawSite.leads || {})[m] || {}).total || 0;
+      return { mois: m, label: moisAnneeLabel(m), sessions: sess, conv: sess ? leadsTot / sess * 100 : 0 };
+    });
+    const v2MonthIdx = (rawSite && rawSite.v2_date) ? last12Months.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
+    const volConvChart = buildVolumeConvChart(volConvRows, v2MonthIdx);
+    const hasVolConvChart = !!volConvChart && volConvChart.bars.length > 1;
+    const volConvTotal = fmt(volConvRows.reduce((s, r) => s + r.sessions, 0));
+    const volConvAvgConv = dec(volConvRows.length ? volConvRows.reduce((s, r) => s + r.conv, 0) / volConvRows.length : 0, 2);
+    const volConvLast = volConvRows.length ? volConvRows[volConvRows.length - 1] : null;
+    const volConvFirst = volConvRows.length ? volConvRows[0] : null;
+    const volConvProgress = (volConvLast && volConvFirst) ? dec(volConvLast.conv - volConvFirst.conv, 2) : "0,00";
 
     // canal : top 4 + Autres, courbes lissees a partir des vraies donnees
     const joursCanal = Object.keys(agg.canal).sort();
@@ -2992,7 +3218,7 @@ class Component extends DCLogic {
       return {
         tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
         ...v,
-        wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+        wrap: "background:" + v.tint + ";border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
       };
     });
 
@@ -3079,7 +3305,7 @@ class Component extends DCLogic {
       return {
         tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
         ...v,
-        wrap: "background:rgba(255,255,255,.13);border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
+        wrap: "background:" + v.tint + ";border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
       };
     });
 
@@ -3219,7 +3445,7 @@ class Component extends DCLogic {
         },
       };
     };
-    const perfRows = ALL.map(n => {
+    const perfRowsAll = ALL.map(n => {
       const d = this.data[n];
       const ps = d && d.pagespeed;
       const m = ps && ps.mobile, de = ps && ps.desktop;
@@ -3254,6 +3480,7 @@ class Component extends DCLogic {
         desktop: perfRing(de && de.score),
         badgeStyle: "font-size:11.5px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:6px 12px;white-space:nowrap;background:" + badgeBg + ";color:" + badgeFg,
         badgeText: badgeTxt,
+        badgeKey: pire == null ? "non_mesure" : pire >= 90 ? "bon" : pire >= 50 ? "a_ameliorer" : "mauvais",
         lcp: m && m.lcp != null ? (m.lcp / 1000).toFixed(1) + " s" : "—",
         cls: m && m.cls != null ? m.cls.toFixed(2) : "—",
         tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
@@ -3271,14 +3498,55 @@ class Component extends DCLogic {
         releveLabel: ps ? "Relevé le " + ps.releve : "Non mesuré",
         sortKey: m && m.score != null ? m.score : 999,
         pays: paysDeSite(n),
+        ticketBusy: st.perfTicketBusySite === n,
+        ticketBtnLabel: st.perfTicketBusySite === n ? "Génération…" : "Ticket Jira",
+        ticketBtnOpacity: st.perfTicketBusySite && st.perfTicketBusySite !== n ? ".5" : "1",
+        genererTicket: () => this.genererTicketPerf(n),
       };
     }).sort((a, b) => a.sortKey - b.sortKey);
+    // filtre par categorie de notation (chips en haut de l'onglet) -- meme
+    // principe que watchFilterChips : compte toujours calcule sur la liste
+    // complete (perfRowsAll), jamais sur perfRows deja filtre, sinon les
+    // compteurs des AUTRES chips retomberaient a 0 des qu'un filtre est actif.
+    const perfFilter = st.perfFilter || "tous";
+    const PERF_FILTERS = [
+      ["tous", "Tous"], ["bon", "Bon"], ["a_ameliorer", "À améliorer"], ["mauvais", "Mauvais"], ["non_mesure", "Non mesuré"],
+    ];
+    const perfFilterChips = PERF_FILTERS.map(([value, label]) => {
+      const count = value === "tous" ? perfRowsAll.length : perfRowsAll.filter(r => r.badgeKey === value).length;
+      return {
+        value, label: label + " (" + count + ")", active: value === perfFilter,
+        pick: () => this.setPerfFilter(value),
+        style: "border:none;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s ease,color .18s ease;background:" +
+          (value === perfFilter ? "var(--active-bg)" : "var(--soft2)") + ";color:" + (value === perfFilter ? "var(--active-fg)" : "var(--text2)"),
+      };
+    });
+    const perfRows = perfFilter === "tous" ? perfRowsAll : perfRowsAll.filter(r => r.badgeKey === perfFilter);
     const perfByPays = {};
     for (const r of perfRows) (perfByPays[r.pays] = perfByPays[r.pays] || []).push(r);
     const perfGroups = Object.keys(perfByPays).sort((a, b) =>
       (PAYS_LABEL[a] || a).localeCompare(PAYS_LABEL[b] || b)
     ).map(p => ({ pays: p, label: PAYS_LABEL[p] || p, rows: perfByPays[p],
       count: perfByPays[p].length + (perfByPays[p].length > 1 ? " sites" : " site") }));
+
+    // detail du ticket Jira en cours (modale) -- meme mecanique que
+    // v2Modal/watchModal, construite seulement pour le site ouvert.
+    const perfTicketModal = this._perfTicketModal ? (() => {
+      const t = this._perfTicketModal;
+      return {
+        site: t.site, title: t.title || "", body: t.body || "",
+        hasError: !!t.error, error: t.error || "", hasContent: !t.error,
+        copyLabel: this._perfTicketCopied ? "Copié !" : "Copier le ticket",
+        close: () => this.closePerfTicketModal(),
+        copy: () => this.copierTicket(),
+        wrapStyle: "position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box",
+        backdropStyle: "position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:" +
+          (this._perfTicketModalClosing ? "modalBackdropOut" : "modalBackdropIn") + " .22s ease both",
+        panelStyle: "position:relative;z-index:1;width:min(640px,100%);max-height:100%;overflow-y:auto;background:var(--card);border-radius:28px;padding:36px 40px 40px;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 60px 140px -30px var(--shadow),0 0 100px -16px rgba(245,65,30,.4);animation:" +
+          (this._perfTicketModalClosing ? "modalPanelOut" : "modalPanelIn") + " .32s cubic-bezier(.2,.8,.3,1.05) both",
+      };
+    })() : null;
+    const hasPerfTicketModal = !!perfTicketModal;
 
     const chatScopeSites = ALL.map(n => ({
       name: n, on: st.chatScope.includes(n),
@@ -3301,6 +3569,7 @@ class Component extends DCLogic {
       showScopeBar: st.tab !== "assistant" && st.tab !== "performance",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
+      perfFilterChips, perfTicketModal, hasPerfTicketModal,
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
@@ -3314,9 +3583,16 @@ class Component extends DCLogic {
       attachFiles: e => this.attachFiles(e),
       chatFileInputRef: el => { this._chatFileInputEl = el; },
       openChatFilePicker: () => this._chatFileInputEl && this._chatFileInputEl.click(),
-      isLight: st.theme === "light", isDark: st.theme === "dark",
-      toggleTheme: () => this.setState(s => ({ theme: s.theme === "dark" ? "light" : "dark" })),
       logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
+      siteSearch: st.siteSearch, setSiteSearch: e => this.setState({ siteSearch: e.target.value, pickerOpen: true }),
+      openSitePicker: () => this.setState({ pickerOpen: true }),
+      sitePickerOpen: st.pickerOpen, sitePickerRows, sitePickerEmpty: sitePickerRows.length === 0,
+      sitePickerHeading: search ? "Résultats" : "Sites à surveiller",
+      currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials,
+      currentSiteRank: currentSiteIdx >= 0 ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length : "",
+      volConvChart, hasVolConvChart, volConvTotal, volConvAvgConv, volConvLast, volConvProgress,
+      volConvLastLabel: volConvLast ? dec(volConvLast.conv, 2) + " %" : "—",
+      volConvLastMonthLabel: volConvLast ? volConvLast.label : "",
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
       ga4Insights,
       hasGsc, noGsc: !hasGsc,
