@@ -15,8 +15,8 @@ const { verifySessionFromRequest } = require("./_lib/auth");
 // Meme profil que les agents specialistes (api/_lib/tools.js) : redige un
 // texte structure a partir de donnees deja fournies, tache ciblee et
 // courte -- Haiku suffit, pas besoin de Sonnet/Opus ici non plus.
+// PAS de parametre "effort" : Haiku 4.5 le rejette (voir _lib/tools.js).
 const TICKET_MODEL = "claude-haiku-4-5";
-const TICKET_EFFORT = "medium";
 
 const SYSTEM = `Tu rediges des tickets Jira pour l'equipe technique du reseau PSA Site Factory, a partir de mesures PageSpeed Insights (Lighthouse) reelles sur le site de reprise d'un concessionnaire. Sois concret et actionnable : appuie-toi toujours sur les chiffres fournis, jamais de conseil generique du type "optimisez vos images" sans le relier a une metrique precise.
 
@@ -75,7 +75,6 @@ module.exports = async function handler(req, res) {
       model: TICKET_MODEL,
       system: SYSTEM,
       messages: [{ role: "user", content: "Donnees PageSpeed (JSON) :\n" + JSON.stringify(resume) }],
-      effort: TICKET_EFFORT,
       maxTokens: 1000,
     });
     const text = (resp.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
