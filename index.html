@@ -241,6 +241,10 @@ input[type=date]{color-scheme:dark}
 .hermes-md li{margin-bottom:4px;line-height:1.5}
 .hermes-md .chat-md-h{font-weight:800;color:var(--text);margin:4px 0 8px;font-size:15.5px}
 @keyframes modalPanelOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.96) translateY(10px)}}
+@keyframes orbSpin{to{transform:rotate(360deg)}}
+@keyframes orbSpinRev{to{transform:rotate(-360deg)}}
+@keyframes orbBreath{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@keyframes orbHue{0%,100%{filter:blur(6px) hue-rotate(0deg)}50%{filter:blur(6px) hue-rotate(50deg)}}
 </style>
 </helmet>
 <div style="min-height:100vh;background:var(--bg);box-sizing:border-box;overflow-x:hidden">
@@ -343,7 +347,7 @@ input[type=date]{color-scheme:dark}
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
   <div style="{{ tabFadeStyle }}">
 
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.34fr 1.06fr;gap:20px">
       <sc-for list="{{ ga4Kpis }}" as="k" hint-placeholder-count="4">
         <div style="{{ k.card }}">
           <div style="display:flex;align-items:flex-start;gap:10px">
@@ -366,7 +370,167 @@ input[type=date]{color-scheme:dark}
       </sc-for>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px">
+    <!-- ============ Ligne 2 : Tunnel de conversion + Répartition des leads + Sources ============ -->
+    <div style="display:grid;grid-template-columns:1.6fr 1.05fr .95fr;gap:20px;margin-top:20px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Tunnel de conversion</div>
+        <div style="margin-top:4px;font-size:14px;font-weight:500;color:var(--muted)">Parcours d'estimation, étape par étape</div>
+        <sc-if value="{{ hasTunnel }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:15px;margin-top:22px">
+          <sc-for list="{{ tunnelSteps }}" as="f" hint-placeholder-count="6">
+            <div style="{{ f.rowWrap }}">
+              <span style="{{ f.iconBadge }}">
+                <sc-if value="{{ f.isHome }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                </sc-if>
+                <sc-if value="{{ f.isSliders }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg>
+                </sc-if>
+                <sc-if value="{{ f.isGauge }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
+                </sc-if>
+                <sc-if value="{{ f.isUser }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </sc-if>
+                <sc-if value="{{ f.isPin }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </sc-if>
+                <sc-if value="{{ f.isCheck }}" hint-placeholder-val="{{ true }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
+                </sc-if>
+              </span>
+              <span style="width:128px;flex:none;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</span>
+              <div style="{{ f.barTrack }}"><div style="{{ f.barFill }}"></div></div>
+              <span style="width:46px;flex:none;text-align:right;font-size:14px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ f.pct }}</span>
+              <span style="width:58px;flex:none;text-align:right;font-size:12.5px;font-weight:500;color:var(--muted2);font-variant-numeric:tabular-nums">{{ f.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noTunnel }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px 10px">
+            <div style="font-size:14.5px;font-weight:500;color:var(--muted)">Pas de détail de parcours disponible sur cette période.</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Répartition des leads</div>
+        <div style="margin-top:4px;font-size:14px;font-weight:500;color:var(--muted)">Par marque</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;margin:18px 0;min-height:0">
+          <div style="position:relative;width:164px;height:164px;flex:none">
+            <div style="position:absolute;inset:0;border-radius:50%;background:{{ donutGradient }}"></div>
+            <div style="position:absolute;inset:24px;border-radius:50%;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <div style="font-size:25px;font-weight:800;color:var(--text);letter-spacing:-.8px">{{ donutTotalLabel }}</div>
+              <div style="font-size:11.5px;font-weight:600;color:var(--muted)">leads</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ donutRows }}" as="d" hint-placeholder-count="4">
+            <div style="{{ d.row }}">
+              <span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="{{ d.dot }}"></span><span style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span></span>
+              <span style="font-size:14px;font-weight:700;color:var(--text);flex:none">{{ d.pct }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Sources</div>
+        <div style="margin-top:4px;font-size:14px;font-weight:500;color:var(--muted)">Sessions par canal</div>
+        <div style="display:flex;flex-direction:column;margin-top:10px">
+          <sc-for list="{{ sourceRows }}" as="s" hint-placeholder-count="5">
+            <div style="{{ s.row }};border-bottom:1px solid var(--line)">
+              <span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="{{ s.dot }}"></span><span style="font-size:14.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span></span>
+              <span style="display:flex;flex-direction:column;align-items:flex-end;flex:none">
+                <span style="font-size:14.5px;font-weight:700;color:var(--text)">{{ s.sessions }}</span>
+                <span style="font-size:12px;font-weight:500;color:var(--muted2)">{{ s.share }}</span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ Ligne 3 : Parcours d'estimation — avant / après la V2 ============ -->
+    <div id="funnelAnchor" style="display:grid;grid-template-columns:1.75fr 1fr;gap:20px;margin-top:20px;scroll-margin-top:24px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
+          <div>
+            <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Parcours d'estimation — avant / après la V2</div>
+            <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">{{ v2SubLabel }}</div>
+          </div>
+          <div style="{{ v2BadgeStyle }}">{{ v2BadgeText }}</div>
+        </div>
+        <sc-if value="{{ hasV2 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:16px;margin-top:24px">
+          <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
+            <div style="{{ f.rowWrap }}">
+              <span style="{{ f.iconBadge }}">
+                <sc-if value="{{ f.isHome }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                </sc-if>
+                <sc-if value="{{ f.isSliders }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg>
+                </sc-if>
+                <sc-if value="{{ f.isGauge }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
+                </sc-if>
+                <sc-if value="{{ f.isUser }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </sc-if>
+                <sc-if value="{{ f.isPin }}" hint-placeholder-val="{{ false }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                </sc-if>
+                <sc-if value="{{ f.isCheck }}" hint-placeholder-val="{{ true }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
+                </sc-if>
+              </span>
+              <span style="width:132px;flex:none;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</span>
+              <div style="flex:1;display:flex;flex-direction:column;gap:5px;min-width:0">
+                <div style="height:7px;border-radius:5px;background:var(--soft);overflow:hidden"><div style="{{ f.barAStyle }}"></div></div>
+                <div style="height:7px;border-radius:5px;background:var(--soft);overflow:hidden"><div style="{{ f.barBStyle }}"></div></div>
+              </div>
+              <span style="width:46px;flex:none;text-align:right;font-size:14px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ f.pctB }}</span>
+              <span style="width:66px;flex:none;text-align:right;{{ f.deltaChipStyle }}">{{ f.deltaChip }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;margin-top:20px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;font-weight:700;color:var(--muted)">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:3px;border-radius:2px;background:var(--muted2);display:inline-block"></span>Avant la V2</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:12px;height:3px;border-radius:2px;background:var(--accent);display:inline-block"></span>Après la V2</span>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noV2 }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px 30px">
+            <div style="font-size:14.5px;font-weight:500;color:var(--muted)">Pas encore assez d'historique avant/après la V2 sur ce périmètre — essaie « Tous les sites » ou un site avec plus de recul.</div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:16px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="font-size:15px;font-weight:600;color:var(--muted)">Résumé</div>
+        <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+          <div style="font-size:13.5px;font-weight:600;color:var(--muted)">Conversion avant la V2</div>
+          <div style="margin-top:6px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.8px">{{ v2PreConvLabel }}</div>
+        </div>
+        <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+          <div style="font-size:13.5px;font-weight:600;color:var(--muted)">Conversion après la V2</div>
+          <div style="margin-top:6px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.8px">{{ v2PostConvLabel }}</div>
+        </div>
+        <div style="border-radius:16px;padding:16px 18px;{{ v2BadgeStyle }};background:none;display:flex;flex-direction:column">
+          <span style="font-size:13.5px;font-weight:600;color:var(--muted)">Évolution</span>
+          <span style="margin-top:6px;font-size:20px">{{ v2BadgeText }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ Ligne 4 : Suivi des sessions par canal + KamIA ============ -->
+    <div style="display:grid;grid-template-columns:2.15fr 1fr;gap:20px;margin-top:20px">
 
       <div style="background:var(--card);border-radius:26px;padding:28px 30px 24px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
@@ -448,229 +612,30 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
 
-      <div style="background:#fff;border-radius:26px;padding:26px 28px 26px;min-height:460px;box-sizing:border-box;display:flex;flex-direction:column;box-shadow:0 4px 24px rgba(17,17,26,.045);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
-        <div style="display:flex;align-items:center;gap:11px">
-          <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#a8b6ff,var(--accent) 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l1.9 5.6L19.5 9l-4.4 3.6 1.4 5.9L12 15.3 7.5 18.5l1.4-5.9L4.5 9l5.6-1.4z"></path></svg>
-          </span>
-          <div style="font-size:19px;font-weight:600;letter-spacing:-.3px;color:var(--text)">Analyse KamIA</div>
+      <div style="background:#fff;border-radius:26px;padding:26px 28px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 4px 24px rgba(17,17,26,.045);animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="width:108px;height:108px;position:relative;margin:4px 0 18px;flex:none">
+          <div style="position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#3b5ae0,#7c5cff,#3b5ae0);animation:orbSpin 7s linear infinite"></div>
+          <div style="position:absolute;inset:9px;border-radius:50%;background:conic-gradient(from 180deg,#7c5cff,#3b5ae0,#7c5cff);opacity:.75;animation:orbSpinRev 9s linear infinite;filter:blur(4px)"></div>
+          <div style="position:absolute;inset:23px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff,#c8d3ff 45%,#3b5ae0 100%);animation:orbBreath 3.6s ease-in-out infinite"></div>
         </div>
-        <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;margin:20px 0;overflow:auto">
-          <sc-if value="{{ hasGa4Insights }}" hint-placeholder-val="{{ true }}">
-            <sc-for list="{{ ga4Insights }}" as="i" hint-placeholder-count="3">
-              <div style="{{ i.wrap }}">
-                <div style="display:flex;align-items:center;gap:9px">
-                  <span style="{{ i.iconBadge }}">
-                    <sc-if value="{{ i.isAttention }}" hint-placeholder-val="{{ false }}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><path d="M12 9v4M12 17h.01"></path></svg>
-                    </sc-if>
-                    <sc-if value="{{ i.isOpportunite }}" hint-placeholder-val="{{ false }}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"></path><path d="M15 7h6v6"></path></svg>
-                    </sc-if>
-                    <sc-if value="{{ i.isInfo }}" hint-placeholder-val="{{ true }}">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg>
-                    </sc-if>
-                  </span>
-                  <div style="{{ i.tagStyle }}">{{ i.tag }}</div>
-                </div>
-                <div style="margin-top:8px;font-size:14.5px;font-weight:500;color:var(--text2);line-height:1.55;text-wrap:pretty">{{ i.text }}</div>
-              </div>
-            </sc-for>
-          </sc-if>
+        <div style="font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.3px">KamIA</div>
+        <div style="margin-top:10px;font-size:14px;font-weight:500;color:var(--text2);line-height:1.55">{{ kamiaHeadline }}</div>
+        <sc-if value="{{ hasKamiaRows }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-top:20px;text-align:left">
+          <sc-for list="{{ kamiaRows }}" as="r" hint-placeholder-count="2">
+            <div style="{{ r.row }}"><span style="{{ r.miniDot }}"></span><span style="font-size:12.5px;font-weight:500;color:var(--text2);line-height:1.4">{{ r.text }}</span></div>
+          </sc-for>
         </div>
-        <sc-if value="{{ noGa4Insights }}" hint-placeholder-val="{{ false }}">
-          <div style="background:var(--soft);border-radius:16px;padding:14px 16px;margin-bottom:16px">
-            <div style="font-size:14.5px;font-weight:500;color:var(--text2)">Pas assez de tendance confirmée sur la période pour un insight fiable — sélectionne un mois complet ou plus de sites.</div>
-          </div>
         </sc-if>
-        <button onClick="{{ scrollToFunnel }}" style="display:flex;align-items:center;gap:14px;background:var(--active-bg);border:none;border-radius:999px;padding:0 12px 0 24px;height:54px;font-family:inherit;font-size:15.5px;font-weight:600;color:var(--active-fg);cursor:pointer;transition:transform .2s ease;align-self:flex-start" style-hover="transform:translateY(-3px)">Voir le parcours complet
-          <span style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--active-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
+        <button onClick="{{ scrollToFunnel }}" style="margin-top:20px;display:flex;align-items:center;gap:10px;background:var(--active-bg);border:none;border-radius:999px;padding:0 10px 0 18px;height:46px;font-family:inherit;font-size:14px;font-weight:600;color:var(--active-fg);cursor:pointer;transition:transform .2s ease" style-hover="transform:translateY(-2px)">Voir le parcours complet
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--active-fg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"></path></svg>
           </span>
         </button>
       </div>
     </div>
 
-    <div id="funnelAnchor" style="display:grid;grid-template-columns:1fr 468px;gap:20px;margin-top:20px;scroll-margin-top:24px">
-
-      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:470px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px">
-          <div>
-            <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Parcours d'estimation — avant / après la V2</div>
-            <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">{{ v2SubLabel }}</div>
-          </div>
-          <div style="{{ v2BadgeStyle }}">{{ v2BadgeText }}</div>
-        </div>
-        <sc-if value="{{ hasV2 }}" hint-placeholder-val="{{ true }}">
-        <div style="flex:1;display:flex;flex-direction:column;margin-top:8px;min-height:0">
-          <div style="position:relative;display:flex;align-items:flex-start;justify-content:space-between;padding:10px 6px 0">
-            <div style="position:absolute;left:calc(100%/12);right:calc(100%/12);top:35px;height:2px;background:var(--soft3)"></div>
-            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
-              <div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:0;{{ f.nodeWrap }}">
-                <span style="{{ f.nodeStyle }}">
-                  <sc-if value="{{ f.isHome }}" hint-placeholder-val="{{ false }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                  </sc-if>
-                  <sc-if value="{{ f.isSliders }}" hint-placeholder-val="{{ false }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="21" x2="14" y1="4" y2="4"></line><line x1="10" x2="3" y1="4" y2="4"></line><line x1="21" x2="12" y1="12" y2="12"></line><line x1="8" x2="3" y1="12" y2="12"></line><line x1="21" x2="16" y1="20" y2="20"></line><line x1="12" x2="3" y1="20" y2="20"></line><line x1="14" x2="14" y1="2" y2="6"></line><line x1="8" x2="8" y1="10" y2="14"></line><line x1="16" x2="16" y1="18" y2="22"></line></svg>
-                  </sc-if>
-                  <sc-if value="{{ f.isGauge }}" hint-placeholder-val="{{ false }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"></path><path d="M3.34 19a10 10 0 1 1 17.32 0"></path></svg>
-                  </sc-if>
-                  <sc-if value="{{ f.isUser }}" hint-placeholder-val="{{ false }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                  </sc-if>
-                  <sc-if value="{{ f.isPin }}" hint-placeholder-val="{{ false }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                  </sc-if>
-                  <sc-if value="{{ f.isCheck }}" hint-placeholder-val="{{ true }}">
-                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"></path><path d="m9 11 3 3L22 4"></path></svg>
-                  </sc-if>
-                </span>
-                <div style="margin-top:12px;text-align:center;padding:0 4px">
-                  <div style="font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3">{{ f.name }}</div>
-                  <div style="margin-top:7px;font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ f.pctB }}</div>
-                  <div style="margin-top:2px;height:16px">
-                    <span style="{{ f.deltaChipStyle }}">{{ f.deltaChip }}</span>
-                  </div>
-                </div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="flex:1;display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:24px 12px 4px;min-height:0">
-            <sc-for list="{{ funnel }}" as="f" hint-placeholder-count="6">
-              <div style="flex:1;display:flex;justify-content:center;height:100%;align-items:flex-end;min-width:0">
-                <div style="{{ f.barFillStyle }}"></div>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        </sc-if>
-        <sc-if value="{{ noV2 }}" hint-placeholder-val="{{ false }}">
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 30px">
-            <div style="font-size:14.5px;font-weight:500;color:var(--muted)">Pas encore assez d'historique avant/après la V2 sur ce périmètre — essaie « Tous les sites » ou un site avec plus de recul.</div>
-          </div>
-        </sc-if>
-      </div>
-
-      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:470px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .22s both">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between">
-          <div style="font-size:22px;font-weight:700;color:var(--text);padding-top:10px;letter-spacing:-.2px">Taux de complétion</div>
-          <div style="display:flex;align-items:baseline;color:var(--text)"><span ref="{{ compRef }}" style="font-size:56px;font-weight:800;letter-spacing:-2.4px;line-height:1">0,0</span><span style="font-size:25px;font-weight:600;color:var(--muted);margin-left:2px">%</span></div>
-        </div>
-        <div style="position:relative;flex:1;margin-top:8px">
-          <div style="position:absolute;left:80px;top:45px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,.28),rgba(74,222,128,0) 68%);filter:blur(14px);animation:glowPulse 3.4s ease-in-out infinite"></div>
-          <svg width="408" height="250" viewBox="0 0 408 250" style="position:absolute;left:0;top:0;overflow:visible">
-            <g stroke="var(--tick)" stroke-width="3" stroke-linecap="round">
-              <path d="M304.3 149.0 L338.9 129.0"></path>
-              <path d="M312.0 164.5 L348.9 149.2"></path>
-              <path d="M317.5 180.8 L356.1 170.5"></path>
-              <path d="M320.9 197.8 L360.5 192.6"></path>
-              <path d="M322.0 215.0 L362.0 215.0"></path>
-              <path d="M320.9 232.2 L360.5 237.4"></path>
-            </g>
-            <path ref="{{ gaugeArcRef }}" fill="none" stroke="#4ADE80" stroke-width="38" stroke-linecap="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation:drawLine 1.5s cubic-bezier(.3,.8,.3,1) .4s forwards;filter:drop-shadow(0 0 22px rgba(74,222,128,.42))"></path>
-            <circle ref="{{ gaugeDotRef }}" r="16" fill="var(--card)" style="opacity:0;animation:popIn .45s cubic-bezier(.2,1.4,.4,1) 1.6s forwards"></circle>
-          </svg>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div style="background:var(--soft);border-radius:16px;padding:16px 18px;animation:riseIn .6s ease 1.2s both">
-            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Leads BO / sessions reprise</div>
-            <div style="margin-top:7px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px">{{ convText }}</div>
-          </div>
-          <div style="background:var(--soft);border-radius:16px;padding:16px 18px;animation:riseIn .6s ease 1.3s both">
-            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Part vers la reprise</div>
-            <div style="margin-top:7px;font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px">{{ partText }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:20px">
-
-      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
-        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Leads par projet d'achat</div>
-        <div style="display:flex;gap:5px;margin-top:20px;height:22px;flex:none">
-          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
-            <span style="{{ p.segment }}"></span>
-          </sc-for>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;margin-top:10px">
-          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
-            <div style="{{ p.row }}">
-              <span style="{{ p.iconBadge }}">
-                <sc-if value="{{ p.isNew }}" hint-placeholder-val="{{ false }}">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>
-                </sc-if>
-                <sc-if value="{{ p.isUsed }}" hint-placeholder-val="{{ false }}">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-                </sc-if>
-                <sc-if value="{{ p.isUnknown }}" hint-placeholder-val="{{ true }}">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
-                </sc-if>
-              </span>
-              <span style="display:flex;flex-direction:column;gap:3px;flex:1">
-                <span style="font-size:17px;font-weight:600;color:var(--text)">{{ p.name }}</span>
-                <span style="font-size:14.5px;font-weight:500;color:var(--muted)">{{ p.pct }}</span>
-              </span>
-              <span style="font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.4px;font-variant-numeric:tabular-nums">{{ p.value }}</span>
-            </div>
-          </sc-for>
-        </div>
-      </div>
-
-      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .26s both">
-        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Marques reprises</div>
-        <div style="display:flex;gap:8px;margin-top:16px">
-          <span style="font-size:13.5px;font-weight:600;color:var(--text);background:var(--soft);border-radius:999px;padding:8px 13px">{{ ownBrandShare }}</span>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;margin-top:18px">
-          <sc-for list="{{ audience }}" as="a" hint-placeholder-count="5">
-            <div style="{{ a.row }}">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <span style="display:flex;align-items:center;gap:10px">
-                  <span style="width:30px;height:30px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(249,171,0,.15);color:#F9AB00">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8"></path><path d="M7 14h.01"></path><path d="M17 14h.01"></path><rect width="18" height="8" x="3" y="10" rx="2"></rect><path d="M5 18v2"></path><path d="M19 18v2"></path></svg>
-                  </span>
-                  <span style="font-size:16.5px;font-weight:600;color:var(--text)">{{ a.name }}</span>
-                </span>
-                <span style="font-size:16px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ a.pct }}</span>
-              </div>
-              <div style="height:12px;border-radius:6px;background:var(--soft);overflow:hidden"><div style="{{ a.bar }}"></div></div>
-            </div>
-          </sc-for>
-        </div>
-      </div>
-
-      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:430px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .32s both">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Leads quotidiens</div>
-          <span style="font-size:14px;font-weight:600;color:var(--muted)">{{ heatmapDaysLabel }}</span>
-        </div>
-        <div style="flex:1;display:flex;align-items:center">
-          <div style="display:grid;grid-template-columns:repeat(18,1fr);gap:7px;width:100%">
-            <sc-for list="{{ leadCells }}" as="c" hint-placeholder-count="90">
-              <div style="{{ c.style }}" title="{{ c.title }}"></div>
-            </sc-for>
-          </div>
-        </div>
-        <div style="display:flex;align-items:flex-end;justify-content:space-between">
-          <div>
-            <div style="font-size:14.5px;font-weight:600;color:var(--muted)">Moyenne / jour</div>
-            <div ref="{{ dailyAvgRef }}" style="margin-top:6px;font-size:30px;font-weight:800;color:var(--text);letter-spacing:-1.2px">0</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:7px;padding-bottom:6px">
-            <span style="font-size:13px;font-weight:500;color:var(--muted2)">Faible</span>
-            <span style="width:14px;height:14px;border-radius:4px;background:var(--cell0);display:block"></span>
-            <span style="width:14px;height:14px;border-radius:4px;background:#2f6b45;display:block"></span>
-            <span style="width:14px;height:14px;border-radius:4px;background:#3fae63;display:block"></span>
-            <span style="width:14px;height:14px;border-radius:4px;background:#4ADE80;display:block"></span>
-            <span style="font-size:13px;font-weight:500;color:var(--muted2)">Élevé</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- ============ Ligne 5 : Volume vs conversion tradein ============ -->
     <sc-if value="{{ hasVolConvChart }}" hint-placeholder-val="{{ false }}">
     <div style="background:#fff;border-radius:30px;padding:32px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;margin-top:20px">
       <div style="display:flex;align-items:center;gap:14px">
@@ -688,7 +653,7 @@ input[type=date]{color-scheme:dark}
         <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Dernier mois</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvLastLabel }}</div><div style="font-size:12px;color:var(--muted2)">{{ volConvLastMonthLabel }}</div></div>
         <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Évolution</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvProgress }} pts</div><div style="font-size:12px;color:var(--muted2)">sur 12 mois</div></div>
       </div>
-      <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block">
+      <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block;overflow:visible">
         <line x1="52" y1="252" x2="1224" y2="252" stroke="var(--line)"></line>
         <sc-if value="{{ volConvChart.hasV2Marker }}" hint-placeholder-val="{{ false }}">
         <line ref="{{ volConvChart.v2Ref }}" y1="14" y2="252" stroke="var(--muted2)" stroke-width="1.6" stroke-dasharray="5 6"></line>
@@ -706,6 +671,142 @@ input[type=date]{color-scheme:dark}
       </svg>
     </div>
     </sc-if>
+
+    <!-- ============ Ligne 6 : Leads par projet d'achat + Marques reprises + Taux de complétion ============ -->
+    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:20px;margin-top:20px">
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:412px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
+        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Leads par projet d'achat</div>
+        <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:18px;background:var(--soft);border-radius:20px;padding:20px 20px;display:flex;flex-direction:column;gap:4px">
+          <span style="{{ projectHero.iconBadge }}">
+            <sc-if value="{{ projectHero.isNew }}" hint-placeholder-val="{{ false }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>
+            </sc-if>
+            <sc-if value="{{ projectHero.isUsed }}" hint-placeholder-val="{{ false }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </sc-if>
+            <sc-if value="{{ projectHero.isUnknown }}" hint-placeholder-val="{{ true }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+            </sc-if>
+          </span>
+          <div style="font-size:14.5px;font-weight:600;color:var(--muted);margin-top:10px">{{ projectHero.name }}</div>
+          <div style="font-size:32px;font-weight:800;color:var(--text);letter-spacing:-1px">{{ projectHero.value }}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent)">{{ projectHero.pct }} des leads</div>
+        </div>
+        </sc-if>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:18px;flex:1;justify-content:center">
+          <sc-for list="{{ projectRest }}" as="p" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="{{ p.iconBadge }};width:30px;height:30px;border-radius:10px">
+                  <sc-if value="{{ p.isNew }}" hint-placeholder-val="{{ false }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ p.isUsed }}" hint-placeholder-val="{{ false }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{ p.isUnknown }}" hint-placeholder-val="{{ true }}">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+                  </sc-if>
+                </span>
+                <span style="font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+              </span>
+              <span style="font-size:15px;font-weight:700;color:var(--text);flex:none">{{ p.value }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:412px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .26s both">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Marques reprises</div>
+          <span style="font-size:13.5px;font-weight:600;color:var(--text);background:var(--soft);border-radius:999px;padding:8px 13px">{{ ownBrandShare }}</span>
+        </div>
+        <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;align-items:flex-end;gap:10px;margin-top:24px;padding-bottom:4px">
+          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="5">
+            <div style="{{ b.colWrap }}">
+              <span style="font-size:12.5px;font-weight:700;color:var(--text)">{{ b.value }}</span>
+              <div style="{{ b.bar }}"></div>
+              <span style="font-size:11.5px;font-weight:600;color:var(--muted);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ b.name }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="background:var(--card);border-radius:26px;padding:28px 30px;height:412px;box-sizing:border-box;display:flex;flex-direction:column;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .32s both">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div style="font-size:19px;font-weight:700;color:var(--text);padding-top:6px;letter-spacing:-.2px">Taux de complétion</div>
+        </div>
+        <div style="display:flex;align-items:baseline;color:var(--text);margin-top:2px"><span ref="{{ compRef }}" style="font-size:44px;font-weight:800;letter-spacing:-2px;line-height:1">0,0</span><span style="font-size:21px;font-weight:600;color:var(--muted);margin-left:2px">%</span></div>
+        <div style="position:relative;flex:1;margin-top:4px">
+          <div style="position:absolute;left:14px;top:16px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,.28),rgba(74,222,128,0) 68%);filter:blur(14px);animation:glowPulse 3.4s ease-in-out infinite"></div>
+          <!-- viewBox reste a l'echelle d'origine (408x250, cf. cx/cy/R dans
+               renderVals) : ne redimensionner que via width/height, jamais le
+               viewBox, sinon l'arc calcule en JS (grandes coordonnees) sort du
+               cadre — deja constate a l'ecran (arc quasi invisible). -->
+          <svg width="100%" height="172" viewBox="0 0 408 250" preserveAspectRatio="xMidYMid meet" style="position:absolute;left:0;top:0;overflow:visible">
+            <g stroke="var(--tick)" stroke-width="3" stroke-linecap="round">
+              <path d="M304.3 149.0 L338.9 129.0"></path>
+              <path d="M312.0 164.5 L348.9 149.2"></path>
+              <path d="M317.5 180.8 L356.1 170.5"></path>
+              <path d="M320.9 197.8 L360.5 192.6"></path>
+              <path d="M322.0 215.0 L362.0 215.0"></path>
+              <path d="M320.9 232.2 L360.5 237.4"></path>
+            </g>
+            <path ref="{{ gaugeArcRef }}" fill="none" stroke="#4ADE80" stroke-width="38" stroke-linecap="round" stroke-dasharray="600" stroke-dashoffset="600" style="animation:drawLine 1.5s cubic-bezier(.3,.8,.3,1) .4s forwards;filter:drop-shadow(0 0 22px rgba(74,222,128,.42))"></path>
+            <circle ref="{{ gaugeDotRef }}" r="16" fill="var(--card)" style="opacity:0;animation:popIn .45s cubic-bezier(.2,1.4,.4,1) 1.6s forwards"></circle>
+          </svg>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--soft);border-radius:14px;padding:13px 15px;animation:riseIn .6s ease 1.2s both">
+            <div style="font-size:13px;font-weight:600;color:var(--muted)">Leads BO / sessions reprise</div>
+            <div style="margin-top:5px;font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.6px">{{ convText }}</div>
+          </div>
+          <div style="background:var(--soft);border-radius:14px;padding:13px 15px;animation:riseIn .6s ease 1.3s both">
+            <div style="font-size:13px;font-weight:600;color:var(--muted)">Part vers la reprise</div>
+            <div style="margin-top:5px;font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.6px">{{ partText }}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ Ligne 7 : Audience & environnement ============ -->
+    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;margin-top:20px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+      <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Audience & environnement</div>
+      <div style="display:grid;grid-template-columns:1.15fr 1.5fr .95fr;gap:30px;margin-top:24px">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:16px">Appareil</div>
+          <sc-if value="{{ hasDeviceRows }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ deviceRows }}" as="d" hint-placeholder-count="2">
+              <div style="{{ d.row }}">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:14.5px;font-weight:600;color:var(--text)">{{ d.name }}</span>
+                  <span style="font-size:14px;font-weight:700;color:var(--text)">{{ d.pct }}</span>
+                </div>
+                <div style="height:10px;border-radius:6px;background:var(--soft);overflow:hidden"><div style="{{ d.bar }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+          <sc-if value="{{ noDeviceRows }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13.5px;font-weight:500;color:var(--muted2);line-height:1.5">Pas de donnée appareil sur cette période.</div>
+          </sc-if>
+        </div>
+        <div style="border-left:1px solid var(--line);padding-left:30px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Navigateur</div>
+          <div style="font-size:13.5px;font-weight:500;color:var(--muted2);line-height:1.55">Donnée non disponible — aucune répartition par navigateur n'est remontée par le pipeline actuel.</div>
+        </div>
+        <div style="border-left:1px solid var(--line);padding-left:30px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:14px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Nouveaux vs récurrents</div>
+          <div style="font-size:13.5px;font-weight:500;color:var(--muted2);line-height:1.55">Donnée non disponible — le pipeline ne distingue pas encore les visiteurs récurrents.</div>
+        </div>
+      </div>
+    </div>
   </div>
   </sc-if>
 
@@ -1765,25 +1866,39 @@ function buildVolumeConvChart(rows, v2Idx) {
   // attributs numeriques SVG : deja observe non fiable sur ce moteur de
   // template pour d/x1/x2, cf. buildWatchChart/sparkline plus haut) --
   // seuls les libelles texte passent par {{ }} normalement.
-  const bars = rows.map((r, i) => {
+  // geometrie des deux series calculee d'abord, ensemble, pour pouvoir
+  // detecter les collisions entre le libelle "sessions" (au-dessus de la
+  // barre) et le libelle "conversion" (au-dessus du point) quand la courbe
+  // passe pres du sommet d'une barre haute — sinon les deux textes se
+  // chevauchent (constate a l'ecran sur plusieurs mois).
+  const geom = rows.map((r, i) => {
     const h = (r.sessions / maxSess) * (base - top);
     const x = 52 + i * colW + colW * 0.18;
     const w = colW * 0.64;
+    const barTopY = base - h;
+    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
+    const barLabelY = barTopY - 10;
+    const naturalPointLabelY = cy - 14;
+    const pointLabelY = Math.abs(naturalPointLabelY - barLabelY) < 26 ? barLabelY - 22 : naturalPointLabelY;
+    return { h, x, w, barTopY, cx, cy, barLabelY, pointLabelY };
+  });
+  const bars = rows.map((r, i) => {
+    const { h, x, w, barTopY, barLabelY } = geom[i];
     return {
       barFill: (v2Idx >= 0 && i > v2Idx) ? "#dde4ff" : "var(--soft3)",
-      ref: el => setAnimatedAttrs(el, { x: x.toFixed(1), y: (base - h).toFixed(1), width: w.toFixed(1), height: h.toFixed(1) }),
+      ref: el => setAnimatedAttrs(el, { x: x.toFixed(1), y: barTopY.toFixed(1), width: w.toFixed(1), height: h.toFixed(1) }),
       // {{ }} ne s'interpole pas dans le contenu d'un <text> SVG (deja
       // rencontre pour perfRing/sparklines) : position ET texte poses ici,
       // imperativement, comme partout ailleurs dans le fichier pour ce cas.
-      labelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", (base - h - 10).toFixed(1)); el.textContent = fmt(r.sessions); },
+      labelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", barLabelY.toFixed(1)); el.textContent = fmt(r.sessions); },
       monthLabelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", (base + 26).toFixed(1)); el.textContent = r.label; },
     };
   });
   const points = rows.map((r, i) => {
-    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
+    const { cx, cy, pointLabelY } = geom[i];
     return {
       dotRef: el => setAnimatedAttrs(el, { cx: cx.toFixed(1), cy: cy.toFixed(1) }),
-      labelRef: el => { if (!el) return; el.setAttribute("x", cx.toFixed(1)); el.setAttribute("y", (cy - 14).toFixed(1)); el.textContent = dec(r.conv, 2) + " %"; },
+      labelRef: el => { if (!el) return; el.setAttribute("x", cx.toFixed(1)); el.setAttribute("y", pointLabelY.toFixed(1)); el.textContent = dec(r.conv, 2) + " %"; },
     };
   });
   const linePath = points.length ? rows.map((r, i) => {
@@ -2213,7 +2328,7 @@ class Component extends DCLogic {
   /* ---------------------------- agregation reelle sur les sites selectionnes ---------------------------- */
   aggregate(debut, fin) {
     const out = {
-      traffic: 0, reprise: 0, leads: 0, leadsDaily: {}, brand: new Map(), project: new Map(),
+      traffic: 0, reprise: 0, leads: 0, leadsDaily: {}, brand: new Map(), project: new Map(), device: new Map(),
       funnelSteps: null, funnelDays: 0, canal: {}, trafficDaily: {}, gscClics: 0, gscImpr: 0, gscCtrSum: 0, gscPosSum: 0, gscN: 0,
       gscDaily: {}, gscImprDaily: {}, queries: new Map(), pages: new Map(), insightsAcq: [], insightsRech: [], ownBrand: 0,
       v2Steps: null, v2SiteCount: 0, v2PreLabel: null, v2PostLabel: null,
@@ -2251,6 +2366,7 @@ class Component extends DCLogic {
         if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
           for (const [n, v] of (d.leads[mois].brand || [])) out.brand.set(n, (out.brand.get(n) || 0) + v);
           for (const [n, v] of (d.leads[mois].project || [])) out.project.set(n, (out.project.get(n) || 0) + v);
+          for (const [n, v] of (d.leads[mois].device || [])) out.device.set(n, (out.device.get(n) || 0) + v);
           const own = marqueDeSite(s);
           for (const [n, v] of (d.leads[mois].brand || [])) if (String(n).toUpperCase() === own) out.ownBrand += v;
         }
@@ -2982,6 +3098,13 @@ class Component extends DCLogic {
         // barre verticale sous chaque etape : occupe l'espace laisse vide
         // par la frise et redonne au parcours la forme d'un entonnoir
         barFillStyle: "width:100%;max-width:64px;border-radius:10px 10px 4px 4px;height:" + Math.max(6, pctB).toFixed(1) + "%;background:linear-gradient(180deg,rgba(245,65,30," + fade.toFixed(2) + "),rgba(249,171,0," + fade.toFixed(2) + "));animation:growH .9s cubic-bezier(.3,.8,.3,1) " + (0.55 + i * 0.08) + "s both",
+        // variante en rangees horizontales (icone + libelle + barres avant/apres
+        // + delta), utilisee par le bloc "Parcours d'estimation" — memes
+        // donnees (pctA/pctB/deltaChip) que la version a noeuds ci-dessus.
+        rowWrap: "display:flex;align-items:center;gap:14px;animation:riseIn .5s ease " + (0.3 + i * 0.07) + "s both",
+        iconBadge: "width:32px;height:32px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--accent)",
+        barAStyle: "height:100%;border-radius:5px;width:" + Math.max(2, pctA).toFixed(1) + "%;background:var(--muted2)",
+        barBStyle: "height:100%;border-radius:5px;width:" + Math.max(2, pctB).toFixed(1) + "%;background:var(--accent);animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.4 + i * 0.07) + "s both",
       };
     });
     const v2BadgeStyle = "font-size:14.5px;font-weight:700;padding:5px 10px;border-radius:8px;color:" +
@@ -2993,6 +3116,84 @@ class Component extends DCLogic {
       : (agg.v2SiteCount === 1
           ? "Avant " + agg.v2PreLabel + " · Après " + agg.v2PostLabel
           : "Comparaison avant/après le passage à la V2 · " + agg.v2SiteCount + " site(s)");
+
+    // "Tunnel de conversion" (bloc maquette) : etat actuel du parcours,
+    // etape par etape — a la difference du bloc V2 ci-dessus (qui compare
+    // avant/apres), celui-ci est toujours disponible (funnelMonth existe
+    // independamment du statut V2 du site) et montre juste ou en est le
+    // parcours aujourd'hui.
+    const tunnelSteps = (agg.funnelSteps || []).map((s, i) => {
+      const first = (agg.funnelSteps[0] && agg.funnelSteps[0].users) || 1;
+      const pct = first ? s.users / first * 100 : 0;
+      const icon = V2_STEP_ICON[i] || "check";
+      return {
+        name: V2_STEP_LABELS[i] || s.step, value: fmt(s.users), pct: dec(pct, 0) + " %",
+        isHome: icon === "home", isSliders: icon === "sliders", isGauge: icon === "gauge",
+        isUser: icon === "user", isPin: icon === "pin", isCheck: icon === "check",
+        rowWrap: "display:flex;align-items:center;gap:12px;animation:riseIn .5s ease " + (0.25 + i * 0.07) + "s both",
+        iconBadge: "width:32px;height:32px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--soft);color:var(--accent)",
+        barTrack: "flex:1;height:10px;border-radius:6px;background:var(--soft);overflow:hidden",
+        barFill: "height:100%;border-radius:6px;width:" + Math.max(2, pct).toFixed(1) + "%;background:linear-gradient(90deg,#7d99ff,var(--accent));animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.35 + i * 0.07) + "s both",
+      };
+    });
+    const hasTunnel = tunnelSteps.length > 0;
+
+    // "Repartition des leads" (donut, bloc maquette) : reprend la meme
+    // agregation par marque que "Marques reprises" plus bas, juste presentee
+    // en parts du total plutot qu'en barres.
+    const DONUT_COLORS = ["#3b5ae0", "#7d99ff", "#a8c0ff", "#dbe2ff"];
+    const brandDonutList = [...agg.brand.entries()].sort((a, b) => b[1] - a[1]);
+    const totalBrandDonut = brandDonutList.reduce((s, [, v]) => s + v, 0) || 1;
+    const donutSlicesSrc = brandDonutList.slice(0, 3);
+    const donutOtherTotal = brandDonutList.slice(3).reduce((s, [, v]) => s + v, 0);
+    const donutSlices = donutSlicesSrc.concat(donutOtherTotal ? [["Autres", donutOtherTotal]] : []);
+    let donutAcc = 0;
+    const donutRows = donutSlices.map(([name, v], i) => {
+      const pct = v / totalBrandDonut * 100;
+      const from = donutAcc; donutAcc += pct;
+      return {
+        name, pct: dec(pct, 0) + " %", color: DONUT_COLORS[i % DONUT_COLORS.length],
+        from: from.toFixed(2), to: donutAcc.toFixed(2),
+        row: "display:flex;align-items:center;justify-content:space-between;gap:10px;animation:riseIn .5s ease " + (0.4 + i * 0.08) + "s both",
+        dot: "width:9px;height:9px;border-radius:50%;flex:none;background:" + DONUT_COLORS[i % DONUT_COLORS.length],
+      };
+    });
+    const hasDonut = donutRows.length > 0;
+    const donutGradient = hasDonut ? "conic-gradient(" + donutRows.map(r => r.color + " " + r.from + "% " + r.to + "%").join(",") + ")" : "var(--soft3)";
+    const donutTotalLabel = fmt(totalBrandDonut);
+
+    // "Sources" (tableau, bloc maquette) : sessions reelles par canal — pas
+    // de colonne "conversion par canal" (aucune attribution lead <-> canal
+    // dans nos donnees), on reste sur ce qu'on sait vraiment mesurer.
+    const sourceRows = canaux.filter(c => c !== "Autres").map((c, i) => ({
+      name: c, sessions: fmt(totalParCanal[c] || 0), share: dec((totalParCanal[c] || 0) / totalCanalGlobal * 100, 0) + " %",
+      dot: "width:8px;height:8px;border-radius:50%;flex:none;background:" + CHAN_COLORS[i % CHAN_COLORS.length],
+      row: "display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;animation:riseIn .5s ease " + (0.3 + i * 0.06) + "s both",
+    })).slice(0, 6);
+    const hasSourceRows = sourceRows.length > 0;
+
+    // "Audience & environnement" (bloc maquette) : seul l'appareil (device)
+    // est une vraie donnee remontee par le pipeline (leads_extract.py) —
+    // navigateur et nouveaux/recurrents n'existent nulle part, on l'indique
+    // honnetement plutot que d'inventer une repartition.
+    const DEVICE_COLORS = { "Mobile": "#3b5ae0", "Desktop": "#7d99ff", "Tablette": "#a8c0ff", "Autre": "var(--muted2)" };
+    const deviceListRaw = [...agg.device.entries()];
+    const totalDevice = deviceListRaw.reduce((s, [, v]) => s + v, 0) || 1;
+    const bucketDeviceLabel = k => {
+      const kl = String(k).toLowerCase();
+      if (kl.includes("mobile")) return "Mobile";
+      if (kl.includes("desktop")) return "Desktop";
+      if (kl.includes("tablet")) return "Tablette";
+      return "Autre";
+    };
+    const deviceBuckets = new Map();
+    for (const [k, v] of deviceListRaw) { const label = bucketDeviceLabel(k); deviceBuckets.set(label, (deviceBuckets.get(label) || 0) + v); }
+    const deviceRows = [...deviceBuckets.entries()].sort((a, b) => b[1] - a[1]).map(([name, v], i) => ({
+      name, pct: dec(v / totalDevice * 100, 0) + " %",
+      row: "animation:riseIn .5s ease " + (0.3 + i * 0.08) + "s both",
+      bar: "height:100%;border-radius:6px;width:" + dec(v / totalDevice * 100, 0) + "%;background:" + (DEVICE_COLORS[name] || "var(--muted2)") + ";animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.4 + i * 0.08) + "s both",
+    }));
+    const hasDeviceRows = deviceRows.length > 0;
 
     // ---------------------------- rapport hebdomadaire V2 (onglet dedie) ----------------------------
     // independant de la periode choisie dans l'interface : chaque site a sa
@@ -3178,6 +3379,12 @@ class Component extends DCLogic {
         segment: "width:" + dec(v/totalProj*100,0) + "%;border-radius:8px;background:" + color + ";animation:growW .9s cubic-bezier(.3,.8,.3,1) " + (0.7 + i*.12) + "s both",
       };
     });
+    // "Leads par projet d'achat" (bloc maquette) : carte hero pour le
+    // premier projet (le plus gros volume), puis le reste en rangees plus
+    // discretes — reprend exactement les memes donnees que projects
+    // ci-dessus, juste presentees differemment.
+    const projectHero = projects.length ? projects[0] : null;
+    const projectRest = projects.slice(1);
 
     // marques reprises
     const brandList = [...agg.brand.entries()].sort((a,b) => b[1]-a[1]).slice(0, 5);
@@ -3189,6 +3396,14 @@ class Component extends DCLogic {
     }));
     const totalLeadsAllBrands = [...agg.brand.values()].reduce((a,b)=>a+b,0) || 1;
     const ownBrandShare = dec(agg.ownBrand / totalLeadsAllBrands * 100, 0) + " % marque du site";
+    // "Marques reprises" (bloc maquette) : memes donnees que audience
+    // ci-dessus, en barres verticales plutot qu'en rangees horizontales.
+    const maxBrandV = Math.max(1, ...brandList.map(([, v]) => v));
+    const brandBars = brandList.map(([name, v], i) => ({
+      name: marqueDeSite(name) || name, value: fmt(v),
+      colWrap: "display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;height:100%;justify-content:flex-end;min-width:0",
+      bar: "width:100%;max-width:36px;border-radius:9px 9px 3px 3px;height:" + Math.max(4, dec(v / maxBrandV * 100, 0)) + "%;background:linear-gradient(180deg,#ffd166,#F9AB00);animation:growH .9s cubic-bezier(.3,.8,.3,1) " + (0.4 + i * 0.08) + "s both",
+    }));
 
     // heatmap leads quotidiens (90 derniers jours max)
     const anySite = this.data[this.sitesList[0]];
@@ -3221,6 +3436,16 @@ class Component extends DCLogic {
         wrap: "background:" + v.tint + ";border-radius:16px;padding:14px 16px;animation:riseIn .6s ease " + (0.3 + i * 0.1) + "s both",
       };
     });
+    // carte "KamIA" (bloc maquette, remplace l'ancienne liste d'insights
+    // brute par un visuel a orbe) : meme donnee reelle (agg.insightsAcq) que
+    // ga4Insights ci-dessus, juste une mise en avant differente du premier
+    // insight sous l'orbe et le reste en rangees compactes.
+    const kamiaHeadline = ga4Insights.length ? ga4Insights[0].text : "Pas assez de tendance confirmée sur la période pour un insight fiable.";
+    const kamiaRows = ga4Insights.slice(1).map((n, i) => ({
+      ...n,
+      row: "display:flex;align-items:center;gap:10px;animation:riseIn .5s ease " + (0.5 + i * 0.1) + "s both",
+      miniDot: "width:7px;height:7px;border-radius:50%;flex:none;background:" + n.borderColor,
+    }));
 
     // ---------------------------- GSC ----------------------------
     const hasGsc = agg.gscN > 0 || Object.keys(agg.gscDaily).length > 0;
@@ -3564,7 +3789,11 @@ class Component extends DCLogic {
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror,
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
-      funnel, projects, audience, leadCells, queries, pages,
+      funnel, projects, projectHero, hasProjectHero: !!projectHero, projectRest, audience, brandBars, hasBrandBars: brandBars.length > 0, leadCells, queries, pages,
+      tunnelSteps, hasTunnel, noTunnel: !hasTunnel, donutRows, hasDonut, donutGradient, donutTotalLabel,
+      sourceRows, hasSourceRows, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
+      v2PreConvLabel: dec(v2PreConv, 0) + " %", v2PostConvLabel: dec(v2PostConv, 0) + " %",
+      kamiaHeadline, kamiaRows, hasKamiaRows: kamiaRows.length > 0,
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
       showScopeBar: st.tab !== "assistant" && st.tab !== "performance",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
