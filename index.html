@@ -1032,7 +1032,6 @@ input[type=date]{color-scheme:dark}
               </div>
             </div>
 
-            <sc-if value="{{ r.hasSecondaires }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;border-top:1px solid var(--line)">
               <sc-for list="{{ r.secondaires }}" as="sec" hint-placeholder-count="3">
                 <div style="text-align:center;flex:1">
@@ -1041,12 +1040,10 @@ input[type=date]{color-scheme:dark}
                 </div>
               </sc-for>
             </div>
-            </sc-if>
 
-            <sc-if value="{{ r.hasTerrain }}" hint-placeholder-val="{{ false }}">
             <div style="background:var(--soft2);border-radius:14px;padding:12px 14px">
               <div style="display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--text2)">
-                <span style="width:7px;height:7px;border-radius:50%;background:#4ADE80;display:inline-block;flex:none"></span>
+                <span style="{{ r.terrainDotStyle }}"></span>
                 {{ r.terrainLabel }} · {{ r.terrainCategorie }}
               </div>
               <div style="display:flex;gap:16px;margin-top:8px;font-size:13px;font-weight:600;color:var(--text2)">
@@ -1055,21 +1052,27 @@ input[type=date]{color-scheme:dark}
                 <span>INP <b style="color:var(--text)">{{ r.terrainInp }}</b></span>
               </div>
             </div>
-            </sc-if>
 
-            <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
-            <div>
+            <div style="min-height:94px">
               <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">À corriger en priorité</div>
-              <div style="display:flex;flex-wrap:wrap;gap:7px">
+              <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px">
                 <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
-                  <span style="display:inline-flex;align-items:center;gap:6px;background:var(--soft2);border-radius:999px;padding:5px 12px;font-size:12px;line-height:1.4;max-width:100%">
-                    <span style="color:var(--text2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.titre }}</span>
-                    <span style="color:#F5A524;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;flex:none">-{{ o.gain }}</span>
-                  </span>
+                  <div style="display:flex;align-items:center;gap:8px;background:var(--soft2);border-radius:10px;padding:7px 12px">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#F5A524;flex:none"></span>
+                    <span style="flex:1;min-width:0;font-size:12.5px;font-weight:600;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.titre }}</span>
+                    <span style="font-size:12px;font-weight:800;color:#F5A524;white-space:nowrap;flex:none;font-variant-numeric:tabular-nums">-{{ o.gain }}</span>
+                  </div>
                 </sc-for>
               </div>
+              </sc-if>
+              <sc-if value="{{ r.noOpportunites }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:8px;background:var(--pos-bg);border-radius:10px;padding:7px 12px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                <span style="font-size:12.5px;font-weight:700;color:var(--pos)">Rien à signaler</span>
+              </div>
+              </sc-if>
             </div>
-            </sc-if>
           </div>
         </sc-for>
           </div>
@@ -3225,16 +3228,26 @@ class Component extends DCLogic {
       const badgeBg = pire == null ? "var(--soft2)" : pire >= 90 ? "rgba(34,197,94,.16)" : pire >= 50 ? "rgba(245,165,36,.16)" : "rgba(239,68,68,.16)";
       const badgeFg = pire == null ? "var(--muted)" : pire >= 90 ? "#22C55E" : pire >= 50 ? "#F5A524" : "#EF4444";
       const badgeTxt = pire == null ? "Non mesuré" : pire >= 90 ? "Bon" : pire >= 50 ? "À améliorer" : "Mauvais";
-      const secondaires = m ? [
-        ["Accessibilité", m.accessibilite], ["Bonnes pratiques", m.bonnesPratiques], ["SEO", m.seo],
+      // toujours 3 items (repli "—" via perfScoreColor/v==null), plus de
+      // ternaire m?[...]:[] : une carte sans mesure doit avoir exactement la
+      // meme structure qu'une carte mesuree, sinon la grille redevient
+      // inegale des qu'un site n'a pas (encore) de releve PageSpeed.
+      const secondaires = [
+        ["Accessibilité", m && m.accessibilite], ["Bonnes pratiques", m && m.bonnesPratiques], ["SEO", m && m.seo],
       ].map(([label, v]) => ({
         label, value: v == null ? "—" : String(v),
         style: "color:" + perfScoreColor(v) + ";font-weight:800;font-variant-numeric:tabular-nums",
-      })) : [];
+      }));
       const terrain = m && m.terrain;
-      const opportunites = ((m && m.opportunites) || []).map(o => ({
+      // deja trie par impact decroissant cote pipeline (pipeline/pagespeed.py,
+      // _opportunites) : slice(0,2) donne bien les 2 optimisations les plus
+      // rentables, pas les 2 premieres au hasard. Plafonner ici (plutot que
+      // tout afficher en pills qui s'enroulent sur N lignes) est ce qui
+      // rend la hauteur des cartes previsible.
+      const opportunitesAll = ((m && m.opportunites) || []).map(o => ({
         titre: o.titre, gain: o.gainMs >= 1000 ? (o.gainMs / 1000).toFixed(1) + " s" : Math.round(o.gainMs) + " ms",
       }));
+      const opportunites = opportunitesAll.slice(0, 2);
       return {
         name: n, hasData: !!ps,
         mobile: perfRing(m && m.score),
@@ -3246,14 +3259,15 @@ class Component extends DCLogic {
         tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
         fcp: m && m.fcp != null ? (m.fcp / 1000).toFixed(1) + " s" : "—",
         si: m && m.si != null ? (m.si / 1000).toFixed(1) + " s" : "—",
-        secondaires, hasSecondaires: secondaires.length > 0,
-        hasTerrain: !!terrain,
-        terrainLabel: terrain ? (terrain.origine ? "Terrain réel — origine du site" : "Terrain réel — cette page") : "",
-        terrainCategorie: terrain ? (terrain.categorie === "FAST" ? "Rapide" : terrain.categorie === "AVERAGE" ? "Moyen" : terrain.categorie === "SLOW" ? "Lent" : "") : "",
+        secondaires,
+        terrainDotStyle: "width:7px;height:7px;border-radius:50%;display:inline-block;flex:none;background:" + (terrain ? "#4ADE80" : "var(--soft3)"),
+        terrainLabel: terrain ? (terrain.origine ? "Terrain réel — origine du site" : "Terrain réel — cette page") : "Terrain réel",
+        terrainCategorie: terrain ? (terrain.categorie === "FAST" ? "Rapide" : terrain.categorie === "AVERAGE" ? "Moyen" : terrain.categorie === "SLOW" ? "Lent" : "—") : "Indisponible",
         terrainLcp: terrain && terrain.lcp != null ? (terrain.lcp / 1000).toFixed(1) + " s" : "—",
         terrainCls: terrain && terrain.cls != null ? terrain.cls.toFixed(2) : "—",
         terrainInp: terrain && terrain.inp != null ? Math.round(terrain.inp) + " ms" : "—",
         opportunites, hasOpportunites: opportunites.length > 0,
+        noOpportunites: opportunites.length === 0 && !!ps,
         releveLabel: ps ? "Relevé le " + ps.releve : "Non mesuré",
         sortKey: m && m.score != null ? m.score : 999,
         pays: paysDeSite(n),
