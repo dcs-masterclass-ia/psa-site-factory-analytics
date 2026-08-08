@@ -1240,6 +1240,9 @@ input[type=date]{color-scheme:dark}
             <div style="font-size:11px;font-weight:600;color:var(--muted2)">{{ c.genereLe }}</div>
           </button>
         </sc-for>
+        <sc-if value="{{ hasWatchMore }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ toggleWatchShowAll }}" style="text-align:center;border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:16px;padding:12px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;transition:background .18s ease,color .18s ease" style-hover="background:var(--hover);color:var(--text)">{{ watchToggleLabel }}</button>
+        </sc-if>
       </div>
     </div>
    </div>
@@ -2278,6 +2281,10 @@ class Component extends DCLogic {
       this.forceUpdate();
     }, 220);
   }
+  toggleWatchShowAll() {
+    this._watchShowAll = !this._watchShowAll;
+    this.forceUpdate();
+  }
 
   /* survol du graphe canal/trafic : l'index survole est stocke sur l'instance
      (pas dans le state React) pour eviter un cycle de diff a chaque pixel de
@@ -2399,6 +2406,7 @@ class Component extends DCLogic {
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
         watchModal: null, hasWatchModal: false,
+        watchRemaining: 0, hasWatchMore: false, watchShowAll: false, toggleWatchShowAll: () => {}, watchToggleLabel: "",
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
@@ -3065,7 +3073,18 @@ class Component extends DCLogic {
     // la reponse de Claude en deux). Repli sur c.resume (ancien format, une
     // seule reponse longue) pour les constats deja committes avant ce
     // decoupage -- jamais casser l'affichage d'un ancien data/hermes_watch.json.
-    const watchConstats = ((this.hermesWatch && this.hermesWatch.constats) || []).map(c => {
+    // Tri "important" avant "a_surveiller" (et plus gros ecart d'abord dans
+    // chaque groupe) : les 4 cartes visibles par defaut doivent etre celles
+    // qui comptent le plus, pas l'ordre arbitraire d'ecriture du fichier.
+    const WATCH_VISIBLE = 4;
+    const graviteRang = { important: 0, a_surveiller: 1 };
+    const watchConstatsTries = [...((this.hermesWatch && this.hermesWatch.constats) || [])].sort((a, b) => {
+      const r = (graviteRang[a.gravite] ?? 2) - (graviteRang[b.gravite] ?? 2);
+      if (r) return r;
+      const pire = c => Math.max(Math.abs((c.chiffres || {}).sessionsDelta || 0), Math.abs((c.chiffres || {}).leadsDelta || 0));
+      return pire(b) - pire(a);
+    });
+    const watchConstatsAll = watchConstatsTries.map(c => {
       const gs = GRAVITE_STYLE[c.gravite] || GRAVITE_STYLE.a_surveiller;
       const synthese = c.synthese || (c.resume ? c.resume.slice(0, 140) + (c.resume.length > 140 ? "…" : "") : "");
       const analyse = c.analyse || c.resume || "";
@@ -3078,6 +3097,15 @@ class Component extends DCLogic {
         open: () => this.openWatchModal(c.site),
       };
     });
+    const watchShowAll = !!this._watchShowAll;
+    const watchConstats = watchShowAll ? watchConstatsAll : watchConstatsAll.slice(0, WATCH_VISIBLE);
+    // le bouton bascule expand/collapse : doit rester visible dans les deux
+    // etats des que le total depasse le seuil, pas seulement quand il reste
+    // des cartes cachees (sinon "Réduire" disparaissait juste apres avoir
+    // tout affiche, plus aucun moyen de revenir a la vue compacte).
+    const watchRemaining = watchConstatsAll.length - watchConstats.length;
+    const hasWatchMore = watchConstatsAll.length > WATCH_VISIBLE;
+    const watchToggleLabel = watchShowAll ? "Réduire" : `Voir ${watchRemaining} de plus`;
     const watchLastUpdate = this.hermesWatch && this.hermesWatch.derniere_execution
       ? new Date(this.hermesWatch.derniere_execution).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
       : null;
@@ -3085,7 +3113,7 @@ class Component extends DCLogic {
     // detail d'un constat (modale) : meme mecanique que v2Modal plus bas,
     // mais construit seulement pour le site actuellement ouvert (pas les 41
     // -- le graphique/la courbe n'a besoin d'exister que pour celui-la).
-    const watchModalConstat = this._watchModalSite ? watchConstats.find(c => c.site === this._watchModalSite) : null;
+    const watchModalConstat = this._watchModalSite ? watchConstatsAll.find(c => c.site === this._watchModalSite) : null;
     const watchModal = watchModalConstat ? (() => {
       const ch = watchModalConstat.chiffres || {};
       const deltaTxt = (v) => v == null ? "—" : (v >= 0 ? "+" : "") + dec(v, 1) + " %";
@@ -3207,6 +3235,8 @@ class Component extends DCLogic {
       quickQuestions: QUICK_QUESTIONS,
       watchConstats, hasWatchConstats: watchConstats.length > 0, noWatchConstats: watchConstats.length === 0, watchLastUpdate,
       watchModal, hasWatchModal,
+      watchRemaining, hasWatchMore, watchShowAll, watchToggleLabel,
+      toggleWatchShowAll: () => this.toggleWatchShowAll(),
       chatScopeOpen: st.chatScopeOpen, chatScopeLabel, chatScopeSites,
       toggleChatScopePicker: () => this.toggleChatScopePicker(), clearChatScope: () => this.clearChatScope(),
       chatAttachmentChips, hasChatAttachments: chatAttachmentChips.length > 0,
