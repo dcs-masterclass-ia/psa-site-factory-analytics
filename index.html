@@ -23,6 +23,8 @@
   ];
   if (PROD_HOSTS.indexOf(location.hostname) === -1) {
     document.documentElement.setAttribute("data-env", "preprod");
+    var icone = document.querySelector('link[rel="icon"]');
+    if (icone) icone.href = "./favicon-preprod.png";
   }
 })();
 </script>
