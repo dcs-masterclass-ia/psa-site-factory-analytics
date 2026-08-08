@@ -157,8 +157,11 @@ def controle(nouveau, ancien=None, modele=None):
     for m in nouveau["months"]:
         if m not in nouveau.get("trafficMonth", {}):
             continue
-        mm = m[5:7]
-        idx = [i for i, x in enumerate(nouveau["daily"]["d"]) if x[:2] == mm]
+        # x[:7] = "YYYY-MM" d'une date "YYYY-MM-DD" -- comparer sur le mois
+        # SEUL (x[5:7]) confondrait deux annees differentes des que la
+        # fenetre depasse 12 mois (bug reel corrige le 08/08/2026, meme
+        # cause que le format de daily["d"] lui-meme, voir build.py).
+        idx = [i for i, x in enumerate(nouveau["daily"]["d"]) if x[:7] == m]
         for cle, serie in (("trafficMonth", "u"), ("repriseMonth", "rep")):
             tot = nouveau[cle][m]["sessions"]
             s = sum(v for i, v in enumerate(nouveau["daily"][serie]) if i in idx and v is not None)

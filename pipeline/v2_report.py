@@ -45,13 +45,17 @@ def _semaines(v2_date, borne_haute):
     return out
 
 
-def _agrege_jours(jours_mmjj, valeurs, annee, debut, fin):
+def _agrege_jours(jours_iso, valeurs, debut, fin):
+    """jours_iso : dates completes "YYYY-MM-DD" -- daily["d"] melange deux
+    annees des que la fenetre depasse 12 mois (voir build.py), un simple
+    "MM-DD" + une annee unique pour tout le tableau serait faux la moitie
+    du temps."""
     total = 0
-    for j, v in zip(jours_mmjj, valeurs):
+    for j, v in zip(jours_iso, valeurs):
         if v is None:
             continue
         try:
-            dj = date(annee, int(j[:2]), int(j[3:5]))
+            dj = date.fromisoformat(j)
         except ValueError:
             continue
         if debut <= dj <= fin:
@@ -133,18 +137,17 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
         return None
 
     daily = d.get("daily") or {}
-    jours_mmjj = daily.get("d") or []
-    if not jours_mmjj:
+    jours_iso = daily.get("d") or []
+    if not jours_iso:
         return None
 
     v2_date = date.fromisoformat(v2_date_iso)
     jour_fiable = date.fromisoformat(jour_fiable_iso)
-    annee = v2_date.year
 
-    def au_format_date(jjmm):
-        return date(annee, int(jjmm[:2]), int(jjmm[3:5]))
-
-    dates_disponibles = [au_format_date(j) for j in jours_mmjj]
+    # dates completes ("YYYY-MM-DD") depuis le 08/08/2026 : une seule
+    # "annee" appliquee a tout le tableau etait fausse des que la reference
+    # V1 remontait sur l'annee civile precedente (bascule en debut d'annee).
+    dates_disponibles = [date.fromisoformat(j) for j in jours_iso]
     premiere_donnee, derniere_donnee = min(dates_disponibles), max(dates_disponibles)
     borne_haute = min(jour_fiable, derniere_donnee)
 
@@ -157,8 +160,8 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
         return None  # aucune donnee avant bascule : rien a comparer
 
     jours_avant = (avant_fin - avant_debut).days + 1
-    sp_avant = _agrege_jours(jours_mmjj, daily.get("u") or [], annee, avant_debut, avant_fin)
-    sr_avant = _agrege_jours(jours_mmjj, daily.get("rep") or [], annee, avant_debut, avant_fin)
+    sp_avant = _agrege_jours(jours_iso, daily.get("u") or [], avant_debut, avant_fin)
+    sr_avant = _agrege_jours(jours_iso, daily.get("rep") or [], avant_debut, avant_fin)
     lv_avant = _agrege_leads(d.get("leads"), avant_debut, avant_fin)
     dv_avant = _agrege_leads_par_device(d.get("leads"), avant_debut, avant_fin)
     steps_avant, conv_avant = _funnel_periode(cli, s.propriete, hote_reprise, avant_debut, avant_fin)
@@ -175,8 +178,8 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
     semaines = []
     for deb, fin in _semaines(v2_date, borne_haute):
         jours_semaine = (fin - deb).days + 1
-        sp = _agrege_jours(jours_mmjj, daily.get("u") or [], annee, deb, fin)
-        sr = _agrege_jours(jours_mmjj, daily.get("rep") or [], annee, deb, fin)
+        sp = _agrege_jours(jours_iso, daily.get("u") or [], deb, fin)
+        sr = _agrege_jours(jours_iso, daily.get("rep") or [], deb, fin)
         lv = _agrege_leads(d.get("leads"), deb, fin)
         dv = _agrege_leads_par_device(d.get("leads"), deb, fin)
         steps, conv = _funnel_periode(cli, s.propriete, hote_reprise, deb, fin)
