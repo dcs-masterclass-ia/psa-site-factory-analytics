@@ -240,9 +240,9 @@ input[type=date]{color-scheme:dark}
 @keyframes modalPanelOut{from{opacity:1;transform:none}to{opacity:0;transform:scale(.96) translateY(10px)}}
 </style>
 </helmet>
-<div style="min-height:100vh;padding:48px 24px;background:#9fb2a5;box-sizing:border-box;overflow-x:hidden">
-<div ref="{{ scaleSizerRef }}" style="width:100%;max-width:1780px;margin:0 auto;overflow:hidden">
-<div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);border-radius:34px;padding:36px 44px 44px;box-sizing:border-box;box-shadow:0 60px 120px -30px var(--shadow);animation:fadeIn .5s ease both;transform-origin:top left">
+<div style="min-height:100vh;background:var(--bg);box-sizing:border-box;overflow-x:hidden">
+<div ref="{{ scaleSizerRef }}" style="width:100%;overflow:hidden">
+<div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
   <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
     <div style="display:flex;align-items:center;gap:16px">
@@ -1917,7 +1917,11 @@ class Component extends DCLogic {
     const sizer = this._sizerEl, canvas = this._canvasEl;
     if (!sizer || !canvas) return;
     const naturalWidth = 1780;
-    const scale = Math.min(1, sizer.clientWidth / naturalWidth);
+    // plus de plafond a 1 : le dashboard doit remplir toute la largeur
+    // disponible (demande explicite), pas rester encadre/centre des que
+    // l'ecran depasse 1780px -- meme mecanique de mise a l'echelle, juste
+    // symetrique (agrandit comme elle retrecissait deja).
+    const scale = sizer.clientWidth / naturalWidth;
     canvas.style.transform = "scale(" + scale + ")";
     sizer.style.height = (canvas.offsetHeight * scale) + "px";
   }
