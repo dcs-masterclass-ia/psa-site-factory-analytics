@@ -1231,12 +1231,12 @@ input[type=date]{color-scheme:dark}
           </div>
         </sc-if>
         <sc-for list="{{ watchConstats }}" as="c" hint-placeholder-count="2">
-          <button onClick="{{ c.ask }}" style="text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:8px;transition:background .18s ease" style-hover="background:var(--hover)">
+          <button onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease" style-hover="background:var(--hover)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <span style="font-size:13.5px;font-weight:800;color:var(--text)">{{ c.site }}</span>
               <span style="{{ c.badgeStyle }}">{{ c.badgeText }}</span>
             </div>
-            <div style="font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.5">{{ c.resume }}</div>
+            <div style="font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.45;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ c.synthese }}</div>
             <div style="font-size:11px;font-weight:600;color:var(--muted2)">{{ c.genereLe }}</div>
           </button>
         </sc-for>
@@ -1388,6 +1388,61 @@ input[type=date]{color-scheme:dark}
         </sc-if>
       </div>
     </div>
+  </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ hasWatchModal }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ watchModal.wrapStyle }}">
+  <div style="{{ watchModal.backdropStyle }}" onClick="{{ watchModal.close }}"></div>
+  <div style="{{ watchModal.panelStyle }}">
+    <button onClick="{{ watchModal.close }}" title="Fermer" style="position:absolute;top:26px;right:26px;width:38px;height:38px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:56px">
+      <div>
+        <div style="font-size:24px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ watchModal.site }}</div>
+        <div style="margin-top:5px;font-size:13px;font-weight:600;color:var(--muted)">Période analysée : {{ watchModal.periodeRecente }}</div>
+      </div>
+      <span style="{{ watchModal.badgeStyle }}">{{ watchModal.badgeText }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px">
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sessions reprise</div>
+        <div style="font-size:19px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ watchModal.sessionsText }}</div>
+        <div style="{{ watchModal.sessionsDeltaStyle }};margin-top:3px;font-size:13px">{{ watchModal.sessionsDeltaText }}</div>
+      </div>
+      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads</div>
+        <div style="font-size:19px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ watchModal.leadsText }}</div>
+        <div style="{{ watchModal.leadsDeltaStyle }};margin-top:3px;font-size:13px">{{ watchModal.leadsDeltaText }}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ watchModal.hasChart }}" hint-placeholder-val="{{ false }}">
+    <div style="background:var(--soft);border-radius:18px;padding:20px 22px;margin-top:18px">
+      <div style="font-size:13px;font-weight:700;color:var(--text2)">Sessions reprise / jour — 7 j précédents puis 7 j récents</div>
+      <div style="position:relative;height:130px;margin-top:16px">
+        <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
+          <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
+          <line x1="{{ watchModal.chart.dividerX }}" y1="0" x2="{{ watchModal.chart.dividerX }}" y2="130" stroke="var(--muted2)" stroke-width="1.4" stroke-dasharray="4 4"></line>
+          <path ref="{{ watchModal.chart.ref }}" fill="none" stroke="#F5411E" stroke-width="2.8" stroke-linecap="round"></path>
+        </svg>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+      <div style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:12px">Analyse d'Hermès</div>
+      <div class="hermes-md" ref="{{ watchModal.analyseRef }}" style="font-size:14.5px;font-weight:500;line-height:1.65;color:var(--text2)"></div>
+    </div>
+
+    <button onClick="{{ watchModal.askFollowUp }}" style="margin-top:24px;display:flex;align-items:center;gap:8px;border:none;background:#F5411E;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;height:44px;padding:0 20px;border-radius:999px;cursor:pointer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      Approfondir avec Hermès
+    </button>
   </div>
   </div>
   </sc-if>
@@ -1588,6 +1643,34 @@ function buildV2Chart(siteRaw, valueFn, unite) {
     deltaText: deltaPct == null ? "—" : (deltaPct >= 0 ? "+" : "") + dec(deltaPct, 0) + " %",
     deltaStyle: "font-weight:800;font-variant-numeric:tabular-nums;color:" + (deltaPct == null ? "var(--muted)" : deltaPct >= 0 ? "var(--pos)" : "var(--neg)"),
     axisLabels: weeks.map(r => r.periode),
+  };
+}
+
+/* courbe de tendance pour le detail d'un constat de veille Hermes : les 14
+   jours (7 precedents + 7 recents) de daily.rep autour de la periode
+   analysee, une seule courbe continue (pas de reference V1 en pointilles
+   comme buildV2Chart, il n'y a pas de "reference" ici) avec un repere
+   vertical separant les deux moities. */
+function watchTrendValues(siteData, periodeRecente) {
+  if (!siteData || !siteData.daily || !periodeRecente) return null;
+  const [debutRecent, finRecent] = String(periodeRecente).split("..");
+  if (!debutRecent || !finRecent) return null;
+  const debutTotal = decale(debutRecent, -7);
+  const jours = siteData.daily.d || [], valeurs = siteData.daily.rep || [];
+  const idxDebut = jours.indexOf(debutTotal), idxFin = jours.indexOf(finRecent);
+  if (idxDebut === -1 || idxFin === -1 || idxFin <= idxDebut) return null;
+  return valeurs.slice(idxDebut, idxFin + 1).map(v => v || 0);
+}
+function buildWatchChart(values) {
+  if (!values || values.length < 2) return null;
+  const W = 460, H = 130;
+  const min = Math.min(...values), max = Math.max(...values, min + 1);
+  const path = smoothPath(values, W, H, min, max);
+  const half = Math.floor(values.length / 2);
+  return {
+    ref: el => revealPath(el, path, 200, 900),
+    w: W, h: H,
+    dividerX: (half / (values.length - 1) * W).toFixed(1),
   };
 }
 
@@ -2178,6 +2261,24 @@ class Component extends DCLogic {
     }, 220);
   }
 
+  /* meme mecanique que openV2Modal/closeV2Modal, pour le detail d'un
+     constat de la veille automatique Hermes. */
+  openWatchModal(site) {
+    this._watchModalSite = site;
+    this._watchModalClosing = false;
+    this.forceUpdate();
+  }
+  closeWatchModal() {
+    if (!this._watchModalSite) return;
+    this._watchModalClosing = true;
+    this.forceUpdate();
+    setTimeout(() => {
+      this._watchModalSite = null;
+      this._watchModalClosing = false;
+      this.forceUpdate();
+    }, 220);
+  }
+
   /* survol du graphe canal/trafic : l'index survole est stocke sur l'instance
      (pas dans le state React) pour eviter un cycle de diff a chaque pixel de
      souris — seul un changement d'INDEX (pas de position brute) redessine,
@@ -2297,6 +2398,7 @@ class Component extends DCLogic {
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
+        watchModal: null, hasWatchModal: false,
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
@@ -2959,18 +3061,55 @@ class Component extends DCLogic {
       important: { bg: "var(--neg-bg)", fg: "var(--neg)", label: "Important" },
       a_surveiller: { bg: "rgba(245,165,36,.15)", fg: "#F5A524", label: "À surveiller" },
     };
+    // c.synthese/c.analyse : format courant (scripts/hermes_watch.js decoupe
+    // la reponse de Claude en deux). Repli sur c.resume (ancien format, une
+    // seule reponse longue) pour les constats deja committes avant ce
+    // decoupage -- jamais casser l'affichage d'un ancien data/hermes_watch.json.
     const watchConstats = ((this.hermesWatch && this.hermesWatch.constats) || []).map(c => {
       const gs = GRAVITE_STYLE[c.gravite] || GRAVITE_STYLE.a_surveiller;
+      const synthese = c.synthese || (c.resume ? c.resume.slice(0, 140) + (c.resume.length > 140 ? "…" : "") : "");
+      const analyse = c.analyse || c.resume || "";
+      const ch = c.chiffres || {};
       return {
-        site: c.site, resume: c.resume, genereLe: c.genere_le,
+        site: c.site, synthese, analyse, genereLe: c.genere_le,
+        periodeRecente: c.periodeRecente, chiffres: ch,
         badgeStyle: "font-size:11px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:4px 10px;white-space:nowrap;background:" + gs.bg + ";color:" + gs.fg,
         badgeText: gs.label,
-        ask: () => this.pickQuickQuestion(`Détaille la situation de ${c.site} : ${c.resume}`),
+        open: () => this.openWatchModal(c.site),
       };
     });
     const watchLastUpdate = this.hermesWatch && this.hermesWatch.derniere_execution
       ? new Date(this.hermesWatch.derniere_execution).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
       : null;
+
+    // detail d'un constat (modale) : meme mecanique que v2Modal plus bas,
+    // mais construit seulement pour le site actuellement ouvert (pas les 41
+    // -- le graphique/la courbe n'a besoin d'exister que pour celui-la).
+    const watchModalConstat = this._watchModalSite ? watchConstats.find(c => c.site === this._watchModalSite) : null;
+    const watchModal = watchModalConstat ? (() => {
+      const ch = watchModalConstat.chiffres || {};
+      const deltaTxt = (v) => v == null ? "—" : (v >= 0 ? "+" : "") + dec(v, 1) + " %";
+      const deltaSty = (v) => "font-weight:800;font-variant-numeric:tabular-nums;color:" + (v == null ? "var(--muted)" : v >= 0 ? "var(--pos)" : "var(--neg)");
+      const trend = watchTrendValues(this.data[watchModalConstat.site], watchModalConstat.periodeRecente);
+      const chart = buildWatchChart(trend);
+      return {
+        ...watchModalConstat,
+        close: () => this.closeWatchModal(),
+        askFollowUp: () => { this.closeWatchModal(); this.pickQuickQuestion(`Détaille la situation de ${watchModalConstat.site} : ${watchModalConstat.synthese}`); },
+        analyseRef: el => { if (el) el.innerHTML = renderMarkdown(watchModalConstat.analyse); },
+        sessionsText: ch.sessionsRecent != null ? fmt(ch.sessionsRecent) + " (7j) vs " + fmt(ch.sessionsPrecedent) : "—",
+        sessionsDeltaText: deltaTxt(ch.sessionsDelta), sessionsDeltaStyle: deltaSty(ch.sessionsDelta),
+        leadsText: ch.leadsRecent != null ? fmt(ch.leadsRecent) + " (7j) vs " + fmt(ch.leadsPrecedent) : "—",
+        leadsDeltaText: deltaTxt(ch.leadsDelta), leadsDeltaStyle: deltaSty(ch.leadsDelta),
+        hasChart: !!chart, chart: chart || {},
+        wrapStyle: "position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box",
+        backdropStyle: "position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:" +
+          (this._watchModalClosing ? "modalBackdropOut" : "modalBackdropIn") + " .22s ease both",
+        panelStyle: "position:relative;z-index:1;width:min(760px,100%);max-height:100%;overflow-y:auto;background:var(--card);border-radius:28px;padding:36px 40px 44px;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 60px 140px -30px var(--shadow),0 0 100px -16px rgba(245,65,30,.4);animation:" +
+          (this._watchModalClosing ? "modalPanelOut" : "modalPanelIn") + " .32s cubic-bezier(.2,.8,.3,1.05) both",
+      };
+    })() : null;
+    const hasWatchModal = !!watchModal;
 
     const PERF_RING_C = 2 * Math.PI * 42;
     const perfScoreColor = score => score == null ? "var(--soft3)" : score >= 90 ? "#22C55E" : score >= 50 ? "#F5A524" : "#EF4444";
@@ -3067,6 +3206,7 @@ class Component extends DCLogic {
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
       quickQuestions: QUICK_QUESTIONS,
       watchConstats, hasWatchConstats: watchConstats.length > 0, noWatchConstats: watchConstats.length === 0, watchLastUpdate,
+      watchModal, hasWatchModal,
       chatScopeOpen: st.chatScopeOpen, chatScopeLabel, chatScopeSites,
       toggleChatScopePicker: () => this.toggleChatScopePicker(), clearChatScope: () => this.clearChatScope(),
       chatAttachmentChips, hasChatAttachments: chatAttachmentChips.length > 0,

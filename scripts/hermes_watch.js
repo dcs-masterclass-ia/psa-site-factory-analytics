@@ -14,12 +14,31 @@ const fs = require("fs");
 const path = require("path");
 const { askSpecialist } = require("../api/_lib/tools");
 
-const WATCH_SYSTEM = `Tu es l'analyste de veille automatique du dashboard PSA Site Factory. On te donne un site dont le trafic ou les leads ont significativement bouge sur les 7 derniers jours par rapport aux 7 precedents, avec les chiffres bruts en contexte. En 3 a 5 phrases : explique la cause la plus probable en te basant sur les donnees fournies (funnel, canaux, leads par marque/appareil si disponibles), l'impact business, et une action concrete si pertinente. Sois direct et factuel, ne cite que des donnees presentes dans le JSON fourni -- si tu ne peux pas conclure avec certitude, dis-le clairement plutot que de deviner.`;
+const WATCH_SYSTEM = `Tu es l'analyste de veille automatique du dashboard PSA Site Factory. On te donne un site dont le trafic ou les leads ont significativement bouge sur les 7 derniers jours par rapport aux 7 precedents, avec les chiffres bruts en contexte.
+
+Reponds en deux parties, separees par une ligne contenant UNIQUEMENT "---" :
+1. Une synthese d'UNE phrase (20 mots maximum) : le fait principal et sa cause probable, sans detail chiffre.
+2. L'analyse complete en 3 a 5 phrases : cause la plus probable en te basant sur les donnees fournies (funnel, canaux, leads par marque/appareil si disponibles), impact business, action concrete si pertinente.
+
+Sois direct et factuel, ne cite que des donnees presentes dans le JSON fourni -- si tu ne peux pas conclure avec certitude, dis-le clairement plutot que de deviner. Ne mets rien avant la synthese ni en dehors de ces deux parties.`;
 
 function gravite(c) {
   const pire = Math.max(Math.abs(c.sessionsDelta || 0), Math.abs(c.leadsDelta || 0));
   if (c.anomalieDetectee || pire >= 50) return "important";
   return "a_surveiller";
+}
+
+// separe la reponse en {synthese, analyse} ; jamais bloquant si Claude
+// s'ecarte du format demande -- retombe sur un simple tronquage plutot que
+// de perdre l'analyse.
+function decoupe(texte) {
+  const parts = String(texte || "").split(/\n\s*---\s*\n/);
+  if (parts.length >= 2 && parts[0].trim()) {
+    return { synthese: parts[0].trim(), analyse: parts.slice(1).join("\n---\n").trim() };
+  }
+  const brut = String(texte || "").trim();
+  const court = brut.slice(0, 140);
+  return { synthese: court + (brut.length > 140 ? "…" : ""), analyse: brut };
 }
 
 function question(c) {
@@ -46,12 +65,18 @@ async function main() {
   const constats = [];
   for (const c of candidats) {
     try {
-      const resume = await askSpecialist(WATCH_SYSTEM, question(c), [c.site]);
+      const brut = await askSpecialist(WATCH_SYSTEM, question(c), [c.site]);
+      const { synthese, analyse } = decoupe(brut);
       constats.push({
         site: c.site,
         gravite: gravite(c),
-        resume,
-        chiffres: { sessionsDelta: c.sessionsDelta, leadsDelta: c.leadsDelta, anomalieDetectee: c.anomalieDetectee },
+        synthese, analyse,
+        periodeRecente: c.periodeRecente,
+        chiffres: {
+          sessionsDelta: c.sessionsDelta, leadsDelta: c.leadsDelta, anomalieDetectee: c.anomalieDetectee,
+          sessionsRecent: c.sessionsRecent, sessionsPrecedent: c.sessionsPrecedent,
+          leadsRecent: c.leadsRecent, leadsPrecedent: c.leadsPrecedent,
+        },
         genere_le: new Date().toISOString().slice(0, 10),
       });
       console.log(`  ${c.site} -- analyse generee (${gravite(c)}).`);
