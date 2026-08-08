@@ -1224,7 +1224,16 @@ input[type=date]{color-scheme:dark}
         <sc-if value="{{ watchLastUpdate }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:8px;font-size:11.5px;font-weight:600;color:var(--muted2)">Dernière veille : {{ watchLastUpdate }}</div>
         </sc-if>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">
+          <sc-for list="{{ watchFilterChips }}" as="f" hint-placeholder-count="3">
+            <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
+          </sc-for>
+        </div>
       </div>
+      <!-- hauteur bornee par flex:1 sur ce conteneur ET sur la carte parente
+           (voir plus haut, align-items:stretch sur la ligne des deux
+           colonnes) : c'est CE div qui defile desormais, jamais la page --
+           fini le "voir plus", tout est dans la liste, on scrolle dedans. -->
       <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
         <sc-if value="{{ noWatchConstats }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 14px;color:var(--muted)">
@@ -1233,7 +1242,7 @@ input[type=date]{color-scheme:dark}
           </div>
         </sc-if>
         <sc-for list="{{ watchConstats }}" as="c" hint-placeholder-count="2">
-          <button onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease" style-hover="background:var(--hover)">
+          <button onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease;flex:none" style-hover="background:var(--hover)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <span style="font-size:13.5px;font-weight:800;color:var(--text)">{{ c.site }}</span>
               <span style="{{ c.badgeStyle }}">{{ c.badgeText }}</span>
@@ -1242,15 +1251,22 @@ input[type=date]{color-scheme:dark}
             <div style="font-size:11px;font-weight:600;color:var(--muted2)">{{ c.genereLe }}</div>
           </button>
         </sc-for>
-        <sc-if value="{{ hasWatchMore }}" hint-placeholder-val="{{ false }}">
-          <button onClick="{{ toggleWatchShowAll }}" style="text-align:center;border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:16px;padding:12px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:700;transition:background .18s ease,color .18s ease" style-hover="background:var(--hover);color:var(--text)">{{ watchToggleLabel }}</button>
-        </sc-if>
       </div>
     </div>
    </div>
   </div>
   </sc-if>
 
+  </div>
+  <!-- les deux modales ci-dessous sortent volontairement de scaleCanvasRef
+       (fermé juste au-dessus) : cet element porte un transform:scale(...)
+       impose par fitScale(), qui devient alors le "containing block" de
+       tout position:fixed descendant (regle CSS standard, pas un bug du
+       framework) -- un fixed a l'interieur ne se centre plus sur la
+       fenetre reelle mais sur le canevas entier, donc plus bas que l'ecran
+       des que la page defile. Signale par l'utilisateur le 08/08/2026 sur
+       la modale de constat, mais touchait deja v2Modal de la meme facon,
+       juste jamais remarque avant une liste assez longue pour defiler. -->
   <sc-if value="{{ hasV2Modal }}" hint-placeholder-val="{{ false }}">
   <div style="{{ v2Modal.wrapStyle }}">
   <div style="{{ v2Modal.backdropStyle }}" onClick="{{ v2Modal.close }}"></div>
@@ -1452,7 +1468,6 @@ input[type=date]{color-scheme:dark}
   </div>
   </sc-if>
 
-</div>
 </div>
 </div>
 </x-dc>
@@ -1797,6 +1812,7 @@ class Component extends DCLogic {
     chatBusy: false,
     chatHistory: [],    // messages Claude bruts (envoyes/renvoyes par /api/agent, pour la continuite de conversation)
     chatScope: [],      // sites selectionnes pour la conversation (vide = laisse Hermes deduire)
+    watchFilter: "tous", // filtre du panneau "Constats automatiques" : tous | important | a_surveiller
     chatScopeOpen: false,
     chatAttachments: [], // { name, mediaType, dataBase64, sizeLabel }
   };
@@ -2283,9 +2299,8 @@ class Component extends DCLogic {
       this.forceUpdate();
     }, 220);
   }
-  toggleWatchShowAll() {
-    this._watchShowAll = !this._watchShowAll;
-    this.forceUpdate();
+  setWatchFilter(value) {
+    this.setState({ watchFilter: value });
   }
 
   /* survol du graphe canal/trafic : l'index survole est stocke sur l'instance
@@ -2408,7 +2423,7 @@ class Component extends DCLogic {
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
         watchModal: null, hasWatchModal: false,
-        watchRemaining: 0, hasWatchMore: false, watchShowAll: false, toggleWatchShowAll: () => {}, watchToggleLabel: "",
+        watchFilterChips: [],
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
@@ -3076,9 +3091,8 @@ class Component extends DCLogic {
     // seule reponse longue) pour les constats deja committes avant ce
     // decoupage -- jamais casser l'affichage d'un ancien data/hermes_watch.json.
     // Tri "important" avant "a_surveiller" (et plus gros ecart d'abord dans
-    // chaque groupe) : les 4 cartes visibles par defaut doivent etre celles
-    // qui comptent le plus, pas l'ordre arbitraire d'ecriture du fichier.
-    const WATCH_VISIBLE = 4;
+    // chaque groupe) : la carte la plus digne d'attention doit etre en haut
+    // de la liste, pas l'ordre arbitraire d'ecriture du fichier.
     const graviteRang = { important: 0, a_surveiller: 1 };
     const watchConstatsTries = [...((this.hermesWatch && this.hermesWatch.constats) || [])].sort((a, b) => {
       const r = (graviteRang[a.gravite] ?? 2) - (graviteRang[b.gravite] ?? 2);
@@ -3092,22 +3106,29 @@ class Component extends DCLogic {
       const analyse = c.analyse || c.resume || "";
       const ch = c.chiffres || {};
       return {
-        site: c.site, synthese, analyse, genereLe: c.genere_le,
+        site: c.site, synthese, analyse, genereLe: c.genere_le, gravite: c.gravite || "a_surveiller",
         periodeRecente: c.periodeRecente, chiffres: ch,
         badgeStyle: "font-size:11px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:4px 10px;white-space:nowrap;background:" + gs.bg + ";color:" + gs.fg,
         badgeText: gs.label,
         open: () => this.openWatchModal(c.site),
       };
     });
-    const watchShowAll = !!this._watchShowAll;
-    const watchConstats = watchShowAll ? watchConstatsAll : watchConstatsAll.slice(0, WATCH_VISIBLE);
-    // le bouton bascule expand/collapse : doit rester visible dans les deux
-    // etats des que le total depasse le seuil, pas seulement quand il reste
-    // des cartes cachees (sinon "Réduire" disparaissait juste apres avoir
-    // tout affiche, plus aucun moyen de revenir a la vue compacte).
-    const watchRemaining = watchConstatsAll.length - watchConstats.length;
-    const hasWatchMore = watchConstatsAll.length > WATCH_VISIBLE;
-    const watchToggleLabel = watchShowAll ? "Réduire" : `Voir ${watchRemaining} de plus`;
+    // filtre par gravite (chips en haut du panneau) : "tous" par defaut,
+    // sinon ne garde que la gravite choisie. La liste complete reste
+    // affichee (plus de pagination) -- c'est le conteneur qui defile
+    // (overflow-y:auto), pas la page.
+    const watchFilter = st.watchFilter || "tous";
+    const watchConstats = watchFilter === "tous" ? watchConstatsAll : watchConstatsAll.filter(c => c.gravite === watchFilter);
+    const watchFilterChips = [
+      { value: "tous", label: "Tous", count: watchConstatsAll.length },
+      { value: "important", label: "Important", count: watchConstatsAll.filter(c => c.gravite === "important").length },
+      { value: "a_surveiller", label: "À surveiller", count: watchConstatsAll.filter(c => c.gravite === "a_surveiller").length },
+    ].map(f => ({
+      label: f.label + " (" + f.count + ")", active: f.value === watchFilter,
+      pick: () => this.setWatchFilter(f.value),
+      style: "border:none;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s ease,color .18s ease;background:" +
+        (f.value === watchFilter ? "var(--active-bg)" : "var(--soft2)") + ";color:" + (f.value === watchFilter ? "var(--active-fg)" : "var(--text2)"),
+    }));
     const watchLastUpdate = this.hermesWatch && this.hermesWatch.derniere_execution
       ? new Date(this.hermesWatch.derniere_execution).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
       : null;
@@ -3237,8 +3258,7 @@ class Component extends DCLogic {
       quickQuestions: QUICK_QUESTIONS,
       watchConstats, hasWatchConstats: watchConstats.length > 0, noWatchConstats: watchConstats.length === 0, watchLastUpdate,
       watchModal, hasWatchModal,
-      watchRemaining, hasWatchMore, watchShowAll, watchToggleLabel,
-      toggleWatchShowAll: () => this.toggleWatchShowAll(),
+      watchFilterChips,
       chatScopeOpen: st.chatScopeOpen, chatScopeLabel, chatScopeSites,
       toggleChatScopePicker: () => this.toggleChatScopePicker(), clearChatScope: () => this.clearChatScope(),
       chatAttachmentChips, hasChatAttachments: chatAttachmentChips.length > 0,
