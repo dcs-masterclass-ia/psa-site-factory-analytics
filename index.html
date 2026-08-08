@@ -576,7 +576,7 @@ input[type=date]{color-scheme:dark}
 
 
     <!-- ============ Ligne 4 : Suivi des sessions par canal + KamIA ============ -->
-    <div style="display:grid;grid-template-columns:2.15fr 1fr;gap:22px;margin-top:22px;align-items:start">
+    <div style="display:grid;grid-template-columns:2.15fr 1fr;gap:22px;margin-top:22px">
 
       <div style="background:#fff;border-radius:30px;padding:28px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:20px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -592,8 +592,8 @@ input[type=date]{color-scheme:dark}
           </div>
         </div>
 
-        <div style="position:relative" onMouseMove="{{ hoverChannelMove }}" onMouseLeave="{{ hoverChannelLeave }}">
-          <div style="position:relative;height:250px">
+        <div style="position:relative;flex:1;display:flex;flex-direction:column;min-height:0" onMouseMove="{{ hoverChannelMove }}" onMouseLeave="{{ hoverChannelLeave }}">
+          <div style="position:relative;flex:2.9;min-height:0">
             <svg width="100%" height="100%" viewBox="0 0 900 230" preserveAspectRatio="none" style="position:absolute;inset:0">
               <g stroke="#f2f3f5" stroke-width="1"><path d="M0 20 H900"></path><path d="M0 72 H900"></path><path d="M0 124 H900"></path><path d="M0 176 H900"></path><path d="M0 226 H900"></path></g>
               <sc-for list="{{ channelPaths }}" as="cp" hint-placeholder-count="5">
@@ -608,13 +608,13 @@ input[type=date]{color-scheme:dark}
           </div>
 
           <sc-if value="{{ hasMirror }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;align-items:center;gap:18px;padding-top:6px">
+          <div style="display:flex;align-items:center;gap:18px;padding-top:6px;flex:none">
             <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6b7280"><span style="width:9px;height:9px;border-radius:2px;background:#9aa0aa"></span>Site parent</div>
             <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6b7280"><span style="width:9px;height:9px;border-radius:2px;background:#f4485c"></span>Outil de reprise</div>
             <div style="flex:1"></div>
             <div style="font-size:13px;color:#9aa0aa">{{ mirrorTotalsLabel }}</div>
           </div>
-          <div style="position:relative;height:86px;margin-top:4px">
+          <div style="position:relative;flex:1;min-height:0;margin-top:4px">
             <svg width="100%" height="100%" viewBox="0 0 900 92" preserveAspectRatio="none" style="position:absolute;inset:0">
               <defs>
                 <linearGradient id="mirrorParentFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9aa0aa" stop-opacity=".35"></stop><stop offset="100%" stop-color="#9aa0aa" stop-opacity="0"></stop></linearGradient>
@@ -3190,7 +3190,7 @@ class Component extends DCLogic {
     }));
     const channelPaths = canaux.map((c, i) => {
       const vals = joursCanal.map(j => c === "Autres" ? mineurs.reduce((s,m)=>s+((agg.canal[j]||{})[m]||0),0) : ((agg.canal[j]||{})[c]||0));
-      const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 280, 0, maxCanalVal);
+      const d = smoothPath(vals.length > 1 ? vals : [0,0], 900, 230, 0, maxCanalVal);
       return {
         ref: el => revealPath(el, d, (0.35 + i * .15) * 1000, 1900),
         color: CHAN_COLORS[i % CHAN_COLORS.length],
@@ -3260,12 +3260,11 @@ class Component extends DCLogic {
       chartHover = {
         guideStyle: "left:" + xPct.toFixed(2) + "%",
         label: hv.label,
-        // le trace des courbes utilise un plot de 280 dans un viewBox haut de
-        // 300 (marge basse de respiration) : la position en % doit suivre le
-        // meme ratio, sinon les points de survol dérivent vers le bas pour
-        // les petites valeurs.
+        // le trace des courbes occupe tout le viewBox (0 a 230, meme hauteur
+        // que le parametre h de smoothPath) : la position en % du conteneur
+        // suit donc directement la fraction de la valeur, sans ratio a part.
         channelDots: hv.chans.map(c => ({
-          style: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, c.value / maxCanalVal)) * (280 / 300) * 100).toFixed(2) + "% - 4px);background:" + c.color,
+          style: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + ((1 - Math.min(1, c.value / maxCanalVal)) * 100).toFixed(2) + "% - 4px);background:" + c.color,
         })),
         parentDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + (50 - Math.min(50, hv.parent / maxParentJour * 50)).toFixed(2) + "% - 4px)",
         repriseDotStyle: "left:calc(" + xPct.toFixed(2) + "% - 4px);top:calc(" + (100 - Math.min(50, hv.reprise / maxRepriseJour * 50)).toFixed(2) + "% - 4px)",
