@@ -1059,7 +1059,7 @@ input[type=date]{color-scheme:dark}
   <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px;display:flex;gap:20px;align-items:flex-start">
    <div style="flex:1 1 70%;min-width:0">
-    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;min-height:680px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;height:720px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
 
       <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
         <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
@@ -1071,7 +1071,7 @@ input[type=date]{color-scheme:dark}
         </div>
       </div>
 
-      <div style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px">
+      <div style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:20px 10px">
             <span style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
@@ -1217,7 +1217,7 @@ input[type=date]{color-scheme:dark}
    </div>
 
    <div style="flex:1 1 30%;min-width:280px;position:sticky;top:20px">
-    <div style="background:var(--card);border-radius:26px;box-sizing:border-box;min-height:340px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
+    <div style="background:var(--card);border-radius:26px;box-sizing:border-box;height:720px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
       <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line)">
         <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div>
         <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--muted)">Hermès analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div>
@@ -1230,16 +1230,16 @@ input[type=date]{color-scheme:dark}
           </sc-for>
         </div>
       </div>
-      <!-- hauteur bornee par flex:1 sur ce conteneur ET sur la carte parente
-           (voir plus haut, align-items:stretch sur la ligne des deux
-           colonnes) : c'est CE div qui defile desormais, jamais la page --
-           fini le "voir plus", tout est dans la liste, on scrolle dedans.
-           max-height fixe en dur (pas flex:1) : un flex:1 seul ne bornait
-           rien de fiable ici, le contenu (jusqu'a 64 cartes) forcait quand
-           meme la carte parente a grandir sans limite -- constate en
-           conditions reelles le 08/08/2026, plus de 40 constats un jour
-           charge rendaient toute la page demesurement longue. -->
-      <div style="max-height:560px;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+      <!-- flex:1 se resout ici de facon fiable car la carte parente a une
+           height:720px FIXE (pas min-height, pas stretch depuis une ligne
+           flex) -- c'est ce point precis qui posait probleme avant : sans
+           hauteur fixe sur le parent, flex:1 seul n'avait rien de solide
+           sur quoi se baser et le contenu (jusqu'a 64 cartes) forcait la
+           carte a grandir sans limite. C'est ce div qui defile desormais,
+           jamais la page. Meme height:720px que .hermes-shell (voir plus
+           haut) : les deux colonnes du chat et des constats font
+           maintenant exactement la meme hauteur, peu importe leur contenu. -->
+      <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
         <sc-if value="{{ noWatchConstats }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 14px;color:var(--muted)">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
