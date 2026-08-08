@@ -970,6 +970,11 @@ input[type=date]{color-scheme:dark}
       <div>
         <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des sites de reprise</div>
         <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px">
+          <sc-for list="{{ perfFilterChips }}" as="f" hint-placeholder-count="4">
+            <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
+          </sc-for>
+        </div>
       </div>
 
       <sc-if value="{{ hasPerfRows }}" hint-placeholder-val="{{ true }}">
@@ -1054,7 +1059,15 @@ input[type=date]{color-scheme:dark}
             </div>
 
             <div style="min-height:94px">
-              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">À corriger en priorité</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">À corriger en priorité</div>
+                <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ r.genererTicket }}" disabled="{{ r.ticketBusy }}" title="Rédiger un ticket Jira avec l'IA à partir de ces optimisations" style="display:flex;align-items:center;gap:4px;border:none;background:var(--soft2);color:var(--text2);font-family:inherit;font-size:10.5px;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer;white-space:nowrap;flex:none;opacity:{{ r.ticketBtnOpacity }}">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                  {{ r.ticketBtnLabel }}
+                </button>
+                </sc-if>
+              </div>
               <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;flex-direction:column;gap:6px">
                 <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
@@ -1506,6 +1519,43 @@ input[type=date]{color-scheme:dark}
   </div>
   </sc-if>
 
+  <!-- ticket Jira genere par l'IA depuis l'onglet Performance : meme
+       mecanique que v2Modal/watchModal juste au-dessus. -->
+  <sc-if value="{{ hasPerfTicketModal }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ perfTicketModal.wrapStyle }}">
+  <div style="{{ perfTicketModal.backdropStyle }}" onClick="{{ perfTicketModal.close }}"></div>
+  <div style="{{ perfTicketModal.panelStyle }}">
+    <button onClick="{{ perfTicketModal.close }}" title="Fermer" style="position:absolute;top:26px;right:26px;width:38px;height:38px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+
+    <div style="padding-right:56px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Ticket Jira — {{ perfTicketModal.site }}</div>
+      <div style="margin-top:6px;font-size:12.5px;font-weight:500;color:var(--muted2)">Rédigé par l'IA à partir des mesures PageSpeed — à relire avant envoi. La création directe dans Jira n'est pas encore branchée : copiez ce texte dans un nouveau ticket pour l'instant.</div>
+    </div>
+
+    <sc-if value="{{ perfTicketModal.hasError }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:20px;background:var(--neg-bg);border-radius:14px;padding:14px 16px;font-size:13.5px;font-weight:600;color:var(--neg)">{{ perfTicketModal.error }}</div>
+    </sc-if>
+
+    <sc-if value="{{ perfTicketModal.hasContent }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:20px;background:var(--soft);border-radius:16px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Titre</div>
+      <div style="margin-top:6px;font-size:15px;font-weight:700;color:var(--text)">{{ perfTicketModal.title }}</div>
+    </div>
+    <div style="margin-top:12px;background:var(--soft);border-radius:16px;padding:16px 18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Corps du ticket</div>
+      <div style="margin-top:8px;font-size:13.5px;font-weight:500;line-height:1.65;color:var(--text2);white-space:pre-wrap">{{ perfTicketModal.body }}</div>
+    </div>
+    <button onClick="{{ perfTicketModal.copy }}" style="margin-top:20px;display:flex;align-items:center;gap:8px;border:none;background:#F5411E;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;height:44px;padding:0 20px;border-radius:999px;cursor:pointer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>
+      {{ perfTicketModal.copyLabel }}
+    </button>
+    </sc-if>
+  </div>
+  </div>
+  </sc-if>
+
 </div>
 </div>
 </x-dc>
@@ -1851,6 +1901,8 @@ class Component extends DCLogic {
     chatHistory: [],    // messages Claude bruts (envoyes/renvoyes par /api/agent, pour la continuite de conversation)
     chatScope: [],      // sites selectionnes pour la conversation (vide = laisse Hermes deduire)
     watchFilter: "tous", // filtre du panneau "Constats automatiques" : tous | important | a_surveiller
+    perfFilter: "tous", // filtre de l'onglet Performance : tous | bon | a_ameliorer | mauvais | non_mesure
+    perfTicketBusySite: null, // nom du site en cours de generation de ticket (une seule a la fois)
     chatScopeOpen: false,
     chatAttachments: [], // { name, mediaType, dataBase64, sizeLabel }
   };
@@ -2340,6 +2392,58 @@ class Component extends DCLogic {
   setWatchFilter(value) {
     this.setState({ watchFilter: value });
   }
+  setPerfFilter(value) {
+    this.setState({ perfFilter: value });
+  }
+  /* genere un ticket Jira (titre + corps copiable) pour un site via
+     /api/perf-ticket -- une seule generation a la fois (perfTicketBusySite),
+     resultat (ou erreur) affiche dans la meme modale pour rester simple. */
+  async genererTicketPerf(site) {
+    if (this.state.perfTicketBusySite) return;
+    this.setState({ perfTicketBusySite: site });
+    try {
+      const r = await fetch("/api/perf-ticket", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site }),
+      });
+      const json = await r.json();
+      this.setState({ perfTicketBusySite: null });
+      if (!r.ok) { this.openPerfTicketModal({ site, error: json.error || "Erreur lors de la generation." }); return; }
+      if (json.empty) { this.openPerfTicketModal({ site, error: "Aucune optimisation a signaler pour ce site." }); return; }
+      this.openPerfTicketModal({ site, title: json.title, body: json.body });
+    } catch (e) {
+      this.setState({ perfTicketBusySite: null });
+      this.openPerfTicketModal({ site, error: (e && e.message) || String(e) });
+    }
+  }
+  /* meme mecanique que openV2Modal/openWatchModal. */
+  openPerfTicketModal(data) {
+    this._perfTicketModal = data;
+    this._perfTicketModalClosing = false;
+    this._perfTicketCopied = false;
+    this.forceUpdate();
+  }
+  closePerfTicketModal() {
+    if (!this._perfTicketModal) return;
+    this._perfTicketModalClosing = true;
+    this.forceUpdate();
+    setTimeout(() => {
+      this._perfTicketModal = null;
+      this._perfTicketModalClosing = false;
+      this.forceUpdate();
+    }, 220);
+  }
+  copierTicket() {
+    const t = this._perfTicketModal;
+    if (!t || !t.body) return;
+    const texte = (t.title ? t.title + "\n\n" : "") + t.body;
+    navigator.clipboard.writeText(texte).then(() => {
+      this._perfTicketCopied = true;
+      this.forceUpdate();
+      setTimeout(() => { this._perfTicketCopied = false; this.forceUpdate(); }, 1800);
+    });
+  }
 
   /* survol du graphe canal/trafic : l'index survole est stocke sur l'instance
      (pas dans le state React) pour eviter un cycle de diff a chaque pixel de
@@ -2462,6 +2566,7 @@ class Component extends DCLogic {
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
         watchModal: null, hasWatchModal: false,
         watchFilterChips: [],
+        perfFilterChips: [], perfTicketModal: null, hasPerfTicketModal: false,
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
@@ -3219,7 +3324,7 @@ class Component extends DCLogic {
         },
       };
     };
-    const perfRows = ALL.map(n => {
+    const perfRowsAll = ALL.map(n => {
       const d = this.data[n];
       const ps = d && d.pagespeed;
       const m = ps && ps.mobile, de = ps && ps.desktop;
@@ -3254,6 +3359,7 @@ class Component extends DCLogic {
         desktop: perfRing(de && de.score),
         badgeStyle: "font-size:11.5px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:6px 12px;white-space:nowrap;background:" + badgeBg + ";color:" + badgeFg,
         badgeText: badgeTxt,
+        badgeKey: pire == null ? "non_mesure" : pire >= 90 ? "bon" : pire >= 50 ? "a_ameliorer" : "mauvais",
         lcp: m && m.lcp != null ? (m.lcp / 1000).toFixed(1) + " s" : "—",
         cls: m && m.cls != null ? m.cls.toFixed(2) : "—",
         tbt: m && m.tbt != null ? Math.round(m.tbt) + " ms" : "—",
@@ -3271,14 +3377,55 @@ class Component extends DCLogic {
         releveLabel: ps ? "Relevé le " + ps.releve : "Non mesuré",
         sortKey: m && m.score != null ? m.score : 999,
         pays: paysDeSite(n),
+        ticketBusy: st.perfTicketBusySite === n,
+        ticketBtnLabel: st.perfTicketBusySite === n ? "Génération…" : "Ticket Jira",
+        ticketBtnOpacity: st.perfTicketBusySite && st.perfTicketBusySite !== n ? ".5" : "1",
+        genererTicket: () => this.genererTicketPerf(n),
       };
     }).sort((a, b) => a.sortKey - b.sortKey);
+    // filtre par categorie de notation (chips en haut de l'onglet) -- meme
+    // principe que watchFilterChips : compte toujours calcule sur la liste
+    // complete (perfRowsAll), jamais sur perfRows deja filtre, sinon les
+    // compteurs des AUTRES chips retomberaient a 0 des qu'un filtre est actif.
+    const perfFilter = st.perfFilter || "tous";
+    const PERF_FILTERS = [
+      ["tous", "Tous"], ["bon", "Bon"], ["a_ameliorer", "À améliorer"], ["mauvais", "Mauvais"], ["non_mesure", "Non mesuré"],
+    ];
+    const perfFilterChips = PERF_FILTERS.map(([value, label]) => {
+      const count = value === "tous" ? perfRowsAll.length : perfRowsAll.filter(r => r.badgeKey === value).length;
+      return {
+        value, label: label + " (" + count + ")", active: value === perfFilter,
+        pick: () => this.setPerfFilter(value),
+        style: "border:none;border-radius:999px;padding:6px 12px;font-family:inherit;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .18s ease,color .18s ease;background:" +
+          (value === perfFilter ? "var(--active-bg)" : "var(--soft2)") + ";color:" + (value === perfFilter ? "var(--active-fg)" : "var(--text2)"),
+      };
+    });
+    const perfRows = perfFilter === "tous" ? perfRowsAll : perfRowsAll.filter(r => r.badgeKey === perfFilter);
     const perfByPays = {};
     for (const r of perfRows) (perfByPays[r.pays] = perfByPays[r.pays] || []).push(r);
     const perfGroups = Object.keys(perfByPays).sort((a, b) =>
       (PAYS_LABEL[a] || a).localeCompare(PAYS_LABEL[b] || b)
     ).map(p => ({ pays: p, label: PAYS_LABEL[p] || p, rows: perfByPays[p],
       count: perfByPays[p].length + (perfByPays[p].length > 1 ? " sites" : " site") }));
+
+    // detail du ticket Jira en cours (modale) -- meme mecanique que
+    // v2Modal/watchModal, construite seulement pour le site ouvert.
+    const perfTicketModal = this._perfTicketModal ? (() => {
+      const t = this._perfTicketModal;
+      return {
+        site: t.site, title: t.title || "", body: t.body || "",
+        hasError: !!t.error, error: t.error || "", hasContent: !t.error,
+        copyLabel: this._perfTicketCopied ? "Copié !" : "Copier le ticket",
+        close: () => this.closePerfTicketModal(),
+        copy: () => this.copierTicket(),
+        wrapStyle: "position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box",
+        backdropStyle: "position:absolute;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:" +
+          (this._perfTicketModalClosing ? "modalBackdropOut" : "modalBackdropIn") + " .22s ease both",
+        panelStyle: "position:relative;z-index:1;width:min(640px,100%);max-height:100%;overflow-y:auto;background:var(--card);border-radius:28px;padding:36px 40px 40px;box-shadow:0 0 0 1px rgba(255,255,255,.07),0 60px 140px -30px var(--shadow),0 0 100px -16px rgba(245,65,30,.4);animation:" +
+          (this._perfTicketModalClosing ? "modalPanelOut" : "modalPanelIn") + " .32s cubic-bezier(.2,.8,.3,1.05) both",
+      };
+    })() : null;
+    const hasPerfTicketModal = !!perfTicketModal;
 
     const chatScopeSites = ALL.map(n => ({
       name: n, on: st.chatScope.includes(n),
@@ -3301,6 +3448,7 @@ class Component extends DCLogic {
       showScopeBar: st.tab !== "assistant" && st.tab !== "performance",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
+      perfFilterChips, perfTicketModal, hasPerfTicketModal,
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
