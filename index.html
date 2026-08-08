@@ -9,6 +9,30 @@
 </head>
 <body>
 
+<!-- Repere visuel préprod : pose data-env="preprod" sur <html> des que le
+     hostname n'est pas un domaine de prod connu (meme logique "sans nouvelle
+     config" que le reste de la préprod : rien a synchroniser si l'URL prod
+     change, tout le reste bascule sur cet attribut). Fait avant tout le
+     reste pour n'avoir aucun flash de version "prod" au chargement. -->
+<script>
+(function(){
+  var PROD_HOSTS = [
+    "psa-site-factory-dashboard.vercel.app",
+    "psa-site-factory-dashboard-maxslab-projects.vercel.app",
+    "psa-site-factory-dashboard-git-main-maxslab-projects.vercel.app"
+  ];
+  if (PROD_HOSTS.indexOf(location.hostname) === -1) {
+    document.documentElement.setAttribute("data-env", "preprod");
+  }
+})();
+</script>
+<div id="envBadge" style="display:none;position:fixed;top:14px;right:14px;z-index:99999;font:700 11px/1 -apple-system,BlinkMacSystemFont,sans-serif;letter-spacing:.08em;padding:7px 12px;border-radius:999px;background:#7c5cff;color:#fff;box-shadow:0 8px 20px -6px rgba(124,92,255,.6)">PRÉPROD</div>
+<script>
+if (document.documentElement.getAttribute("data-env") === "preprod") {
+  document.getElementById("envBadge").style.display = "block";
+}
+</script>
+
 <div class="login-screen" id="loginScreen" data-theme="dark">
   <div class="login-shell">
 
@@ -182,6 +206,10 @@
 <style>
 :root{--page:#9fb2a5;--bg:#0d0d0d;--card:#1a1a1a;--pop:#181818;--soft:#242424;--soft2:#262626;--soft3:#2e2e2e;--hover:#303030;--text:#ffffff;--text2:#c9c9c9;--muted:#8b8b8b;--muted2:#7d7d7d;--grid:#242424;--line:#262626;--tick:#3a3a3a;--cell0:#2c3a30;--active-bg:#ffffff;--active-fg:#141414;--active-mark:#f2f2f2;--pos:#4ADE80;--neg:#ff7a6b;--pos-bg:rgba(74,222,128,.13);--neg-bg:rgba(255,122,107,.13);--warn:#F9AB00;--warn-bg:rgba(249,171,0,.13);--shadow:rgba(0,0,0,.55)}
 :root[data-theme=light]{--page:#dfe6df;--bg:#ffffff;--card:#f3f5f2;--pop:#ffffff;--soft:#e7eae5;--soft2:#dfe3dc;--soft3:#d5dad2;--hover:#dbe0d8;--text:#15181a;--text2:#3f4448;--muted:#6d7378;--muted2:#8b9196;--grid:#e2e6e0;--line:#e2e6e0;--tick:#c2c8c1;--cell0:#dfe8e0;--active-bg:#15181a;--active-fg:#ffffff;--active-mark:#2b2f32;--pos:#0f7a3d;--neg:#b8341f;--pos-bg:rgba(15,122,61,.12);--neg-bg:rgba(184,52,31,.12);--warn:#9a6800;--warn-bg:rgba(154,104,0,.13);--shadow:rgba(70,85,72,.28)}
+/* Préprod (branche staging) : accent violet a la place du noir/blanc, pour
+   ne jamais confondre visuellement avec la prod. data-env pose par le script
+   juste apres <body>, base sur le hostname (aucune donnee serveur requise). */
+:root[data-env=preprod]{--active-bg:#7c5cff;--active-fg:#ffffff;--active-mark:#6a4ce0}
 html,body{margin:0;padding:0;background:var(--page);font-family:'Plus Jakarta Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;transition:background .3s ease}
 a{color:#F5411E;text-decoration:none}a:hover{color:#ff6a45}
 input[type=date]{color-scheme:dark}
