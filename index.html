@@ -739,11 +739,11 @@ input[type=date]{color-scheme:dark}
     </sc-if>
 
     <!-- ============ Ligne 6 : Leads par projet d'achat + Marques reprises + Taux de complétion ============ -->
-    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px;align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px">
 
       <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
         <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
-        <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:auto auto auto;gap:12px;flex:1">
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:12px;flex:1;min-height:0">
           <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
           <div style="grid-row:span 3;background:linear-gradient(160deg,#fff1f0,#ffe4e2);border-radius:24px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:16px">
             <div style="display:flex;align-items:center;gap:11px">
