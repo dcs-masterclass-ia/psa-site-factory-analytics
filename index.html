@@ -251,7 +251,7 @@ input[type=date]{color-scheme:dark}
 <div ref="{{ scaleSizerRef }}" style="width:100%;overflow:hidden">
 <div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
-  <header style="display:flex;align-items:center;gap:20px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
+  <header style="display:flex;align-items:center;gap:14px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
     <div style="display:flex;align-items:center;gap:11px;flex:none">
       <div style="width:38px;height:38px;border-radius:13px;background:linear-gradient(140deg,#6d8bff,var(--accent) 60%,#7c3aed);box-shadow:0 10px 24px -8px rgba(59,90,224,.55);display:flex;align-items:center;justify-content:center;flex:none">
         <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 14.5 7.2 9l3.1 3.3L17 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="17" cy="4.5" r="2" fill="#fff"></circle></svg>
@@ -259,47 +259,108 @@ input[type=date]{color-scheme:dark}
       <div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">Converge</div>
     </div>
 
-    <nav ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:6px;background:var(--card);border-radius:999px;padding:6px;flex:none">
+    <nav ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:2px;background:var(--card);border-radius:999px;padding:6px;flex:none">
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
-      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
-        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">{{ t.label }}</div>
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">
+          <span ref="{{ t.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
+          <span>{{ t.label }}</span>
+          <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
+            <span style="{{ t.badgeStyle }}">{{ t.badgeText }}</span>
+          </sc-if>
+        </div>
       </sc-for>
       <!-- Big Query : pas encore disponible, jamais cliquable, ne participe pas
            au pill glissant (aucun etat "actif" possible pour cet onglet). -->
-      <div role="button" aria-disabled="true" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:10px;font-family:inherit;font-size:14px;font-weight:400;height:50px;padding:0 20px 0 22px;border-radius:999px;color:var(--muted2);cursor:not-allowed;white-space:nowrap">
-        Big Query
+      <div role="button" aria-disabled="true" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:6px;font-family:inherit;font-size:14px;font-weight:400;height:50px;padding:0 14px 0 15px;border-radius:999px;color:var(--muted2);cursor:not-allowed;white-space:nowrap">
+        <span ref="{{ bigQueryIconRef }}" style="display:flex;flex:none"></span>
+        BigQuery
         <span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:3px 9px">Bientôt</span>
+      </div>
+      <span style="width:1px;height:22px;background:var(--line);flex:none;margin:0 4px"></span>
+      <div onClick="{{ kamiaTab.pick }}" ref="{{ kamiaTab.ref }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
+        <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
+        <span>{{ kamiaTab.label }}</span>
+        <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
+          <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
+        </sc-if>
       </div>
     </nav>
 
     <div style="flex:1;min-width:20px"></div>
 
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:flex-end;row-gap:10px">
-      <div style="display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:5px;flex:none">
-        <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
-          <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
-        </sc-for>
-      </div>
+    <div style="position:relative;flex:none">
+      <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
+        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;letter-spacing:.2px;flex:none">{{ currentSiteInitials }}</div>
+        <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
+        <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
 
-      <sc-if value="{{ customDate }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:999px;padding:7px 16px;animation:dropIn .22s ease both;flex:none">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
-          <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
-          <span style="font-size:14px;color:var(--muted2)">→</span>
-          <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
+      <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
+        <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;cursor:default;animation:dropIn .18s ease both" role="none">
+          <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px;margin-bottom:8px;position:sticky;top:0;z-index:1">
+            <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
+          </div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
+          <sc-for list="{{ sitePickerRows }}" as="s" hint-placeholder-count="6">
+            <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
+              <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }};flex:none"></div>
+              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+              <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
+          </sc-if>
         </div>
       </sc-if>
-
-      <button onClick="{{ toggleCompare }}" title="Comparé à la période précédente" style="{{ compareToggle }};flex:none"><span style="{{ compareKnob }}"></span></button>
-
-      <div style="display:flex;align-items:center;gap:10px;flex:none">
-        <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="position:relative;overflow:hidden;width:44px;height:44px;border-radius:50%;background:#fff;border:none;box-shadow:0 4px 20px rgba(17,17,26,.04);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:filter .2s ease" style-hover="filter:brightness(.96)">
-          <span style="{{ refreshProgressStyle }}"></span>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
-        </button>
-        <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111318,#3a3f4a);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease" style-hover="filter:brightness(1.25)">{{ userInitials }}</button>
-      </div>
     </div>
+
+    <div style="position:relative;flex:none">
+      <button onClick="{{ togglePeriodPicker }}" aria-expanded="{{ periodPickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:10px;background:#fff;border:none;border-radius:100px;padding:8px 18px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;text-align:left;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round" style="flex:none"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
+        <div>
+          <div style="font-size:11.5px;color:#9aa0aa;font-weight:600;white-space:nowrap">{{ periodPickerTopLabel }}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums">{{ periodRangeLabel }}</div>
+        </div>
+      </button>
+
+      <sc-if value="{{ periodPickerOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closePeriodPicker }}"></div>
+        <div style="position:absolute;top:60px;right:0;width:300px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:3px;cursor:default;animation:dropIn .18s ease both" role="none">
+          <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
+            <button onClick="{{ p.pickAndClose }}" style="{{ p.rowStyle }}">{{ p.label }}</button>
+          </sc-for>
+
+          <sc-if value="{{ customDate }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:14px;padding:9px 12px;margin-top:2px;animation:dropIn .2s ease both">
+              <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;flex:1;min-width:0">
+              <span style="font-size:13px;color:var(--muted2)">→</span>
+              <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;flex:1;min-width:0">
+            </div>
+          </sc-if>
+
+          <div style="height:1px;background:var(--line);margin:8px 2px"></div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 10px">
+            <span style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à la période précédente</span>
+            <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 2px">
+            <div style="font-size:11.5px;color:#9aa0aa;line-height:1.4">{{ lastUpdateLabel }}</div>
+            <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="position:relative;overflow:hidden;width:36px;height:36px;border-radius:50%;background:var(--soft);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s ease" style-hover="background:var(--hover)">
+              <span style="{{ refreshProgressStyle }}"></span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111318,#3a3f4a);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.25)">{{ userInitials }}</button>
   </header>
 
   <sc-if value="{{ showScopeBar }}" hint-placeholder-val="{{ true }}">
@@ -331,35 +392,6 @@ input[type=date]{color-scheme:dark}
 
     <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:2px 4px 0">
       <div><h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-1.2px;color:var(--text)">Vue d'ensemble</h1><div style="font-size:14px;color:#9aa0aa;margin-top:5px">GA4 · {{ periodPillLabel }}</div></div>
-
-      <div style="position:relative;flex:none">
-        <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
-          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;letter-spacing:.2px;flex:none">{{ currentSiteInitials }}</div>
-          <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
-          <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-        </button>
-
-        <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
-          <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;cursor:default;animation:dropIn .18s ease both" role="none">
-            <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px;margin-bottom:8px;position:sticky;top:0;z-index:1">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-              <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
-            </div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
-            <sc-for list="{{ sitePickerRows }}" as="s" hint-placeholder-count="6">
-              <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
-                <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }};flex:none"></div>
-                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
-                <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
-              </div>
-            </sc-for>
-            <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
-            </sc-if>
-          </div>
-        </sc-if>
-      </div>
 
       <div style="flex:1"></div>
 
@@ -2134,6 +2166,7 @@ class Component extends DCLogic {
     compare: true,
     pickerOpen: false,   // ouverture du selecteur de site (barre de recherche/profil, en-tete)
     siteSearch: "",      // texte tape dans la barre de recherche du selecteur de site
+    periodPickerOpen: false, // ouverture du selecteur de periode/date (en-tete)
     sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
     dim: "brand",
     booted: false,
@@ -2841,7 +2874,9 @@ class Component extends DCLogic {
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], gscKpis: [], channels: [],
+        tabs: [], kamiaTab: { label: "KamIA", pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "" },
+        bigQueryIconRef: () => {},
+        periods: [], marketChips: [], familyChips: [], brandRows: [], gscKpis: [], channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], projectHero: null, hasProjectHero: false, projectRest: [],
         brandBars: [], hasBrandBars: false, brandOtherBar: null, hasBrandOther: false,
         conquestShareLabel: "", ownBrandRing: "var(--soft3)", conquestRing: "var(--soft3)",
@@ -2874,6 +2909,8 @@ class Component extends DCLogic {
         siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
         sitePickerChevronStyle: "", sitePickerRows: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
         currentSiteLabel: "Chargement…", currentSiteInitials: "··", currentSiteRank: "",
+        togglePeriodPicker: () => {}, closePeriodPicker: () => {}, periodPickerOpen: false,
+        periodPickerTopLabel: "", periodRangeLabel: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
         volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
@@ -2902,19 +2939,9 @@ class Component extends DCLogic {
     else if (scopeSites.length === 1) scopeLabel = scopeSites[0];
     else scopeLabel = scopeSites.length + " sites sélectionnés";
 
-    // pills texte seul (maquette KamIA du 08/08/2026) : plus d'icone par
-    // onglet (logos GA4/GSC/Hermes), le curseur glissant (tabIndicatorRef)
-    // suffit a marquer l'onglet actif -- meme mecanique qu'avant, juste
-    // sans le petit badge d'icone.
-    const tabs = [["ga4", "GA4"], ["gsc", "Search Console"], ["v2", "Comparaison V2"], ["performance", "PageSpeed"], ["assistant", "KamIA"]].map(t => {
-      const on = st.tab === t[0];
-      return {
-        label: t[1],
-        pick: () => this.switchTab(t[0]),
-        ref: el => this.tabRef(el, t[0]),
-        style: "position:relative;z-index:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "600" : "400") + ";height:50px;padding:0 22px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
-      };
-    });
+    // tabs (icones + pastilles de compteurs reels) calcule plus bas dans
+    // cette fonction, une fois hasV2/pagespeedMobileScore/watchConstats
+    // connus -- voir juste avant le "return".
     const tabFadeStyle = "margin-top:24px;transition:opacity .2s ease,transform .32s cubic-bezier(.3,.7,.4,1);opacity:" + (st.tabSwitching ? "0" : "1") + ";transform:" + (st.tabSwitching ? "translateY(6px) scale(.99)" : "translateY(0) scale(1)");
 
     // selecteur de site (en-tete, remplace l'ancien picker multi-sites) :
@@ -2950,8 +2977,11 @@ class Component extends DCLogic {
       return {
         label,
         pick: () => this.setState({ period: label, customDate: label === "Date précise" }),
+        pickAndClose: () => this.setState({ period: label, customDate: label === "Date précise", periodPickerOpen: label === "Date précise" }),
         style: "border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;height:42px;padding:0 18px;border-radius:999px;transition:background .22s ease,color .22s ease;background:" +
           (on ? "var(--active-bg)" : "transparent") + ";color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+        rowStyle: "display:flex;align-items:center;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "700" : "500") + ";padding:10px 12px;border-radius:14px;transition:background .18s ease,color .18s ease;background:" +
+          (on ? "var(--soft)" : "transparent") + ";color:" + (on ? "var(--text)" : "var(--text2)"),
       };
     });
 
@@ -3031,7 +3061,7 @@ class Component extends DCLogic {
     // chaque site un par un, plutot que dupliquer la logique d'agregation.
     // Cout non negligeable (64 agregations) : seulement quand l'onglet Vue
     // d'ensemble est actif, pas a chaque rendu des autres onglets.
-    let convRankLabel = "", convMedianLabel = "", convMedianVal = null, convBestVal = null, convRankDeltaText = "", convRankDeltaStyle = "";
+    let convRankLabel = "", convMedianLabel = "", convMedianVal = null, convBestVal = null, convRankDeltaText = "", convRankDeltaStyle = "", rang = 0;
     if (st.tab === "ga4") {
       const rankSites = (debut2, fin2) => {
         const arr = ALL.map(n => {
@@ -3042,7 +3072,7 @@ class Component extends DCLogic {
         return arr;
       };
       const tauxParSite = rankSites(range.debut, range.fin);
-      const rang = tauxParSite.findIndex(x => x.site === currentSite) + 1;
+      rang = tauxParSite.findIndex(x => x.site === currentSite) + 1;
       if (rang > 0) convRankLabel = rang + "e sur " + tauxParSite.length;
       if (tauxParSite.length) {
         const mid = Math.floor(tauxParSite.length / 2);
@@ -3076,6 +3106,14 @@ class Component extends DCLogic {
     const periodPillLabel = st.customDate ? (range.debut + " → " + range.fin) : (PERIOD_PILL[st.period] || st.period);
     const sparkAxisLeft = st.customDate ? range.debut : "J-" + days;
     const sparkAxisRight = st.customDate ? range.fin : "Auj.";
+    // pastille periode/date compacte (en-tete) : intitule court en haut
+    // ("12 mois" / "Période personnalisée"), plage resolue en dessous --
+    // range.debut/fin sont deja les vraies bornes calculees, meme quand ce
+    // n'est pas une date precise (une periode "12 mois" a bien une date de
+    // debut/fin reelle, on ne les invente pas).
+    const fmtDateShort = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : "";
+    const periodPickerTopLabel = st.customDate ? "Période personnalisée" : st.period;
+    const periodRangeLabel = fmtDateShort(range.debut) + " → " + fmtDateShort(range.fin);
 
     // barres CSS (colonnes flex) : suffisent pour un spark decoratif, pas
     // besoin de SVG. Les series quotidiennes sont regroupees en ~8 barres
@@ -3296,6 +3334,12 @@ class Component extends DCLogic {
     const v2PreConv = v2First.a ? v2Last.a / v2First.a * 100 : 0;
     const v2PostConv = v2First.b ? v2Last.b / v2First.b * 100 : 0;
     const v2DeltaPts = v2PostConv - v2PreConv;
+    // sous-titre du selecteur de site (en-tete) : n'affiche "rang N" que sur
+    // l'onglet GA4, seul endroit ou ce rang est calcule (cout de 64
+    // agregations volontairement pas reproduit sur les autres onglets).
+    const currentSiteRank = currentSiteIdx >= 0
+      ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length + (hasV2 ? " · V2" : "") + (st.tab === "ga4" && rang > 0 ? " · rang " + rang : "")
+      : "";
     const V2_STEP_LABELS = ["Page d'accueil", "Version", "Kilométrage", "Coordonnées", "Point de vente", "Estimation"];
     // une icone par etape plutot qu'un numero abstrait, pour que le parcours
     // se lise comme un vrai parcours (maison -> reglages -> jauge -> contact
@@ -3952,6 +3996,10 @@ class Component extends DCLogic {
     // (overflow-y:auto), pas la page.
     const watchFilter = st.watchFilter || "tous";
     const watchConstats = watchFilter === "tous" ? watchConstatsAll : watchConstatsAll.filter(c => c.gravite === watchFilter);
+    // pastille KamIA (en-tete) : nombre de constats watch reels pour le
+    // site actuellement ouvert -- pas un compteur global des 64 sites, pas
+    // invente.
+    const watchConstatsCurrentSite = watchConstatsAll.filter(c => c.site === currentSite).length;
     const watchFilterChips = [
       { value: "tous", label: "Tous", count: watchConstatsAll.length },
       { value: "important", label: "Important", count: watchConstatsAll.filter(c => c.gravite === "important").length },
@@ -4128,8 +4176,61 @@ class Component extends DCLogic {
       name: a.name, sizeLabel: a.sizeLabel, remove: () => this.removeAttachment(i),
     }));
 
+    // icones + pastilles de compteurs (maquette du 09/08/2026, en-tete
+    // fusionne avec le picker de site/periode) -- calcule ici, tout en bas
+    // de renderVals(), car ca depend de hasV2/v2DeltaPts/pagespeedMobileScore/
+    // watchConstatsCurrentSite qui ne sont connus qu'a ce stade. Badge
+    // uniquement quand une vraie donnee existe pour l'onglet (jamais de "0"
+    // ou de chiffre invente) : V2 = delta de conversion reel du site,
+    // PageSpeed = score mobile reel, KamIA = nombre de constats watch reels
+    // pour ce site.
+    const TAB_ICON_SVG = {
+      ga4: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="11" width="3.3" height="6.5" rx="1" fill="currentColor"/><rect x="8.3" y="6" width="3.3" height="11.5" rx="1" fill="currentColor"/><rect x="14.1" y="2.5" width="3.3" height="15" rx="1" fill="currentColor"/></svg>',
+      gsc: '<svg width="14" height="14" viewBox="0 0 18 18" fill="none"><circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" stroke-width="1.8"/><path d="m11.8 11.8 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+      v2: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M2 10.5h3l2-6 3.6 12 2.4-9 1.6 3h3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+      performance: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.3" stroke="currentColor" stroke-width="1.7"/><path d="M10 10 13.2 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/></svg>',
+      bigquery: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="4.6" rx="6" ry="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 4.6v10.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2V4.6M4 9.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2" stroke="currentColor" stroke-width="1.6"/></svg>',
+      assistant: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l1.7 4.3L16 8.5l-4.3 1.7L10 14.5l-1.7-4.3L4 8.5l4.3-1.7L10 2.5Z" fill="currentColor"/></svg>',
+    };
+    const TAB_BADGE_STYLE = {
+      pos: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--pos-bg);color:var(--pos)",
+      neg: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--neg-bg);color:var(--neg)",
+      warn: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--warn-bg);color:var(--warn)",
+      accent: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:rgba(139,92,246,.14);color:#8b5cf6",
+    };
+    const TAB_DEFS = [
+      { key: "ga4", label: "GA4" },
+      { key: "gsc", label: "Search Console" },
+      { key: "v2", label: "Comparaison V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
+      { key: "performance", label: "PageSpeed", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
+      { key: "assistant", label: "KamIA", hasBadge: watchConstatsCurrentSite > 0, badgeText: String(watchConstatsCurrentSite), badgeLevel: "accent" },
+    ];
+    const allTabs = TAB_DEFS.map(t => {
+      const on = st.tab === t.key;
+      return {
+        label: t.label,
+        pick: () => this.switchTab(t.key),
+        ref: el => this.tabRef(el, t.key),
+        iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[t.key]; },
+        hasBadge: !!t.hasBadge, badgeText: t.badgeText || "",
+        // pastille coloree (vert/rouge/violet) sur fond blanc quand l'onglet
+        // est inactif ; pastille blanche translucide quand l'onglet est
+        // actif (fond fonce), sinon la couleur se fond dans le fond actif.
+        badgeStyle: on
+          ? "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:rgba(255,255,255,.24);color:var(--active-fg)"
+          : (TAB_BADGE_STYLE[t.badgeLevel] || ""),
+        style: "position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "600" : "400") + ";height:50px;padding:0 15px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+      };
+    });
+    // KamIA sort de la boucle sc-for de la nav : dans la maquette il vient
+    // APRES BigQuery (separe par un trait), pas avant -- rendu comme un
+    // bloc statique a part, meme mecanique que BigQuery ci-dessus.
+    const tabs = allTabs.slice(0, 4);
+    const kamiaTab = allTabs[4];
+    const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
+
     return {
-      tabs, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      tabs, kamiaTab, bigQueryIconRef, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror, mirrorTotalsLabel,
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
@@ -4171,8 +4272,10 @@ class Component extends DCLogic {
       sitePickerChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.pickerOpen ? "180deg" : "0deg") + ")",
       sitePickerOpen: st.pickerOpen, sitePickerRows, sitePickerEmpty: sitePickerRows.length === 0,
       sitePickerHeading: search ? "Résultats" : "Tous les sites",
-      currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials,
-      currentSiteRank: currentSiteIdx >= 0 ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length : "",
+      currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials, currentSiteRank,
+      togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
+      closePeriodPicker: () => this.setState({ periodPickerOpen: false }),
+      periodPickerOpen: st.periodPickerOpen, periodPickerTopLabel, periodRangeLabel,
       volConvChart, hasVolConvChart, volConvTotal, volConvAvgConv, volConvLast, volConvProgress,
       volConvLastLabel: volConvLast ? dec(volConvLast.conv, 2) + " %" : "—",
       volConvLastMonthLabel: volConvLast ? volConvLast.label : "",
