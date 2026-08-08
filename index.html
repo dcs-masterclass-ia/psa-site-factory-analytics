@@ -277,7 +277,7 @@ input[type=date]{color-scheme:dark}
     <div style="position:relative">
       <div style="display:flex;align-items:center;gap:11px;background:#fff;border-radius:100px;padding:11px 20px;width:260px;box-shadow:0 4px 20px rgba(17,17,26,.04);box-sizing:border-box">
         <svg width="16" height="16" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-        <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" onFocus="{{ openSitePicker }}" placeholder="Rechercher un site…" style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:400">
+        <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" onFocus="{{ openSitePicker }}" placeholder="Rechercher un site, une requête…" style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:400">
       </div>
       <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:absolute;top:56px;left:0;width:340px;z-index:60;background:#fff;border-radius:22px;padding:12px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:400px;overflow:auto">
@@ -347,27 +347,130 @@ input[type=date]{color-scheme:dark}
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
   <div style="{{ tabFadeStyle }}">
 
-    <div style="display:grid;grid-template-columns:1fr 1fr 1.34fr 1.06fr;gap:20px">
-      <sc-for list="{{ ga4Kpis }}" as="k" hint-placeholder-count="4">
-        <div style="{{ k.card }}">
-          <div style="display:flex;align-items:flex-start;gap:10px">
-            <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">{{ k.label }}</div>
-            <div style="width:40px;height:40px;border-radius:50%;background:{{ k.iconGrad }};box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
-              <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="{{ k.iconPath }}" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            </div>
-          </div>
-          <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:auto">
-            <div ref="{{ k.ref }}" style="font-size:32px;font-weight:600;color:var(--text);letter-spacing:-1.2px;line-height:1;white-space:nowrap">{{ k.value }}</div>
-            <svg width="100" height="32" viewBox="0 0 120 36" style="overflow:visible;flex:none">
-              <path ref="{{ k.sparkRef }}" fill="none" stroke="{{ k.sparkColor }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="240" stroke-dashoffset="240" style="animation:drawLine 1.4s cubic-bezier(.35,.6,.3,1) .5s forwards"></path>
-            </svg>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="{{ k.deltaStyle }}">{{ k.delta }}</span>
-            <span style="font-size:13px;font-weight:500;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.note }}</span>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.6px">Vue d'ensemble</div>
+        <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">GA4 · {{ periodPillLabel }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <sc-if value="{{ hasV2 }}" hint-placeholder-val="{{ true }}">
+          <span style="background:var(--pos-bg);color:var(--pos);font-size:13.5px;font-weight:700;padding:9px 16px;border-radius:999px;white-space:nowrap">V2 en ligne depuis le {{ v2DateLabel }}</span>
+        </sc-if>
+        <button onClick="{{ exportGa4Csv }}" style="border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 20px;height:44px;font-family:inherit;font-weight:600;font-size:14px;color:var(--text);cursor:pointer">Exporter</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.34fr 1.06fr;gap:20px;margin-top:20px">
+
+      <!-- Sessions parent : barres -->
+      <div style="background:var(--card);border-radius:24px;padding:24px 26px 22px;height:238px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">Sessions parent</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 15V9m6 6V5m6 10v-8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           </div>
         </div>
-      </sc-for>
+        <div ref="{{ kpiTrafficRef }}" style="margin-top:10px;font-size:30px;font-weight:600;color:var(--text);letter-spacing:-1.1px;line-height:1;white-space:nowrap">0</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap">
+          <span style="background:var(--soft);color:var(--muted);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap">{{ periodPillLabel }}</span>
+          <span style="{{ kpiTrafficDelta.style }}">{{ kpiTrafficDelta.text }}</span>
+        </div>
+        <div style="flex:1;display:flex;align-items:flex-end;gap:3px;margin-top:12px;min-height:0">
+          <sc-for list="{{ parentBars }}" as="b" hint-placeholder-count="8">
+            <div style="{{ b.style }}"></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:500;color:var(--muted2)">
+          <span>{{ sparkAxisLeft }}</span><span>{{ sparkAxisRight }}</span>
+        </div>
+      </div>
+
+      <!-- Sessions reprise : aire -->
+      <div style="background:var(--card);border-radius:24px;padding:24px 26px 22px;height:238px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">Sessions reprise</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#ff8b95,#f4485c);box-shadow:0 10px 22px -8px rgba(244,72,92,.45);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 6h11m0 0-3-3m3 3-3 3M17 14H6m0 0 3-3m-3 3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+        </div>
+        <div ref="{{ kpiRepriseRef }}" style="margin-top:10px;font-size:30px;font-weight:600;color:var(--text);letter-spacing:-1.1px;line-height:1;white-space:nowrap">0</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap">
+          <span style="background:var(--soft);color:var(--muted);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap">{{ periodPillLabel }}</span>
+          <span style="{{ kpiRepriseDelta.style }}">{{ kpiRepriseDelta.text }}</span>
+        </div>
+        <div style="flex:1;position:relative;margin-top:12px;min-height:0">
+          <svg width="100%" height="100%" viewBox="0 0 240 64" preserveAspectRatio="none" style="position:absolute;inset:0;overflow:visible">
+            <defs><linearGradient id="repriseKpiFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--neg)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--neg)" stop-opacity="0"></stop></linearGradient></defs>
+            <path ref="{{ repriseFillRef }}" fill="url(#repriseKpiFill)" stroke="none"></path>
+            <path ref="{{ repriseSparkRef }}" fill="none" stroke="var(--neg)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+          </svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:500;color:var(--muted2)">
+          <span>{{ sparkAxisLeft }}</span><span>{{ sparkAxisRight }}</span>
+        </div>
+      </div>
+
+      <!-- Leads : barres mensuelles avec repere V2 -->
+      <div style="background:var(--card);border-radius:24px;padding:24px 26px 22px;height:238px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .14s both">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">Leads</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.45);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 7a3.1 3.1 0 1 1 0 6.2A3.1 3.1 0 0 1 10 7Zm-5.5 9.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </div>
+        </div>
+        <div ref="{{ kpiLeadsRef }}" style="margin-top:10px;font-size:30px;font-weight:600;color:var(--text);letter-spacing:-1.1px;line-height:1;white-space:nowrap">0</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap">
+          <span style="background:var(--soft);color:var(--muted);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap">{{ leadsPerDayLabel }}</span>
+          <span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span>
+        </div>
+        <div style="flex:1;display:flex;align-items:flex-end;gap:3px;margin-top:12px;min-height:0">
+          <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="6">
+            <div style="{{ b.style }}"></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11.5px;font-weight:500;color:var(--muted2)">
+          <span>{{ leadsAxisLeft }}</span><span>{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span>
+        </div>
+      </div>
+
+      <!-- Taux de conversion : position dans le parc -->
+      <div style="background:var(--card);border-radius:24px;padding:24px 26px 22px;height:238px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:15px;color:var(--muted);font-weight:400;flex:1">Taux de conversion</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#c8a2ff,#8b5cf6);box-shadow:0 10px 22px -8px rgba(139,92,246,.45);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 6.4V10l2.6 1.7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="10" cy="10" r="7.4" stroke="#fff" stroke-width="1.6" fill="none"></circle></svg>
+          </div>
+        </div>
+        <div ref="{{ kpiConvRef }}" style="margin-top:10px;font-size:30px;font-weight:600;color:var(--text);letter-spacing:-1.1px;line-height:1;white-space:nowrap">0</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:11px;flex-wrap:wrap">
+          <span style="background:var(--soft3);color:var(--accent);font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap">{{ convRankLabel }}</span>
+          <sc-if value="{{ hasConvRankDelta }}" hint-placeholder-val="{{ false }}">
+            <span style="{{ convRankDeltaStyle }}">{{ convRankDeltaText }}</span>
+          </sc-if>
+        </div>
+        <div style="margin-top:16px">
+          <div style="position:relative;height:8px;border-radius:999px;background:var(--soft)">
+            <div style="{{ convFillPctStyle }}"></div>
+            <sc-if value="{{ hasConvMedianMarker }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ convMedianMarkerStyle }}"></div>
+            </sc-if>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:7px;font-size:11px;font-weight:500;color:var(--muted2)">
+            <span>{{ convMedianLabel }}</span><span>{{ convBestLabel }}</span>
+          </div>
+        </div>
+        <sc-if value="{{ hasKpiDeviceRows }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:12px">
+          <sc-for list="{{ kpiDeviceRows }}" as="d" hint-placeholder-count="2">
+            <div style="background:var(--soft);border-radius:12px;padding:9px 11px">
+              <div style="font-size:11px;font-weight:600;color:var(--muted2)">{{ d.name }}</div>
+              <div style="margin-top:2px;font-size:15px;font-weight:700;color:var(--text)">{{ d.pct }}</div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+
     </div>
 
     <!-- ============ Ligne 2 : Tunnel de conversion + Répartition des leads + Sources ============ -->
@@ -2659,6 +2762,23 @@ class Component extends DCLogic {
     URL.revokeObjectURL(url);
   }
 
+  exportGa4Csv() {
+    const row = this._ga4ExportRow;
+    if (!row) return;
+    const header = ["Site", "Période", "Sessions parent", "Sessions reprise", "Leads", "Leads BO / sessions reprise %"];
+    const esc = v => { if (v == null) return ""; const s = String(v); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const csv = "﻿" + [header.join(";"), [row.site, row.periode, row.parent, row.reprise, row.leads, row.conv].map(esc).join(";")].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "vue-ensemble-" + (row.site || "site").toLowerCase().replace(/\s+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   /* declenche le pipeline via /api/refresh (le jeton GitHub reste cote
      serveur Vercel) puis sonde data/pipeline.json jusqu'a ce que
      derniere_execution change, en affichant une progression realiste —
@@ -2730,8 +2850,21 @@ class Component extends DCLogic {
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], ga4Kpis: [], gscKpis: [], channels: [],
-        channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], audience: [], leadCells: [], queries: [], pages: [],
+        tabs: [], periods: [], marketChips: [], familyChips: [], brandRows: [], gscKpis: [], channels: [],
+        channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], projectHero: null, hasProjectHero: false, projectRest: [],
+        audience: [], brandBars: [], hasBrandBars: false, leadCells: [], queries: [], pages: [],
+        tunnelSteps: [], hasTunnel: false, noTunnel: true, donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0",
+        sourceRows: [], hasSourceRows: false, deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
+        kamiaHeadline: "", kamiaRows: [], hasKamiaRows: false,
+        periodPillLabel: "", sparkAxisLeft: "", sparkAxisRight: "",
+        kpiTrafficRef: () => {}, kpiTrafficDelta: { style: "", text: "" }, parentBars: [], hasParentBars: false,
+        kpiRepriseRef: () => {}, kpiRepriseDelta: { style: "", text: "" }, repriseSparkRef: () => {}, repriseFillRef: () => {},
+        kpiLeadsRef: () => {}, kpiLeadsDelta: { style: "", text: "" }, leadsPerDayLabel: "",
+        leadsBars: [], hasLeadsBars: false, leadsAxisLeft: "", leadsAxisMid: "", leadsAxisRight: "",
+        kpiConvRef: () => {}, kpiConvDelta: { style: "", text: "" },
+        convRankLabel: "", convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
+        convFillPctStyle: "", hasConvMedianMarker: false, convMedianMarkerStyle: "",
+        kpiDeviceRows: [], hasKpiDeviceRows: false, v2DateLabel: "", exportGa4Csv: () => {},
         ga4Insights: [], seoInsights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
         hasGscInsights: false, noGscInsights: false, gscAxisLabels: [],
         hasMirror: false, chartHover: null, hasChartHover: false, hoverChannelMove: () => {}, hoverChannelLeave: () => {},
@@ -2775,7 +2908,7 @@ class Component extends DCLogic {
     // onglet (logos GA4/GSC/Hermes), le curseur glissant (tabIndicatorRef)
     // suffit a marquer l'onglet actif -- meme mecanique qu'avant, juste
     // sans le petit badge d'icone.
-    const tabs = [["ga4", "GA4"], ["gsc", "Search Console"], ["v2", "V2"], ["performance", "Performance"], ["assistant", "KamIA"]].map(t => {
+    const tabs = [["ga4", "GA4"], ["gsc", "Search Console"], ["v2", "Comparaison V2"], ["performance", "PageSpeed"], ["assistant", "KamIA"]].map(t => {
       const on = st.tab === t[0];
       return {
         label: t[1],
@@ -2899,45 +3032,124 @@ class Component extends DCLogic {
     // chaque site un par un, plutot que dupliquer la logique d'agregation.
     // Cout non negligeable (64 agregations) : seulement quand l'onglet Vue
     // d'ensemble est actif, pas a chaque rendu des autres onglets.
-    let convRankLabel = "", convMedianLabel = "";
+    let convRankLabel = "", convMedianLabel = "", convMedianVal = null, convBestVal = null, convRankDeltaText = "", convRankDeltaStyle = "";
     if (st.tab === "ga4") {
-      const tauxParSite = ALL.map(n => {
-        const a = this.aggregate.call({ state: { sites: [n] }, data: this.data }, range.debut, range.fin);
-        return { site: n, taux: a.reprise ? a.leads / a.reprise * 100 : null };
-      }).filter(x => x.taux != null);
-      tauxParSite.sort((a, b) => b.taux - a.taux);
+      const rankSites = (debut2, fin2) => {
+        const arr = ALL.map(n => {
+          const a = this.aggregate.call({ state: { sites: [n] }, data: this.data }, debut2, fin2);
+          return { site: n, taux: a.reprise ? a.leads / a.reprise * 100 : null };
+        }).filter(x => x.taux != null);
+        arr.sort((a, b) => b.taux - a.taux);
+        return arr;
+      };
+      const tauxParSite = rankSites(range.debut, range.fin);
       const rang = tauxParSite.findIndex(x => x.site === currentSite) + 1;
       if (rang > 0) convRankLabel = rang + "e sur " + tauxParSite.length;
       if (tauxParSite.length) {
         const mid = Math.floor(tauxParSite.length / 2);
-        const mediane = tauxParSite.length % 2 ? tauxParSite[mid].taux : (tauxParSite[mid - 1].taux + tauxParSite[mid].taux) / 2;
-        convMedianLabel = "médiane parc " + dec(mediane, 2) + " %";
+        convMedianVal = tauxParSite.length % 2 ? tauxParSite[mid].taux : (tauxParSite[mid - 1].taux + tauxParSite[mid].taux) / 2;
+        convMedianLabel = "médiane parc " + dec(convMedianVal, 2) + " %";
+        convBestVal = tauxParSite[0].taux;
+      }
+      // classement du parc a la periode precedente, pour "+N places" -- seulement
+      // si la comparaison est activee (deja un cout de 64 agregations pour la
+      // periode courante, on ne double pas si l'utilisateur n'en a pas besoin).
+      if (st.compare && rang > 0) {
+        const prevR = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
+        const tauxPrev = rankSites(prevR.debut, prevR.fin);
+        const rangPrev = tauxPrev.findIndex(x => x.site === currentSite) + 1;
+        if (rangPrev > 0) {
+          const gain = rangPrev - rang;
+          convRankDeltaText = gain === 0 ? "= place" : (gain > 0 ? "+" + gain + " place" + (gain > 1 ? "s" : "") : gain + " place" + (gain < -1 ? "s" : ""));
+          convRankDeltaStyle = "font-size:13px;font-weight:600;color:" + (gain > 0 ? "var(--pos)" : gain < 0 ? "var(--neg)" : "var(--muted)");
+        }
       }
     }
 
-    const ga4Kpis = [
-      { label:"Sessions parent", to: agg.traffic, fmt: fmt, color:"#3b5ae0", ref: el => { this._el_parent = el; },
-        deltaInfo: deltaBadge(agg.traffic, cmp && cmp.traffic, ""), note:"vs période N-1", spark: parentDailySeries,
-        iconGrad:"linear-gradient(140deg,#7d99ff,#3b5ae0)", iconPath:"M4 15V9m6 6V5m6 10v-8" },
-      { label:"Sessions reprise", to: agg.reprise, fmt: fmt, color:"#f4485c", ref: el => { this._el_sessions = el; },
-        deltaInfo: deltaBadge(agg.reprise, cmp && cmp.reprise, ""), note:"vs période N-1", spark: repriseDailySeries,
-        iconGrad:"linear-gradient(140deg,#ff8b95,#f4485c)", iconPath:"M3 6h11m0 0-3-3m3 3-3 3M17 14H6m0 0 3-3m-3 3 3 3" },
-      { label:"Leads", to: agg.leads, fmt: fmt, color:"#12b981", ref: el => { this._el_leads = el; },
-        deltaInfo: deltaBadge(agg.leads, cmp && cmp.leads, ""), note: fmt(Math.round(leadsPerDay)) + " leads/jour", spark: leadsDailySeries,
-        iconGrad:"linear-gradient(140deg,#5fe0a4,#12b981)", iconPath:"M10 7a3.1 3.1 0 1 1 0 6.2A3.1 3.1 0 0 1 10 7Zm-5.5 9.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" },
-      { label:"Leads BO / sessions reprise", to: convPct, fmt: x => dec(x,2) + " %", color:"#8b5cf6", ref: el => { this._el_conv = el; },
-        deltaInfo: deltaBadge(convPct, cmpConvPct, "pts"), note: convRankLabel || convMedianLabel, spark: leadsDailySeries,
-        iconGrad:"linear-gradient(140deg,#c8a2ff,#8b5cf6)", iconPath:"M10 6.4V10l2.6 1.7" },
-    ].map((k, i) => {
-      const c = kpiCard(k.label, k.fmt(k.to), k.spark, k.color, k.deltaInfo, k.note, i, k.iconGrad, k.iconPath);
-      c.ref = el => { if (el) this.up(el, k.to, k.fmt); };
-      return c;
-    });
+    const rawSite = this.data[currentSite];
+    const v2DateLabel = (rawSite && rawSite.v2_date) ? rawSite.v2_date.slice(8, 10) + "/" + rawSite.v2_date.slice(5, 7) + "/" + rawSite.v2_date.slice(0, 4) : "";
+
+    // ---- 4 cartes KPI "Vue d'ensemble" : la maquette donne un visuel
+    // different a chacune (barres / aire / barres+repere V2 / jauge de
+    // position dans le parc) plutot qu'un seul gabarit reutilise partout —
+    // on suit ca a la lettre plutot que d'aplatir sur un composant generique.
+    const PERIOD_PILL = { "7 j": "7 derniers jours", "28 j": "28 derniers jours", "3 mois": "3 derniers mois", "12 mois": "12 derniers mois" };
+    const periodPillLabel = st.customDate ? (range.debut + " → " + range.fin) : (PERIOD_PILL[st.period] || st.period);
+    const sparkAxisLeft = st.customDate ? range.debut : "J-" + days;
+    const sparkAxisRight = st.customDate ? range.fin : "Auj.";
+
+    // barres CSS (colonnes flex) : suffisent pour un spark decoratif, pas
+    // besoin de SVG. Les series quotidiennes sont regroupees en ~8 barres
+    // par moyenne pour rester lisibles meme sur 12 mois (365 points).
+    const toBars = (values, n) => {
+      if (!values.length) return [];
+      const bucket = Math.max(1, Math.ceil(values.length / n));
+      const out = [];
+      for (let i = 0; i < values.length; i += bucket) {
+        const slice = values.slice(i, i + bucket);
+        out.push(slice.reduce((a, b) => a + b, 0) / slice.length);
+      }
+      return out;
+    };
+    const parentBarsRaw = toBars(parentDailySeries, 8);
+    const maxParentBar = Math.max(1, ...parentBarsRaw);
+    const parentBars = parentBarsRaw.map((v, i) => ({
+      style: "flex:1;border-radius:5px 5px 2px 2px;min-height:3px;height:" + Math.max(4, dec(v / maxParentBar * 100, 0)) + "%;background:linear-gradient(180deg,#7d99ff,#3b5ae0);animation:growH .8s cubic-bezier(.3,.8,.3,1) " + (0.3 + i * 0.05) + "s both",
+    }));
+
+    // aire lissee (garde du SVG ici : une courbe remplie n'a pas d'equivalent
+    // CSS simple, contrairement aux barres ci-dessus)
+    const repriseAreaLine = smoothPath(repriseDailySeries.length > 1 ? repriseDailySeries : [0, 0], 240, 64, 0, Math.max(1, ...repriseDailySeries));
+    const repriseAreaFill = repriseAreaLine ? repriseAreaLine + " L240 64 L0 64 Z" : "";
+    const repriseSparkRef = el => revealPath(el, repriseAreaLine, 300, 1000);
+    const repriseFillRef = el => revealPath(el, repriseAreaFill, 300, 1000);
+
+    // leads : barres MENSUELLES (6 derniers mois), independantes de la
+    // periode choisie en en-tete — comme "Volume vs conversion tradein" plus
+    // bas, ce mini-graphe raconte une histoire mensuelle avant/apres V2
+    // plutot que la fenetre jour par jour du selecteur de periode.
+    const leadsLast6 = rawSite ? rawSite.months.slice(-6) : [];
+    const leadsMonthly = leadsLast6.map(m => ((rawSite.leads || {})[m] || {}).total || 0);
+    const leadsV2MonthIdx = (rawSite && rawSite.v2_date) ? leadsLast6.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
+    const maxLeadsBar = Math.max(1, ...leadsMonthly);
+    const leadsBars = leadsMonthly.map((v, i) => ({
+      style: "flex:1;border-radius:5px 5px 2px 2px;min-height:3px;height:" + Math.max(4, dec(v / maxLeadsBar * 100, 0)) + "%;background:" + (leadsV2MonthIdx >= 0 && i >= leadsV2MonthIdx ? "#12b981" : "#bfeed9") + ";animation:growH .8s cubic-bezier(.3,.8,.3,1) " + (0.3 + i * 0.06) + "s both",
+    }));
+    const leadsAxisLeft = leadsLast6.length ? moisAnneeLabel(leadsLast6[0]).split(" ")[0] : "";
+    const leadsAxisMid = leadsLast6.length ? (leadsV2MonthIdx >= 0 ? "V2 · " + moisAnneeLabel(leadsLast6[leadsV2MonthIdx]).split(" ")[0] : moisAnneeLabel(leadsLast6[Math.floor(leadsLast6.length / 2)]).split(" ")[0]) : "";
+    const leadsAxisRight = leadsLast6.length ? moisAnneeLabel(leadsLast6[leadsLast6.length - 1]).split(" ")[0] : "";
+
+    // taux de conversion : jauge de position dans le parc. La maquette
+    // montre un "objectif" fictif (aucune cible configuree nulle part) —
+    // remplace par le meilleur du parc, seule reference reelle disponible
+    // en plus de la mediane deja calculee ci-dessus.
+    const convBestLabel = convBestVal != null ? "meilleur du parc " + dec(convBestVal, 2) + " %" : "";
+    const convScaleMax = Math.max(convPct, convMedianVal || 0, convBestVal || 0, 0.01) * 1.12;
+    const convFillPct = dec(Math.min(100, convPct / convScaleMax * 100), 1);
+    const convMedianPct = convMedianVal != null ? dec(Math.min(100, convMedianVal / convScaleMax * 100), 1) : null;
+
+    // part des leads par appareil (agg.device deja agrege) : remplace le
+    // "Mobile/Desktop : conversion %" fictif de la maquette — aucune session
+    // par appareil dans nos donnees, donc pas de taux de conversion par
+    // appareil calculable honnetement. On montre la part de LEADS a la place.
+    const deviceTotalKpi = [...agg.device.values()].reduce((a, b) => a + b, 0) || 1;
+    const kpiDeviceRows = [...agg.device.entries()].reduce((acc, [k, v]) => {
+      const kl = String(k).toLowerCase();
+      const label = kl.includes("mobile") ? "Mobile" : kl.includes("desktop") ? "Desktop" : null;
+      if (!label) return acc;
+      const existing = acc.find(r => r.name === label);
+      if (existing) existing.v += v; else acc.push({ name: label, v });
+      return acc;
+    }, []).sort((a, b) => b.v - a.v).slice(0, 2).map(r => ({ name: r.name, pct: dec(r.v / deviceTotalKpi * 100, 0) + " %" }));
+
+    this._ga4ExportRow = {
+      site: currentSite || "", periode: periodPillLabel,
+      parent: agg.traffic, reprise: agg.reprise, leads: agg.leads, conv: dec(convPct, 2) + " %",
+    };
 
     // "Volume vs conversion tradein" (nouveau bloc maquette) : toujours les
     // 12 derniers mois du site, independant de la periode choisie en
     // en-tete (comme dans la maquette, ou ce graphe a son propre "12 mois").
-    const rawSite = this.data[currentSite];
     const last12Months = rawSite ? rawSite.months.slice(-12) : [];
     const volConvRows = last12Months.map(m => {
       const sess = ((rawSite.repriseMonth || {})[m] || {}).sessions || 0;
@@ -3839,11 +4051,25 @@ class Component extends DCLogic {
       compareToggle: "width:52px;height:30px;border-radius:999px;border:none;cursor:pointer;padding:3px;display:flex;justify-content:" + (st.compare ? "flex-end" : "flex-start") + ";transition:background .22s ease;background:" + (st.compare ? "#4ADE80" : "var(--soft3)"),
       compareKnob: "width:24px;height:24px;border-radius:50%;background:" + (st.compare ? "#0d0d0d" : "var(--muted)") + ";display:block;transition:background .22s ease",
       pickerBtn: "display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:inherit;height:52px;padding:0 20px;border-radius:999px;transition:background .2s ease;background:" + (st.pickerOpen ? "var(--hover)" : "var(--card)"),
-      ga4Kpis, gscKpis,
+      gscKpis,
+      periodPillLabel, sparkAxisLeft, sparkAxisRight,
+      kpiTrafficRef: el => { if (el) this.up(el, agg.traffic, fmt); }, kpiTrafficDelta: deltaBadge(agg.traffic, cmp && cmp.traffic, ""),
+      parentBars, hasParentBars: parentBars.length > 0,
+      kpiRepriseRef: el => { if (el) this.up(el, agg.reprise, fmt); }, kpiRepriseDelta: deltaBadge(agg.reprise, cmp && cmp.reprise, ""),
+      repriseSparkRef, repriseFillRef,
+      kpiLeadsRef: el => { if (el) this.up(el, agg.leads, fmt); }, kpiLeadsDelta: deltaBadge(agg.leads, cmp && cmp.leads, ""),
+      leadsPerDayLabel: fmt(Math.round(leadsPerDay)) + " leads/jour",
+      leadsBars, hasLeadsBars: leadsBars.length > 0, leadsAxisLeft, leadsAxisMid, leadsAxisRight,
+      kpiConvRef: el => { if (el) this.up(el, convPct, x => dec(x, 2) + " %"); }, kpiConvDelta: deltaBadge(convPct, cmpConvPct, "pts"),
+      convRankLabel, convMedianLabel, convBestLabel, convRankDeltaText, hasConvRankDelta: !!convRankDeltaText, convRankDeltaStyle,
+      convFillPctStyle: "position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:" + convFillPct + "%;background:linear-gradient(90deg,#c8a2ff,#8b5cf6);transition:width 1s cubic-bezier(.3,.8,.3,1)",
+      hasConvMedianMarker: convMedianPct != null, convMedianMarkerStyle: "position:absolute;top:-4px;bottom:-4px;left:" + (convMedianPct || 0) + "%;width:2px;background:var(--text)",
+      kpiDeviceRows, hasKpiDeviceRows: kpiDeviceRows.length > 0,
       compRef: this._compEl, dailyAvgRef: this._dailyAvgEl,
       gaugeArcRef, gaugeDotRef,
       convText: dec(convPct, 2) + " %", partText: dec(agg.traffic ? agg.reprise/agg.traffic*100 : 0, 1) + " %",
-      hasV2, noV2, v2SubLabel, v2BadgeStyle, v2BadgeText,
+      hasV2, noV2, v2SubLabel, v2BadgeStyle, v2BadgeText, v2DateLabel,
+      exportGa4Csv: () => this.exportGa4Csv(),
       tabFadeStyle,
       tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
       tabBarRef: el => { this._tabBarEl = el; },
