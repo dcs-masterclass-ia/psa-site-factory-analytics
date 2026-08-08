@@ -28,32 +28,30 @@ SITES = [
          "www.opel.fr", "www.reprise.opel.fr",
          verifie=True, acces_api=True, pays="FR"),
 
-    # --- hotes de reprise connus par le monitoring, hotes parents releves dans GA4 ---
+    # --- hotes de reprise confirmes par des mois de trafic GA4 reel (voir
+    # discover.deduire, invoque a chaque execution de build.py) -- passes
+    # verifie=True le 08/08/2026, ce champ n'etait a jour que pour OPEL FR ---
     Site("FIAT PT", "fiat-pt", "353122979",
          "www.fiat.pt", "www.retoma.fiat.pt",
-         verifie=False, acces_api=True, pays="PT"),
+         verifie=True, acces_api=True, pays="PT"),
     Site("JEEP PT", "jeep-pt", "353131452",
          "www.jeep.pt", "www.retoma.jeep.pt",
-         verifie=False, acces_api=True, pays="PT"),
+         verifie=True, acces_api=True, pays="PT"),
     Site("ALFA ROMEO PT", "alfa-romeo-pt", "353123668",
          "www.alfaromeo.pt", "www.retoma.alfaromeo.pt",
-         verifie=False, acces_api=True, pays="PT"),
-
-    # --- hotes a relever : le prefixe www n'est pas garanti, cf. OPEL FR ---
+         verifie=True, acces_api=True, pays="PT"),
     Site("OPEL PT", "opel-pt", "276479753",
          "www.opel.pt", "www.retoma.opel.pt",
-         verifie=False, acces_api=True, pays="PT"),
+         verifie=True, acces_api=True, pays="PT"),
     Site("CITROEN PT", "citroen-pt", "276461319",
          "www.citroen.pt", "www.retoma-citroen.pt",
-         verifie=False, acces_api=True, pays="PT"),
+         verifie=True, acces_api=True, pays="PT"),
     Site("PEUGEOT PT", "peugeot-pt", "276505113",
          "www.peugeot.pt", "www.retoma.peugeot.pt",
-         verifie=False, acces_api=True, pays="PT"),
-
-    # --- acces accorde le 05/08/2026, hotes a confirmer contre le volume reel ---
+         verifie=True, acces_api=True, pays="PT"),
     Site("DS PT", "ds-pt", "276470566",
          "www.dsautomobiles.pt", "retoma.dsautomobiles.pt",
-         verifie=False, acces_api=True, pays="PT"),
+         verifie=True, acces_api=True, pays="PT"),
 
     # --- decouvertes le 07/08/2026 via pipeline/discover_sites.py (API Admin
     # GA4 + pipeline/discover.deduire sur le volume reel, periode 2026-04-01
