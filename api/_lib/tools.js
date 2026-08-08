@@ -330,4 +330,4 @@ async function runTool(name, input) {
   throw new Error("Outil inconnu : " + name);
 }
 
-module.exports = { TOOLS, runTool };
+module.exports = { TOOLS, runTool, askSpecialist };
