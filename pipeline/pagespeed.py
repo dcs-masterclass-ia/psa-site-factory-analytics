@@ -88,6 +88,11 @@ def _requete(url_cible, strategie, timeout=90):
     params = {
         "url": url_cible, "strategy": strategie,
         "category": CATEGORIES, "key": cle_api(),
+        # titres/descriptions d'audit Lighthouse traduits par Google
+        # lui-meme (ex. audits.opportunites[].title) -- plus fiable qu'un
+        # dictionnaire de traduction maison a maintenir a chaque nouvel
+        # audit Lighthouse. N'affecte pas les chiffres, seulement le texte.
+        "locale": "fr",
     }
     url = BASE + "?" + urllib.parse.urlencode(params, doseq=True)
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})

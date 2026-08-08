@@ -1030,12 +1030,14 @@ input[type=date]{color-scheme:dark}
             <sc-if value="{{ r.hasOpportunites }}" hint-placeholder-val="{{ false }}">
             <div>
               <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">À corriger en priorité</div>
-              <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;font-size:13.5px">
-                  <span style="color:var(--text2);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.titre }}</span>
-                  <span style="color:#F5A524;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums">-{{ o.gain }}</span>
-                </div>
-              </sc-for>
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <sc-for list="{{ r.opportunites }}" as="o" hint-placeholder-count="2">
+                  <span style="display:inline-flex;align-items:center;gap:6px;background:var(--soft2);border-radius:999px;padding:5px 12px;font-size:12px;line-height:1.4;max-width:100%">
+                    <span style="color:var(--text2);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ o.titre }}</span>
+                    <span style="color:#F5A524;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums;flex:none">-{{ o.gain }}</span>
+                  </span>
+                </sc-for>
+              </div>
             </div>
             </sc-if>
           </div>
