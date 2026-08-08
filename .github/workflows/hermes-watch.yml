@@ -65,19 +65,20 @@ jobs:
             exit 0
           fi
           git commit -m "Veille Hermès quotidienne"
-          # meme logique de retry/resolution de conflit que refresh.yml :
-          # un seul fichier ici, risque de conflit deja faible, mais on
-          # applique la meme prudence plutot que d'inventer une variante.
+          # meme logique de retry/resolution de conflit que refresh.yml, et
+          # meme principe de branche dynamique que pagespeed.yml/build.py :
+          # $GITHUB_REF_NAME plutot que "main" en dur, pour ne jamais ecrire
+          # sur main depuis un declenchement --ref staging.
           for i in 1 2 3; do
             git rebase --abort 2>/dev/null || true
-            if git pull --rebase --autostash origin main; then
-              git push origin HEAD:main && exit 0
+            if git pull --rebase --autostash origin "$GITHUB_REF_NAME"; then
+              git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             fi
             CONFLITS=$(git diff --name-only --diff-filter=U)
             if [ "$CONFLITS" = "data/hermes_watch.json" ]; then
               git checkout --theirs data/hermes_watch.json
               git add data/hermes_watch.json
-              if git rebase --continue && git push origin HEAD:main; then
+              if git rebase --continue && git push origin "HEAD:$GITHUB_REF_NAME"; then
                 exit 0
               fi
             fi

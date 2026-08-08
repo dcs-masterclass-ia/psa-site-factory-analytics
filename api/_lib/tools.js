@@ -191,7 +191,7 @@ const TOOLS = [
 async function runDashboardAgent(spec) {
   let fileContent, fileSha;
   try {
-    const f = await getFile("index.html", "main");
+    const f = await getFile("index.html"); // branche par defaut de getFile (voir api/_lib/github.js) : dynamique, plus "main" en dur
     fileContent = f.content;
     fileSha = f.sha;
   } catch (e) {
