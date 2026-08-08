@@ -19,8 +19,12 @@ const { getFile, createBranch, updateFile, createPullRequest } = require("./gith
 // quotidienne (scripts/hermes_watch.js), qui reutilise askSpecialist.
 // KAM_MODEL (api/agent.js, orchestration+synthese) et DASHBOARD_MODEL
 // (edition de code) restent inchanges, role different.
+// PAS de parametre "effort" ici : contrairement a Sonnet/Opus, Haiku 4.5 le
+// rejette ("This model does not support the effort parameter") -- bug reel
+// introduit par ce meme changement Sonnet->Haiku, jamais declenche avant
+// (le premier appel Haiku reellement passe en prod, cote api/perf-ticket.js,
+// l'a fait echouer immediatement). Decouvert et corrige le 08/08/2026.
 const SPECIALIST_MODEL = "claude-haiku-4-5";
-const SPECIALIST_EFFORT = "medium"; // reponses ciblees en 4-8 phrases, pas besoin d'effort eleve
 const DASHBOARD_MODEL = "claude-opus-5";
 const MAX_DASHBOARD_ITERATIONS = 6;
 
@@ -85,7 +89,6 @@ async function askSpecialist(systemPrompt, question, sites) {
       role: "user",
       content: `Question : ${question}\n\nDonnees disponibles (JSON) pour ${Object.keys(ctx).join(", ")} :\n${JSON.stringify(ctx)}`,
     }],
-    effort: SPECIALIST_EFFORT,
     maxTokens: 1200,
   });
   const text = (resp.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
