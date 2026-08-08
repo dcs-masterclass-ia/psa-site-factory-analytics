@@ -332,22 +332,26 @@ input[type=date]{color-scheme:dark}
     <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:2px 4px 0">
       <div><h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-1.2px;color:var(--text)">Vue d'ensemble</h1><div style="font-size:14px;color:#9aa0aa;margin-top:5px">GA4 · {{ periodPillLabel }}</div></div>
 
-      <div onClick="{{ openSitePicker }}" role="button" tabindex="0" style="position:relative;display:flex;align-items:center;gap:12px;background:#fff;border-radius:100px;padding:8px 20px 8px 9px;box-shadow:0 4px 20px rgba(17,17,26,.04);cursor:pointer;flex:none">
-        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none">{{ currentSiteInitials }}</div>
-        <div><div style="font-size:14px;font-weight:600;letter-spacing:-.2px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:11.5px;color:#9aa0aa;font-weight:400;white-space:nowrap">{{ currentSiteRank }}</div></div>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="flex:none"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.6" stroke-linecap="round"></path></svg>
+      <div style="position:relative;flex:none">
+        <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;letter-spacing:.2px;flex:none">{{ currentSiteInitials }}</div>
+          <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
+          <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+
         <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;top:56px;left:0;width:400px;z-index:60;background:#fff;border-radius:22px;padding:12px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;cursor:default" role="none">
-            <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:9px 14px;margin-bottom:6px;position:sticky;top:0;z-index:1">
+          <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
+          <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;cursor:default;animation:dropIn .18s ease both" role="none">
+            <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px;margin-bottom:8px;position:sticky;top:0;z-index:1">
               <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-              <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:13.5px;color:var(--text);font-weight:400">
+              <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
             </div>
-            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
             <sc-for list="{{ sitePickerRows }}" as="s" hint-placeholder-count="6">
-              <div onClick="{{ s.pick }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;cursor:pointer" style-hover="background:#f5f5f6">
+              <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
                 <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }};flex:none"></div>
-                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
-                <div style="font-size:12.5px;font-weight:600;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+                <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
               </div>
             </sc-for>
             <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
@@ -2867,8 +2871,8 @@ class Component extends DCLogic {
         tabFadeStyle: "margin-top:24px", tabIndicatorRef: () => {}, tabBarRef: () => {},
         togglePicker: () => {},
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
-        siteSearch: "", setSiteSearch: () => {}, openSitePicker: () => {}, sitePickerOpen: false,
-        sitePickerRows: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
+        siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
+        sitePickerChevronStyle: "", sitePickerRows: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
         currentSiteLabel: "Chargement…", currentSiteInitials: "··", currentSiteRank: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
         volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
@@ -2935,6 +2939,7 @@ class Component extends DCLogic {
       host: s.name,
       delta: s.delta == null ? "—" : (s.delta >= 0 ? "+" : "") + Math.round(s.delta) + " %",
       dot: s.delta == null ? "var(--muted2)" : s.delta >= 0 ? "var(--pos)" : "var(--neg)",
+      rowStyle: "display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;cursor:pointer" + (s.name === currentSite ? ";background:var(--soft)" : ""),
       pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "" }),
     }));
     const currentSiteIdx = currentSite ? ALL.indexOf(currentSite) : -1;
@@ -4161,7 +4166,9 @@ class Component extends DCLogic {
       openChatFilePicker: () => this._chatFileInputEl && this._chatFileInputEl.click(),
       logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
       siteSearch: st.siteSearch, setSiteSearch: e => this.setState({ siteSearch: e.target.value, pickerOpen: true }),
-      openSitePicker: () => this.setState({ pickerOpen: true }),
+      toggleSitePicker: () => this.setState(s => ({ pickerOpen: !s.pickerOpen, siteSearch: s.pickerOpen ? s.siteSearch : "" })),
+      closeSitePicker: () => this.setState({ pickerOpen: false }),
+      sitePickerChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.pickerOpen ? "180deg" : "0deg") + ")",
       sitePickerOpen: st.pickerOpen, sitePickerRows, sitePickerEmpty: sitePickerRows.length === 0,
       sitePickerHeading: search ? "Résultats" : "Tous les sites",
       currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials,
