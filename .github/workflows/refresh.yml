@@ -7,9 +7,11 @@ name: Rafraîchissement automatique des données
 # Un seul run couvre les trois sources : BO (leads via leads_extract.py),
 # GA4 (funnel, trafic, canaux) et GSC (search_console.py, insights.py).
 #
-# Les données ne sont écrites que si tous les contrôles bloquants passent.
-# data/pipeline.json est écrit dans tous les cas : c'est le canal d'alerte du
-# dashboard, un échec muet serait pire qu'un échec.
+# Écriture incrémentale, site par site (voir pipeline/build.py) : un site
+# n'est écrit/commité/poussé que si SES contrôles bloquants passent, et ça ne
+# concerne plus que lui — les autres sites du même run sont publiés
+# normalement. data/pipeline.json est écrit dans tous les cas : c'est le
+# canal d'alerte du dashboard, un échec muet serait pire qu'un échec.
 
 on:
   schedule:
@@ -90,59 +92,14 @@ jobs:
           # GITHUB_STEP_SUMMARY au fil de l'execution : rien a extraire ici,
           # et surtout rien a tronquer (un `tail` precedent avait coupe les
           # lignes de decouverte des hotes, les plus utiles a relire).
+          #
+          # Le commit/push n'est plus une etape separee ici : build.py
+          # committe et pousse lui-meme chaque site des qu'il est pret
+          # (identite "dcs-masterclass-ia", reconnue par Vercel — memes
+          # contraintes qu'avant, juste geree cote Python desormais). Voir
+          # _commit_et_pousse dans pipeline/build.py pour la logique de
+          # retry/conflit, portee depuis l'ancienne etape bash.
           python -m pipeline.build $ARGS
-
-      - name: Committer si quelque chose a changé
-        # comparaison en chaine explicite : inputs.simulation vient d'un choix
-        # textuel "oui"/"non", jamais d'un type boolean — GitHub Actions coerce
-        # mal les booleens dans les expressions if, ce qui a deja fait passer
-        # cette etape alors qu'elle aurait du etre ignoree en simulation.
-        if: ${{ inputs.simulation != 'oui' }}
-        run: |
-          # identite reconnue par Vercel, pas une identite bot cosmetique :
-          # changer le token de push (checkout) ne suffisait pas, Vercel
-          # bloquait encore parce que l'AUTEUR du commit ("pipeline",
-          # sans compte GitHub reel) restait non reconnu comme collaborateur,
-          # independamment de qui a authentifie le push.
-          git config user.name "dcs-masterclass-ia"
-          git config user.email "m.foureau@autobiz.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "Aucun changement, pas de commit."
-            exit 0
-          fi
-          STATUT=$(python -c "import json;print(json.load(open('data/pipeline.json'))['statut'])")
-          git commit -m "Rafraîchissement automatique — statut ${STATUT}" \
-                     -m "$(git diff --cached --stat | tail -1)"
-          # une autre exécution a pu committer entre-temps : un rebase qui
-          # echoue laisse le fichier avec des marqueurs de conflit dedans, et
-          # sans nettoyage la tentative suivante echoue a l'identique — abort
-          # avant chaque essai pour repartir d'un etat propre a chaque fois.
-          for i in 1 2 3; do
-            git rebase --abort 2>/dev/null || true
-            if git pull --rebase --autostash origin main; then
-              git push origin HEAD:main && exit 0
-            fi
-            # data/pipeline.json est entierement regenere a chaque run (pas
-            # une fusion ligne a ligne signifiante) : deux executions qui se
-            # chevauchent (ex. refresh.yml scope + refresh.yml complet,
-            # observe le 07/08/2026) finissent quasi toujours par se
-            # percuter dessus. Si c'est le SEUL fichier en conflit, garder
-            # notre version (la plus recente) et continuer plutot
-            # qu'abandonner tout le run pour ça.
-            CONFLITS=$(git diff --name-only --diff-filter=U)
-            if [ "$CONFLITS" = "data/pipeline.json" ]; then
-              git checkout --theirs data/pipeline.json
-              git add data/pipeline.json
-              if git rebase --continue && git push origin HEAD:main; then
-                exit 0
-              fi
-            fi
-            sleep 5
-          done
-          git rebase --abort 2>/dev/null || true
-          echo "::error::Impossible de pousser après 3 tentatives."
-          exit 1
 
       - name: Signaler un échec de contrôle
         if: ${{ always() && inputs.simulation != 'oui' }}
@@ -163,7 +120,7 @@ jobs:
               print(f'illisible:{type(e).__name__}')
           ")
           if [ "$STATUT" = "echec" ]; then
-            echo "::warning::Contrôle bloquant : les données de la veille ont été conservées. Le dashboard l'affiche."
+            echo "::warning::Contrôle bloquant sur au moins un site : ses données de la veille ont été conservées (détail dans etat.blocage). Les autres sites du run ont été publiés normalement — écriture incrémentale, ce n'est plus tout ou rien."
           elif [[ "$STATUT" == illisible:* ]]; then
             echo "::warning::pipeline.json illisible a cette etape (${STATUT#illisible:}) — probablement un push avorte juste avant. La donnee sur origin/main n'est pas forcement affectee, mais verifier le job manuellement."
           fi
