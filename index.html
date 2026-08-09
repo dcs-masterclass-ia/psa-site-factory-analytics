@@ -312,7 +312,7 @@ input[type=date]{color-scheme:dark}
 
       <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
-        <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;max-height:70vh;cursor:default;animation:dropIn .18s ease both" role="none">
+        <div style="position:absolute;top:60px;left:0;width:100%;min-width:340px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;max-height:70vh;cursor:default;animation:dropIn .18s ease both" role="none">
           <!-- barre de recherche hors de la zone de scroll (pas position:sticky) :
                sous le canevas mis a l'echelle via transform:scale (scaleCanvasRef),
                un sticky a l'interieur d'un overflow:auto peut se faire deborder
