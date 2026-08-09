@@ -108,12 +108,14 @@ def controle(nouveau, ancien=None, modele=None):
         # `canalQuotidien` (repartition par canal, jour par jour),
         # `searchMonth` (Search Console : clics/impressions/CTR/position,
         # top requetes et top pages), `insights` (signaux IA sur ces
-        # memes donnees Search Console) et `audienceMonth` (navigateur/
+        # memes donnees Search Console), `audienceMonth` (navigateur/
         # appareil-sessions/nouveaux vs recurrents, ajoute le 09/08/2026 --
         # meme piege que ci-dessus decouvert immediatement au premier run,
-        # les 64 sites ont bloque sur cette meme ligne avant ce correctif).
+        # les 64 sites ont bloque sur cette meme ligne avant ce correctif)
+        # et `funnelWeekly` (funnel hebdomadaire glissant, ajoute le
+        # 10/08/2026, meme reflexe applique tout de suite cette fois).
         # Toute AUTRE cle inattendue doit continuer de bloquer la publication.
-        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly", "audienceMonth"}
+        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly", "audienceMonth", "funnelWeekly"}
         # cles liees a la bascule V2 : les 5 premieres sont saisies a la main
         # pour les sites deja passes en V2 (date de bascule, etapes/canaux
         # releves manuellement) et jamais produites par le pipeline

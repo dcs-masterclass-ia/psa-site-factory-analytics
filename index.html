@@ -2705,9 +2705,27 @@ class Component extends DCLogic {
           for (const [n, v] of (d.leads[mois].brand || [])) if (String(n).toUpperCase() === own) out.ownBrand += v;
         }
       }
-      // funnel : tout mois qui chevauche la plage (donnee mensuelle, pas de resolution jour)
+      // funnel : prefere la resolution HEBDOMADAIRE (funnelWeekly, cadre
+      // precisement la periode choisie) pour les semaines couvertes ; ne
+      // retombe sur funnelMonth (mensuel, mois entier des qu'il chevauche
+      // la plage) que pour les mois totalement hors de cette fenetre
+      // glissante -- avant ce correctif du 10/08/2026, le funnel prenait
+      // toujours le(s) mois entier(s), avec un ecart jusqu'a ~30 jours par
+      // rapport aux sessions (precises au jour), visible et trompeur.
+      // Un mois est marque "couvert" des qu'une semaine reelle le touche
+      // (meme partiellement, une semaine peut chevaucher deux mois) pour
+      // ne jamais compter deux fois les memes jours.
+      const semainesUtiles = Object.values(d.funnelWeekly || {}).filter(w => w.fin >= debut && w.debut <= fin);
+      const moisCouvertsParSemaine = new Set();
+      for (const w of semainesUtiles) {
+        if (!out.funnelSteps) out.funnelSteps = w.steps.map(x => ({ step: x.step, users: 0 }));
+        w.steps.forEach((x, i) => { if (out.funnelSteps[i]) out.funnelSteps[i].users += x.users; });
+        out.funnelDays += w.jours || 7;
+        moisCouvertsParSemaine.add(w.debut.slice(0, 7));
+        moisCouvertsParSemaine.add(w.fin.slice(0, 7));
+      }
       for (const mois of Object.keys(d.funnelMonth || {})) {
-        if (mois === "total") continue;
+        if (mois === "total" || moisCouvertsParSemaine.has(mois)) continue;
         const joursMois = d.daily.d.filter(x => x.slice(0, 7) === mois);
         if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
           const fm = d.funnelMonth[mois];
