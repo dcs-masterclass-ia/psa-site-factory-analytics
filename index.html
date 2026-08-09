@@ -961,14 +961,40 @@ input[type=date]{color-scheme:dark}
           </sc-if>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:18px;border-left:1px solid #f0f0f2;border-right:1px solid #f0f0f2;padding:0 26px;align-items:flex-start;justify-content:center">
+        <div style="display:flex;flex-direction:column;gap:14px;border-left:1px solid #f0f0f2;border-right:1px solid #f0f0f2;padding:0 26px;align-items:flex-start;justify-content:center">
           <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Navigateur</div>
-          <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.55">Donnée non disponible — aucune répartition par navigateur n'est remontée par le pipeline actuel.</div>
+          <sc-if value="{{ hasBrowserRows }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:9px;width:100%">
+              <sc-for list="{{ browserRows }}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;flex-direction:column;gap:4px;width:100%">
+                  <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:500;color:var(--text)"><span>{{ b.name }}</span><span style="color:#9aa0aa">{{ b.share }}</span></div>
+                  <div style="{{ b.barTrackStyle }}"><div style="{{ b.barStyle }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noBrowserRows }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.55">Donnée non disponible sur cette période — sera comblée au prochain passage du pipeline sur ce site.</div>
+          </sc-if>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:18px;align-items:flex-start;justify-content:center">
+        <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;justify-content:center;width:100%">
           <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Nouveaux vs récurrents</div>
-          <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.55">Donnée non disponible — le pipeline ne distingue pas encore les visiteurs récurrents.</div>
+          <sc-if value="{{ hasNvrRows }}" hint-placeholder-val="{{ false }}">
+            <div style="width:100%">
+              <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;width:100%">
+                <div style="{{ nvrNewStyle }}"></div>
+                <div style="{{ nvrReturningStyle }}"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;gap:10px">
+                <div><div style="font-size:19px;font-weight:600;letter-spacing:-.4px;color:var(--text)">{{ nvrNewPct }} %</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">Nouveaux</div></div>
+                <div style="text-align:right"><div style="font-size:19px;font-weight:600;letter-spacing:-.4px;color:var(--text)">{{ nvrReturningPct }} %</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">Récurrents</div></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noNvrRows }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.55">Donnée non disponible sur cette période — sera comblée au prochain passage du pipeline sur ce site.</div>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -2616,6 +2642,11 @@ class Component extends DCLogic {
       funnelSteps: null, funnelDays: 0, canal: {}, trafficDaily: {}, gscClics: 0, gscImpr: 0, gscCtrSum: 0, gscPosSum: 0, gscN: 0,
       gscDaily: {}, gscImprDaily: {}, gscMonthly: {}, queries: new Map(), pages: new Map(), insightsAcq: [], insightsRech: [], ownBrand: 0,
       v2Steps: null, v2SiteCount: 0, v2PreLabel: null, v2PostLabel: null,
+      // sessions/utilisateurs reels par navigateur et nouveaux/recurrents
+      // (agg.device existe deja mais compte les LEADS par appareil, pas les
+      // sessions -- audienceDevice est le pendant "audience" de ce meme
+      // navigateur/newVsReturning, ajoute au pipeline le 09/08/2026).
+      audienceDevice: new Map(), browser: new Map(), newVsReturning: new Map(),
     };
     for (const s of this.state.sites) {
       const d = this.data[s];
@@ -2712,6 +2743,27 @@ class Component extends DCLogic {
             out.pages.set(k, cur);
           }
         }
+      }
+      // audience (navigateur / appareil-sessions / nouveaux vs recurrents) :
+      // tout mois qui chevauche la plage, meme principe que search console
+      // ci-dessus (donnee mensuelle, pas de resolution jour). Absent des
+      // mois anciens tant que le pipeline ne les a pas retraites depuis
+      // l'ajout du 09/08/2026 -- gere cote affichage (hasBrowserRows etc.),
+      // jamais un "0" invente ici.
+      for (const mois of Object.keys(d.audienceMonth || {})) {
+        const joursMois = d.daily.d.filter(x => x.slice(0, 7) === mois);
+        if (!joursMois.length || joursMois[0] > fin || joursMois[joursMois.length - 1] < debut) continue;
+        const am = d.audienceMonth[mois];
+        const cumule = (map, src) => {
+          for (const [k, v] of Object.entries(src || {})) {
+            const cur = map.get(k) || { sessions: 0, users: 0 };
+            cur.sessions += v.sessions || 0; cur.users += v.users || 0;
+            map.set(k, cur);
+          }
+        };
+        cumule(out.audienceDevice, am.device);
+        cumule(out.browser, am.browser);
+        cumule(out.newVsReturning, am.newVsReturning);
       }
       // insights IA reels, deja calcules cote pipeline — prefixes du site si plusieurs selectionnes
       // compatibilite : ancien format = tableau plat (SEO uniquement) ; nouveau format = objet par rapport
@@ -3353,6 +3405,8 @@ class Component extends DCLogic {
         donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0", donutChips: [],
         sourceRows: [], hasSourceRows: false, sourceInsight: "", deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
         mobilePctLabel: "0 %", audienceTotalLabel: "", audienceInsight: "", hasAudienceInsight: false,
+        browserRows: [], hasBrowserRows: false, noBrowserRows: true,
+        hasNvrRows: false, noNvrRows: true, nvrNewPct: "0", nvrReturningPct: "0", nvrNewStyle: "", nvrReturningStyle: "",
         kamiaHeadline: "", kamiaRows: [], hasKamiaRows: false,
         kamiaStatusLabel: "", kamiaConstatCount: 0, kamiaChips: [], openChatBlank: () => {},
         periodPillLabel: "", sparkAxisLeft: "", sparkAxisRight: "",
@@ -4046,6 +4100,36 @@ class Component extends DCLogic {
       ? mobileRow.pct + " de mobile pour un PageSpeed mobile de " + pagespeedMobileScore + (pagespeedMobileScore < 60 ? " : friction la plus rentable à traiter." : ".")
       : "";
     const hasAudienceInsight = !!audienceInsight;
+
+    // Navigateur + Nouveaux vs recurrents : reels depuis le 09/08/2026
+    // (pipeline/build.py, dimension GA4 browser/newVsReturning, source
+    // verifiee dans Looker Studio avant l'ajout) -- restent honnetement
+    // "donnee non disponible" pour les sites/periodes pas encore retraites
+    // par le pipeline depuis l'ajout (fenetre glissante, meme logique que
+    // canalQuotidien/searchMonth), jamais un chiffre invente en attendant.
+    const browserListRaw = [...agg.browser.entries()].sort((a, b) => b[1].sessions - a[1].sessions);
+    const totalBrowserSessions = browserListRaw.reduce((s, [, v]) => s + v.sessions, 0) || 1;
+    const BROWSER_COLORS = ["#3b5ae0", "#7d99ff", "#a8c0ff", "#c8a2ff", "#f59e0b", "#9aa0aa"];
+    const browserRows = browserListRaw.slice(0, 5).map(([name, v], i) => {
+      const share = dec(v.sessions / totalBrowserSessions * 100, 0);
+      return {
+        name, share: share + " %",
+        barTrackStyle: "height:6px;border-radius:4px;background:#f2f3f5;overflow:hidden",
+        barStyle: "height:100%;border-radius:4px;background:" + (BROWSER_COLORS[i] || "#9aa0aa") + ";width:" + Math.max(2, share) + "%",
+      };
+    });
+    const hasBrowserRows = browserRows.length > 0;
+    const noBrowserRows = !hasBrowserRows;
+
+    const nvrTotal = [...agg.newVsReturning.values()].reduce((s, v) => s + v.sessions, 0) || 1;
+    const nvrNew = agg.newVsReturning.get("new");
+    const nvrReturning = agg.newVsReturning.get("returning");
+    const hasNvrRows = !!(nvrNew || nvrReturning);
+    const noNvrRows = !hasNvrRows;
+    const nvrNewPct = nvrNew ? dec(nvrNew.sessions / nvrTotal * 100, 0) : "0";
+    const nvrReturningPct = nvrReturning ? dec(nvrReturning.sessions / nvrTotal * 100, 0) : "0";
+    const nvrNewStyle = "width:" + nvrNewPct + "%;background:#3b5ae0";
+    const nvrReturningStyle = "width:" + nvrReturningPct + "%;background:#e2e6ee";
 
     // ---------------------------- rapport hebdomadaire V2 (onglet dedie) ----------------------------
     // independant de la periode choisie dans l'interface : chaque site a sa
@@ -4896,6 +4980,8 @@ class Component extends DCLogic {
       donutRows, hasDonut, donutGradient, donutTotalLabel, donutChips,
       sourceRows, hasSourceRows, sourceInsight, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
       mobilePctLabel, audienceTotalLabel, audienceInsight, hasAudienceInsight,
+      browserRows, hasBrowserRows, noBrowserRows,
+      hasNvrRows, noNvrRows, nvrNewPct, nvrReturningPct, nvrNewStyle, nvrReturningStyle,
       v2PreConvLabel: dec(v2PreConv, 0) + " %", v2PostConvLabel: dec(v2PostConv, 0) + " %",
       v2WorstStepLabel, v2WorstStepValue, v2EndGainLabel, v2EndGainValue: (v2EndGain >= 0 ? "+" : "") + dec(v2EndGain, 0) + " pts",
       v2Insight, hasV2Insight: !!v2Insight, v2TipInsight, hasV2Tip,

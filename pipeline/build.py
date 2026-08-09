@@ -154,6 +154,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("repriseMonth", {})
     d.setdefault("funnelMonth", {})
     d.setdefault("searchMonth", {})
+    d.setdefault("audienceMonth", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
@@ -257,17 +258,36 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             except Exception as e:
                 journal.append(f"{mois} : recherche en erreur ({type(e).__name__})")
 
-        # profils pour la detection, par jour
+        # profils pour la detection, par jour -- meme requete etendue avec
+        # newVsReturning + totalUsers pour alimenter aussi "Audience &
+        # environnement" cote dashboard (navigateur, nouveaux vs recurrents),
+        # jusque-la marques "donnee non disponible" faute de remontee
+        # pipeline. Demande le 09/08/2026 : source verifiee dans Looker
+        # Studio (connecteur GA4 natif, memes dimensions/metrique
+        # _totalUsers_) avant d'ajouter quoi que ce soit ici. Un seul appel
+        # API pour les deux usages plutot qu'une requete separee -- prof_jour/
+        # prof_mois gardent exactement la meme forme (cle (pays,nav,app) ->
+        # sessions) qu'avant pour ne rien casser dans detect.py, qui ne
+        # connait pas newVsReturning/totalUsers.
         brut = ga4._rapport(
             cli, s.propriete, deb, f_iso,
-            ["date", "countryId", "browser", "deviceCategory"], ["sessions"],
+            ["date", "countryId", "browser", "deviceCategory", "newVsReturning"],
+            ["sessions", "totalUsers"],
             ga4._egal("hostName", hote_reprise))
         prof_jour, prof_mois = {}, {}
-        for date, pays, nav, app, n in brut:
-            n = int(n)
+        audience_device, audience_navigateur, audience_retour = {}, {}, {}
+        for date, pays, nav, app, retour, n, u in brut:
+            n, u = int(n), int(u)
             prof_jour.setdefault(date, {})[(pays, nav, app)] = \
                 prof_jour.setdefault(date, {}).get((pays, nav, app), 0) + n
             prof_mois[(pays, nav, app)] = prof_mois.get((pays, nav, app), 0) + n
+            for acc, cle in ((audience_device, app), (audience_navigateur, nav), (audience_retour, retour)):
+                e = acc.setdefault(cle or "(non défini)", {"sessions": 0, "users": 0})
+                e["sessions"] += n
+                e["users"] += u
+        d["audienceMonth"][mois] = {
+            "device": audience_device, "browser": audience_navigateur, "newVsReturning": audience_retour,
+        }
 
         an, m = int(mois[:4]), int(mois[5:7])
         chunk = {"d": [], "u": [], "rep": [], "sc": [], "si": []}
