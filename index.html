@@ -6,6 +6,11 @@
 <title>Converge — Reprise</title>
 <link rel="icon" type="image/png" href="./favicon.png">
 <script src="./support.js"></script>
+<!-- export PDF/PPT (rapport client, onglet GA4) : librairies client-side,
+     chargees en differe (defer) pour ne pas retarder le premier rendu --
+     seulement utilisees au clic sur les boutons d'export. -->
+<script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
 <body>
 
@@ -419,7 +424,30 @@ input[type=date]{color-scheme:dark}
 
       <div style="flex:1"></div>
 
-      <span onClick="{{ exportGa4Csv }}" role="button" tabindex="0" style="background:#fff;color:#4b5563;font-size:13px;font-weight:500;border-radius:100px;padding:9px 17px;box-shadow:0 4px 20px rgba(17,17,26,.04);cursor:pointer;white-space:nowrap">Exporter</span>
+      <div style="position:relative;flex:none">
+        <button onClick="{{ toggleExportMenu }}" aria-expanded="{{ exportMenuOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:8px;background:#fff;color:#4b5563;font-size:13px;font-weight:500;border:none;border-radius:100px;padding:9px 17px;box-shadow:0 4px 20px rgba(17,17,26,.04);cursor:pointer;font-family:inherit;white-space:nowrap">
+          Exporter
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+        </button>
+
+        <sc-if value="{{ exportMenuOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeExportMenu }}"></div>
+          <div style="position:absolute;top:44px;right:0;width:280px;z-index:61;background:#fff;border-radius:18px;padding:8px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;cursor:default;animation:dropIn .18s ease both" role="none">
+            <div onClick="{{ exportGa4Csv }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+              <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:#4b5563"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+              <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export CSV</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Données détaillées, toutes les sections</div></div>
+            </div>
+            <div onClick="{{ exportGa4Pdf }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+              <span style="width:34px;height:34px;border-radius:10px;background:rgba(244,72,92,.12);display:flex;align-items:center;justify-content:center;flex:none;color:var(--neg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+              <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PDF</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Rapport prêt à envoyer au client</div></div>
+            </div>
+            <div onClick="{{ exportGa4Ppt }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+              <span style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.14);display:flex;align-items:center;justify-content:center;flex:none;color:#b45309"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+              <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PowerPoint</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Diaporama modifiable pour le client</div></div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr 1.34fr 1.06fr;gap:22px;margin-top:22px">
@@ -2296,6 +2324,7 @@ class Component extends DCLogic {
     pickerOpen: false,   // ouverture du selecteur de site (barre de recherche/profil, en-tete)
     siteSearch: "",      // texte tape dans la barre de recherche du selecteur de site
     periodPickerOpen: false, // ouverture du selecteur de periode/date (en-tete)
+    exportMenuOpen: false,   // ouverture du menu Exporter (CSV/PDF/PPT, onglet GA4)
     sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
     dim: "brand",
     booted: false,
@@ -2923,21 +2952,317 @@ class Component extends DCLogic {
     URL.revokeObjectURL(url);
   }
 
-  exportGa4Csv() {
-    const row = this._ga4ExportRow;
-    if (!row) return;
-    const header = ["Site", "Période", "Sessions parent", "Sessions reprise", "Leads", "Leads BO / sessions reprise %"];
-    const esc = v => { if (v == null) return ""; const s = String(v); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-    const csv = "﻿" + [header.join(";"), [row.site, row.periode, row.parent, row.reprise, row.leads, row.conv].map(esc).join(";")].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  /* declenche le telechargement d'un Blob deja construit -- factorise le
+     boilerplate <a>/click/revoke repete par les 3 formats d'export
+     (exportV2Csv l'a en dur plus haut, garde tel quel pour ne pas toucher
+     a du code qui marche). */
+  _downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "vue-ensemble-" + (row.site || "site").toLowerCase().replace(/\s+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  _ga4ReportFilename(ext) {
+    const r = this._ga4Report;
+    const site = r ? r.site.toLowerCase().replace(/\s+/g, "-") : "site";
+    return "rapport-ga4-" + site + "-" + new Date().toISOString().slice(0, 10) + "." + ext;
+  }
+
+  exportGa4Csv() {
+    const r = this._ga4Report;
+    if (!r) return;
+    const esc = v => { if (v == null) return ""; const s = String(v); return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+    const section = (title, header, rows) => {
+      const out = [title];
+      if (header) out.push(header.map(esc).join(";"));
+      for (const row of rows) out.push(row.map(esc).join(";"));
+      out.push("");
+      return out;
+    };
+    let lignes = [
+      "Rapport GA4 — " + r.site + " (" + r.brand + ", " + r.country + ")",
+      "Période : " + r.period + " (" + r.periodRange + ")",
+      "Généré le " + r.generatedLabel,
+      "",
+    ];
+    lignes = lignes.concat(section("KPI", ["Indicateur", "Valeur", "Évolution vs période précédente", "Note"],
+      r.kpis.map(k => [k.label, k.value, k.delta || "", k.note || ""])));
+    lignes = lignes.concat(section("Tunnel de conversion", ["Étape", "Utilisateurs", "% de la 1ère étape"],
+      r.funnel.map(f => [f.name, f.value, f.pct])));
+    if (r.funnelInsight) lignes = lignes.concat(section("Constat tunnel", null, [[r.funnelInsight]]));
+    lignes = lignes.concat(section("Leads par marque", ["Marque", "Leads", "Part"],
+      r.leadsByBrand.map(b => [b.name, b.value, b.pct])));
+    lignes = lignes.concat(section("Sources (sessions)", ["Canal", "Sessions", "Part"],
+      r.channels.map(c => [c.name, c.sessions, c.share])));
+    if (r.channelInsight) lignes = lignes.concat(section("Constat sources", null, [[r.channelInsight]]));
+    lignes = lignes.concat(section("Tendance mensuelle (12 derniers mois)", ["Mois", "Sessions reprise", "Taux de conversion"],
+      r.volumeTrend.map(v => [v.label, v.sessions, v.conv])));
+    lignes = lignes.concat(section("Leads par projet d'achat", ["Projet", "Leads", "Part"],
+      r.projects.map(p => [p.name, p.value, p.pct])));
+    lignes = lignes.concat(section("Synthèse KamIA", null, [[r.insight]]));
+    const csv = "﻿" + lignes.join("\n");
+    this._downloadBlob(new Blob([csv], { type: "text/csv;charset=utf-8;" }), this._ga4ReportFilename("csv"));
+  }
+
+  /* rapport client PDF (onglet GA4) : memes donnees que exportGa4Csv
+     (this._ga4Report), mise en page a la main avec les primitives jsPDF
+     (rect/line/text) plutot qu'une capture d'ecran (html2canvas) -- les
+     logos de marque sont sur un bucket S3 sans en-tete CORS (verifie le
+     09/08/2026), donc pas embarquables de facon fiable dans un PDF genere
+     cote client ; l'identite visuelle passe par la couleur d'accent et le
+     drapeau (emoji Unicode, jamais une image) plutot que par le logo. */
+  exportGa4Pdf() {
+    const r = this._ga4Report;
+    if (!r || !window.jspdf) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const PAGE_W = 210, PAGE_H = 297, MARGIN = 16, CONTENT_W = PAGE_W - MARGIN * 2;
+    const INK = [20, 22, 26], MUTED = [107, 114, 128], MUTED2 = [154, 160, 170], LINE = [230, 232, 238];
+    const ACCENT = [59, 90, 224], POS = [18, 185, 129], NEG = [244, 72, 92], SOFT = [246, 247, 249];
+    let y = 0;
+
+    // les polices standard de jsPDF (helvetica/times/courier) ne couvrent
+    // que le sous-ensemble WinAnsi/Latin-1 -- l'espace insecable de
+    // Intl.NumberFormat("fr-FR") (U+202F/U+00A0, "308 677") et les fleches
+    // Unicode de deltaBadge (↑/↓) sortent de ce sous-ensemble et se
+    // rendent en caracteres corrompus ("308/677", "!\"` 6,7 %"), constate
+    // le 09/08/2026 sur le premier essai. On assainit tout texte avant de
+    // l'envoyer a jsPDF plutot que de changer fmt()/deltaBadge (partages
+    // avec l'ecran et le CSV, ou ces caracteres s'affichent tres bien).
+    const pdfText = v => String(v == null ? "" : v)
+      .replace(/[  ]/g, " ")
+      .replace(/↑\s*/g, "+").replace(/↓\s*/g, "-");
+
+    const checkPageBreak = need => {
+      if (y + need > PAGE_H - MARGIN) { doc.addPage(); y = MARGIN; }
+    };
+    const header = () => {
+      doc.setFillColor(...INK);
+      doc.rect(0, 0, PAGE_W, 34, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+      doc.text(pdfText(r.site), MARGIN, 15);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5);
+      doc.text(pdfText(r.brand + " · " + r.country + "  —  Période : " + r.period), MARGIN, 23);
+      doc.setFontSize(8.5); doc.setTextColor(200, 203, 210);
+      doc.text(pdfText("Rapport de performance digitale · généré le " + r.generatedLabel), MARGIN, 29.5);
+      doc.setTextColor(...INK);
+      y = 44;
+    };
+    const sectionTitle = title => {
+      checkPageBreak(12);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(12.5); doc.setTextColor(...INK);
+      doc.text(title, MARGIN, y);
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+      doc.line(MARGIN, y + 2.4, PAGE_W - MARGIN, y + 2.4);
+      y += 9;
+    };
+    const insightBox = text => {
+      if (!text) return;
+      const lines = doc.setFont("helvetica", "normal").setFontSize(9.5).splitTextToSize(pdfText(text), CONTENT_W - 10);
+      const h = lines.length * 4.6 + 8;
+      checkPageBreak(h + 4);
+      doc.setFillColor(...SOFT);
+      doc.roundedRect(MARGIN, y, CONTENT_W, h, 2, 2, "F");
+      doc.setTextColor(63, 70, 83);
+      doc.text(lines, MARGIN + 5, y + 6.5);
+      doc.setTextColor(...INK);
+      y += h + 7;
+    };
+    const table = (rows, widths, align) => {
+      checkPageBreak(rows.length * 6.2 + 4);
+      doc.setFontSize(9.5);
+      for (let i = 0; i < rows.length; i++) {
+        const isHead = i === 0;
+        if (isHead) { doc.setFont("helvetica", "bold"); doc.setTextColor(...MUTED); }
+        else { doc.setFont("helvetica", "normal"); doc.setTextColor(...INK); }
+        let x = MARGIN;
+        rows[i].forEach((cell, ci) => {
+          const a = (align && align[ci]) || "left";
+          doc.text(pdfText(cell), a === "right" ? x + widths[ci] : x, y, { align: a === "right" ? "right" : "left" });
+          x += widths[ci];
+        });
+        y += isHead ? 5.6 : 6.2;
+        if (isHead) { doc.setDrawColor(...LINE); doc.line(MARGIN, y - 3.6, PAGE_W - MARGIN, y - 3.6); }
+      }
+      doc.setTextColor(...INK);
+      y += 5;
+    };
+
+    header();
+
+    // KPI : 4 cartes en ligne
+    sectionTitle("Indicateurs clés");
+    const kpiW = (CONTENT_W - 3 * 4) / 4;
+    checkPageBreak(28);
+    r.kpis.forEach((k, i) => {
+      const x = MARGIN + i * (kpiW + 4);
+      doc.setFillColor(...SOFT);
+      doc.roundedRect(x, y, kpiW, 24, 2, 2, "F");
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED);
+      doc.text(pdfText(k.label), x + 4, y + 6.5);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(13.5); doc.setTextColor(...INK);
+      doc.text(pdfText(k.value), x + 4, y + 14.5);
+      if (k.delta) {
+        const good = k.delta.indexOf("↑") === 0;
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...(good ? POS : NEG));
+        doc.text(pdfText(k.delta), x + 4, y + 20.5);
+      } else if (k.note) {
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED2);
+        doc.text(pdfText(k.note), x + 4, y + 20.5);
+      }
+    });
+    doc.setTextColor(...INK);
+    y += 32;
+
+    // Tunnel de conversion : barres horizontales
+    sectionTitle("Tunnel de conversion");
+    checkPageBreak(r.funnel.length * 8 + 4);
+    const barMaxW = CONTENT_W - 62;
+    r.funnel.forEach(f => {
+      const pct = parseFloat(f.pct) || 0;
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(...INK);
+      doc.text(pdfText(f.name), MARGIN, y + 4.2);
+      doc.setFillColor(...SOFT);
+      doc.roundedRect(MARGIN + 40, y, barMaxW, 6, 1.5, 1.5, "F");
+      doc.setFillColor(...ACCENT);
+      doc.roundedRect(MARGIN + 40, y, Math.max(2, barMaxW * pct / 100), 6, 1.5, 1.5, "F");
+      doc.setFontSize(8); doc.setTextColor(...MUTED);
+      doc.text(pdfText(f.value + "  (" + f.pct + ")"), MARGIN + 40 + barMaxW + 2, y + 4.4);
+      y += 8.4;
+    });
+    doc.setTextColor(...INK);
+    y += 3;
+    insightBox(r.funnelInsight);
+
+    // Leads par marque
+    sectionTitle("Leads par marque");
+    table([["Marque", "Leads", "Part"]].concat(r.leadsByBrand.map(b => [b.name, b.value, b.pct])),
+      [CONTENT_W - 60, 30, 30], ["left", "right", "right"]);
+
+    // Sources
+    sectionTitle("Sources de trafic");
+    table([["Canal", "Sessions", "Part"]].concat(r.channels.map(c => [c.name, c.sessions, c.share])),
+      [CONTENT_W - 60, 30, 30], ["left", "right", "right"]);
+    insightBox(r.channelInsight);
+
+    // Leads par projet d'achat
+    sectionTitle("Leads par projet d'achat");
+    table([["Projet", "Leads", "Part"]].concat(r.projects.map(p => [p.name, p.value, p.pct])),
+      [CONTENT_W - 60, 30, 30], ["left", "right", "right"]);
+
+    // Tendance mensuelle
+    doc.addPage(); y = MARGIN;
+    sectionTitle("Tendance mensuelle (12 derniers mois)");
+    table([["Mois", "Sessions reprise", "Conversion"]].concat(r.volumeTrend.map(v => [v.label, v.sessions, v.conv])),
+      [CONTENT_W - 60, 30, 30], ["left", "right", "right"]);
+
+    // Synthese KamIA
+    sectionTitle("Synthèse");
+    insightBox(r.insight);
+
+    doc.save(this._ga4ReportFilename("pdf"));
+  }
+
+  /* rapport client PPT (onglet GA4) : memes donnees que exportGa4Csv/Pdf
+     (this._ga4Report). Tables natives pptxgenjs plutot que des images --
+     le KAM peut retoucher le texte/les chiffres dans PowerPoint avant
+     envoi au concessionnaire, pas juste coller une capture d'ecran. */
+  async exportGa4Ppt() {
+    const r = this._ga4Report;
+    if (!r || !window.PptxGenJS) return;
+    const pptx = new window.PptxGenJS();
+    pptx.layout = "LAYOUT_16x9";
+    const INK = "14161A", MUTED = "6B7280", ACCENT = "3B5AE0", POS = "12B981", NEG = "F4485C", SOFT = "F6F7F9", WHITE = "FFFFFF";
+    const FONT = "Arial";
+
+    const tableSlide = (title, rows, colW, insight) => {
+      const slide = pptx.addSlide();
+      slide.background = { color: WHITE };
+      slide.addText(title, { x: 0.4, y: 0.3, w: 9.2, h: 0.5, fontFace: FONT, fontSize: 20, bold: true, color: INK });
+      slide.addTable(rows, {
+        x: 0.4, y: 1.0, w: 9.2, colW,
+        fontFace: FONT, fontSize: 11, color: INK, border: { type: "solid", color: "E6E8EE", pt: 0.5 },
+        fill: { color: WHITE },
+      });
+      if (insight) {
+        const ty = 1.0 + Math.min(rows.length, 12) * 0.32 + 0.35;
+        slide.addShape(pptx.ShapeType.roundRect, { x: 0.4, y: ty, w: 9.2, h: 0.7, fill: { color: SOFT }, line: { type: "none" }, rectRadius: 0.06 });
+        slide.addText(insight, { x: 0.65, y: ty, w: 8.7, h: 0.7, fontFace: FONT, fontSize: 10.5, color: "3F4653", valign: "middle" });
+      }
+      return slide;
+    };
+    const headRow = cells => cells.map(c => ({ text: c, options: { bold: true, color: MUTED, fontSize: 10, fill: { color: SOFT } } }));
+
+    // slide 1 : couverture
+    const s1 = pptx.addSlide();
+    s1.background = { color: INK };
+    s1.addText(r.site, { x: 0.6, y: 1.7, w: 9, h: 0.9, fontFace: FONT, fontSize: 32, bold: true, color: WHITE });
+    s1.addText(r.brand + " · " + r.country + "  —  " + r.period, { x: 0.6, y: 2.55, w: 9, h: 0.5, fontFace: FONT, fontSize: 15, color: "C7CAD3" });
+    s1.addText("Rapport de performance digitale", { x: 0.6, y: 3.9, w: 9, h: 0.4, fontFace: FONT, fontSize: 12, color: "8B93A3" });
+    s1.addText("Généré le " + r.generatedLabel, { x: 0.6, y: 4.3, w: 9, h: 0.4, fontFace: FONT, fontSize: 10.5, color: "6B7280" });
+
+    // slide 2 : KPI
+    const s2 = pptx.addSlide();
+    s2.background = { color: WHITE };
+    s2.addText("Indicateurs clés", { x: 0.4, y: 0.3, w: 9.2, h: 0.5, fontFace: FONT, fontSize: 20, bold: true, color: INK });
+    const kpiW = 2.15, kpiGap = 0.15;
+    r.kpis.forEach((k, i) => {
+      const x = 0.4 + i * (kpiW + kpiGap);
+      s2.addShape(pptx.ShapeType.roundRect, { x, y: 1.1, w: kpiW, h: 1.7, fill: { color: SOFT }, line: { type: "none" }, rectRadius: 0.06 });
+      s2.addText(k.label, { x: x + 0.15, y: 1.25, w: kpiW - 0.3, h: 0.4, fontFace: FONT, fontSize: 9.5, color: MUTED });
+      s2.addText(k.value, { x: x + 0.15, y: 1.6, w: kpiW - 0.3, h: 0.5, fontFace: FONT, fontSize: 17, bold: true, color: INK });
+      if (k.delta) {
+        const good = k.delta.indexOf("↑") === 0;
+        s2.addText(k.delta, { x: x + 0.15, y: 2.15, w: kpiW - 0.3, h: 0.4, fontFace: FONT, fontSize: 10, color: good ? POS : NEG });
+      } else if (k.note) {
+        s2.addText(k.note, { x: x + 0.15, y: 2.15, w: kpiW - 0.3, h: 0.4, fontFace: FONT, fontSize: 8.5, color: "9AA0AA" });
+      }
+    });
+    // tunnel en barres (shapes) sous les KPI
+    s2.addText("Tunnel de conversion", { x: 0.4, y: 3.05, w: 9.2, h: 0.4, fontFace: FONT, fontSize: 13, bold: true, color: INK });
+    const barX = 2.2, barMaxW = 6.9;
+    r.funnel.forEach((f, i) => {
+      const yy = 3.55 + i * 0.34;
+      const pct = Math.max(0.02, (parseFloat(f.pct) || 0) / 100);
+      s2.addText(f.name, { x: 0.4, y: yy, w: 1.7, h: 0.3, fontFace: FONT, fontSize: 9, color: INK });
+      s2.addShape(pptx.ShapeType.roundRect, { x: barX, y: yy + 0.02, w: barMaxW, h: 0.22, fill: { color: SOFT }, line: { type: "none" }, rectRadius: 0.03 });
+      s2.addShape(pptx.ShapeType.roundRect, { x: barX, y: yy + 0.02, w: barMaxW * pct, h: 0.22, fill: { color: ACCENT }, line: { type: "none" }, rectRadius: 0.03 });
+      s2.addText(f.value + " (" + f.pct + ")", { x: barX + barMaxW + 0.1, y: yy, w: 1.5, h: 0.3, fontFace: FONT, fontSize: 8.5, color: MUTED });
+    });
+
+    // slide 3 : leads par marque
+    tableSlide("Leads par marque",
+      [headRow(["Marque", "Leads", "Part"])].concat(r.leadsByBrand.map(b => [b.name, b.value, b.pct])),
+      [5.2, 2.0, 2.0]);
+
+    // slide 4 : sources
+    tableSlide("Sources de trafic",
+      [headRow(["Canal", "Sessions", "Part"])].concat(r.channels.map(c => [c.name, c.sessions, c.share])),
+      [5.2, 2.0, 2.0], r.channelInsight);
+
+    // slide 5 : leads par projet
+    tableSlide("Leads par projet d'achat",
+      [headRow(["Projet", "Leads", "Part"])].concat(r.projects.map(p => [p.name, p.value, p.pct])),
+      [5.2, 2.0, 2.0]);
+
+    // slide 6 : tendance mensuelle
+    tableSlide("Tendance mensuelle (12 derniers mois)",
+      [headRow(["Mois", "Sessions reprise", "Conversion"])].concat(r.volumeTrend.map(v => [v.label, v.sessions, v.conv])),
+      [4.0, 2.6, 2.6]);
+
+    // slide 7 : synthese
+    const s7 = pptx.addSlide();
+    s7.background = { color: INK };
+    s7.addText("Synthèse", { x: 0.6, y: 0.6, w: 9, h: 0.5, fontFace: FONT, fontSize: 14, color: "8B93A3" });
+    s7.addText(r.insight, { x: 0.6, y: 1.3, w: 8.8, h: 3, fontFace: FONT, fontSize: 18, color: WHITE, valign: "top" });
+
+    await pptx.writeFile({ fileName: this._ga4ReportFilename("pptx") });
   }
 
   /* declenche le pipeline via /api/refresh (le jeton GitHub reste cote
@@ -3038,7 +3363,9 @@ class Component extends DCLogic {
         kpiConvRef: () => {}, kpiConvDelta: { style: "", text: "" },
         convRankLabel: "", convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
         convFillPctStyle: "", hasConvMedianMarker: false, convMedianMarkerStyle: "",
-        kpiDeviceRows: [], hasKpiDeviceRows: false, v2DateLabel: "", exportGa4Csv: () => {},
+        kpiDeviceRows: [], hasKpiDeviceRows: false, v2DateLabel: "",
+        exportMenuOpen: false, toggleExportMenu: () => {}, closeExportMenu: () => {},
+        exportGa4Csv: () => {}, exportGa4Pdf: () => {}, exportGa4Ppt: () => {},
         ga4Insights: [], hasGa4Insights: false, noGa4Insights: false, hasGsc: false, noGsc: false,
         gscAxisLabels: [],
         hasMirror: false, mirrorTotalsLabel: "", chartHover: null, hasChartHover: false, hoverChannelMove: () => {}, hoverChannelLeave: () => {},
@@ -3364,11 +3691,6 @@ class Component extends DCLogic {
       if (existing) existing.v += v; else acc.push({ name: label, v });
       return acc;
     }, []).sort((a, b) => b.v - a.v).slice(0, 2).map(r => ({ name: r.name, pct: dec(r.v / deviceTotalKpi * 100, 0) + " %" }));
-
-    this._ga4ExportRow = {
-      site: currentSite || "", periode: periodPillLabel,
-      parent: agg.traffic, reprise: agg.reprise, leads: agg.leads, conv: dec(convPct, 2) + " %",
-    };
 
     // "Volume vs conversion tradein" (nouveau bloc maquette) : toujours les
     // 12 derniers mois du site, independant de la periode choisie en
@@ -4527,6 +4849,41 @@ class Component extends DCLogic {
     const kamiaTab = allTabs[4];
     const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
 
+    // ---- rapport client (export CSV/PDF/PPT, onglet GA4) --------------
+    // Source unique reutilisee par les trois formats d'export : memes
+    // valeurs deja calculees et affichees a l'ecran plus haut dans cette
+    // fonction (agg/tunnelSteps/sourceRows/projects/brandListAll/
+    // volConvRows/kamiaHeadline), jamais une valeur recalculee ou inventee
+    // a part pour l'export. Cache sur l'instance (comme _v2RawRows deja
+    // existant) car les boutons d'export sont dans des gestionnaires
+    // onClick separes du rendu.
+    this._ga4Report = currentSite ? {
+      site: currentSite,
+      brand: marqueDeSite(currentSite).split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" "),
+      countryCode: paysDeSite(currentSite),
+      country: PAYS_LABEL[paysDeSite(currentSite)] || paysDeSite(currentSite),
+      flag: PAYS_FLAG[paysDeSite(currentSite)] || "",
+      period: periodPillLabel,
+      periodRange: range.debut + " → " + range.fin,
+      generatedLabel: new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }),
+      kpis: [
+        { label: "Sessions parent", value: fmt(agg.traffic), delta: st.compare ? deltaBadge(agg.traffic, cmp && cmp.traffic, "").text : "" },
+        { label: "Sessions reprise", value: fmt(agg.reprise), delta: st.compare ? deltaBadge(agg.reprise, cmp && cmp.reprise, "").text : "" },
+        { label: "Leads", value: fmt(agg.leads), delta: st.compare ? deltaBadge(agg.leads, cmp && cmp.leads, "").text : "" },
+        { label: "Taux de conversion", value: dec(convPct, 2) + " %", delta: st.compare ? deltaBadge(convPct, cmpConvPct, "pts").text : "", note: convRankLabel ? "Rang " + convRankLabel + " sur le parc" : "" },
+      ],
+      funnel: tunnelSteps.map(s => ({ name: s.name, value: s.value, pct: s.pct })),
+      funnelInsight: tunnelLeakInsight,
+      leadsByBrand: brandListAll.slice(0, 6).map(([name, v]) => ({
+        name: marqueDeSite(name) || name, value: fmt(v), pct: dec(v / totalLeadsAllBrands * 100, 1) + " %",
+      })),
+      channels: sourceRows.map(s => ({ name: s.name, sessions: s.sessions, share: s.share })),
+      channelInsight: sourceInsight,
+      volumeTrend: volConvRows.map(r => ({ label: r.label, sessions: fmt(r.sessions), conv: dec(r.conv, 2) + " %" })),
+      projects: projects.map(p => ({ name: p.name, value: p.value, pct: p.pct })),
+      insight: kamiaHeadline,
+    } : null;
+
     return {
       tabs, kamiaTab, bigQueryIconRef, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror, mirrorTotalsLabel,
@@ -4614,7 +4971,12 @@ class Component extends DCLogic {
       gaugeArcRef, gaugeDotRef,
       convText: dec(convPct, 2) + " %", partText: dec(agg.traffic ? agg.reprise/agg.traffic*100 : 0, 1) + " %",
       hasV2, noV2, v2SubLabel, v2BadgeStyle, v2BadgeText, v2DateLabel,
-      exportGa4Csv: () => this.exportGa4Csv(),
+      exportMenuOpen: st.exportMenuOpen,
+      toggleExportMenu: () => this.setState(s => ({ exportMenuOpen: !s.exportMenuOpen })),
+      closeExportMenu: () => this.setState({ exportMenuOpen: false }),
+      exportGa4Csv: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Csv(); },
+      exportGa4Pdf: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Pdf(); },
+      exportGa4Ppt: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Ppt(); },
       tabFadeStyle,
       tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
       tabBarRef: el => { this._tabBarEl = el; },
