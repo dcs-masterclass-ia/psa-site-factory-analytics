@@ -463,6 +463,21 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append("V2 hebdo : pas assez de recul avant/après la bascule, conservé tel quel")
     except Exception as e:
         journal.append(f"V2 hebdo en erreur ({type(e).__name__}: {e})")
+        v2w = None
+
+    # funnel avant/apres V2 (v2steps, carte "Parcours d'estimation" du
+    # dashboard) : derive de v2Weekly ci-dessus, jamais une extraction GA4
+    # a part. Ne touche jamais un site deja curé manuellement (v2steps deja
+    # non vide, sans le marqueur NOTE_AUTO) -- seuls les sites sans donnee ou
+    # deja auto-generes sont (re)calcules, pour ameliorer tout seul avec
+    # plus de recul au fil des semaines sans ecraser un travail manuel.
+    deja_curee = bool(d.get("v2steps")) and (d.get("v2") or {}).get("note") != v2_report.NOTE_AUTO
+    if not deja_curee:
+        steps = v2_report.v2steps_depuis_hebdo(v2w) if v2w else None
+        if steps:
+            d["v2steps"] = steps
+            d["v2"] = {"site": s.nom, "is_v2_split": True, "note": v2_report.NOTE_AUTO}
+            journal.append("V2 funnel avant/après : calculé automatiquement depuis v2Weekly")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios
