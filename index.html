@@ -293,7 +293,10 @@ input[type=date]{color-scheme:dark}
 
     <div style="position:relative;flex:none">
       <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
-        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#111318,#3a3f4a);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;letter-spacing:.2px;flex:none">{{ currentSiteInitials }}</div>
+        <div style="position:relative;flex:none">
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><img ref="{{ currentSiteLogoRef }}" alt="" style="width:28px;height:28px;object-fit:contain"></div>
+          <span style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">{{ currentSiteFlag }}</span>
+        </div>
         <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
@@ -3045,7 +3048,8 @@ class Component extends DCLogic {
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
         sitePickerChevronStyle: "", sitePickerGroups: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
-        currentSiteLabel: "Chargement…", currentSiteInitials: "··", currentSiteRank: "",
+        currentSiteLabel: "Chargement…", currentSiteRank: "",
+        currentSiteLogoRef: () => {}, currentSiteFlag: "",
         togglePeriodPicker: () => {}, closePeriodPicker: () => {}, periodPickerOpen: false,
         periodPickerTopLabel: "", periodRangeLabel: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
@@ -3128,7 +3132,12 @@ class Component extends DCLogic {
       count: sitePickerByPays[p].length + (sitePickerByPays[p].length > 1 ? " sites" : " site"),
     }));
     const currentSiteIdx = currentSite ? ALL.indexOf(currentSite) : -1;
-    const currentSiteInitials = currentSite ? (marqueDeSite(currentSite)[0] || "") + (paysDeSite(currentSite)[0] || "") : "··";
+    // logo de marque + drapeau du pays sur le bouton du selecteur (en-tete) :
+    // meme logique que les lignes de la liste deroulante, pour qu'on
+    // reconnaisse le site actif au premier coup d'oeil sans lire le texte.
+    const currentSiteLogoUrl = currentSite ? (BRAND_LOGO[marqueDeSite(currentSite)] || "") : "";
+    const currentSiteLogoRef = el => { if (el && currentSiteLogoUrl) el.src = currentSiteLogoUrl; };
+    const currentSiteFlag = currentSite ? (PAYS_FLAG[paysDeSite(currentSite)] || "") : "";
 
     const periods = ["7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
       const on = st.period === label;
@@ -4552,7 +4561,8 @@ class Component extends DCLogic {
       sitePickerChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.pickerOpen ? "180deg" : "0deg") + ")",
       sitePickerOpen: st.pickerOpen, sitePickerGroups, sitePickerEmpty: sitePickerFiltered.length === 0,
       sitePickerHeading: search ? "Résultats" : "Tous les sites",
-      currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials, currentSiteRank,
+      currentSiteLabel: currentSite || "Choisir un site", currentSiteRank,
+      currentSiteLogoRef, currentSiteFlag,
       togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
       closePeriodPicker: () => this.setState({ periodPickerOpen: false }),
       periodPickerOpen: st.periodPickerOpen, periodPickerTopLabel, periodRangeLabel,
