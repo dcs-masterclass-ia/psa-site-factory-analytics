@@ -1170,7 +1170,112 @@ input[type=date]{color-scheme:dark}
 
   <sc-if value="{{ isPerf }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px">
-    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+
+    <sc-if value="{{ hasPerfHero }}" hint-placeholder-val="{{ false }}">
+    <div style="background:var(--card);border-radius:26px;padding:30px 32px;box-sizing:border-box;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) both">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="width:56px;height:56px;border-radius:50%;background:linear-gradient(140deg,#ff8b95,#f4485c);box-shadow:0 10px 24px -8px rgba(244,72,92,.5);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="24" height="24" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.3" stroke="#fff" stroke-width="1.8"></circle><path d="M10 10 13.6 6.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path><circle cx="10" cy="10" r="1.4" fill="#fff"></circle></svg>
+          </span>
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ perfHero.siteLabel }}</span>
+              <span style="font-size:11px;font-weight:800;letter-spacing:.03em;background:var(--active-bg);color:var(--active-fg);border-radius:999px;padding:5px 12px;white-space:nowrap">SÉLECTIONNÉ</span>
+            </div>
+            <div style="margin-top:4px;font-size:13.5px;font-weight:500;color:var(--muted)">{{ perfHero.brandLabel }} · {{ perfHero.releveLabel }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex:none">
+          <sc-if value="{{ perfHero.hasTerrain }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:11.5px;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap;background:rgba(59,90,224,.12);color:var(--accent)">Terrain réel</span>
+          </sc-if>
+          <span style="{{ perfHero.statusBadgeStyle }}">{{ perfHero.statusBadgeText }}</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1px 1fr;gap:36px;margin-top:30px">
+        <div>
+          <div style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Performance mobile</div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:12px">
+            <span style="font-size:44px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;{{ perfHero.mobileScoreStyle }}">{{ perfHero.mobileScoreLabel }}</span>
+            <span style="{{ perfHero.mobileBadgeStyle }};font-size:12px;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap">{{ perfHero.mobileBadgeText }}</span>
+          </div>
+          <div style="height:8px;border-radius:999px;background:var(--soft2);margin-top:16px;overflow:hidden"><div style="height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.3,1);{{ perfHero.mobileBarStyle }}"></div></div>
+        </div>
+        <div style="background:var(--line);align-self:stretch"></div>
+        <div>
+          <div style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Performance desktop</div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-top:12px">
+            <span style="font-size:44px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;{{ perfHero.desktopScoreStyle }}">{{ perfHero.desktopScoreLabel }}</span>
+            <span style="{{ perfHero.desktopBadgeStyle }};font-size:12px;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap">{{ perfHero.desktopBadgeText }}</span>
+          </div>
+          <div style="height:8px;border-radius:999px;background:var(--soft2);margin-top:16px;overflow:hidden"><div style="height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.3,1);{{ perfHero.desktopBarStyle }}"></div></div>
+        </div>
+      </div>
+
+      <div style="background:var(--soft);border-radius:20px;padding:20px 22px;margin-top:26px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">Métriques</span>
+          <span style="font-size:12px;font-weight:600;color:var(--muted2)">valeur mobile / desktop</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px">
+          <sc-for list="{{ perfHero.heroMetrics }}" as="hm" hint-placeholder-count="6">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">{{ hm.label }}</div>
+              <div style="font-size:18px;margin-top:5px;font-variant-numeric:tabular-nums;{{ hm.mobileStyle }}">{{ hm.mobileText }}</div>
+              <div style="font-size:13px;color:var(--muted2);margin-top:2px;font-variant-numeric:tabular-nums">{{ hm.desktopText }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:0;margin-top:26px;padding-top:22px;border-top:1px solid var(--line)">
+        <sc-for list="{{ perfHero.heroCats }}" as="hc" hint-placeholder-count="3">
+          <div style="flex:1;display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;{{ hc.style }}">{{ hc.value }}</span>
+            <span style="font-size:13.5px;font-weight:600;color:var(--muted)">{{ hc.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top:26px;padding-top:22px;border-top:1px solid var(--line)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--neg);flex:none"></span>
+            <span style="font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)">À corriger en priorité</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <sc-if value="{{ perfHero.hasHeroOpps }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size:13px;color:var(--muted)">cumul <b style="color:var(--pos)">-{{ perfHero.cumulLabel }}</b></span>
+              <button onClick="{{ perfHero.genererTicket }}" disabled="{{ perfHero.ticketBusy }}" title="Rédiger un ticket Jira avec l'IA à partir de ces optimisations" style="display:flex;align-items:center;gap:5px;border:none;background:var(--soft2);color:var(--text2);font-family:inherit;font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;white-space:nowrap">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                {{ perfHero.ticketBtnLabel }}
+              </button>
+            </sc-if>
+          </div>
+        </div>
+        <sc-if value="{{ perfHero.hasHeroOpps }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+          <sc-for list="{{ perfHero.heroOpps }}" as="o" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span style="font-size:14.5px;font-weight:500;color:var(--text2)">{{ o.titre }}</span>
+              <span style="font-size:12px;font-weight:800;color:var(--pos);background:var(--pos-bg);border-radius:999px;padding:5px 12px;white-space:nowrap;flex:none">-{{ o.gain }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ perfHero.noHeroOpps }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:8px;background:var(--pos-bg);border-radius:10px;padding:10px 14px;margin-top:14px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+          <span style="font-size:12.5px;font-weight:700;color:var(--pos)">Rien à signaler</span>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
       <div>
         <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des sites de reprise</div>
         <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
@@ -2863,7 +2968,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance" && st.tab !== "ga4", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance" && st.tab !== "ga4", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
@@ -4146,6 +4251,77 @@ class Component extends DCLogic {
     ).map(p => ({ pays: p, label: PAYS_LABEL[p] || p, rows: perfByPays[p],
       count: perfByPays[p].length + (perfByPays[p].length > 1 ? " sites" : " site") }));
 
+    // carte detaillee du site actuellement selectionne, au-dessus de la
+    // grille compacte (demande explicite du 09/08/2026, maquette dediee au
+    // pixel pres) -- la grille compacte reste inchangee en dessous, ce site
+    // y apparait donc aussi a sa place triee normale. INP n'existe qu'en
+    // donnee terrain (CrUX) chez Lighthouse, jamais en donnee labo -- la
+    // colonne INP de la table de metriques vient donc de m.terrain/de.terrain,
+    // pas d'un champ labo qui n'existe pas. Seuils Core Web Vitals standard
+    // (bon/a ameliorer/mauvais), pas invente : ceux publies par web.dev.
+    const psHero = rawSite && rawSite.pagespeed;
+    const heroM = psHero && psHero.mobile, heroD = psHero && psHero.desktop;
+    const hasPerfHero = !!psHero;
+    let perfHero = null;
+    if (hasPerfHero) {
+      const scoreBadge = score => {
+        if (score == null) return { text: "Non mesuré", color: "var(--muted)", bg: "var(--soft2)" };
+        const color = perfScoreColor(score);
+        const bg = score >= 90 ? "rgba(34,197,94,.14)" : score >= 50 ? "rgba(245,165,36,.14)" : "rgba(239,68,68,.14)";
+        const text = score >= 90 ? "Bon" : score >= 50 ? "À améliorer" : "Faible";
+        return { text, color, bg };
+      };
+      const mobileBadge = scoreBadge(heroM && heroM.score);
+      const desktopBadge = scoreBadge(heroD && heroD.score);
+      const vitalColor = (val, good, ni) => val == null ? "var(--muted)" : val <= good ? "#22C55E" : val <= ni ? "#F5A524" : "#EF4444";
+      const secToStr = ms => (ms / 1000).toFixed(1) + " s";
+      const msToStr = ms => Math.round(ms) + " ms";
+      const metric = (label, mv, dv, fmt, good, ni) => ({
+        label, mobileText: mv == null ? "—" : fmt(mv), desktopText: dv == null ? "—" : fmt(dv),
+        mobileStyle: "font-weight:800;color:" + vitalColor(mv, good, ni),
+      });
+      const heroMetrics = [
+        metric("LCP", heroM && heroM.lcp, heroD && heroD.lcp, secToStr, 2500, 4000),
+        metric("CLS", heroM && heroM.cls, heroD && heroD.cls, v => v.toFixed(2), 0.1, 0.25),
+        metric("INP", heroM && heroM.terrain && heroM.terrain.inp, heroD && heroD.terrain && heroD.terrain.inp, msToStr, 200, 500),
+        metric("TBT", heroM && heroM.tbt, heroD && heroD.tbt, msToStr, 200, 600),
+        metric("FCP", heroM && heroM.fcp, heroD && heroD.fcp, secToStr, 1800, 3000),
+        metric("SI", heroM && heroM.si, heroD && heroD.si, secToStr, 3400, 5800),
+      ];
+      const heroCats = [
+        ["Accessibilité", heroM && heroM.accessibilite], ["Bonnes pratiques", heroM && heroM.bonnesPratiques], ["SEO", heroM && heroM.seo],
+      ].map(([label, v]) => ({ label, value: v == null ? "—" : String(v), style: "color:" + perfScoreColor(v) }));
+      const heroOpps = ((heroM && heroM.opportunites) || []).map(o => ({
+        titre: o.titre, gain: o.gainMs >= 1000 ? (o.gainMs / 1000).toFixed(1) + " s" : Math.round(o.gainMs) + " ms",
+      }));
+      const cumulMs = ((heroM && heroM.opportunites) || []).reduce((s, o) => s + (o.gainMs || 0), 0);
+      const brandLabel = marqueDeSite(currentSite).split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" ");
+      const statusBadge = (heroM && heroM.score == null && heroD && heroD.score == null)
+        ? { text: "Non mesuré", style: "background:var(--soft2);color:var(--muted)" }
+        : heroOpps.length > 0 ? { text: "À corriger", style: "background:var(--neg-bg);color:var(--neg)" }
+        : { text: "Optimisé", style: "background:var(--pos-bg);color:var(--pos)" };
+      perfHero = {
+        siteLabel: currentSite, brandLabel,
+        releveLabel: psHero.releve ? "relevé du " + psHero.releve.slice(8, 10) + "/" + psHero.releve.slice(5, 7) + "/" + psHero.releve.slice(0, 4) : "relevé indisponible",
+        mobileScoreLabel: heroM && heroM.score != null ? String(Math.round(heroM.score)) : "—",
+        mobileBadgeText: mobileBadge.text, mobileBadgeStyle: "background:" + mobileBadge.bg + ";color:" + mobileBadge.color,
+        mobileBarStyle: "width:" + (heroM && heroM.score != null ? heroM.score : 0) + "%;background:" + mobileBadge.color,
+        mobileScoreStyle: "color:" + mobileBadge.color,
+        desktopScoreLabel: heroD && heroD.score != null ? String(Math.round(heroD.score)) : "—",
+        desktopBadgeText: desktopBadge.text, desktopBadgeStyle: "background:" + desktopBadge.bg + ";color:" + desktopBadge.color,
+        desktopBarStyle: "width:" + (heroD && heroD.score != null ? heroD.score : 0) + "%;background:" + desktopBadge.color,
+        desktopScoreStyle: "color:" + desktopBadge.color,
+        hasTerrain: !!(heroM && heroM.terrain),
+        heroMetrics, heroCats,
+        heroOpps, hasHeroOpps: heroOpps.length > 0, noHeroOpps: heroOpps.length === 0,
+        cumulLabel: cumulMs >= 1000 ? (cumulMs / 1000).toFixed(1) + " s" : Math.round(cumulMs) + " ms",
+        statusBadgeText: statusBadge.text, statusBadgeStyle: "font-size:11.5px;font-weight:800;border-radius:999px;padding:6px 14px;white-space:nowrap;" + statusBadge.style,
+        ticketBusy: st.perfTicketBusySite === currentSite,
+        ticketBtnLabel: st.perfTicketBusySite === currentSite ? "Génération…" : "Ticket Jira",
+        genererTicket: () => this.genererTicketPerf(currentSite),
+      };
+    }
+
     // detail du ticket Jira en cours (modale) -- meme mecanique que
     // v2Modal/watchModal, construite seulement pour le site ouvert.
     const perfTicketModal = this._perfTicketModal ? (() => {
@@ -4251,6 +4427,7 @@ class Component extends DCLogic {
       showScopeBar: st.tab !== "assistant" && st.tab !== "performance" && st.tab !== "ga4",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
+      hasPerfHero, perfHero,
       perfFilterChips, perfTicketModal, hasPerfTicketModal,
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
