@@ -298,32 +298,38 @@ input[type=date]{color-scheme:dark}
 
       <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
-        <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;max-height:70vh;overflow:auto;cursor:default;animation:dropIn .18s ease both" role="none">
-          <div style="position:sticky;top:0;z-index:2;background:#fff;padding-bottom:8px">
-            <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px">
-              <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-              <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
-            </div>
+        <div style="position:absolute;top:60px;left:0;width:420px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;max-height:70vh;cursor:default;animation:dropIn .18s ease both" role="none">
+          <!-- barre de recherche hors de la zone de scroll (pas position:sticky) :
+               sous le canevas mis a l'echelle via transform:scale (scaleCanvasRef),
+               un sticky a l'interieur d'un overflow:auto peut se faire deborder
+               par le contenu pendant le defilement (glitch de compositing Chrome
+               transform+sticky, visible en scroll rapide/trackpad, signale le
+               09/08/2026). Header hors-scroll = plus de sticky, plus de glitch. -->
+          <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px;flex:none;margin-bottom:8px">
+            <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+            <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
           </div>
-          <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
-          <sc-for list="{{ sitePickerGroups }}" as="g" hint-placeholder-count="3">
-            <div style="display:flex;align-items:center;gap:8px;padding:10px 10px 4px">
-              <span style="font-size:14px;flex:none">{{ g.flag }}</span>
-              <span style="font-size:12px;font-weight:800;color:var(--text);white-space:nowrap">{{ g.label }}</span>
-              <span style="height:1px;flex:1;background:var(--line)"></span>
-              <span style="font-size:11px;font-weight:700;color:#9aa0aa;white-space:nowrap">{{ g.count }}</span>
-            </div>
-            <sc-for list="{{ g.rows }}" as="s" hint-placeholder-count="4">
-              <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
-                <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden"><img ref="{{ s.logoRef }}" alt="" style="width:20px;height:20px;object-fit:contain"></div>
-                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
-                <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+          <div style="overflow:auto;min-height:0;display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
+            <sc-for list="{{ sitePickerGroups }}" as="g" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:8px;padding:10px 10px 4px">
+                <span style="font-size:14px;flex:none">{{ g.flag }}</span>
+                <span style="font-size:12px;font-weight:800;color:var(--text);white-space:nowrap">{{ g.label }}</span>
+                <span style="height:1px;flex:1;background:var(--line)"></span>
+                <span style="font-size:11px;font-weight:700;color:#9aa0aa;white-space:nowrap">{{ g.count }}</span>
               </div>
+              <sc-for list="{{ g.rows }}" as="s" hint-placeholder-count="4">
+                <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
+                  <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden"><img ref="{{ s.logoRef }}" alt="" style="width:20px;height:20px;object-fit:contain"></div>
+                  <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+                  <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+                </div>
+              </sc-for>
             </sc-for>
-          </sc-for>
-          <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
-            <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
-          </sc-if>
+            <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
+            </sc-if>
+          </div>
         </div>
       </sc-if>
     </div>
