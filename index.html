@@ -767,10 +767,6 @@ input[type=date]{color-scheme:dark}
             <div onClick="{{ c.pick }}" role="button" tabindex="0" style="{{ c.style }}">{{ c.label }}</div>
           </sc-for>
         </div>
-        <div onClick="{{ openChatBlank }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:10px;background:#f6f7f9;border-radius:100px;padding:8px 8px 8px 18px;cursor:pointer">
-          <span style="flex:1;font-size:13px;color:#9aa0aa">Poser une question…</span>
-          <span style="width:36px;height:36px;border-radius:50%;background:#14161a;display:flex;align-items:center;justify-content:center;flex:none"><svg width="15" height="15" viewBox="0 0 18 18" fill="none"><path d="M3 15 15 9 3 3l2.4 6L3 15Z" fill="#fff"></path></svg></span>
-        </div>
       </div>
     </div>
 
@@ -3432,7 +3428,7 @@ class Component extends DCLogic {
         hasNvrRows: false, noNvrRows: true, nvrNewPct: "0", nvrReturningPct: "0", nvrNewStyle: "", nvrReturningStyle: "",
         nvrNewSessionsLabel: "", nvrReturningSessionsLabel: "",
         kamiaHeadline: "", kamiaRows: [], hasKamiaRows: false,
-        kamiaStatusLabel: "", kamiaConstatCount: 0, kamiaChips: [], openChatBlank: () => {},
+        kamiaStatusLabel: "", kamiaConstatCount: 0, kamiaChips: [],
         periodPillLabel: "", sparkAxisLeft: "", sparkAxisRight: "",
         kpiTrafficRef: () => {}, kpiTrafficDelta: { style: "", text: "" }, parentBars: [], hasParentBars: false,
         kpiRepriseRef: () => {}, kpiRepriseDelta: { style: "", text: "" }, repriseSparkRef: () => {}, repriseFillRef: () => {},
@@ -4454,7 +4450,11 @@ class Component extends DCLogic {
     });
     const dailyAvg = cellVals.length ? cellVals.reduce((a,b)=>a+b,0)/cellVals.length : 0;
 
-    const ga4Insights = agg.insightsAcq.slice(0, 3).map((n, i) => {
+    // carte KamIA (onglet GA4) : jusqu'a 4 constats reels (headline + 3
+    // rangees) au lieu de 3 -- l'espace libere par le retrait du bouton
+    // "Poser une question" doit montrer un constat reel de plus quand il y
+    // en a, jamais un texte invente (demande du 09/08/2026).
+    const ga4Insights = agg.insightsAcq.slice(0, 4).map((n, i) => {
       const v = insightVisuals(n.type);
       return {
         tag: n.type === "opportunite" ? "Opportunité" : n.type === "attention" ? "Alerte" : "Tendance", text: n.titre + " — " + n.detail,
@@ -5065,7 +5065,6 @@ class Component extends DCLogic {
       v2Insight, hasV2Insight: !!v2Insight, v2TipInsight, hasV2Tip,
       kamiaHeadline, kamiaRows, hasKamiaRows: kamiaRows.length > 0,
       kamiaStatusLabel, kamiaConstatCount, kamiaChips,
-      openChatBlank: () => this.setState({ tab: "assistant" }),
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
