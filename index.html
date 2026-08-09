@@ -304,12 +304,20 @@ input[type=date]{color-scheme:dark}
             <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
           </div>
           <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
-          <sc-for list="{{ sitePickerRows }}" as="s" hint-placeholder-count="6">
-            <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
-              <div style="width:8px;height:8px;border-radius:50%;background:{{ s.dot }};flex:none"></div>
-              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
-              <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+          <sc-for list="{{ sitePickerGroups }}" as="g" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 10px 4px">
+              <span style="font-size:14px;flex:none">{{ g.flag }}</span>
+              <span style="font-size:12px;font-weight:800;color:var(--text);white-space:nowrap">{{ g.label }}</span>
+              <span style="height:1px;flex:1;background:var(--line)"></span>
+              <span style="font-size:11px;font-weight:700;color:#9aa0aa;white-space:nowrap">{{ g.count }}</span>
             </div>
+            <sc-for list="{{ g.rows }}" as="s" hint-placeholder-count="4">
+              <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
+                <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden"><img ref="{{ s.logoRef }}" alt="" style="width:20px;height:20px;object-fit:contain"></div>
+                <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+                <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
+              </div>
+            </sc-for>
           </sc-for>
           <sc-if value="{{ sitePickerEmpty }}" hint-placeholder-val="{{ false }}">
             <div style="padding:16px 10px;font-size:13px;color:#9aa0aa;text-align:center">Aucun site ne correspond.</div>
@@ -1865,6 +1873,24 @@ const PAYS_LABEL = {
   AT: "Autriche", BE: "Belgique", DE: "Allemagne", ES: "Espagne", FR: "France",
   GB: "Royaume-Uni", IT: "Italie", LU: "Luxembourg", PL: "Pologne", PT: "Portugal",
 };
+// drapeaux = emoji Unicode standard par code pays, pas une image inventee.
+const PAYS_FLAG = {
+  AT: "🇦🇹", BE: "🇧🇪", DE: "🇩🇪", ES: "🇪🇸", FR: "🇫🇷",
+  GB: "🇬🇧", IT: "🇮🇹", LU: "🇱🇺", PL: "🇵🇱", PT: "🇵🇹",
+};
+// logos de marque reels fournis par l'utilisateur le 09/08/2026 (bucket S3
+// deja utilise pour les logos Converge/KamIA) -- jamais d'URL devinee.
+const BRAND_LOGO = {
+  ABARTH: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/abarth-4.svg",
+  "ALFA ROMEO": "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/alfa-romeo-4.svg",
+  CITROEN: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-citroen-2022.svg",
+  DS: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/ds-automobiles-logo.svg",
+  FIAT: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/fiat-3.svg",
+  JEEP: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/jeep-7.svg",
+  LANCIA: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/lancia-1.svg",
+  OPEL: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/vecteezy_opel-logo-design_31712145-removebg-preview.png",
+  PEUGEOT: "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/peugeot-10.svg",
+};
 
 const nf = new Intl.NumberFormat("fr-FR");
 const nf1 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits:1, maximumFractionDigits:1 });
@@ -3008,7 +3034,7 @@ class Component extends DCLogic {
         togglePicker: () => {},
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
-        sitePickerChevronStyle: "", sitePickerRows: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
+        sitePickerChevronStyle: "", sitePickerGroups: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
         currentSiteLabel: "Chargement…", currentSiteInitials: "··", currentSiteRank: "",
         togglePeriodPicker: () => {}, closePeriodPicker: () => {}, periodPickerOpen: false,
         periodPickerTopLabel: "", periodRangeLabel: "",
@@ -3060,15 +3086,36 @@ class Component extends DCLogic {
       return { name: n, delta };
     });
     const search = (st.siteSearch || "").trim().toLowerCase();
-    const sitePickerRows = (search
-      ? siteDeltaCache.filter(s => s.name.toLowerCase().includes(search)).sort((a, b) => a.name.localeCompare(b.name))
-      : siteDeltaCache.slice().sort((a, b) => a.name.localeCompare(b.name))
-    ).slice(0, search ? 30 : siteDeltaCache.length).map(s => ({
-      host: s.name,
-      delta: s.delta == null ? "—" : (s.delta >= 0 ? "+" : "") + Math.round(s.delta) + " %",
-      dot: s.delta == null ? "var(--muted2)" : s.delta >= 0 ? "var(--pos)" : "var(--neg)",
-      rowStyle: "display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;cursor:pointer" + (s.name === currentSite ? ";background:var(--soft)" : ""),
-      pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "" }),
+    // liste rangee par marche (pays), avec drapeau du pays et logo de marque
+    // reel -- demande explicite du 09/08/2026. Le tri alphabetique par nom
+    // de site a l'interieur d'un pays classait deja par marque de facto
+    // (le nom commence par la marque), garde tel quel a l'interieur de
+    // chaque groupe pays.
+    const sitePickerFiltered = (search ? siteDeltaCache.filter(s => s.name.toLowerCase().includes(search)) : siteDeltaCache)
+      .slice().sort((a, b) => a.name.localeCompare(b.name));
+    const sitePickerByPays = {};
+    for (const s of sitePickerFiltered) {
+      const p = paysDeSite(s.name);
+      const logoUrl = BRAND_LOGO[marqueDeSite(s.name)] || "";
+      (sitePickerByPays[p] = sitePickerByPays[p] || []).push({
+        host: s.name,
+        // {{ }} ne s'interpole pas de facon fiable dans un attribut src
+        // d'image (meme classe de probleme que les attributs SVG) : sur les
+        // lignes placeholder synthetisees par hint-placeholder-count, le
+        // texte litteral "{{ s.logo }}" fuiterait dans l'attribut et
+        // declencherait une requete 404 -- ecriture imperative via ref.
+        logoRef: el => { if (el && logoUrl) el.src = logoUrl; },
+        delta: s.delta == null ? "—" : (s.delta >= 0 ? "+" : "") + Math.round(s.delta) + " %",
+        dot: s.delta == null ? "var(--muted2)" : s.delta >= 0 ? "var(--pos)" : "var(--neg)",
+        rowStyle: "display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px;cursor:pointer" + (s.name === currentSite ? ";background:var(--soft)" : ""),
+        pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "" }),
+      });
+    }
+    const sitePickerGroups = Object.keys(sitePickerByPays).sort((a, b) =>
+      (PAYS_LABEL[a] || a).localeCompare(PAYS_LABEL[b] || b)
+    ).map(p => ({
+      pays: p, flag: PAYS_FLAG[p] || "", label: PAYS_LABEL[p] || p, rows: sitePickerByPays[p],
+      count: sitePickerByPays[p].length + (sitePickerByPays[p].length > 1 ? " sites" : " site"),
     }));
     const currentSiteIdx = currentSite ? ALL.indexOf(currentSite) : -1;
     const currentSiteInitials = currentSite ? (marqueDeSite(currentSite)[0] || "") + (paysDeSite(currentSite)[0] || "") : "··";
@@ -4477,7 +4524,7 @@ class Component extends DCLogic {
       toggleSitePicker: () => this.setState(s => ({ pickerOpen: !s.pickerOpen, siteSearch: s.pickerOpen ? s.siteSearch : "" })),
       closeSitePicker: () => this.setState({ pickerOpen: false }),
       sitePickerChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.pickerOpen ? "180deg" : "0deg") + ")",
-      sitePickerOpen: st.pickerOpen, sitePickerRows, sitePickerEmpty: sitePickerRows.length === 0,
+      sitePickerOpen: st.pickerOpen, sitePickerGroups, sitePickerEmpty: sitePickerFiltered.length === 0,
       sitePickerHeading: search ? "Résultats" : "Tous les sites",
       currentSiteLabel: currentSite || "Choisir un site", currentSiteInitials, currentSiteRank,
       togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
