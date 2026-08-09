@@ -1,7 +1,7 @@
 {
- "derniere_execution": "2026-08-09T23:55:54+02:00",
- "commit": "7ae1a15",
- "jour_ga4_fiable": "2026-08-07",
+ "derniere_execution": "2026-08-10T00:06:56+02:00",
+ "commit": "c195219",
+ "jour_ga4_fiable": "2026-08-08",
  "mois_traites": [
   "2025-05",
   "2025-06",
@@ -22,20 +22,158 @@
  ],
  "statut": "degrade",
  "sites": {
+  "FIAT PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.pt",
+    "reprise": "www.retoma.fiat.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 7,
+    "total": 13
+   }
+  },
+  "JEEP PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.pt",
+    "reprise": "www.retoma.jeep.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.pt",
+    "reprise": "www.retoma.alfaromeo.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 7,
+    "total": 13
+   }
+  },
   "ABARTH PT": {
    "statut": "degrade",
    "hotes": {
     "parent": "www.abarth.pt",
     "reprise": "www.retoma.abarth.pt"
    },
-   "ga4_jusqu_au": "2026-08-07",
+   "ga4_jusqu_au": "2026-08-08",
    "controles": {
-    "passes": 8,
+    "passes": 7,
     "total": 13
    }
   }
  },
  "anomalies": [
+  {
+   "site": "FIAT PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 trafficMonth -49.1%; 2026-05 repriseMonth -80.2%; 2026-06 trafficMonth -9.1%; 2026-06 repriseMonth -90.1%; 2026-07 trafficMonth +89.4%; 2026-07 repriseMonth +11.1%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-07 ratio 3.5",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 72% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-07', '2025-07', '2025-11', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 47->57 (+21%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 trafficMonth +65.2%; 2026-05 repriseMonth +88.4%; 2026-06 trafficMonth +67.8%; 2026-06 repriseMonth -61.0%; 2026-07 trafficMonth +230.4%; 2026-07 repriseMonth +45.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 65% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 38->44 (+16%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-12 trafficMonth +3.5%; 2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 trafficMonth +52.9%; 2026-05 repriseMonth -30.7%; 2026-06 trafficMonth +28.3%; 2026-06 repriseMonth -95.8%; 2026-07 trafficMonth +293.3%; 2026-07 repriseMonth +16.4%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-07 ratio 6.8",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 88% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06', '2025-09', '2025-11', '2025-12', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 10->15 (+50%)",
+   "gravite": "avertissement"
+  },
   {
    "site": "ABARTH PT",
    "controle": "transformation_dans_2_45pct",
@@ -64,6 +202,12 @@
    "site": "ABARTH PT",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 1->2 (+100%)",
    "gravite": "avertissement"
   }
  ]
