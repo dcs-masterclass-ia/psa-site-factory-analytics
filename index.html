@@ -929,7 +929,7 @@ input[type=date]{color-scheme:dark}
         <span style="background:#f5f5f7;color:#4b5563;font-size:12.5px;font-weight:500;border-radius:100px;padding:7px 14px">{{ audienceTotalLabel }}</span>
       </div>
 
-      <div style="display:grid;grid-template-columns:1.15fr 1.5fr .95fr;gap:26px">
+      <div style="display:grid;grid-template-columns:.8fr 1.35fr 1.15fr;gap:26px">
         <div style="display:flex;flex-direction:column;gap:18px">
           <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Appareil</div>
           <sc-if value="{{ hasDeviceRows }}" hint-placeholder-val="{{ true }}">
@@ -961,34 +961,68 @@ input[type=date]{color-scheme:dark}
           </sc-if>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:14px;border-left:1px solid #f0f0f2;border-right:1px solid #f0f0f2;padding:0 26px;align-items:flex-start;justify-content:center">
-          <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Navigateur</div>
+        <div style="display:flex;flex-direction:column;gap:16px;background:var(--soft);border-radius:22px;padding:22px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+            <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Navigateur</div>
+            <div style="font-size:11px;font-weight:500;color:#9aa0aa">part des sessions</div>
+          </div>
           <sc-if value="{{ hasBrowserRows }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;flex-direction:column;gap:9px;width:100%">
-              <sc-for list="{{ browserRows }}" as="b" hint-placeholder-count="4">
-                <div style="display:flex;flex-direction:column;gap:4px;width:100%">
-                  <div style="display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:500;color:var(--text)"><span>{{ b.name }}</span><span style="color:#9aa0aa">{{ b.share }}</span></div>
-                  <div style="{{ b.barTrackStyle }}"><div style="{{ b.barStyle }}"></div></div>
+            <div style="display:flex;gap:12px">
+              <sc-for list="{{ browserHeroes }}" as="h" hint-placeholder-count="2">
+                <div style="{{ h.cardStyle }}">
+                  <div style="font-size:12.5px;font-weight:600;color:var(--text)">{{ h.name }}</div>
+                  <div style="font-size:24px;font-weight:700;letter-spacing:-.6px;margin-top:4px;{{ h.fgStyle }}">{{ h.pct }}</div>
+                  <div style="font-size:11px;color:#9aa0aa;margin-top:2px">{{ h.sessions }}</div>
                 </div>
               </sc-for>
             </div>
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <sc-for list="{{ browserRows }}" as="b" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px;width:100%">
+                  <span style="{{ b.avatarStyle }}">{{ b.initial }}</span>
+                  <span style="font-size:12.5px;font-weight:500;color:var(--text);width:108px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span>
+                  <div style="{{ b.barTrackStyle }}"><div style="{{ b.barStyle }}"></div></div>
+                  <span style="font-size:12px;font-weight:600;color:var(--text);width:38px;flex:none;text-align:right">{{ b.share }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ hasInAppSplit }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;height:8px;border-radius:5px;overflow:hidden;background:#eef0f4;width:100%">
+                  <div style="{{ mainstreamBarStyle }}"></div>
+                  <div style="{{ inAppBarStyle }}"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:11.5px;font-weight:600">
+                  <span style="color:#3b5ae0">{{ mainstreamPct }} % Chrome + Safari</span>
+                  <span style="color:#b45309">{{ inAppPct }} % navigateurs in-app</span>
+                </div>
+              </div>
+            </sc-if>
           </sc-if>
           <sc-if value="{{ noBrowserRows }}" hint-placeholder-val="{{ true }}">
             <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.55">Donnée non disponible sur cette période — sera comblée au prochain passage du pipeline sur ce site.</div>
           </sc-if>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:14px;align-items:flex-start;justify-content:center;width:100%">
+        <div style="display:flex;flex-direction:column;gap:16px;background:var(--soft);border-radius:22px;padding:22px">
           <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Nouveaux vs récurrents</div>
           <sc-if value="{{ hasNvrRows }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;min-width:0;background:rgba(139,92,246,.1);border-radius:18px;padding:16px 18px">
+                <div style="font-size:12.5px;font-weight:600;color:var(--text)">Nouveaux</div>
+                <div style="font-size:24px;font-weight:700;letter-spacing:-.6px;margin-top:4px;color:#7c4ddb">{{ nvrNewPct }} %</div>
+                <div style="font-size:11px;color:#9aa0aa;margin-top:2px">{{ nvrNewSessionsLabel }}</div>
+              </div>
+              <div style="flex:1;min-width:0;background:var(--soft2);border-radius:18px;padding:16px 18px">
+                <div style="font-size:12.5px;font-weight:600;color:var(--text)">Récurrents</div>
+                <div style="font-size:24px;font-weight:700;letter-spacing:-.6px;margin-top:4px;color:#4b5563">{{ nvrReturningPct }} %</div>
+                <div style="font-size:11px;color:#9aa0aa;margin-top:2px">{{ nvrReturningSessionsLabel }}</div>
+              </div>
+            </div>
             <div style="width:100%">
               <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;width:100%">
                 <div style="{{ nvrNewStyle }}"></div>
                 <div style="{{ nvrReturningStyle }}"></div>
-              </div>
-              <div style="display:flex;justify-content:space-between;margin-top:12px;gap:10px">
-                <div><div style="font-size:19px;font-weight:600;letter-spacing:-.4px;color:var(--text)">{{ nvrNewPct }} %</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">Nouveaux</div></div>
-                <div style="text-align:right"><div style="font-size:19px;font-weight:600;letter-spacing:-.4px;color:var(--text)">{{ nvrReturningPct }} %</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">Récurrents</div></div>
               </div>
             </div>
           </sc-if>
@@ -3405,8 +3439,10 @@ class Component extends DCLogic {
         donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0", donutChips: [],
         sourceRows: [], hasSourceRows: false, sourceInsight: "", deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
         mobilePctLabel: "0 %", audienceTotalLabel: "", audienceInsight: "", hasAudienceInsight: false,
-        browserRows: [], hasBrowserRows: false, noBrowserRows: true,
+        browserHeroes: [], browserRows: [], hasBrowserRows: false, noBrowserRows: true,
+        hasInAppSplit: false, mainstreamPct: "0", inAppPct: "0", mainstreamBarStyle: "", inAppBarStyle: "",
         hasNvrRows: false, noNvrRows: true, nvrNewPct: "0", nvrReturningPct: "0", nvrNewStyle: "", nvrReturningStyle: "",
+        nvrNewSessionsLabel: "", nvrReturningSessionsLabel: "",
         kamiaHeadline: "", kamiaRows: [], hasKamiaRows: false,
         kamiaStatusLabel: "", kamiaConstatCount: 0, kamiaChips: [], openChatBlank: () => {},
         periodPillLabel: "", sparkAxisLeft: "", sparkAxisRight: "",
@@ -4107,19 +4143,53 @@ class Component extends DCLogic {
     // "donnee non disponible" pour les sites/periodes pas encore retraites
     // par le pipeline depuis l'ajout (fenetre glissante, meme logique que
     // canalQuotidien/searchMonth), jamais un chiffre invente en attendant.
+    // Maquette du 09/08/2026 (pendant le run) : 2 "heroes" (les 2 plus gros
+    // navigateurs) + liste compacte pour le reste + barre de synthese
+    // "navigateurs mainstream vs in-app" -- Chrome/Safari nommement (pas
+    // juste "les 2 premiers", au cas ou un site aurait un profil different)
+    // et in-app detecte sur le nom reel renvoye par GA4 (contient "webview"
+    // ou "(in-app)", vu tel quel dans les donnees du premier run reel).
     const browserListRaw = [...agg.browser.entries()].sort((a, b) => b[1].sessions - a[1].sessions);
     const totalBrowserSessions = browserListRaw.reduce((s, [, v]) => s + v.sessions, 0) || 1;
-    const BROWSER_COLORS = ["#3b5ae0", "#7d99ff", "#a8c0ff", "#c8a2ff", "#f59e0b", "#9aa0aa"];
-    const browserRows = browserListRaw.slice(0, 5).map(([name, v], i) => {
-      const share = dec(v.sessions / totalBrowserSessions * 100, 0);
+    const BROWSER_HERO_BG = ["rgba(139,92,246,.1)", "rgba(56,189,248,.12)"];
+    const BROWSER_HERO_FG = ["#7c4ddb", "#0891b2"];
+    const BROWSER_LIST_COLORS = ["#7c4ddb", "#b45309", "#3b5ae0", "#c0392f", "#6b7280"];
+    const browserHeroes = browserListRaw.slice(0, 2).map(([name, v], i) => ({
+      name, sessions: fmt(v.sessions) + " sessions",
+      pct: dec(v.sessions / totalBrowserSessions * 100, 1) + " %",
+      cardStyle: "flex:1;min-width:0;background:" + BROWSER_HERO_BG[i] + ";border-radius:18px;padding:16px 18px",
+      fgStyle: "color:" + BROWSER_HERO_FG[i],
+    }));
+    const browserRestRaw = browserListRaw.slice(2, 6);
+    const browserOtherTotal = browserListRaw.slice(6).reduce((s, [, v]) => s + v.sessions, 0);
+    const browserRestEntries = browserRestRaw.concat(browserOtherTotal > 0 ? [["Autres", { sessions: browserOtherTotal }]] : []);
+    // dec() formate en virgule francaise ("4,1") pour l'affichage texte --
+    // jamais utilisable tel quel dans un width CSS (virgule = valeur
+    // invalide, silencieusement ignoree par le navigateur). D'ou le calcul
+    // separe d'une valeur numerique brute (point) juste pour les width, vu
+    // en testant le rendu reel le 09/08/2026 (barres toutes a la meme
+    // largeur au lieu d'etre proportionnelles).
+    const browserRows = browserRestEntries.map(([name, v], i) => {
+      const shareNum = v.sessions / totalBrowserSessions * 100;
+      const color = BROWSER_LIST_COLORS[i % BROWSER_LIST_COLORS.length];
       return {
-        name, share: share + " %",
-        barTrackStyle: "height:6px;border-radius:4px;background:#f2f3f5;overflow:hidden",
-        barStyle: "height:100%;border-radius:4px;background:" + (BROWSER_COLORS[i] || "#9aa0aa") + ";width:" + Math.max(2, share) + "%",
+        name, share: dec(shareNum, 1) + " %", initial: (name === "Autres" ? "…" : name.charAt(0).toUpperCase()),
+        avatarStyle: "width:22px;height:22px;border-radius:50%;background:" + color + "1a;color:" + color + ";display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex:none",
+        barTrackStyle: "height:6px;border-radius:4px;background:#f2f3f5;overflow:hidden;flex:1",
+        barStyle: "height:100%;border-radius:4px;background:" + color + ";width:" + Math.max(2, shareNum).toFixed(1) + "%",
       };
     });
-    const hasBrowserRows = browserRows.length > 0;
+    const hasBrowserRows = browserHeroes.length > 0;
     const noBrowserRows = !hasBrowserRows;
+    const mainstreamSessions = (agg.browser.get("Chrome") || { sessions: 0 }).sessions + (agg.browser.get("Safari") || { sessions: 0 }).sessions;
+    const inAppSessions = browserListRaw.filter(([name]) => /webview|in-app/i.test(name)).reduce((s, [, v]) => s + v.sessions, 0);
+    const mainstreamPctNum = mainstreamSessions / totalBrowserSessions * 100;
+    const inAppPctNum = inAppSessions / totalBrowserSessions * 100;
+    const mainstreamPct = dec(mainstreamPctNum, 1);
+    const inAppPct = dec(inAppPctNum, 1);
+    const hasInAppSplit = hasBrowserRows;
+    const mainstreamBarStyle = "height:100%;background:linear-gradient(90deg,#3b5ae0,#0891b2);width:" + mainstreamPctNum.toFixed(1) + "%";
+    const inAppBarStyle = "height:100%;background:#f59e0b;width:" + inAppPctNum.toFixed(1) + "%";
 
     // GA4 renvoie parfois "(not set)" pour newVsReturning (constate le
     // 09/08/2026 sur le premier run reel) : exclu du total sinon les deux
@@ -4132,6 +4202,8 @@ class Component extends DCLogic {
     const noNvrRows = !hasNvrRows;
     const nvrNewPct = nvrNew ? dec(nvrNew.sessions / nvrTotal * 100, 0) : "0";
     const nvrReturningPct = nvrReturning ? dec(nvrReturning.sessions / nvrTotal * 100, 0) : "0";
+    const nvrNewSessionsLabel = nvrNew ? fmt(nvrNew.sessions) + " sessions" : "—";
+    const nvrReturningSessionsLabel = nvrReturning ? fmt(nvrReturning.sessions) + " sessions" : "—";
     const nvrNewStyle = "width:" + nvrNewPct + "%;background:#3b5ae0";
     const nvrReturningStyle = "width:" + nvrReturningPct + "%;background:#e2e6ee";
 
@@ -4984,8 +5056,10 @@ class Component extends DCLogic {
       donutRows, hasDonut, donutGradient, donutTotalLabel, donutChips,
       sourceRows, hasSourceRows, sourceInsight, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
       mobilePctLabel, audienceTotalLabel, audienceInsight, hasAudienceInsight,
-      browserRows, hasBrowserRows, noBrowserRows,
+      browserHeroes, browserRows, hasBrowserRows, noBrowserRows,
+      hasInAppSplit, mainstreamPct, inAppPct, mainstreamBarStyle, inAppBarStyle,
       hasNvrRows, noNvrRows, nvrNewPct, nvrReturningPct, nvrNewStyle, nvrReturningStyle,
+      nvrNewSessionsLabel, nvrReturningSessionsLabel,
       v2PreConvLabel: dec(v2PreConv, 0) + " %", v2PostConvLabel: dec(v2PostConv, 0) + " %",
       v2WorstStepLabel, v2WorstStepValue, v2EndGainLabel, v2EndGainValue: (v2EndGain >= 0 ? "+" : "") + dec(v2EndGain, 0) + " pts",
       v2Insight, hasV2Insight: !!v2Insight, v2TipInsight, hasV2Tip,
