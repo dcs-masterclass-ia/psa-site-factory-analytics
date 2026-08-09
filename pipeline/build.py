@@ -499,7 +499,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             jours_s = (fin_s - deb_s).days + 1
             bloc, _methode = funnel_weekly.bloc_semaine(cli, s.propriete, hote_reprise, deb_s, fin_s, jours_s)
             if bloc:
-                existantes[deb_s.isoformat()] = {"debut": deb_s.isoformat(), "fin": fin_s.isoformat(), **bloc}
+                existantes[deb_s.isoformat()] = {"debut": deb_s.isoformat(), "fin": fin_s.isoformat(),
+                                                  "jours": jours_s, **bloc}
         d["funnelWeekly"] = funnel_weekly.purge_anciennes(existantes, jour_fiable_d)
         if d["funnelWeekly"]:
             journal.append(f"funnel hebdo : {len(d['funnelWeekly'])} semaine(s) en memoire")
