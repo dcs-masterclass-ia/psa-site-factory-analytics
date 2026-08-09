@@ -497,6 +497,7 @@ input[type=date]{color-scheme:dark}
           <div style="flex:1">
             <div style="font-size:15px;color:#6b7280;font-weight:400">Taux de conversion</div>
             <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiConvRef }}" style="font-size:36px;font-weight:600;letter-spacing:-1.4px;color:var(--text)">0</span><span style="font-size:15px;color:#9aa0aa">%</span></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiConvDelta.style }}">{{ kpiConvDelta.text }}</span></div>
             <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="background:#f0ecff;color:#5b3fd1;font-size:12px;font-weight:500;border-radius:100px;padding:3px 11px">{{ convRankLabel }}</span><sc-if value="{{ hasConvRankDelta }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#9aa0aa">{{ convRankDeltaText }}</span></sc-if></div>
           </div>
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#c8a2ff,#8b5cf6);box-shadow:0 10px 24px -8px rgba(139,92,246,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.4" stroke="#fff" stroke-width="1.9"></circle><path d="M10 6.4V10l2.6 1.7" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
