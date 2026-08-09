@@ -478,8 +478,8 @@ input[type=date]{color-scheme:dark}
         <div style="display:flex;align-items:flex-start">
           <div style="flex:1">
             <div style="font-size:15px;color:#6b7280;font-weight:400">Leads</div>
-            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsRef }}" style="font-size:48px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span><span style="font-size:14px;color:#9aa0aa">/ 12 mois</span></div>
-            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ leadsPerDayLabel }}</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span></div>
+            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsRef }}" style="font-size:48px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span></div>
           </div>
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 24px -8px rgba(18,185,129,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.1" stroke="#fff" stroke-width="1.9"></circle><path d="M4.5 16.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
         </div>
@@ -3432,7 +3432,7 @@ class Component extends DCLogic {
         periodPillLabel: "", sparkAxisLeft: "", sparkAxisRight: "",
         kpiTrafficRef: () => {}, kpiTrafficDelta: { style: "", text: "" }, parentBars: [], hasParentBars: false,
         kpiRepriseRef: () => {}, kpiRepriseDelta: { style: "", text: "" }, repriseSparkRef: () => {}, repriseFillRef: () => {},
-        kpiLeadsRef: () => {}, kpiLeadsDelta: { style: "", text: "" }, leadsPerDayLabel: "",
+        kpiLeadsRef: () => {}, kpiLeadsDelta: { style: "", text: "" },
         leadsBars: [], hasLeadsBars: false, leadsAxisLeft: "", leadsAxisMid: "", leadsAxisMidStyle: "", leadsAxisRight: "",
         kpiConvRef: () => {}, kpiConvDelta: { style: "", text: "" },
         convRankLabel: "", convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
@@ -3719,15 +3719,12 @@ class Component extends DCLogic {
     // leads : barres MENSUELLES (9 derniers mois), independantes de la
     // periode choisie en en-tete — comme "Volume vs conversion tradein" plus
     // bas, ce mini-graphe raconte une histoire mensuelle avant/apres V2
-    // plutot que la fenetre jour par jour du selecteur de periode.
-    // la carte KPI "Leads" affiche "/ 12 mois" (comme la maquette) : la
-    // valeur doit donc etre un vrai total glissant sur 12 mois, independant
-    // du selecteur de periode -- pas la periode choisie en en-tete, qui
-    // rendrait le libelle "/ 12 mois" trompeur.
-    const leads12moMonths = rawSite ? rawSite.months.slice(-12) : [];
-    const leads12moTotal = leads12moMonths.reduce((s, m) => s + ((((rawSite && rawSite.leads) || {})[m] || {}).total || 0), 0);
-    const leads12moPrevMonths = rawSite ? rawSite.months.slice(-24, -12) : [];
-    const leads12moPrevTotal = leads12moPrevMonths.length ? leads12moPrevMonths.reduce((s, m) => s + ((((rawSite && rawSite.leads) || {})[m] || {}).total || 0), 0) : null;
+    // plutot que la fenetre jour par jour du selecteur de periode. La
+    // VALEUR de la carte KPI, elle, doit suivre la periode choisie comme
+    // "Sessions parent"/"Sessions reprise" juste a cote (agg.leads/cmp.leads,
+    // deja bornes a range.debut..range.fin) -- le "/ 12 mois" fixe etait
+    // trompeur des qu'on changeait de periode en en-tete (signale le
+    // 09/08/2026).
     const leadsLast6 = rawSite ? rawSite.months.slice(-9) : [];
     const leadsMonthly = leadsLast6.map(m => ((rawSite.leads || {})[m] || {}).total || 0);
     const leadsV2MonthIdx = (rawSite && rawSite.v2_date) ? leadsLast6.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
@@ -5121,8 +5118,7 @@ class Component extends DCLogic {
       parentBars, hasParentBars: parentBars.length > 0,
       kpiRepriseRef: el => { if (el) this.up(el, agg.reprise, fmt); }, kpiRepriseDelta: deltaBadge(agg.reprise, cmp && cmp.reprise, ""),
       repriseSparkRef, repriseFillRef,
-      kpiLeadsRef: el => { if (el) this.up(el, leads12moTotal, fmt); }, kpiLeadsDelta: deltaBadge(leads12moTotal, leads12moPrevTotal, ""),
-      leadsPerDayLabel: fmt(Math.round(leads12moTotal / 365)) + " leads/jour",
+      kpiLeadsRef: el => { if (el) this.up(el, agg.leads, fmt); }, kpiLeadsDelta: deltaBadge(agg.leads, cmp && cmp.leads, ""),
       leadsBars, hasLeadsBars: leadsBars.length > 0, leadsAxisLeft, leadsAxisMid, leadsAxisMidStyle, leadsAxisRight,
       kpiConvRef: el => { if (el) this.up(el, convPct, x => dec(x, 2) + " %"); }, kpiConvDelta: deltaBadge(convPct, cmpConvPct, "pts"),
       convRankLabel, convMedianLabel, convBestLabel, convRankDeltaText, hasConvRankDelta: !!convRankDeltaText, convRankDeltaStyle,
