@@ -476,7 +476,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         steps = v2_report.v2steps_depuis_hebdo(v2w) if v2w else None
         if steps:
             d["v2steps"] = steps
-            d["v2"] = {"site": s.nom, "is_v2_split": True, "note": v2_report.NOTE_AUTO}
+            pre_label = v2_report.label_plage(v2w["baseline"]["debut"], v2w["baseline"]["fin"])
+            post_label = v2_report.label_plage(v2w["weeks"][0]["debut"], v2w["weeks"][-1]["fin"])
+            d["v2"] = {"site": s.nom, "is_v2_split": True, "note": v2_report.NOTE_AUTO,
+                       "pre_label": pre_label, "post_label": post_label}
             journal.append("V2 funnel avant/après : calculé automatiquement depuis v2Weekly")
 
     d["anomaly"] = anomalies
