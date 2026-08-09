@@ -23,10 +23,10 @@ import json
 import os
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, ga4, insights, leads_extract, search_console, v2_report
+from pipeline import channel, detect, discover, funnel, funnel_weekly, ga4, insights, leads_extract, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -481,6 +481,25 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             d["v2"] = {"site": s.nom, "is_v2_split": True, "note": v2_report.NOTE_AUTO,
                        "pre_label": pre_label, "post_label": post_label}
             journal.append("V2 funnel avant/après : calculé automatiquement depuis v2Weekly")
+
+    # funnel hebdomadaire glissant (funnelWeekly) : cadre precisement les
+    # periodes choisies par l'utilisateur sur le dashboard, complementaire a
+    # funnelMonth (mensuel, seul recours au-dela de la fenetre glissante).
+    # Cout maitrise : 1 a 3 requetes funnel par site et par jour (semaine en
+    # cours + rattrapage court), jamais un backfill de tout l'historique.
+    try:
+        jour_fiable_d = date.fromisoformat(jour_fiable())
+        existantes = d.get("funnelWeekly") or {}
+        for deb_s, fin_s in funnel_weekly.semaines_a_calculer(existantes, jour_fiable_d):
+            jours_s = (fin_s - deb_s).days + 1
+            bloc, _methode = funnel_weekly.bloc_semaine(cli, s.propriete, hote_reprise, deb_s, fin_s, jours_s)
+            if bloc:
+                existantes[deb_s.isoformat()] = {"debut": deb_s.isoformat(), "fin": fin_s.isoformat(), **bloc}
+        d["funnelWeekly"] = funnel_weekly.purge_anciennes(existantes, jour_fiable_d)
+        if d["funnelWeekly"]:
+            journal.append(f"funnel hebdo : {len(d['funnelWeekly'])} semaine(s) en memoire")
+    except Exception as e:
+        journal.append(f"funnel hebdo en erreur ({type(e).__name__}: {e})")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios
