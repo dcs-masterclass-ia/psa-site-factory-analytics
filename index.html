@@ -3912,11 +3912,12 @@ class Component extends DCLogic {
     const v2PreConv = v2First.a ? v2Last.a / v2First.a * 100 : 0;
     const v2PostConv = v2First.b ? v2Last.b / v2First.b * 100 : 0;
     const v2DeltaPts = v2PostConv - v2PreConv;
-    // sous-titre du selecteur de site (en-tete) : n'affiche "rang N" que sur
-    // l'onglet GA4, seul endroit ou ce rang est calcule (cout de 64
-    // agregations volontairement pas reproduit sur les autres onglets).
+    // sous-titre du selecteur de site (en-tete) : plus de "rang N" du tout
+    // (n'apparaissait que sur GA4, incoherent avec les autres onglets --
+    // signale le 09/08/2026), le rang de conversion reste visible dans la
+    // carte KPI dediee de l'onglet GA4.
     const currentSiteRank = currentSiteIdx >= 0
-      ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length + (hasV2 ? " · V2" : "") + (st.tab === "ga4" && rang > 0 ? " · rang " + rang : "")
+      ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length + (hasV2 ? " · V2" : "")
       : "";
     const V2_STEP_LABELS = ["Page d'accueil", "Version", "Kilométrage", "Coordonnées", "Point de vente", "Estimation"];
     // une icone par etape plutot qu'un numero abstrait, pour que le parcours
