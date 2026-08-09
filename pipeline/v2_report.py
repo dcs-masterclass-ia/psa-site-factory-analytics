@@ -115,6 +115,16 @@ def _label_semaine(debut, fin):
     return f"{debut.day} {MOIS_ABREGES[debut.month - 1]} – {fin.day} {MOIS_ABREGES[fin.month - 1]}"
 
 
+def label_plage(debut_iso, fin_iso):
+    """Format compact 'JJ–JJ/MM' (ou 'JJ/MM–JJ/MM' si les mois different),
+    meme convention que les pre_label/post_label saisis a la main sur les
+    premiers sites V2 (ex. PEUGEOT PT : "01–21/07" / "22–31/07")."""
+    d, f = date.fromisoformat(debut_iso), date.fromisoformat(fin_iso)
+    if d.month == f.month and d.year == f.year:
+        return f"{d.day:02d}–{f.day:02d}/{f.month:02d}"
+    return f"{d.day:02d}/{d.month:02d}–{f.day:02d}/{f.month:02d}"
+
+
 def _funnel_periode(cli, pid, hote, debut, fin):
     """Renvoie (steps, conversion_pct) ou (None, None) sans jamais lever."""
     try:
