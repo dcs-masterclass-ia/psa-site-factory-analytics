@@ -2358,6 +2358,7 @@ function revealPath(el, d, delayMs, durationMs) {
 class Component extends DCLogic {
   state = {
     tab: "ga4",
+    navActiveTab: "ga4", // pill de nav active immediatement au clic, independant du fondu de contenu (190ms) -- voir switchTab()
     period: "28 j",
     customDate: false,
     dateFrom: "2026-07-01",
@@ -2405,13 +2406,15 @@ class Component extends DCLogic {
   }
 
   /* onglet GA4/Search Console : bascule en deux temps (fondu de sortie puis
-     changement d'onglet) au lieu d'un cut instantane. Chaque item de nav
-     porte son propre etat actif/inactif (pill blanche vs plat) -- plus de
-     curseur glissant a mesurer/positionner depuis la refonte du
-     09/08/2026 (rangee du haut alignee sur la maquette de reference). */
+     changement d'onglet) au lieu d'un cut instantane. La pill de nav active
+     (navActiveTab) bascule tout de suite au clic pour un retour visuel
+     immediat ; le contenu (tab) ne bascule qu'apres le fondu de sortie de
+     190ms -- les deux etaient lies avant, ce qui faisait que la pill ne
+     bougeait pas du tout pendant 190ms apres le clic (pas "smooth",
+     signale le 09/08/2026). */
   switchTab(next) {
     if (this.state.tab === next || this.state.tabSwitching) return;
-    this.setState({ tabSwitching: true });
+    this.setState({ tabSwitching: true, navActiveTab: next });
     clearTimeout(this._tabTimer);
     this._tabTimer = setTimeout(() => this.setState({ tab: next, tabSwitching: false }), 190);
   }
@@ -4936,12 +4939,14 @@ class Component extends DCLogic {
     // contenu centre -- copie au pixel de la maquette de reference fournie
     // le 09/08/2026 (ma premiere passe etait trop approximative : fond
     // transparent, items non-equirepartis).
-    const navItemStyle = on => "display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:background .15s,color .15s;font-weight:" + (on ? "600" : "500") +
+    const navItemStyle = on => "display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:background .2s ease,color .2s ease,box-shadow .2s ease;font-weight:" + (on ? "600" : "500") +
       ";color:" + (on ? "#14161a" : "#6b7280") +
       ";background:" + (on ? "#fff" : "transparent") +
       ";box-shadow:" + (on ? "0 2px 10px rgba(17,17,26,.09)" : "none");
+    // navActiveTab (pas st.tab) pilote la pill : bascule au clic, sans
+    // attendre les 190ms du fondu de contenu -- voir switchTab().
     const tabs = TAB_DEFS.map(t => {
-      const on = st.tab === t.key;
+      const on = st.navActiveTab === t.key;
       return {
         label: t.label,
         pick: () => this.switchTab(t.key),
@@ -4951,7 +4956,7 @@ class Component extends DCLogic {
         style: navItemStyle(on),
       };
     });
-    const kamiaOn = st.tab === "assistant";
+    const kamiaOn = st.navActiveTab === "assistant";
     const kamiaTab = {
       pick: () => this.switchTab("assistant"),
       // KamIA garde son propre logo (comme dans l'ancien front) plutot que
