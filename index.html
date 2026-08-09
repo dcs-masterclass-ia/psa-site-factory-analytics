@@ -3624,8 +3624,16 @@ class Component extends DCLogic {
       deltaStyle: deltaInfo.style, delta: deltaInfo.text, note,
     });
 
-    const convPct = agg.reprise ? agg.leads / agg.reprise * 100 : 0;
-    const cmpConvPct = cmp && cmp.reprise ? cmp.leads / cmp.reprise * 100 : null;
+    // taux de conversion = sessions GA4 vs "leads" GA4 (etape finale du
+    // funnel, evenement tradein_request), PAS les leads back-office : les
+    // deux sources ne se comparent pas (signale le 09/08/2026 -- ce chiffre
+    // ne matchait ni le "Taux de completion" ni le funnel avant/apres V2,
+    // tous deux 100% GA4). Meme etape finale que ces deux modules
+    // (agg.funnelSteps, dernier = "Estimation"/tradein_request).
+    const ga4LeadsProxy = agg.funnelSteps && agg.funnelSteps.length ? agg.funnelSteps[agg.funnelSteps.length - 1].users : 0;
+    const cmpGa4LeadsProxy = cmp && cmp.funnelSteps && cmp.funnelSteps.length ? cmp.funnelSteps[cmp.funnelSteps.length - 1].users : 0;
+    const convPct = agg.reprise ? ga4LeadsProxy / agg.reprise * 100 : 0;
+    const cmpConvPct = cmp && cmp.reprise ? cmpGa4LeadsProxy / cmp.reprise * 100 : null;
     const leadsPerDay = agg.leads / days, cmpLeadsPerDay = cmp ? cmp.leads / days : null;
     const trafficPerDay = agg.traffic, cmpTraffic = cmp ? cmp.traffic : null;
 
@@ -3643,7 +3651,8 @@ class Component extends DCLogic {
       const rankSites = (debut2, fin2) => {
         const arr = ALL.map(n => {
           const a = this.aggregate.call({ state: { sites: [n] }, data: this.data }, debut2, fin2);
-          return { site: n, taux: a.reprise ? a.leads / a.reprise * 100 : null };
+          const leadsProxy = a.funnelSteps && a.funnelSteps.length ? a.funnelSteps[a.funnelSteps.length - 1].users : 0;
+          return { site: n, taux: a.reprise ? leadsProxy / a.reprise * 100 : null };
         }).filter(x => x.taux != null);
         arr.sort((a, b) => b.taux - a.taux);
         return arr;
