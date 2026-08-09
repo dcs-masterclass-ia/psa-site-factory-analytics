@@ -366,7 +366,10 @@ input[type=date]{color-scheme:dark}
           <div style="height:1px;background:var(--line);margin:8px 2px"></div>
 
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 10px">
-            <span style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à la période précédente</span>
+            <div>
+              <div style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à la période précédente</div>
+              <div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">{{ compareRangeLabel }}</div>
+            </div>
             <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
           </div>
 
@@ -402,7 +405,7 @@ input[type=date]{color-scheme:dark}
     </sc-if>
 
     <div style="margin-left:auto;display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:500;color:var(--muted)">
-      <span>Comparé à la période précédente</span>
+      <span>Comparé à la période précédente <span style="font-size:12.5px;color:var(--muted2)">({{ compareRangeLabel }})</span></span>
       <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
     </div>
   </div>
@@ -3180,10 +3183,18 @@ class Component extends DCLogic {
     const agg = this.aggregate(range.debut, range.fin);
     const days = Math.max(1, nbJours(range.debut, range.fin));
 
-    // comparaison periode precedente
+    // comparaison periode precedente : fenetre de meme duree juste avant la
+    // periode affichee (pas le meme mois l'an dernier, ni le mois calendaire
+    // precedent) -- le calcul de la plage (prev) est toujours fait, meme
+    // toggle eteint, pour pouvoir afficher "vs DD/MM → DD/MM" a cote du
+    // bouton et lever l'ambiguite signalee le 09/08/2026 ("c'est pas clair
+    // ce qu'il calcule"). Seule l'agregation (couteuse) reste conditionnee
+    // au toggle.
+    const fmtDateShort = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : "";
+    const prev = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
+    const compareRangeLabel = "vs " + fmtDateShort(prev.debut) + " → " + fmtDateShort(prev.fin);
     let cmp = null;
     if (st.compare) {
-      const prev = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
       cmp = this.aggregate(prev.debut, prev.fin);
     }
     const deltaBadge = (cur, ref, unit, invert) => {
@@ -3278,7 +3289,6 @@ class Component extends DCLogic {
     // range.debut/fin sont deja les vraies bornes calculees, meme quand ce
     // n'est pas une date precise (une periode "12 mois" a bien une date de
     // debut/fin reelle, on ne les invente pas).
-    const fmtDateShort = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : "";
     const periodPickerTopLabel = st.customDate ? "Période personnalisée" : st.period;
     const periodRangeLabel = fmtDateShort(range.debut) + " → " + fmtDateShort(range.fin);
 
@@ -4584,6 +4594,7 @@ class Component extends DCLogic {
       toggleCompare: () => this.setState(s => ({ compare: !s.compare })),
       compareToggle: "width:52px;height:30px;border-radius:999px;border:none;cursor:pointer;padding:3px;display:flex;justify-content:" + (st.compare ? "flex-end" : "flex-start") + ";transition:background .22s ease;background:" + (st.compare ? "#4ADE80" : "var(--soft3)"),
       compareKnob: "width:24px;height:24px;border-radius:50%;background:" + (st.compare ? "#0d0d0d" : "var(--muted)") + ";display:block;transition:background .22s ease",
+      compareRangeLabel,
       pickerBtn: "display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:inherit;height:52px;padding:0 20px;border-radius:999px;transition:background .2s ease;background:" + (st.pickerOpen ? "var(--hover)" : "var(--card)"),
       gscKpiClics, gscKpiImpr, gscKpiCtr, gscKpiPos,
       periodPillLabel, sparkAxisLeft, sparkAxisRight,
