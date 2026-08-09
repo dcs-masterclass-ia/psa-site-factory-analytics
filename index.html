@@ -4121,9 +4121,13 @@ class Component extends DCLogic {
     const hasBrowserRows = browserRows.length > 0;
     const noBrowserRows = !hasBrowserRows;
 
-    const nvrTotal = [...agg.newVsReturning.values()].reduce((s, v) => s + v.sessions, 0) || 1;
+    // GA4 renvoie parfois "(not set)" pour newVsReturning (constate le
+    // 09/08/2026 sur le premier run reel) : exclu du total sinon les deux
+    // pourcentages affiches ne sommaient plus a 100 % (le "(not set)"
+    // restait compte au denominateur sans etre affiche nulle part).
     const nvrNew = agg.newVsReturning.get("new");
     const nvrReturning = agg.newVsReturning.get("returning");
+    const nvrTotal = (nvrNew ? nvrNew.sessions : 0) + (nvrReturning ? nvrReturning.sessions : 0) || 1;
     const hasNvrRows = !!(nvrNew || nvrReturning);
     const noNvrRows = !hasNvrRows;
     const nvrNewPct = nvrNew ? dec(nvrNew.sessions / nvrTotal * 100, 0) : "0";
