@@ -266,10 +266,13 @@ input[type=date]{color-scheme:dark}
       </div>
     </div>
 
-    <nav ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:2px;background:var(--card);border-radius:999px;padding:6px;flex:none">
-      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:6px;bottom:6px;left:6px;width:0;border-radius:999px;background:var(--active-bg);transition:transform .45s cubic-bezier(.34,1.3,.4,1),width .45s cubic-bezier(.34,1.3,.4,1);z-index:0"></span>
+    <!-- nav a plat (pas de barre grise continue ni de curseur glissant) :
+         seul l'item actif porte une pill blanche, les autres restent a nu
+         sur le fond de l'en-tete -- refonte du 09/08/2026 sur reference
+         fournie (rangee jugee trop chargee/peu hierarchisee avant). -->
+    <nav style="display:flex;align-items:center;gap:4px;flex:none">
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
-        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">
+        <div onClick="{{ t.pick }}" role="button" tabindex="0" style="{{ t.style }}">
           <span ref="{{ t.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
           <span>{{ t.label }}</span>
           <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
@@ -277,27 +280,22 @@ input[type=date]{color-scheme:dark}
           </sc-if>
         </div>
       </sc-for>
-      <!-- Big Query : pas encore disponible, jamais cliquable, ne participe pas
-           au pill glissant (aucun etat "actif" possible pour cet onglet). -->
-      <div role="button" aria-disabled="true" title="Bientôt disponible" style="position:relative;z-index:1;display:flex;align-items:center;gap:6px;font-family:inherit;font-size:14px;font-weight:400;height:50px;padding:0 14px 0 15px;border-radius:999px;color:var(--muted2);cursor:not-allowed;white-space:nowrap">
+      <!-- Big Query : pas encore disponible, jamais cliquable, jamais actif. -->
+      <div role="button" aria-disabled="true" title="Bientôt disponible" style="display:flex;align-items:center;gap:8px;font-family:inherit;font-size:14px;font-weight:500;padding:10px 16px;border-radius:999px;color:var(--muted2);cursor:not-allowed;white-space:nowrap">
         <span ref="{{ bigQueryIconRef }}" style="display:flex;flex:none"></span>
         BigQuery
-        <span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:3px 9px">Bientôt</span>
+        <span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#b7bac2">Bientôt</span>
+      </div>
+      <div onClick="{{ kamiaTab.pick }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
+        <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
+        <span>KamIA</span>
+        <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
+          <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
+        </sc-if>
       </div>
     </nav>
 
     <div style="flex:1;min-width:20px"></div>
-
-    <!-- KamIA n'est pas un onglet de rapport comme les autres : bouton rond
-         a part (meme famille visuelle que les autres controles a droite),
-         plutot que noye dans la meme rangee de pills que GA4/GSC/V2/PageSpeed
-         -- confusion signalee le 09/08/2026. -->
-    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaTab.style }}" style-hover="box-shadow:0 10px 24px -8px rgba(17,17,26,.12);transform:translateY(-1px)">
-      <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
-      <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
-        <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
-      </sc-if>
-    </button>
 
     <div style="position:relative;flex:none">
       <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
@@ -392,7 +390,7 @@ input[type=date]{color-scheme:dark}
       </sc-if>
     </div>
 
-    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111318,#3a3f4a);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.25)">{{ userInitials }}</button>
+    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7d99ff,#3b5ae0);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
   </header>
 
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
@@ -2402,37 +2400,10 @@ class Component extends DCLogic {
   }
 
   /* onglet GA4/Search Console : bascule en deux temps (fondu de sortie puis
-     changement d'onglet) au lieu d'un cut instantane, avec un curseur qui
-     glisse plutot que deux etats de fond qui clignotent. */
-  tabRef(el, key) {
-    if (!el) return;
-    this._tabBtnEls = this._tabBtnEls || {};
-    this._tabBtnEls[key] = el;
-    if (key === this.state.tab) this.updateTabIndicator();
-  }
-  updateTabIndicator() {
-    const ind = this._tabIndicatorEl;
-    if (!ind) return;
-    // KamIA n'est plus un onglet de la barre (bouton rond a part) : sur
-    // cet onglet, aucun des 4 pills de rapport n'est actif, le pill
-    // glissant doit disparaitre plutot que rester fige sur le dernier
-    // onglet visite (sinon GA4 a l'air encore selectionne a tort).
-    if (this.state.tab === "assistant") { ind.style.width = "0px"; return; }
-    const el = this._tabBtnEls && this._tabBtnEls[this.state.tab];
-    if (!el) return;
-    let left = el.offsetLeft;
-    let width = el.offsetWidth;
-    // garde-fou : quelle que soit la mesure du bouton, le pill ne doit
-    // jamais deborder du conteneur (meme marge de 6px que le padding).
-    const bar = this._tabBarEl;
-    if (bar) {
-      if (left < 6) left = 6;
-      const maxRight = bar.clientWidth - 6;
-      if (left + width > maxRight) width = Math.max(0, maxRight - left);
-    }
-    ind.style.transform = "translateX(" + left + "px)";
-    ind.style.width = width + "px";
-  }
+     changement d'onglet) au lieu d'un cut instantane. Chaque item de nav
+     porte son propre etat actif/inactif (pill blanche vs plat) -- plus de
+     curseur glissant a mesurer/positionner depuis la refonte du
+     09/08/2026 (rangee du haut alignee sur la maquette de reference). */
   switchTab(next) {
     if (this.state.tab === next || this.state.tabSwitching) return;
     this.setState({ tabSwitching: true });
@@ -2443,13 +2414,12 @@ class Component extends DCLogic {
   componentDidMount() {
     this.wireLogin();
     this.boot();
-    this._onResize = () => { this.fitScale(); this.updateTabIndicator(); };
+    this._onResize = () => this.fitScale();
     window.addEventListener("resize", this._onResize);
-    requestAnimationFrame(() => { this.fitScale(); this.updateTabIndicator(); });
+    requestAnimationFrame(() => this.fitScale());
   }
   componentDidUpdate() {
     this.fitScale();
-    this.updateTabIndicator();
     const sig = this.periodSignature();
     if (sig !== this._sig) { this._sig = sig; this.runCounters(); }
   }
@@ -3448,7 +3418,7 @@ class Component extends DCLogic {
         hasV2: false, noV2: true, v2SubLabel: "", v2BadgeStyle: "", v2BadgeText: "",
         v2WorstStepLabel: "", v2WorstStepValue: "—", v2EndGainLabel: "", v2EndGainValue: "—",
         v2Insight: "", hasV2Insight: false, v2TipInsight: "", hasV2Tip: false,
-        tabFadeStyle: "margin-top:24px", tabIndicatorRef: () => {}, tabBarRef: () => {},
+        tabFadeStyle: "margin-top:24px",
         togglePicker: () => {},
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
@@ -4940,7 +4910,6 @@ class Component extends DCLogic {
       v2: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M2 10.5h3l2-6 3.6 12 2.4-9 1.6 3h3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       performance: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.3" stroke="currentColor" stroke-width="1.7"/><path d="M10 10 13.2 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/></svg>',
       bigquery: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="4.6" rx="6" ry="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 4.6v10.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2V4.6M4 9.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2" stroke="currentColor" stroke-width="1.6"/></svg>',
-      assistant: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l1.7 4.3L16 8.5l-4.3 1.7L10 14.5l-1.7-4.3L4 8.5l4.3-1.7L10 2.5Z" fill="currentColor"/></svg>',
     };
     const TAB_BADGE_STYLE = {
       pos: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--pos-bg);color:var(--pos)",
@@ -4953,53 +4922,39 @@ class Component extends DCLogic {
       { key: "gsc", label: "Search Console" },
       { key: "v2", label: "Comparaison V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
       { key: "performance", label: "PageSpeed", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
-      { key: "assistant", label: "KamIA", hasBadge: watchConstatsCurrentSite > 0, badgeText: String(watchConstatsCurrentSite), badgeLevel: "accent" },
     ];
-    const allTabs = TAB_DEFS.map(t => {
+    // nav a plat comme la maquette de reference (09/08/2026) : plus de
+    // barre grise continue ni de curseur glissant a mesurer -- chaque item
+    // porte directement son style actif (pill blanche + texte fonce) ou
+    // inactif (transparent + texte att'nue).
+    const navItemStyle = on => "display:flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "700" : "500") + ";white-space:nowrap;padding:10px 16px;border-radius:999px;transition:background .22s ease,color .22s ease,box-shadow .22s ease;background:" +
+      (on ? "#fff" : "transparent") + ";box-shadow:" + (on ? "0 3px 12px rgba(17,17,26,.07)" : "none") + ";color:" + (on ? "var(--text)" : "var(--muted)");
+    const tabs = TAB_DEFS.map(t => {
       const on = st.tab === t.key;
       return {
         label: t.label,
         pick: () => this.switchTab(t.key),
-        ref: el => this.tabRef(el, t.key),
-        // KamIA garde son propre logo (comme dans l'ancien front) plutot
-        // que l'icone generique : blanc sur le fond actif fonce, noir sinon,
-        // pour rester lisible dans les deux etats (le mark n'a pas de
-        // variante currentColor comme les icones SVG inline).
-        iconRef: el => {
-          if (!el) return;
-          if (t.key === "assistant") {
-            const c = on ? HERMES_LOGO_CROP.tabBlanc : HERMES_LOGO_CROP.tabNoir;
-            el.innerHTML = '<div style="' + c.wrapStyle + '"><img src="' + c.src + '" alt="" style="' + c.imgStyle + '"></div>';
-          } else {
-            el.innerHTML = TAB_ICON_SVG[t.key];
-          }
-        },
+        iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[t.key]; },
         hasBadge: !!t.hasBadge, badgeText: t.badgeText || "",
-        // pastille coloree (vert/rouge/violet) sur fond blanc quand l'onglet
-        // est inactif ; pastille blanche translucide quand l'onglet est
-        // actif (fond fonce), sinon la couleur se fond dans le fond actif.
-        badgeStyle: on
-          ? "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:rgba(255,255,255,.24);color:var(--active-fg)"
-          : (TAB_BADGE_STYLE[t.badgeLevel] || ""),
-        style: "position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "600" : "400") + ";height:50px;padding:0 15px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
+        badgeStyle: TAB_BADGE_STYLE[t.badgeLevel] || "",
+        style: navItemStyle(on),
       };
     });
-    // KamIA n'est pas un onglet de rapport parmi d'autres : bouton rond a
-    // part dans le cluster de droite (site/periode/compte), pas de pill
-    // glissant ni de mesure relative a la barre d'onglets -- refonte du
-    // 09/08/2026 (rangee du haut jugee confuse, KamIA s'y confondait avec
-    // les vrais onglets de rapport).
-    const tabs = allTabs.slice(0, 4);
     const kamiaOn = st.tab === "assistant";
-    const kamiaRaw = allTabs[4];
     const kamiaTab = {
-      pick: kamiaRaw.pick,
-      iconRef: kamiaRaw.iconRef,
-      hasBadge: kamiaRaw.hasBadge,
-      badgeText: kamiaRaw.badgeText,
-      badgeStyle: "position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#8b5cf6;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;line-height:1",
-      style: "position:relative;flex:none;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:box-shadow .2s ease,transform .2s ease;background:" +
-        (kamiaOn ? "var(--active-bg)" : "#fff") + ";box-shadow:0 4px 20px rgba(17,17,26,.05)",
+      pick: () => this.switchTab("assistant"),
+      // KamIA garde son propre logo (comme dans l'ancien front) plutot que
+      // l'icone generique -- toujours le trace fonce, le fond du nav est
+      // desormais blanc/transparent dans les deux etats (plus de pill
+      // active sombre depuis la refonte du 09/08/2026).
+      iconRef: el => {
+        if (!el) return;
+        const c = HERMES_LOGO_CROP.tabNoir;
+        el.innerHTML = '<div style="' + c.wrapStyle + '"><img src="' + c.src + '" alt="" style="' + c.imgStyle + '"></div>';
+      },
+      hasBadge: watchConstatsCurrentSite > 0, badgeText: String(watchConstatsCurrentSite),
+      badgeStyle: TAB_BADGE_STYLE.accent,
+      style: navItemStyle(kamiaOn),
     };
     const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
 
@@ -5135,8 +5090,6 @@ class Component extends DCLogic {
       exportGa4Pdf: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Pdf(); },
       exportGa4Ppt: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Ppt(); },
       tabFadeStyle,
-      tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
-      tabBarRef: el => { this._tabBarEl = el; },
       ownBrandShare, ownBrandSharePct, heatmapDaysLabel: last90.length + " derniers jours",
       gscAxisLabels, clicsLineRef, imprLineRef, imprFillRef, posLineRef,
       queries, pages, gscQueriesTotal, pageInsightText,
