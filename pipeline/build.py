@@ -276,10 +276,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             ga4._egal("hostName", hote_reprise))
         prof_jour, prof_mois = {}, {}
         audience_device, audience_navigateur, audience_retour = {}, {}, {}
-        for date, pays, nav, app, retour, n, u in brut:
+        # variable nommee jour_iso (pas "date") : ne pas masquer l'import
+        # datetime.date, utilise plus loin pour le funnel hebdomadaire
+        # glissant -- bug reel du 10/08/2026, provoquait une AttributeError
+        # silencieuse ("'str' object has no attribute 'fromisoformat'") sur
+        # tous les sites.
+        for jour_iso, pays, nav, app, retour, n, u in brut:
             n, u = int(n), int(u)
-            prof_jour.setdefault(date, {})[(pays, nav, app)] = \
-                prof_jour.setdefault(date, {}).get((pays, nav, app), 0) + n
+            prof_jour.setdefault(jour_iso, {})[(pays, nav, app)] = \
+                prof_jour.setdefault(jour_iso, {}).get((pays, nav, app), 0) + n
             prof_mois[(pays, nav, app)] = prof_mois.get((pays, nav, app), 0) + n
             for acc, cle in ((audience_device, app), (audience_navigateur, nav), (audience_retour, retour)):
                 e = acc.setdefault(cle or "(non défini)", {"sessions": 0, "users": 0})
