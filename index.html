@@ -1507,26 +1507,22 @@ input[type=date]{color-scheme:dark}
 
       <div style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;padding:20px 10px">
-            <span style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;margin-bottom:8px">
-              <div style="width:34.9px;height:32px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-9px;left:-20.1px;width:75px;height:50px;max-width:none"></div>
-            </span>
-            <div style="font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.6px;max-width:520px">Que souhaitez-vous comprendre aujourd'hui ?</div>
-            <div style="font-size:15px;font-weight:500;color:var(--muted);max-width:480px;line-height:1.5">Pose une question sur le trafic, les leads ou le parcours de reprise. KamIA croisera les agents pertinents.</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px;width:100%;max-width:680px;text-align:left">
-              <sc-for list="{{ quickQuestions }}" as="q" hint-placeholder-count="4">
-                <button onClick="{{ q.pick }}" style="display:flex;align-items:flex-start;gap:12px;text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:16px 18px;cursor:pointer;font-family:inherit;transition:background .18s ease,transform .18s ease" style-hover="background:var(--hover);transform:translateY(-2px)">
-                  <span style="width:34px;height:34px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none;color:#F5411E">
-                    <sc-if value="{{ q.isBars }}" hint-placeholder-val="{{ true }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg></sc-if>
-                    <sc-if value="{{ q.isFunnel }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h18l-7 9v6l-4 2v-8Z"></path></svg></sc-if>
-                    <sc-if value="{{ q.isCompare }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"></path><path d="M4 7h16"></path><path d="m16 21 4-4-4-4"></path><path d="M20 17H4"></path></svg></sc-if>
-                    <sc-if value="{{ q.isSearch }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></sc-if>
-                  </span>
-                  <span>
-                    <div style="font-size:14.5px;font-weight:700;color:var(--text)">{{ q.title }}</div>
-                    <div style="margin-top:3px;font-size:13px;font-weight:500;color:var(--muted);line-height:1.4">{{ q.desc }}</div>
-                  </span>
-                </button>
+          <div style="flex:1;display:flex;flex-direction:column;gap:20px;padding:6px 4px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <span style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
+                <div style="width:24px;height:22px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-6.2px;left:-13.8px;width:51.5px;height:34.3px;max-width:none"></div>
+              </span>
+              <div>
+                <div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px">Analyse rapide · {{ currentSiteLabel }}</div>
+                <div style="font-size:13px;font-weight:500;color:var(--muted)">Ce que KamIA a déjà repéré sur ce site, à partir des données réelles de la période.</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <sc-for list="{{ quickAnalysisCards }}" as="c" hint-placeholder-count="4">
+                <div style="border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:16px 18px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#F5411E">{{ c.label }}</div>
+                  <div style="margin-top:6px;font-size:13.5px;font-weight:500;color:var(--text2);line-height:1.5">{{ c.text }}</div>
+                </div>
               </sc-for>
             </div>
           </div>
@@ -3404,7 +3400,7 @@ class Component extends DCLogic {
     if (!st.booted) {
       return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
-        setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
+        setChatInput: () => {}, sendChatMessage: () => {}, quickAnalysisCards: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
         watchModal: null, hasWatchModal: false,
         watchFilterChips: [],
@@ -4626,17 +4622,6 @@ class Component extends DCLogic {
       };
     });
 
-    const QUICK_QUESTIONS = [
-      { title: "Comparer une performance", desc: "Évolution du trafic, des leads et de la conversion.",
-        icon: "bars", text: "Compare l'évolution du trafic, des leads et de la conversion sur les 4 dernières semaines, avec un graphique." },
-      { title: "Analyser un funnel", desc: "Identifier les étapes de rupture du parcours.",
-        icon: "funnel", text: "Quelles sont les étapes du funnel où on perd le plus d'utilisateurs, et pourquoi ?" },
-      { title: "Comparer V1 vs V2", desc: "Impact du nouveau site de reprise sur la conversion.",
-        icon: "compare", text: "Compare la performance V1 et V2 : trafic, leads et taux de conversion." },
-      { title: "Rechercher une cause", desc: "Croiser trafic, leads et funnel pour expliquer une variation.",
-        icon: "search", text: "Pourquoi les leads ont-ils varié récemment ? Croise trafic, funnel et sources, et propose des actions." },
-    ].map(q => ({ ...q, isBars: q.icon === "bars", isFunnel: q.icon === "funnel", isCompare: q.icon === "compare", isSearch: q.icon === "search", pick: () => this.pickQuickQuestion(q.text) }));
-
     // panneau "constats automatiques" (30 % de l'onglet Hermès) : ecrit par
     // le job planifie quotidien (.github/workflows/hermes-watch.yml, voir
     // data/hermes_watch.json), jamais par ce fichier. Meme approche de
@@ -5043,6 +5028,22 @@ class Component extends DCLogic {
       insight: kamiaHeadline,
     } : null;
 
+    // "Analyse rapide" (onglet KamIA, ecran avant le premier message) :
+    // remplace le bloc "pose une question" + questions rapides (juge pas
+    // assez rempli, demande du 09/08/2026) par des insights REELS deja
+    // calcules et affiches ailleurs dans l'appli pour ce site -- jamais un
+    // chiffre recalcule ou invente pour l'occasion. Filtre les domaines
+    // sans donnee reelle (ex. V2 sur un site qui n'a pas encore bascule)
+    // plutot que d'afficher une carte vide.
+    const quickAnalysisCards = currentSite ? [
+      { label: "Vue d'ensemble", text: kamiaHeadline },
+      hasTunnelInsight ? { label: "Tunnel de conversion", text: tunnelLeakInsight } : null,
+      v2Insight ? { label: "Avant / après V2", text: v2Insight } : null,
+      hasAudienceInsight ? { label: "Audience & environnement", text: audienceInsight } : null,
+      sourceInsight ? { label: "Sources d'acquisition", text: sourceInsight } : null,
+      { label: "Search Console", text: pageInsightText },
+    ].filter(Boolean) : [];
+
     return {
       tabs, kamiaTab, bigQueryIconRef, bigQueryStyle, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror, mirrorTotalsLabel,
@@ -5073,7 +5074,7 @@ class Component extends DCLogic {
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
-      quickQuestions: QUICK_QUESTIONS,
+      quickAnalysisCards,
       watchConstats, hasWatchConstats: watchConstats.length > 0, noWatchConstats: watchConstats.length === 0, watchLastUpdate,
       watchModal, hasWatchModal,
       watchFilterChips,
