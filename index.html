@@ -274,9 +274,12 @@ input[type=date]{color-scheme:dark}
 
     <!-- nav = pill grise pleine largeur, items a largeur egale et contenu
          centre -- copie de la maquette de reference fournie le 09/08/2026. -->
-    <nav style="flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:#f4f5f7;border-radius:100px;padding:4px">
+    <nav ref="{{ tabBarRef }}" style="position:relative;flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:#f4f5f7;border-radius:100px;padding:4px">
+      <!-- pill active : un seul element qui glisse (translateX + width
+           mesures sur le DOM reel), pas un fondu de couleur par item. -->
+      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:100px;background:#fff;box-shadow:0 2px 10px rgba(17,17,26,.09);transition:transform .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1);z-index:0;pointer-events:none"></span>
       <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
-        <div onClick="{{ t.pick }}" role="button" tabindex="0" style="{{ t.style }}">
+        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">
           <span ref="{{ t.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
           <span>{{ t.label }}</span>
           <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
@@ -289,7 +292,7 @@ input[type=date]{color-scheme:dark}
         <span ref="{{ bigQueryIconRef }}" style="display:flex;flex:none"></span>
         <span>BigQuery</span>
       </div>
-      <div onClick="{{ kamiaTab.pick }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
+      <div onClick="{{ kamiaTab.pick }}" ref="{{ kamiaTab.ref }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
         <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
         <span>KamIA</span>
         <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
@@ -2409,25 +2412,50 @@ class Component extends DCLogic {
      changement d'onglet) au lieu d'un cut instantane. La pill de nav active
      (navActiveTab) bascule tout de suite au clic pour un retour visuel
      immediat ; le contenu (tab) ne bascule qu'apres le fondu de sortie de
-     190ms -- les deux etaient lies avant, ce qui faisait que la pill ne
-     bougeait pas du tout pendant 190ms apres le clic (pas "smooth",
-     signale le 09/08/2026). */
+     190ms. La pill active elle-meme est un seul element qui GLISSE d'un
+     item a l'autre (transform:translateX + width mesures sur le vrai DOM),
+     pas un fondu de couleur par item -- demande explicite du 09/08/2026
+     (glisser de gauche a droite/droite a gauche, pas un fondu). */
   switchTab(next) {
     if (this.state.tab === next || this.state.tabSwitching) return;
     this.setState({ tabSwitching: true, navActiveTab: next });
     clearTimeout(this._tabTimer);
     this._tabTimer = setTimeout(() => this.setState({ tab: next, tabSwitching: false }), 190);
   }
+  tabRef(el, key) {
+    if (!el) return;
+    this._tabBtnEls = this._tabBtnEls || {};
+    this._tabBtnEls[key] = el;
+    if (key === this.state.navActiveTab) this.updateTabIndicator();
+  }
+  updateTabIndicator() {
+    const el = this._tabBtnEls && this._tabBtnEls[this.state.navActiveTab];
+    const ind = this._tabIndicatorEl;
+    if (!el || !ind) return;
+    let left = el.offsetLeft;
+    let width = el.offsetWidth;
+    // garde-fou : le pill ne doit jamais deborder du conteneur (meme marge
+    // que le padding de la barre).
+    const bar = this._tabBarEl;
+    if (bar) {
+      if (left < 4) left = 4;
+      const maxRight = bar.clientWidth - 4;
+      if (left + width > maxRight) width = Math.max(0, maxRight - left);
+    }
+    ind.style.transform = "translateX(" + left + "px)";
+    ind.style.width = width + "px";
+  }
 
   componentDidMount() {
     this.wireLogin();
     this.boot();
-    this._onResize = () => this.fitScale();
+    this._onResize = () => { this.fitScale(); this.updateTabIndicator(); };
     window.addEventListener("resize", this._onResize);
-    requestAnimationFrame(() => this.fitScale());
+    requestAnimationFrame(() => { this.fitScale(); this.updateTabIndicator(); });
   }
   componentDidUpdate() {
     this.fitScale();
+    this.updateTabIndicator();
     const sig = this.periodSignature();
     if (sig !== this._sig) { this._sig = sig; this.runCounters(); }
   }
@@ -3385,8 +3413,9 @@ class Component extends DCLogic {
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        tabs: [], kamiaTab: { pick: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
+        tabs: [], kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
         bigQueryIconRef: () => {}, bigQueryStyle: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;color:#6b7280;cursor:not-allowed",
+        tabBarRef: () => {}, tabIndicatorRef: () => {},
         periods: [], marketChips: [], familyChips: [], brandRows: [],
         gscKpiClics: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
         gscKpiImpr: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
@@ -4936,13 +4965,13 @@ class Component extends DCLogic {
       { key: "performance", label: "PageSpeed", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
     ];
     // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
-    // contenu centre -- copie au pixel de la maquette de reference fournie
-    // le 09/08/2026 (ma premiere passe etait trop approximative : fond
-    // transparent, items non-equirepartis).
-    const navItemStyle = on => "display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:background .2s ease,color .2s ease,box-shadow .2s ease;font-weight:" + (on ? "600" : "500") +
-      ";color:" + (on ? "#14161a" : "#6b7280") +
-      ";background:" + (on ? "#fff" : "transparent") +
-      ";box-shadow:" + (on ? "0 2px 10px rgba(17,17,26,.09)" : "none");
+    // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
+    // par item (ca ferait un fondu de couleur) : c'est un seul element
+    // (tabIndicatorRef) qui GLISSE d'un item a l'autre -- chaque item ne
+    // porte plus que la couleur de son texte/icone, position:relative
+    // z-index:1 pour rester lisible par-dessus le pill qui glisse dessous.
+    const navItemStyle = on => "position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:color .25s ease;font-weight:" + (on ? "600" : "500") +
+      ";color:" + (on ? "#14161a" : "#6b7280");
     // navActiveTab (pas st.tab) pilote la pill : bascule au clic, sans
     // attendre les 190ms du fondu de contenu -- voir switchTab().
     const tabs = TAB_DEFS.map(t => {
@@ -4950,6 +4979,7 @@ class Component extends DCLogic {
       return {
         label: t.label,
         pick: () => this.switchTab(t.key),
+        ref: el => this.tabRef(el, t.key),
         iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[t.key]; },
         hasBadge: !!t.hasBadge, badgeText: t.badgeText || "",
         badgeStyle: TAB_BADGE_STYLE[t.badgeLevel] || "",
@@ -4959,6 +4989,7 @@ class Component extends DCLogic {
     const kamiaOn = st.navActiveTab === "assistant";
     const kamiaTab = {
       pick: () => this.switchTab("assistant"),
+      ref: el => this.tabRef(el, "assistant"),
       // KamIA garde son propre logo (comme dans l'ancien front) plutot que
       // l'icone generique -- toujours le trace fonce, le fond de l'item
       // est blanc (actif) ou transparent (inactif), jamais sombre.
@@ -4971,9 +5002,8 @@ class Component extends DCLogic {
       badgeStyle: TAB_BADGE_STYLE.accent,
       style: navItemStyle(kamiaOn),
     };
-    // BigQuery n'a pas d'etat actif possible (pas encore branche) : meme
-    // habillage visuel "inactif" que les autres pour rester coherent dans
-    // la pill, mais jamais cliquable (curseur + info-bulle).
+    // BigQuery n'a pas d'etat actif possible (pas encore branche) : jamais
+    // enregistre dans tabRef, ne participe donc jamais au pill glissant.
     const bigQueryStyle = navItemStyle(false) + ";cursor:not-allowed";
     const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
 
@@ -5109,6 +5139,8 @@ class Component extends DCLogic {
       exportGa4Pdf: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Pdf(); },
       exportGa4Ppt: () => { this.setState({ exportMenuOpen: false }); this.exportGa4Ppt(); },
       tabFadeStyle,
+      tabBarRef: el => { this._tabBarEl = el; },
+      tabIndicatorRef: el => { this._tabIndicatorEl = el; if (el) this.updateTabIndicator(); },
       ownBrandShare, ownBrandSharePct, heatmapDaysLabel: last90.length + " derniers jours",
       gscAxisLabels, clicsLineRef, imprLineRef, imprFillRef, posLineRef,
       queries, pages, gscQueriesTotal, pageInsightText,
