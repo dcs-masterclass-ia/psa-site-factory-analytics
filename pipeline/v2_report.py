@@ -193,3 +193,40 @@ def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
         })
 
     return {"v2Date": v2_date_iso, "baseline": baseline, "weeks": semaines}
+
+
+SEUIL_JOURS_SIGNIFICATIF = 7  # en dessous, une cesure "avant/apres" est trop bruitee pour etre publiee
+
+# note posee sur les sites dont le funnel avant/apres a ete calcule
+# automatiquement par cette fonction : sert aussi de marqueur pour savoir,
+# au prochain run, qu'on peut recalculer (par opposition a une extraction
+# manuelle ponctuelle comme celle de Peugeot/DS/Citroen PT, jamais touchee).
+NOTE_AUTO = ("Funnel avant/après calculé automatiquement à partir du rapport "
+             "hebdomadaire V2 (baseline = tout l'historique avant bascule, "
+             "\"après\" = somme des semaines écoulées depuis).")
+
+
+def v2steps_depuis_hebdo(v2w):
+    """Derive le funnel 6 etapes avant/apres (meme forme que v2steps, un
+    {step, a, b} par etape) a partir du rapport hebdomadaire deja calcule :
+    aucune requete GA4 supplementaire, la meme donnee reelle (v2Weekly,
+    lui-meme issu de funnel.bloc_funnel) juste reagregee. None si la
+    reference V1 ou le recul post-bascule sont insuffisants pour publier
+    quelque chose de fiable."""
+    if not v2w:
+        return None
+    baseline_funnel = (v2w.get("baseline") or {}).get("funnel")
+    if not baseline_funnel:
+        return None
+    semaines = [w for w in v2w.get("weeks", []) if w.get("funnel")]
+    jours_apres = sum(w.get("jours", 0) for w in semaines)
+    if jours_apres < SEUIL_JOURS_SIGNIFICATIF:
+        return None
+    apres_par_etape = {}
+    for w in semaines:
+        for pas in w["funnel"]:
+            apres_par_etape[pas["step"]] = apres_par_etape.get(pas["step"], 0) + pas["users"]
+    return [
+        {"step": pas["step"], "a": pas["users"], "b": apres_par_etape.get(pas["step"], 0)}
+        for pas in baseline_funnel
+    ]
