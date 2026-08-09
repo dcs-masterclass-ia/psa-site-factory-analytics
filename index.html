@@ -256,7 +256,11 @@ input[type=date]{color-scheme:dark}
 <div ref="{{ scaleSizerRef }}" style="width:100%;overflow:hidden">
 <div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
-  <header style="display:flex;align-items:center;gap:14px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
+  <!-- toute la barre (logo, nav, site, periode, compte) est UNE seule pill
+       blanche avec une seule ombre -- pas des sous-pills separees qui
+       flottent chacune avec leur propre fond/ombre (confusion signalee le
+       09/08/2026, corrigee sur la maquette de reference). -->
+  <header style="display:flex;align-items:center;gap:4px;position:relative;z-index:40;background:#fff;border-radius:100px;padding:6px 6px 6px 24px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
     <div style="display:flex;align-items:center;flex:none">
       <!-- vrai logo Converge (comme l'ancien front), pas une icone generique
            + texte : logo-converge-noir.webp est un canvas 1536x1024 tres
@@ -265,6 +269,8 @@ input[type=date]{color-scheme:dark}
         <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
       </div>
     </div>
+
+    <span style="width:1px;height:26px;background:var(--line);flex:none;margin:0 18px"></span>
 
     <!-- nav = pill grise pleine largeur, items a largeur egale et contenu
          centre -- copie de la maquette de reference fournie le 09/08/2026. -->
@@ -293,7 +299,7 @@ input[type=date]{color-scheme:dark}
     </nav>
 
     <div style="position:relative;flex:none">
-      <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
+      <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
         <div style="position:relative;flex:none">
           <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><img ref="{{ currentSiteLogoRef }}" alt="" style="width:28px;height:28px;object-fit:contain"></div>
           <span style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">{{ currentSiteFlag }}</span>
@@ -341,7 +347,7 @@ input[type=date]{color-scheme:dark}
     </div>
 
     <div style="position:relative;flex:none">
-      <button onClick="{{ togglePeriodPicker }}" aria-expanded="{{ periodPickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:10px;background:#fff;border:none;border-radius:100px;padding:8px 18px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;text-align:left;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
+      <button onClick="{{ togglePeriodPicker }}" aria-expanded="{{ periodPickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:10px;background:transparent;border:none;border-radius:100px;padding:6px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:background .15s ease" style-hover="background:var(--soft)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round" style="flex:none"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
         <div>
           <div style="font-size:11.5px;color:#9aa0aa;font-weight:600;white-space:nowrap">{{ periodPickerTopLabel }}</div>
