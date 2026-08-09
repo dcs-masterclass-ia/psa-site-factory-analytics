@@ -1,6 +1,6 @@
 {
- "derniere_execution": "2026-08-10T00:15:34+02:00",
- "commit": "45b9356",
+ "derniere_execution": "2026-08-10T00:27:06+02:00",
+ "commit": "00e2071",
  "jour_ga4_fiable": "2026-08-08",
  "mois_traites": [
   "2025-05",
@@ -22,6 +22,18 @@
  ],
  "statut": "degrade",
  "sites": {
+  "OPEL FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.fr",
+    "reprise": "www.reprise.opel.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
   "FIAT PT": {
    "statut": "degrade",
    "hotes": {
@@ -58,6 +70,714 @@
     "total": 13
    }
   },
+  "OPEL PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.pt",
+    "reprise": "www.retoma.opel.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.pt",
+    "reprise": "www.retoma-citroen.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "PEUGEOT PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.pt",
+    "reprise": "www.retoma.peugeot.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "DS PT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.pt",
+    "reprise": "retoma.dsautomobiles.pt"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN AT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.at",
+    "reprise": "www.citroen-kauft-ihr-auto.at"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "OPEL AT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.at",
+    "reprise": "opel-kauft-dein-auto.opel.at"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "PEUGEOT AT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.at",
+    "reprise": "www.wir-kaufen-ihr-auto.peugeot.at"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ABARTH BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.abarthbelgium.be",
+    "reprise": "reprise.abarthbelgium.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.be",
+    "reprise": "reprise.alfaromeo.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.be",
+    "reprise": "overname.citroen.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.be",
+    "reprise": "reprise.dsautomobiles.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 11,
+    "total": 13
+   }
+  },
+  "FIAT BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.be",
+    "reprise": "overname.fiat.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "JEEP BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.be",
+    "reprise": "overname.jeep.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "LANCIA BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.lancia.be",
+    "reprise": "overname.lancia.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "OPEL BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.be",
+    "reprise": "www.overname.opel.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "PEUGEOT BE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.be",
+    "reprise": "overname.peugeot.be"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO DE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.de",
+    "reprise": "autoankauf.alfaromeo.de"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN DE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.de",
+    "reprise": "www.citroen-kauft-ihr-auto.de"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS DE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.de",
+    "reprise": "www.autoankauf.dsautomobiles.de"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "OPEL DE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.de",
+    "reprise": "www.opel-kauft-dein-auto.de"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "PEUGEOT DE": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.de",
+    "reprise": "www.autoankauf.peugeot.de"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ABARTH ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.abarth.es",
+    "reprise": "tasacion.abarth.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.es",
+    "reprise": "tasacion.alfaromeo.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "CITROEN ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.es",
+    "reprise": "www.tasacion.citroen.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.es",
+    "reprise": "www.tasacion.dsautomobiles.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "FIAT ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.es",
+    "reprise": "tasacion.fiat.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "JEEP ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.es",
+    "reprise": "tasacion.jeep.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "OPEL ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.es",
+    "reprise": "www.tasacion.opel.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "PEUGEOT ES": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.es",
+    "reprise": "tasacion.peugeot.es"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.fr",
+    "reprise": "reprise.alfaromeo.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "CITROEN FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.fr",
+    "reprise": "www.reprise.citroen.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.fr",
+    "reprise": "www.reprise.dsautomobiles.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "FIAT FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.fr",
+    "reprise": "reprise.fiat.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "JEEP FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.fr",
+    "reprise": "reprise.jeep.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "LANCIA FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.lancia.fr",
+    "reprise": "reprise.lancia.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "PEUGEOT FR": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.fr",
+    "reprise": "www.reprise.peugeot.fr"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS GB": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.co.uk",
+    "reprise": "www.tradein.dsautomobiles.co.uk"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "ABARTH IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.abarth.it",
+    "reprise": "www.valutazioneusato.abarth.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.it",
+    "reprise": "www.valutazioneusato.alfaromeo.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "CITROEN IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.it",
+    "reprise": "www.valutazioneusato.citroen.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "DS IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.it",
+    "reprise": "valutazioneusato.dsautomobiles.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "FIAT IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.it",
+    "reprise": "www.valutazioneusato.fiat.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "JEEP IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep-official.it",
+    "reprise": "www.valutazioneusato.jeep-official.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "LANCIA IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.lancia.it",
+    "reprise": "valutazioneusato.lancia.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "OPEL IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.it",
+    "reprise": "www.valutazioneusato.opel.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "PEUGEOT IT": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.it",
+    "reprise": "www.valutiamoiltuousato.peugeot.it"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "ABARTH LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.abarth.lu",
+    "reprise": "reprise.abarth.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.lu",
+    "reprise": "reprise.alfaromeo.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "CITROEN LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.lu",
+    "reprise": "reprise.citroen.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
+  "DS LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.dsautomobiles.lu",
+    "reprise": "reprise.dsautomobiles.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "FIAT LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.fiat.lu",
+    "reprise": "reprise.fiat.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "JEEP LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.lu",
+    "reprise": "reprise.jeep.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "OPEL LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.lu",
+    "reprise": "www.reprise.opel.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "PEUGEOT LU": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.lu",
+    "reprise": "reprise.peugeot.lu"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "ALFA ROMEO PL": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.alfaromeo.pl",
+    "reprise": "odkup.alfaromeo.pl"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 9,
+    "total": 13
+   }
+  },
+  "CITROEN PL": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.citroen.pl",
+    "reprise": "odkup.citroen.pl"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "JEEP PL": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.jeep.pl",
+    "reprise": "odkup.jeep.pl"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 7,
+    "total": 13
+   }
+  },
+  "OPEL PL": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.opel.pl",
+    "reprise": "www.odkup.opel.pl"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 10,
+    "total": 13
+   }
+  },
+  "PEUGEOT PL": {
+   "statut": "degrade",
+   "hotes": {
+    "parent": "www.peugeot.pl",
+    "reprise": "odkup.peugeot.pl"
+   },
+   "ga4_jusqu_au": "2026-08-08",
+   "controles": {
+    "passes": 8,
+    "total": 13
+   }
+  },
   "ABARTH PT": {
    "statut": "degrade",
    "hotes": {
@@ -72,6 +792,30 @@
   }
  },
  "anomalies": [
+  {
+   "site": "OPEL FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-10 repriseMonth +3.9%; 2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 repriseMonth +16.3%; 2026-06 trafficMonth +27.3%; 2026-06 repriseMonth +52.6%; 2026-07 trafficMonth +96.8%; 2026-07 repriseMonth +137.1%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 267->297 (+11%)",
+   "gravite": "avertissement"
+  },
   {
    "site": "FIAT PT",
    "controle": "non_additivite_sous_3_5pct",
@@ -154,6 +898,1482 @@
    "site": "ALFA ROMEO PT",
    "controle": "funnel_methode_precise",
    "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 trafficMonth +45.5%; 2026-05 repriseMonth +33.6%; 2026-06 trafficMonth +52.9%; 2026-06 repriseMonth +24.3%; 2026-07 trafficMonth +136.9%; 2026-07 repriseMonth +95.8%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-06', '2026-07', '2026-08', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 62->69 (+11%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 trafficMonth -23.8%; 2026-05 repriseMonth -25.0%; 2026-06 trafficMonth -9.0%; 2026-06 repriseMonth +39.2%; 2026-07 trafficMonth +97.3%; 2026-07 repriseMonth +134.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-04', '2026-07', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 262->291 (+11%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 repriseMonth -72.4%; 2026-06 trafficMonth +31.0%; 2026-06 repriseMonth -53.3%; 2026-07 trafficMonth +106.2%; 2026-07 repriseMonth +49.5%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 380->427 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS PT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-10 trafficMonth +3.6%; 2026-04 trafficMonth -100.0%; 2026-04 repriseMonth -100.0%; 2026-05 repriseMonth -83.1%; 2026-06 trafficMonth +44.8%; 2026-06 repriseMonth -78.5%; 2026-07 trafficMonth +163.7%; 2026-07 repriseMonth +48.9%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS PT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-04', '2026-05', '2026-07', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS PT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS PT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 80->91 (+14%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN AT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN AT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN AT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL AT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-08 1.7%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL AT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL AT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT AT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT AT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT AT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT AT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 4->5 (+25%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 45.5%; 2026-08 45.5%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH BE",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 67% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH BE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO BE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 6->8 (+33%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN BE",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-01 trafficMonth +4.0%; 2026-08 trafficMonth +3.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 48.0%; 2026-08 54.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN BE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 38->40 (+5%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 9->14 (+56%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 15->18 (+20%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA BE",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 41% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA BE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-01', '2026-02', '2026-05']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA BE",
+   "controle": "funnel_methode_precise",
+   "detail": "repli par mot-cle (approximation) sur : ['2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL BE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06', '2025-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 30->36 (+20%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT BE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT BE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT BE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 92->101 (+10%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO DE",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-01 trafficMonth -3.5%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO DE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO DE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO DE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN DE",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-05 trafficMonth +4.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN DE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN DE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN DE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN DE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 74->84 (+14%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS DE",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -3.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS DE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS DE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS DE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS DE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 16->18 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL DE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL DE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL DE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL DE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 150->163 (+9%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT DE",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT DE",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT DE",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT DE",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 161->178 (+11%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-08 60.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH ES",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-07 ratio 7.6",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 2->3 (+50%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-09 trafficMonth -4.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 40->48 (+20%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-06 repriseMonth +3.5%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 351->383 (+9%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-05 trafficMonth +3.7%; 2025-07 trafficMonth -4.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 49->53 (+8%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth -4.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 106->122 (+15%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-08 trafficMonth +3.8%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 81->89 (+10%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL ES",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-06 trafficMonth +3.8%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 124->135 (+9%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT ES",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT ES",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT ES",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT ES",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 302->343 (+14%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-10 trafficMonth +4.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 75->84 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-02 trafficMonth -3.9%; 2026-05 trafficMonth -4.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 1855->2078 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-05 trafficMonth -4.2%; 2026-06 repriseMonth +4.4%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 103->111 (+8%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 283->334 (+18%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-06 trafficMonth -3.5%; 2026-02 trafficMonth -3.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 195->221 (+13%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA FR",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-07 ratio 5.5",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-11', '2025-12', '2026-01', '2026-05', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 7->8 (+14%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT FR",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-01 trafficMonth +5.0%; 2026-02 repriseMonth +4.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT FR",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT FR",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-10', '2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT FR",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT FR",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 3368->3769 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS GB",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS GB",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS GB",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH IT",
+   "controle": "sessions_par_utilisateur_sous_3",
+   "detail": "2026-07 ratio 4.4",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11', '2026-05']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 6->8 (+33%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO IT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-03 repriseMonth +3.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 119->133 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 181->196 (+8%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS IT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-08 trafficMonth -4.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 30->32 (+7%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT IT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-07 trafficMonth +4.7%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 383->431 (+13%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 246->278 (+13%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA IT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-03 repriseMonth +3.6%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "LANCIA IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 40->48 (+20%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 71->77 (+8%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT IT",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth +3.9%; 2026-07 trafficMonth +4.2%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT IT",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT IT",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-11']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT IT",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT IT",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 252->277 (+10%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH LU",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 65% hors pays; 2026-08 50% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ABARTH LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-07 0.0%; 2025-08 1.0%; 2025-10 1.8%; 2025-12 1.3%; 2026-02 0.4%; 2026-03 0.7%; 2026-04 1.1%; 2026-06 1.3%; 2026-07 0.8%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN LU",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 44% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN LU",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 1->3 (+200%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-08 60.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS LU",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 43% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-07', '2026-03']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "DS LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT LU",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 59% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "FIAT LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06', '2025-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-06', '2025-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT LU",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-07 1.5%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT LU",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT LU",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT LU",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 8->9 (+12%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PL",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PL",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 46% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PL",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "ALFA ROMEO PL",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PL",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PL",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-07', '2025-08', '2025-09', '2025-11', '2025-12', '2026-01', '2026-02', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "CITROEN PL",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2025-07 trafficMonth +3.9%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "trafic_etranger_sous_40pct",
+   "detail": "2026-07 64% hors pays",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "JEEP PL",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 2->1 (-50%)",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PL",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PL",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "OPEL PL",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PL",
+   "controle": "non_additivite_sous_3_5pct",
+   "detail": "2026-04 trafficMonth +4.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PL",
+   "controle": "transformation_dans_2_45pct",
+   "detail": "2025-05 0.0%; 2025-06 0.0%; 2025-07 0.0%; 2025-08 0.0%; 2025-09 0.0%; 2025-10 0.0%; 2025-11 0.0%; 2025-12 0.0%; 2026-01 0.0%; 2026-02 0.0%; 2026-03 0.0%; 2026-04 0.0%; 2026-05 0.0%; 2026-06 0.0%; 2026-07 0.0%; 2026-08 0.0%",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PL",
+   "controle": "funnel_decroissant",
+   "detail": "mois en ecart : ['2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PL",
+   "controle": "funnel_methode_precise",
+   "detail": "dimension step_name (fidele a l'exploration GA4) sur : ['2026-07', '2026-08']",
+   "gravite": "avertissement"
+  },
+  {
+   "site": "PEUGEOT PL",
+   "controle": "funnel_estimation_recalculee",
+   "detail": "2026-08 19->23 (+21%)",
    "gravite": "avertissement"
   },
   {
