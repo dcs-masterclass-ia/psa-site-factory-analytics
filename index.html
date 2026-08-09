@@ -284,17 +284,20 @@ input[type=date]{color-scheme:dark}
         BigQuery
         <span style="font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--soft2);color:var(--muted);border-radius:999px;padding:3px 9px">Bientôt</span>
       </div>
-      <span style="width:1px;height:22px;background:var(--line);flex:none;margin:0 4px"></span>
-      <div onClick="{{ kamiaTab.pick }}" ref="{{ kamiaTab.ref }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
-        <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
-        <span>{{ kamiaTab.label }}</span>
-        <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
-          <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
-        </sc-if>
-      </div>
     </nav>
 
     <div style="flex:1;min-width:20px"></div>
+
+    <!-- KamIA n'est pas un onglet de rapport comme les autres : bouton rond
+         a part (meme famille visuelle que les autres controles a droite),
+         plutot que noye dans la meme rangee de pills que GA4/GSC/V2/PageSpeed
+         -- confusion signalee le 09/08/2026. -->
+    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaTab.style }}" style-hover="box-shadow:0 10px 24px -8px rgba(17,17,26,.12);transform:translateY(-1px)">
+      <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
+      <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
+        <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
+      </sc-if>
+    </button>
 
     <div style="position:relative;flex:none">
       <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:14px;background:#fff;border:none;border-radius:100px;padding:8px 22px 8px 8px;box-shadow:0 4px 20px rgba(17,17,26,.05);cursor:pointer;font-family:inherit;transition:box-shadow .2s ease,transform .2s ease" style-hover="box-shadow:0 10px 28px rgba(17,17,26,.09);transform:translateY(-1px)">
@@ -391,30 +394,6 @@ input[type=date]{color-scheme:dark}
 
     <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111318,#3a3f4a);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.25)">{{ userInitials }}</button>
   </header>
-
-  <sc-if value="{{ showScopeBar }}" hint-placeholder-val="{{ true }}">
-  <div style="display:flex;align-items:center;gap:14px;margin-top:18px;position:relative;z-index:30;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) .05s both">
-    <div style="display:flex;align-items:center;gap:4px;background:var(--card);border-radius:999px;padding:5px">
-      <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
-        <button onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</button>
-      </sc-for>
-    </div>
-
-    <sc-if value="{{ customDate }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;align-items:center;gap:10px;background:var(--card);border-radius:999px;padding:7px 16px;animation:dropIn .22s ease both">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
-        <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
-        <span style="font-size:14px;color:var(--muted2)">→</span>
-        <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--text);cursor:pointer">
-      </div>
-    </sc-if>
-
-    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:500;color:var(--muted)">
-      <span>Comparé à la période précédente <span style="font-size:12.5px;color:var(--muted2)">({{ compareRangeLabel }})</span></span>
-      <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
-    </div>
-  </div>
-  </sc-if>
 
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
   <div style="{{ tabFadeStyle }}">
@@ -2432,9 +2411,15 @@ class Component extends DCLogic {
     if (key === this.state.tab) this.updateTabIndicator();
   }
   updateTabIndicator() {
-    const el = this._tabBtnEls && this._tabBtnEls[this.state.tab];
     const ind = this._tabIndicatorEl;
-    if (!el || !ind) return;
+    if (!ind) return;
+    // KamIA n'est plus un onglet de la barre (bouton rond a part) : sur
+    // cet onglet, aucun des 4 pills de rapport n'est actif, le pill
+    // glissant doit disparaitre plutot que rester fige sur le dernier
+    // onglet visite (sinon GA4 a l'air encore selectionne a tort).
+    if (this.state.tab === "assistant") { ind.style.width = "0px"; return; }
+    const el = this._tabBtnEls && this._tabBtnEls[this.state.tab];
+    if (!el) return;
     let left = el.offsetLeft;
     let width = el.offsetWidth;
     // garde-fou : quelle que soit la mesure du bouton, le pill ne doit
@@ -3411,7 +3396,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", showScopeBar: st.tab !== "assistant" && st.tab !== "performance" && st.tab !== "ga4", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickQuestions: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
@@ -3422,7 +3407,7 @@ class Component extends DCLogic {
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        tabs: [], kamiaTab: { label: "KamIA", pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "" },
+        tabs: [], kamiaTab: { pick: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "position:relative;flex:none;width:44px;height:44px;border-radius:50%;border:none;background:#fff;box-shadow:0 4px 20px rgba(17,17,26,.05)" },
         bigQueryIconRef: () => {},
         periods: [], marketChips: [], familyChips: [], brandRows: [],
         gscKpiClics: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
@@ -3563,10 +3548,7 @@ class Component extends DCLogic {
       const on = st.period === label;
       return {
         label,
-        pick: () => this.setState({ period: label, customDate: label === "Date précise" }),
         pickAndClose: () => this.setState({ period: label, customDate: label === "Date précise", periodPickerOpen: label === "Date précise" }),
-        style: "border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:600;height:42px;padding:0 18px;border-radius:999px;transition:background .22s ease,color .22s ease;background:" +
-          (on ? "var(--active-bg)" : "transparent") + ";color:" + (on ? "var(--active-fg)" : "var(--muted)"),
         rowStyle: "display:flex;align-items:center;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "700" : "500") + ";padding:10px 12px;border-radius:14px;transition:background .18s ease,color .18s ease;background:" +
           (on ? "var(--soft)" : "transparent") + ";color:" + (on ? "var(--text)" : "var(--text2)"),
       };
@@ -5002,11 +4984,23 @@ class Component extends DCLogic {
         style: "position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:transparent;outline:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "600" : "400") + ";height:50px;padding:0 15px;border-radius:999px;transition:color .28s ease;white-space:nowrap;color:" + (on ? "var(--active-fg)" : "var(--muted)"),
       };
     });
-    // KamIA sort de la boucle sc-for de la nav : dans la maquette il vient
-    // APRES BigQuery (separe par un trait), pas avant -- rendu comme un
-    // bloc statique a part, meme mecanique que BigQuery ci-dessus.
+    // KamIA n'est pas un onglet de rapport parmi d'autres : bouton rond a
+    // part dans le cluster de droite (site/periode/compte), pas de pill
+    // glissant ni de mesure relative a la barre d'onglets -- refonte du
+    // 09/08/2026 (rangee du haut jugee confuse, KamIA s'y confondait avec
+    // les vrais onglets de rapport).
     const tabs = allTabs.slice(0, 4);
-    const kamiaTab = allTabs[4];
+    const kamiaOn = st.tab === "assistant";
+    const kamiaRaw = allTabs[4];
+    const kamiaTab = {
+      pick: kamiaRaw.pick,
+      iconRef: kamiaRaw.iconRef,
+      hasBadge: kamiaRaw.hasBadge,
+      badgeText: kamiaRaw.badgeText,
+      badgeStyle: "position:absolute;top:-2px;right:-2px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#8b5cf6;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #fff;line-height:1",
+      style: "position:relative;flex:none;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:box-shadow .2s ease,transform .2s ease;background:" +
+        (kamiaOn ? "var(--active-bg)" : "#fff") + ";box-shadow:0 4px 20px rgba(17,17,26,.05)",
+    };
     const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
 
     // ---- rapport client (export CSV/PDF/PPT, onglet GA4) --------------
@@ -5067,7 +5061,6 @@ class Component extends DCLogic {
       kamiaStatusLabel, kamiaConstatCount, kamiaChips,
       openChatBlank: () => this.setState({ tab: "assistant" }),
       isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
-      showScopeBar: st.tab !== "assistant" && st.tab !== "performance" && st.tab !== "ga4",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       hasPerfHero, perfHero,
