@@ -252,11 +252,13 @@ input[type=date]{color-scheme:dark}
 <div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
   <header style="display:flex;align-items:center;gap:14px;position:relative;z-index:40;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) both">
-    <div style="display:flex;align-items:center;gap:11px;flex:none">
-      <div style="width:38px;height:38px;border-radius:13px;background:linear-gradient(140deg,#6d8bff,var(--accent) 60%,#7c3aed);box-shadow:0 10px 24px -8px rgba(59,90,224,.55);display:flex;align-items:center;justify-content:center;flex:none">
-        <svg width="19" height="19" viewBox="0 0 20 20" fill="none"><path d="M3 14.5 7.2 9l3.1 3.3L17 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="17" cy="4.5" r="2" fill="#fff"></circle></svg>
+    <div style="display:flex;align-items:center;flex:none">
+      <!-- vrai logo Converge (comme l'ancien front), pas une icone generique
+           + texte : logo-converge-noir.webp est un canvas 1536x1024 tres
+           majoritairement vide, recadre sur le mot-symbole reellement visible. -->
+      <div style="width:189.5px;height:40px;overflow:hidden;position:relative">
+        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
       </div>
-      <div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">Converge</div>
     </div>
 
     <nav ref="{{ tabBarRef }}" style="position:relative;display:flex;align-items:center;gap:2px;background:var(--card);border-radius:999px;padding:6px;flex:none">
@@ -4445,9 +4447,13 @@ class Component extends DCLogic {
     // ou de chiffre invente) : V2 = delta de conversion reel du site,
     // PageSpeed = score mobile reel, KamIA = nombre de constats watch reels
     // pour ce site.
+    // GA4/Search Console : vrais logos officiels repris de l'ancien front
+    // (meme bucket S3), pas des icones generiques -- demande explicite du
+    // 09/08/2026. V2/PageSpeed/BigQuery n'avaient deja pas de logo officiel
+    // dans l'ancien front non plus (icones generiques), inchange ici.
     const TAB_ICON_SVG = {
-      ga4: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2.5" y="11" width="3.3" height="6.5" rx="1" fill="currentColor"/><rect x="8.3" y="6" width="3.3" height="11.5" rx="1" fill="currentColor"/><rect x="14.1" y="2.5" width="3.3" height="15" rx="1" fill="currentColor"/></svg>',
-      gsc: '<svg width="14" height="14" viewBox="0 0 18 18" fill="none"><circle cx="7.6" cy="7.6" r="5.4" stroke="currentColor" stroke-width="1.8"/><path d="m11.8 11.8 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+      ga4: '<img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="15" height="15" style="display:block;object-fit:contain">',
+      gsc: '<img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="15" height="15" style="display:block;object-fit:contain">',
       v2: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M2 10.5h3l2-6 3.6 12 2.4-9 1.6 3h3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
       performance: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.3" stroke="currentColor" stroke-width="1.7"/><path d="M10 10 13.2 6.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="10" cy="10" r="1.3" fill="currentColor"/></svg>',
       bigquery: '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="4.6" rx="6" ry="2.2" stroke="currentColor" stroke-width="1.6"/><path d="M4 4.6v10.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2V4.6M4 9.8c0 1.2 2.7 2.2 6 2.2s6-1 6-2.2" stroke="currentColor" stroke-width="1.6"/></svg>',
@@ -4472,7 +4478,19 @@ class Component extends DCLogic {
         label: t.label,
         pick: () => this.switchTab(t.key),
         ref: el => this.tabRef(el, t.key),
-        iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[t.key]; },
+        // KamIA garde son propre logo (comme dans l'ancien front) plutot
+        // que l'icone generique : blanc sur le fond actif fonce, noir sinon,
+        // pour rester lisible dans les deux etats (le mark n'a pas de
+        // variante currentColor comme les icones SVG inline).
+        iconRef: el => {
+          if (!el) return;
+          if (t.key === "assistant") {
+            const c = on ? HERMES_LOGO_CROP.tabBlanc : HERMES_LOGO_CROP.tabNoir;
+            el.innerHTML = '<div style="' + c.wrapStyle + '"><img src="' + c.src + '" alt="" style="' + c.imgStyle + '"></div>';
+          } else {
+            el.innerHTML = TAB_ICON_SVG[t.key];
+          }
+        },
         hasBadge: !!t.hasBadge, badgeText: t.badgeText || "",
         // pastille coloree (vert/rouge/violet) sur fond blanc quand l'onglet
         // est inactif ; pastille blanche translucide quand l'onglet est
