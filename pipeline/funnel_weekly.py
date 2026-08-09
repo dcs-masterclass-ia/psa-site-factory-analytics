@@ -20,7 +20,7 @@ from datetime import date, timedelta
 
 from pipeline import funnel
 
-SEMAINES_RATTRAPAGE = 2  # au-dela de la semaine en cours, tente de combler les N precedentes si absentes (run manque, echec transitoire GA4...)
+SEMAINES_RATTRAPAGE = 6  # au-dela de la semaine en cours, tente de combler les N precedentes si absentes -- couvre d'emblee un mois plein en arriere (utile au tout premier run, ou pour rattraper un run manque/echoue) ; ne recalcule jamais une semaine deja presente, donc ne coute rien de plus au quotidien une fois la fenetre remplie
 SEMAINES_CONSERVEES = 20  # ~5 mois glissants ; au-dela, le dashboard retombe sur funnelMonth (mensuel)
 
 
