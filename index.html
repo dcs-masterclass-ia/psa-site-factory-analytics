@@ -804,6 +804,7 @@ input[type=date]{color-scheme:dark}
         <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Dernier mois</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvLastLabel }}</div><div style="font-size:12px;color:var(--muted2)">{{ volConvLastMonthLabel }}</div></div>
         <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Évolution</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--pos)">{{ volConvProgress }} pts</div><div style="font-size:12px;color:var(--muted2)">sur 12 mois</div></div>
       </div>
+      <div ref="{{ volConvChart.hoverRef }}" style="position:relative;cursor:crosshair">
       <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block;overflow:visible">
         <sc-for list="{{ volConvChart.gridLines }}" as="g" hint-placeholder-count="4">
           <line ref="{{ g.lineRef }}" x1="52" x2="1224" stroke="#f2f3f5"></line>
@@ -825,6 +826,7 @@ input[type=date]{color-scheme:dark}
           <text ref="{{ pt.labelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12.5" font-weight="600" fill="var(--pos)"></text>
         </sc-for>
       </svg>
+      </div>
     </div>
     </sc-if>
 
@@ -2206,7 +2208,15 @@ function wireHoverTooltip(el, points) {
     tip.style.left = x + "px";
     tip.style.transform = "translate(" + (onRight ? "8px" : "calc(-100% - 8px)") + ",0)";
     tip.style.opacity = "1";
-    tip.textContent = p.label + " : " + p.valueText;
+    // deux formes : {label, valueText} pour une courbe simple, {label, lines}
+    // pour plusieurs series superposees (une ligne par canal, avec sa
+    // pastille de couleur) -- meme mecanique, juste plus de contenu.
+    if (p.lines) {
+      tip.innerHTML = "<div style=\"margin-bottom:4px;color:var(--muted)\">" + esc(p.label) + "</div>" +
+        p.lines.map(l => "<div style=\"display:flex;align-items:center;gap:6px\"><span style=\"width:7px;height:7px;border-radius:50%;background:" + l.color + ";display:inline-block;flex:none\"></span>" + esc(l.name) + " : " + esc(l.value) + "</div>").join("");
+    } else {
+      tip.textContent = p.label + " : " + p.valueText;
+    }
   };
   el.addEventListener("mousemove", show);
   el.addEventListener("mouseleave", () => { if (tip) tip.style.opacity = "0"; });
@@ -2329,7 +2339,16 @@ function buildVolumeConvChart(rows, v2Idx) {
       convLabelRef: el => { if (!el) return; el.setAttribute("y", (y + 4).toFixed(1)); el.textContent = dec(maxConv / 1.15 * k / 3, 0) + " %"; },
     };
   });
-  return { bars, points, lineRef, v2Ref, hasV2Marker: v2X != null, gridLines, w: W, h: H };
+  // survol : mois + sessions reprise + taux de conversion -- demande du
+  // 10/08/2026 ("survoler les barres devrait afficher le volume").
+  const hoverRef = el => wireHoverTooltip(el, rows.map(r => ({
+    label: r.label,
+    lines: [
+      { name: "Sessions reprise", value: fmt(r.sessions), color: "var(--muted2)" },
+      { name: "Conversion", value: dec(r.conv, 2) + " %", color: "var(--pos)" },
+    ],
+  })));
+  return { bars, points, lineRef, v2Ref, hasV2Marker: v2X != null, gridLines, w: W, h: H, hoverRef };
 }
 function watchTrendValues(siteData, periodeRecente) {
   if (!siteData || !siteData.daily || !periodeRecente) return null;
