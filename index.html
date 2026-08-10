@@ -3787,9 +3787,17 @@ class Component extends DCLogic {
     // deja bornes a range.debut..range.fin) -- le "/ 12 mois" fixe etait
     // trompeur des qu'on changeait de periode en en-tete (signale le
     // 09/08/2026).
-    const leadsLast6 = rawSite ? rawSite.months.slice(-9) : [];
-    const leadsMonthly = leadsLast6.map(m => ((rawSite.leads || {})[m] || {}).total || 0);
-    const leadsV2MonthIdx = (rawSite && rawSite.v2_date) ? leadsLast6.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
+    // en mode "tous les sites" (currentSite null), pas de rawSite unique :
+    // somme des leads mensuels reels de tous les sites selectionnes plutot
+    // que de vider le graphe -- signale le 10/08/2026. Le repere V2 dans
+    // l'axe n'a plus de sens des que plusieurs sites (dates de bascule
+    // differentes) sont agreges, desactive dans ce cas.
+    const leadsLast6 = currentSite ? (rawSite ? rawSite.months.slice(-9) : [])
+      : [...new Set(st.sites.flatMap(s => (this.data[s] && this.data[s].months) || []))].sort().slice(-9);
+    const leadsMonthly = leadsLast6.map(m => currentSite
+      ? ((rawSite.leads || {})[m] || {}).total || 0
+      : st.sites.reduce((sum, s) => sum + (((this.data[s] && this.data[s].leads || {})[m] || {}).total || 0), 0));
+    const leadsV2MonthIdx = (currentSite && rawSite && rawSite.v2_date) ? leadsLast6.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
     const maxLeadsBar = Math.max(1, ...leadsMonthly);
     const leadsBars = leadsMonthly.map((v, i) => ({
       style: "flex:1;border-radius:6px 6px 3px 3px;min-height:3px;height:" + Math.max(4, dec(v / maxLeadsBar * 100, 0)) + "%;background:" + (leadsV2MonthIdx >= 0 && i >= leadsV2MonthIdx ? "#12b981" : "#d9f2e6") + ";animation:growH .8s cubic-bezier(.3,.8,.3,1) " + (0.3 + i * 0.06) + "s both",
