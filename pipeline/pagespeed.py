@@ -11,10 +11,12 @@ pas un compte de service. A creer dans le meme projet GCP (API "PageSpeed
 Insights API" a activer separement) puis a deposer comme secret GitHub.
 
 Chaque appel Lighthouse prend 10 a 30 secondes cote Google — bien plus lent
-que les rapports GA4/GSC. Volontairement tenu a l'ecart du rafraichissement
-quotidien (pipeline/build.py) : la performance d'un site ne bouge pas d'un
-jour a l'autre, un releve hebdomadaire suffit et evite d'alourdir encore le
-job principal. Voir .github/workflows/pagespeed.yml.
+que les rapports GA4/GSC, et chaque mesure (hote x strategie) en fait
+MESURES_PAR_HOTE_STRATEGIE (3) pour prendre le run median plutot qu'un
+essai isole (voir mesure() plus bas). Volontairement tenu a l'ecart du
+rafraichissement quotidien (pipeline/build.py) : la performance d'un site
+ne bouge pas d'un jour a l'autre, un releve hebdomadaire suffit et evite
+d'alourdir encore le job principal. Voir .github/workflows/pagespeed.yml.
 
 Usage
 -----
@@ -76,6 +78,17 @@ METRIQUES_CRUX = {
 DELAI_ENTRE_APPELS = 1.0   # secondes ; courtoisie envers le quota (25000/jour,
                             # 400/100s par utilisateur), pas une necessite stricte.
 
+# un seul run Lighthouse est bruite (+/- 5 a 15 points d'un essai a l'autre
+# sur la MEME url, meme instant -- variance documentee par Google elle-meme,
+# pas un bug chez nous). Demande du 10/08/2026 suite a un ecart constate
+# entre le score affiche et une verification manuelle : au lieu d'un essai
+# unique, on en fait plusieurs et on garde le run MEDIAN (par score
+# performance) -- jamais une moyenne metrique par metrique, qui melangerait
+# des chargements de page differents et raconterait une histoire incoherente
+# (ex. le LCP d'un essai avec le TBT d'un autre). C'est l'approche standard
+# de Lighthouse CI (numberOfRuns par defaut = 3).
+MESURES_PAR_HOTE_STRATEGIE = 3
+
 
 def cle_api():
     c = os.environ.get("PAGESPEED_API_KEY")
@@ -133,20 +146,10 @@ def _terrain(rep):
     return sortie
 
 
-def mesure(hote, strategie):
-    """Une mesure Lighthouse pour un hote et une strategie donnes.
-
-    Retourne un dict (score performance + accessibilite/bonnes pratiques/
-    SEO, LCP/CLS/TBT/FCP/SI labo, opportunites chiffrees, donnees terrain
-    CrUX si disponibles) ou None si l'audit echoue entierement (URL
-    injoignable, quota depasse, reponse mal formee) — jamais une exception
-    qui remonte : un site en echec ne doit pas bloquer les autres."""
-    url_cible = f"https://{hote}/"
-    try:
-        rep = _requete(url_cible, strategie)
-    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
-        return None
-
+def _parse(rep):
+    """Transforme une reponse brute runPagespeed en dict de sortie (score +
+    metriques labo + opportunites + terrain), ou None si la reponse n'a pas
+    de resultat Lighthouse exploitable."""
     lh = rep.get("lighthouseResult")
     if not lh:
         return None
@@ -172,6 +175,38 @@ def mesure(hote, strategie):
         val = audits.get(audit_id, {}).get("numericValue")
         sortie[cle] = None if val is None else (round(val, decimales) if decimales else round(val))
     return sortie
+
+
+def mesure(hote, strategie):
+    """Plusieurs mesures Lighthouse pour un hote et une strategie donnes
+    (MESURES_PAR_HOTE_STRATEGIE essais) -- garde le run dont le score
+    performance est la MEDIANE plutot qu'une moyenne metrique par metrique.
+
+    Retourne un dict (score performance + accessibilite/bonnes pratiques/
+    SEO, LCP/CLS/TBT/FCP/SI labo, opportunites chiffrees, donnees terrain
+    CrUX si disponibles, "runs" = les scores individuels obtenus pour
+    transparence sur la variance reelle) ou None si TOUS les essais ont
+    echoue (URL injoignable, quota depasse, reponse mal formee) — jamais
+    une exception qui remonte : un site en echec ne doit pas bloquer les
+    autres."""
+    url_cible = f"https://{hote}/"
+    resultats = []
+    for i in range(MESURES_PAR_HOTE_STRATEGIE):
+        if i:
+            time.sleep(DELAI_ENTRE_APPELS)
+        try:
+            rep = _requete(url_cible, strategie)
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError):
+            continue
+        parsed = _parse(rep)
+        if parsed:
+            resultats.append(parsed)
+    if not resultats:
+        return None
+    resultats.sort(key=lambda r: r["score"])
+    median = resultats[len(resultats) // 2]
+    median["runs"] = [r["score"] for r in resultats]
+    return median
 
 
 def mesure_site(hote):
@@ -226,6 +261,16 @@ def main():
     cibles = [trouve_site(x) for x in a.sites] if a.sites else exploitables()
     recap = os.environ.get("GITHUB_STEP_SUMMARY")
     lignes_recap = ["## Performance PageSpeed Insights\n", "| Site | Mobile | Desktop |", "|---|---:|---:|"]
+
+    # commit + push SITE PAR SITE (comme backfill_leads.py), pas un seul
+    # gros commit a la fin -- desormais 3x plus d'appels API par site
+    # (MESURES_PAR_HOTE_STRATEGIE), un run "tous les sites" peut prendre
+    # plusieurs heures : si le job est interrompu en cours de route, les
+    # sites deja mesures restent publies plutot que tout perdre.
+    if a.ecrire:
+        from pipeline.build import _commit_et_pousse, _configure_git
+        _configure_git()
+
     for s in cibles:
         r = mesure_site(s.hote_reprise)
         m, d = r["mobile"], r["desktop"]
@@ -237,6 +282,11 @@ def main():
             chemin = DATA / f"{s.slug}.json"
             if chemin.exists():
                 _fusionne(chemin, r)
+                ok, detail = _commit_et_pousse(
+                    [f"data/{chemin.name}"],
+                    f"Performance PageSpeed Insights — {s.nom}")
+                if not ok:
+                    print(f"  {s.nom} : ECHEC commit/push ({detail}) -- fichier ecrit localement, pas publie")
     if recap:
         with open(recap, "a", encoding="utf-8") as f:
             f.write("\n".join(lignes_recap) + "\n")

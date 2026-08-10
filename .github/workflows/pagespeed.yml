@@ -3,12 +3,15 @@ name: Performance PageSpeed Insights
 # Manuel uniquement, pas de cron : la mesure se fait a la demande (relevé
 # ponctuel a l'instant T, ou plus tard site par site depuis une action du
 # dashboard), pas en tache de fond automatique. Chaque audit Lighthouse
-# prend 10 a 30s cote Google (jusqu'a une heure pour les 64 sites) -- reste
-# separe du rafraichissement quotidien (refresh.yml) pour ne pas l'alourdir.
+# prend 10 a 30s cote Google, x3 par hote/strategie depuis le 10/08/2026
+# (garde le run median plutot qu'un essai isole, voir pipeline/pagespeed.py)
+# -- jusqu'a plusieurs heures pour tous les sites. Reste separe du
+# rafraichissement quotidien (refresh.yml) pour ne pas l'alourdir.
 #
 # Purement additif : ecrit uniquement la cle "pagespeed" de data/<site>.json,
-# jamais le reste (pas de controle bloquant a la build.py, rien d'autre a
-# perdre en cas d'echec partiel).
+# jamais le reste (pas de controle bloquant a la build.py). Commit/push SITE
+# PAR SITE (pipeline/pagespeed.py, comme backfill_leads.py) : un run
+# interrompu en cours de route laisse quand meme publie ce qui a ete mesure.
 
 on:
   workflow_dispatch:
@@ -28,7 +31,7 @@ concurrency:
 jobs:
   mesurer:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 300
 
     steps:
       - uses: actions/checkout@v4
@@ -55,24 +58,5 @@ jobs:
           else
             python -m pipeline.pagespeed --tous --ecrire
           fi
-
-      - name: Committer si quelque chose a changé
-        run: |
-          git config user.name "dcs-masterclass-ia"
-          git config user.email "m.foureau@autobiz.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "Aucun changement, pas de commit."
-            exit 0
-          fi
-          git commit -m "Performance PageSpeed Insights"
-          # $GITHUB_REF_NAME (fournie par Actions) plutot que "main" en dur :
-          # un declenchement --ref staging pousse alors sur staging, jamais
-          # sur main -- meme principe que pipeline/build.py._commit_et_pousse.
-          for i in 1 2 3; do
-            git rebase --abort 2>/dev/null || true
-            git pull --rebase --autostash origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
-            sleep 5
-          done
-          echo "::error::Echec du push apres 3 tentatives."
-          exit 1
+          # commit + push site par site geres directement par pipeline/pagespeed.py
+          # (via pipeline.build._commit_et_pousse), plus de step separee ici.
