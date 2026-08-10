@@ -1,0 +1,11 @@
+{
+  "name": "psa-site-factory-analytics-tests",
+  "private": true,
+  "description": "Tests end-to-end (Playwright), separes de la racine du projet expres : Vercel ne doit jamais voir de package.json a la racine et tenter d'installer/builder quoi que ce soit pour un site qui n'a aucune etape de build.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
