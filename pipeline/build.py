@@ -150,6 +150,12 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                        else "recherche : aucune propriete Search Console pour cet hote")
 
     d = json.loads(json.dumps(existant))      # copie
+    # persiste la propriete Search Console deja decouverte (jamais stockee
+    # avant le 10/08/2026) -- necessaire pour qu'une fonction serverless
+    # (Node, api/gsc-compare.js) puisse interroger l'API Search Console en
+    # direct pour un site donne sans redecouvrir la propriete elle-meme.
+    if gsc_site:
+        d["gscProperty"] = gsc_site
     d.setdefault("trafficMonth", {})
     d.setdefault("repriseMonth", {})
     d.setdefault("funnelMonth", {})

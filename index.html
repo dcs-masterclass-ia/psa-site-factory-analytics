@@ -1259,6 +1259,47 @@ input[type=date]{color-scheme:dark}
           <div style="background:var(--warn-bg);border-radius:20px;padding:16px 18px;font-size:13px;line-height:1.5;color:var(--text2)">{{ pageInsightText }}</div>
         </div>
       </div>
+
+      <div style="background:#fff;border-radius:30px;padding:28px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:18px;margin-top:22px">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Comparaison de périodes</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Choisis une plage de dates, comparée automatiquement à la même durée juste avant — requête en direct, pas de délai de traitement</div></div>
+          <div style="flex:1"></div>
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ gscCompareDimButtons }}" as="m" hint-placeholder-count="2">
+              <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <input type="date" value="{{ gscCompareDebut }}" onChange="{{ setGscCompareDebut }}" style="background:var(--soft);border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;padding:9px 14px;border-radius:12px">
+          <span style="font-size:13px;color:var(--muted2)">→</span>
+          <input type="date" value="{{ gscCompareFin }}" onChange="{{ setGscCompareFin }}" style="background:var(--soft);border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;padding:9px 14px;border-radius:12px">
+          <button onClick="{{ runGscCompare }}" disabled="{{ gscCompareRunDisabled }}" style="{{ gscCompareBtnStyle }}">{{ gscCompareRunLabel }}</button>
+          <sc-if value="{{ hasGscCompareResult }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12.5px;color:var(--muted2)">{{ gscComparePeriodLabel }}</span>
+          </sc-if>
+        </div>
+        <sc-if value="{{ hasGscCompareError }}" hint-placeholder-val="{{ false }}">
+          <div style="background:var(--neg-bg);border-radius:16px;padding:14px 16px;font-size:13px;color:var(--neg)">{{ gscCompareError }}</div>
+        </sc-if>
+        <sc-if value="{{ hasGscCompareRows }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;overflow-x:auto">
+          <div style="display:grid;grid-template-columns:2fr 90px 90px 90px 62px 56px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px;min-width:560px">
+            <span>{{ gscCompareDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">vs période préc.</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span>
+          </div>
+          <sc-for list="{{ gscCompareRows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:2fr 90px 90px 90px 62px 56px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);min-width:560px">
+              <span style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.cle }}</span>
+              <span style="text-align:right;font-size:13px;font-weight:700;color:var(--text)">{{ r.clics }}</span>
+              <span style="text-align:right;font-size:12.5px;{{ r.deltaStyle }}">{{ r.deltaText }}</span>
+              <span style="text-align:right;font-size:13px;color:var(--muted)">{{ r.impr }}</span>
+              <span style="text-align:right;font-size:13px;color:var(--text2)">{{ r.ctr }}</span>
+              <span style="text-align:right;font-size:13px;color:var(--text2)">{{ r.pos }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
     </div>
     </sc-if>
   </div>
@@ -2630,6 +2671,8 @@ class Component extends DCLogic {
     sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
     compareSites: [],    // selection independante pour l'onglet "Comparer" (10/08/2026) -- plusieurs sites, jamais melangee avec la navigation site par site ci-dessus
     compareMetric: "traffic",
+    gscCompareDebut: "", gscCompareFin: "", gscCompareDim: "page",
+    gscCompareBusy: false, gscCompareResult: null, gscCompareError: "",
     dim: "brand",
     booted: false,
     error: null,
@@ -3263,6 +3306,29 @@ class Component extends DCLogic {
   setPerfFilter(value) {
     this.setState({ perfFilter: value });
   }
+  /* tableau Search Console dynamique (pages/requetes, periode arbitraire vs
+     periode precedente) via /api/gsc-compare -- appel a la demande, aucune
+     donnee stockee (voir commentaire du fichier serveur). */
+  async runGscCompare(site) {
+    const { gscCompareDebut: debut, gscCompareFin: fin, gscCompareDim: dimension } = this.state;
+    if (!site || !debut || !fin) return;
+    this.setState({ gscCompareBusy: true, gscCompareError: "", gscCompareResult: null });
+    try {
+      const r = await fetch("/api/gsc-compare", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ site, debut, fin, dimension }),
+      });
+      const json = await r.json();
+      if (!r.ok || json.error) {
+        this.setState({ gscCompareBusy: false, gscCompareError: (json && json.error) || "Erreur lors de la requête." });
+        return;
+      }
+      this.setState({ gscCompareBusy: false, gscCompareResult: json });
+    } catch (e) {
+      this.setState({ gscCompareBusy: false, gscCompareError: (e && e.message) || String(e) });
+    }
+  }
   /* genere un ticket Jira (titre + corps copiable) pour un site via
      /api/perf-ticket -- une seule generation a la fois (perfTicketBusySite),
      resultat (ou erreur) affiche dans la meme modale pour rester simple. */
@@ -3761,6 +3827,11 @@ class Component extends DCLogic {
         gscKpiCtr: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
         gscKpiPos: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
         gscHeadlineInsight: "", gscQueriesTotal: 0, pageInsightText: "", posLineRef: () => {},
+        gscCompareDimButtons: [], gscCompareCanRun: false, gscCompareRunDisabled: true, gscCompareRunLabel: "Comparer",
+        gscCompareBtnStyle: "", gscCompareDimLabel: "Page", gscCompareBusy: false,
+        setGscCompareDebut: () => {}, setGscCompareFin: () => {}, gscCompareDebut: "", gscCompareFin: "",
+        runGscCompare: () => {}, gscCompareRows: [], hasGscCompareRows: false, gscComparePeriodLabel: "",
+        gscCompareError: "", hasGscCompareError: false, hasGscCompareResult: false,
         channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], projectHero: null, hasProjectHero: false, projectRest: [],
         convCanalRows: [], hasConvCanalRows: false, convDeviceLabels: [],
@@ -5088,6 +5159,36 @@ class Component extends DCLogic {
       ? "La page la plus cliquée (" + topPage[0] + ") concentre " + topPageShare + " % des clics organiques des pages suivies sur la période."
       : "Pas encore assez de pages avec du trafic organique sur la période.";
 
+    // Tableau Search Console dynamique (10/08/2026) : requete a la demande
+    // (voir api/gsc-compare.js), un seul site a la fois -- n'a de sens que
+    // pour un site precis (une propriete Search Console = un site), pas en
+    // vue agregee.
+    const gscCompareDimButtons = [
+      { key: "page", label: "Pages" },
+      { key: "query", label: "Requêtes" },
+    ].map(m => ({
+      label: m.label,
+      pick: () => this.setState({ gscCompareDim: m.key }),
+      style: "border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;height:34px;padding:0 15px;border-radius:100px;transition:background .18s ease,color .18s ease;background:" +
+        (st.gscCompareDim === m.key ? "#F5411E" : "var(--soft)") + ";color:" + (st.gscCompareDim === m.key ? "#fff" : "var(--text2)"),
+    }));
+    const gscCompareCanRun = !!currentSite && !!st.gscCompareDebut && !!st.gscCompareFin && !st.gscCompareBusy;
+    const gscCompareRunDisabled = !gscCompareCanRun;
+    const gscCompareRunLabel = st.gscCompareBusy ? "Chargement…" : "Comparer";
+    const gscCompareBtnStyle = "border:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:700;height:38px;padding:0 20px;border-radius:100px;background:#F5411E;color:#fff;opacity:" + (gscCompareCanRun ? "1" : "0.5");
+    const gscCompareDimLabel = st.gscCompareDim === "query" ? "Requête" : "Page";
+    const gr = st.gscCompareResult;
+    const gscCompareRows = gr ? gr.lignes.map(l => ({
+      cle: l.cle,
+      clics: fmt(l.clics), clicsPrec: l.clicsPrec == null ? "—" : fmt(l.clicsPrec),
+      deltaText: l.clicsDeltaPct == null ? "—" : (l.clicsDeltaPct >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(l.clicsDeltaPct), 0) + " %",
+      deltaStyle: "font-weight:700;color:" + (l.clicsDeltaPct == null ? "var(--muted)" : l.clicsDeltaPct >= 0 ? "var(--pos)" : "var(--neg)"),
+      impr: fmt(l.impressions), ctr: dec(l.ctr, 1) + " %", pos: dec(l.position, 1),
+    })) : [];
+    const hasGscCompareRows = gscCompareRows.length > 0;
+    const gscComparePeriodLabel = gr ? "Comparé à " + gr.periodePrecedente.debut + " → " + gr.periodePrecedente.fin : "";
+    const hasGscCompareError = !!st.gscCompareError;
+
     // encart KamIA de la ligne de KPI : reprend le premier insight SEO reel
     // du pipeline (meme source que l'ancienne liste seoInsights, presente
     // ici comme un texte unique plutot qu'une liste, comme la maquette).
@@ -5728,6 +5829,15 @@ class Component extends DCLogic {
       ownBrandShare, ownBrandSharePct, heatmapDaysLabel: last90.length + " derniers jours",
       gscAxisLabels, clicsLineRef, imprLineRef, imprFillRef, posLineRef,
       queries, pages, gscQueriesTotal, pageInsightText,
+      gscCompareDimButtons, gscCompareCanRun, gscCompareRunDisabled, gscCompareRunLabel, gscCompareBtnStyle, gscCompareDimLabel,
+      gscCompareBusy: st.gscCompareBusy,
+      setGscCompareDebut: e => this.setState({ gscCompareDebut: e.target.value }),
+      setGscCompareFin: e => this.setState({ gscCompareFin: e.target.value }),
+      gscCompareDebut: st.gscCompareDebut, gscCompareFin: st.gscCompareFin,
+      runGscCompare: () => this.runGscCompare(currentSite),
+      gscCompareRows, hasGscCompareRows, gscComparePeriodLabel,
+      gscCompareError: st.gscCompareError, hasGscCompareError,
+      hasGscCompareResult: !!gr,
       openQueriesModal: () => this.openQueriesModal(),
       queriesModal, hasQueriesModal,
       gscHover, hasGscHover: !!gscHover,
