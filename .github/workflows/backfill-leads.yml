@@ -1,0 +1,61 @@
+name: Rattrapage historique des leads BO
+
+# Manuel uniquement, a usage ponctuel : rejoue l'extraction reelle des
+# leads back-office (leads_extract.py) sur les mois anciens restes a
+# zero faute d'avoir ete retraites depuis le branchement de l'extraction
+# automatique -- voir pipeline/backfill_leads.py. Ecriture incrementale,
+# site par site (meme mecanisme que refresh.yml) : un site publie tout
+# de suite, le run peut continuer meme si un autre echoue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites à rattraper, séparés par des virgules (vide = tous ceux couverts par SITE_EXTRACT)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run : calcule et affiche, n'écrit/ne commit rien"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
+
+permissions:
+  contents: write
+
+jobs:
+  rattrapage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Rattraper les leads BO
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: |
+          # tableau bash (pas une chaine concatenee) : les noms de site
+          # contiennent des espaces ("OPEL FR"), chaque element doit rester
+          # UN argv distinct pour argparse, sinon "OPEL" et "FR" arrivent
+          # comme deux sites separes.
+          ARGS=()
+          if [ -n "${{ inputs.sites }}" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ "${{ inputs.dry_run }}" = "oui" ]; then ARGS+=(--dry-run); fi
+          python -m pipeline.backfill_leads "${ARGS[@]}"
