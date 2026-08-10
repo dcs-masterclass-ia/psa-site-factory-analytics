@@ -44,6 +44,7 @@ SITE_EXTRACT = {
     "ABARTH BE":     [(134, 2026), (136, 2026)],
     "ABARTH ES":     [(154, 2026)],
     "ABARTH IT":     [(170, 2026)],
+    "ABARTH LU":     [(135, 2026)],
     "ABARTH PT":     [(162, 2026)],
 
     "ALFA ROMEO BE": [(130, 2026), (132, 2026)],
@@ -88,6 +89,16 @@ SITE_EXTRACT = {
     "JEEP LU":       [(128, 2026)],
     "JEEP PL":       [(152, 2026)],
 
+    # LANCIA BE : deux siteId (fr + nl), meme convention que les autres
+    # marques belges multilingues ci-dessus.
+    "LANCIA BE":     [(243, 2026), (244, 2026)],
+    "LANCIA FR":     [(217, 2026)],
+    "LANCIA IT":     [(165, 2026)],
+    # siteId 245 (LANCIA.BELGIUM.fr.LUXEMBOURG, verifie via _diag_siteid.py
+    # le 10/08/2026) volontairement ecarte : aucun Site() GA4 "LANCIA LU"
+    # en face dans pipeline/sites.py -- meme situation que Leapmotor LU
+    # plus haut dans l'historique, pas ajoutable sans onboarding GA4 prealable.
+
     "OPEL AT":       [(43, 2015)],
     "OPEL BE":       [(63, 2016), (64, 2016)],
     "OPEL DE":       [(88, 2016)],
@@ -103,6 +114,7 @@ SITE_EXTRACT = {
     "PEUGEOT FR":    [(4, 2016)],
     "PEUGEOT IT":    [(51, 2014)],
     "PEUGEOT LU":    [(93, 2011)],
+    "PEUGEOT PL":    [(147, 2026)],
 
     # Spoticar + Stellantis&You, identifies le 10/08/2026 avec
     # pipeline/_diag_siteid.py (colonnes COUNTRY / SITE NAME du CSV,
