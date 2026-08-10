@@ -1762,7 +1762,7 @@ input[type=date]{color-scheme:dark}
           <div style="font-size:13px;font-weight:700;color:var(--text2)">Sessions site parent / jour</div>
           <span style="{{ v2Modal.chartSessions.deltaStyle }}">{{ v2Modal.chartSessions.deltaText }}</span>
         </div>
-        <div style="position:relative;height:130px;margin-top:16px">
+        <div ref="{{ v2Modal.chartSessions.hoverRef }}" style="position:relative;height:130px;margin-top:16px;cursor:crosshair">
           <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
             <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
             <path ref="{{ v2Modal.chartSessions.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
@@ -1779,7 +1779,7 @@ input[type=date]{color-scheme:dark}
           <div style="font-size:13px;font-weight:700;color:var(--text2)">Leads / jour</div>
           <span style="{{ v2Modal.chartLeads.deltaStyle }}">{{ v2Modal.chartLeads.deltaText }}</span>
         </div>
-        <div style="position:relative;height:130px;margin-top:16px">
+        <div ref="{{ v2Modal.chartLeads.hoverRef }}" style="position:relative;height:130px;margin-top:16px;cursor:crosshair">
           <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
             <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
             <path ref="{{ v2Modal.chartLeads.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
@@ -1845,7 +1845,7 @@ input[type=date]{color-scheme:dark}
         <sc-if value="{{ v2Modal.hasChartMobile }}" hint-placeholder-val="{{ false }}">
         <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
           <div style="font-size:12px;font-weight:700;color:var(--text2)">Évolution de la part mobile</div>
-          <div style="position:relative;height:80px;margin-top:10px">
+          <div ref="{{ v2Modal.chartMobile.hoverRef }}" style="position:relative;height:80px;margin-top:10px;cursor:crosshair">
             <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
               <path ref="{{ v2Modal.chartMobile.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
               <path ref="{{ v2Modal.chartMobile.ref }}" fill="none" stroke="#4A9BF5" stroke-width="2.4" stroke-linecap="round"></path>
@@ -2031,6 +2031,7 @@ const MONTHS = ["janv.","févr.","mars","avril","mai","juin","juil.","août","se
 // -- bug reel corrige le 08/08/2026 ("12 mois" melangeait les deux annees).
 function nbJours(debut, fin) { return Math.round((new Date(fin) - new Date(debut)) / 86400000) + 1; }
 function decale(iso, n) { const d = new Date(iso); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+function fmtDateCourt(iso) { return iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : ""; }
 // libelle d'axe lisible ("août 2025") a partir d'une date "YYYY-MM-DD" —
 // l'annee etait justement ce qui manquait pour lever l'ambiguite sur les
 // axes de graphique une fois la fenetre etendue au-dela de 12 mois.
@@ -2179,6 +2180,38 @@ function smoothPathFrom(values, w, h, y0, max, dir) {
   return d;
 }
 
+// tooltip generique au survol d'une courbe : cree un encart flottant dans le
+// conteneur (position:relative attendue) qui suit la position X de la souris
+// et affiche le point de donnee le plus proche -- demande du 10/08/2026
+// ("dates + performances au jour le jour au survol"). points = [{label,
+// valueText}], dans le meme ordre que les points traces sur la courbe.
+function wireHoverTooltip(el, points) {
+  if (!el || el.__hoverWired || !points || !points.length) return;
+  el.__hoverWired = true;
+  let tip = null;
+  const show = e => {
+    const rect = el.getBoundingClientRect();
+    if (!rect.width) return;
+    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const idx = points.length > 1 ? Math.round(frac * (points.length - 1)) : 0;
+    const p = points[idx];
+    if (!p) return;
+    if (!tip) {
+      tip = document.createElement("div");
+      tip.style.cssText = "position:absolute;z-index:5;pointer-events:none;background:var(--pop);border:1px solid var(--line);border-radius:10px;padding:7px 11px;font-size:12px;font-weight:700;color:var(--text);box-shadow:0 14px 34px -10px var(--shadow);white-space:nowrap;top:2px;transition:opacity .1s ease";
+      el.appendChild(tip);
+    }
+    const x = points.length > 1 ? (idx / (points.length - 1)) * rect.width : rect.width / 2;
+    const onRight = x < rect.width / 2;
+    tip.style.left = x + "px";
+    tip.style.transform = "translate(" + (onRight ? "8px" : "calc(-100% - 8px)") + ",0)";
+    tip.style.opacity = "1";
+    tip.textContent = p.label + " : " + p.valueText;
+  };
+  el.addEventListener("mousemove", show);
+  el.addEventListener("mouseleave", () => { if (tip) tip.style.opacity = "0"; });
+}
+
 /* courbe V1 (reference, plate) vs V2 (une valeur par semaine ecoulee depuis
    la bascule) pour la modale de detail du rapport V2 — siteRaw contient une
    entree par periode (isBaseline + une par semaine), valueFn en extrait la
@@ -2213,6 +2246,12 @@ function buildV2Chart(siteRaw, valueFn, unite) {
     deltaText: deltaPct == null ? "—" : (deltaPct >= 0 ? "+" : "") + dec(deltaPct, 0) + " %",
     deltaStyle: "font-weight:800;font-variant-numeric:tabular-nums;color:" + (deltaPct == null ? "var(--muted)" : deltaPct >= 0 ? "var(--pos)" : "var(--neg)"),
     axisLabels: weeks.map(r => r.periode),
+    // survol : dates exactes (debut-fin de semaine) + valeur du jour, pas
+    // seulement le libelle compact "16–19 juil." deja utilise ailleurs.
+    hoverRef: el => wireHoverTooltip(el, weeks.map((r, i) => ({
+      label: r.debut && r.fin ? (fmtDateCourt(r.debut) + " → " + fmtDateCourt(r.fin)) : r.periode,
+      valueText: dec(v2Vals[i], 1) + " " + unite,
+    }))),
   };
 }
 
