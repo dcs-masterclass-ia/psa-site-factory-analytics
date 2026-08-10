@@ -1,0 +1,43 @@
+name: Diagnostic siteId back-office
+
+# Ponctuel, manuel uniquement : identifie a quel marche correspond une
+# liste de (siteId, settings) back-office, avant de les inscrire dans
+# SITE_EXTRACT -- jamais devine depuis un ordre de collage (voir
+# pipeline/_diag_siteid.py). Lecture seule, aucune ecriture.
+
+on:
+  workflow_dispatch:
+    inputs:
+      paires:
+        description: "siteId:settings separes par une espace, ex. 106:2026 66:2026"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Identifier les sites
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: |
+          SORTIE="$RUNNER_TEMP/rapport.txt"
+          python -m pipeline._diag_siteid ${{ inputs.paires }} | tee "$SORTIE"
+          {
+            echo '```'
+            cat "$SORTIE"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
