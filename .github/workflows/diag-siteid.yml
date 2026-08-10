@@ -11,6 +11,10 @@ on:
       paires:
         description: "siteId:settings separes par une espace, ex. 106:2026 66:2026"
         required: true
+      jours:
+        description: "Fenetre de mesure en jours (defaut 90) -- augmenter si un site a peu de volume"
+        required: false
+        default: "90"
 
 permissions:
   contents: read
@@ -33,6 +37,7 @@ jobs:
       - name: Identifier les sites
         env:
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+          DIAG_JOURS: ${{ inputs.jours }}
         run: |
           SORTIE="$RUNNER_TEMP/rapport.txt"
           python -m pipeline._diag_siteid ${{ inputs.paires }} | tee "$SORTIE"

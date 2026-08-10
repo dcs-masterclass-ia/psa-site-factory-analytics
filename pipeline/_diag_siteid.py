@@ -12,6 +12,7 @@ Usage :
     python -m pipeline._diag_siteid 106:2026 66:2026 69:2026 ...
 """
 
+import os
 import sys
 from datetime import date, timedelta
 
@@ -24,8 +25,9 @@ def main():
         sid, settings = arg.split(":")
         paires.append((int(sid), int(settings)))
 
+    jours = int(os.environ.get("DIAG_JOURS", "90"))
     fin = date.today().isoformat()
-    debut = (date.today() - timedelta(days=90)).isoformat()
+    debut = (date.today() - timedelta(days=jours)).isoformat()
 
     for sid, settings in paires:
         print(f"\n=== siteId={sid} settings={settings} ({debut} -> {fin}) ===")
