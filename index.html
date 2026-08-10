@@ -2636,10 +2636,10 @@ class Component extends DCLogic {
       }));
       await this.chargerPipelineInfo();
       await this.chargerHermesWatch();
-      // navigation site par site (refonte du 08/08/2026) : un seul site par
-      // defaut, plus "tous les sites" comme avant -- le premier de la liste
-      // (index.json), un choix arbitraire mais stable.
-      this.setState({ sites: this.sitesList.slice(0, 1), booted: true });
+      // par defaut, aucun site selectionne (vue agregee sur les 64) --
+      // demande du 10/08/2026, revient sur le "premier site arbitraire"
+      // choisi au 08/08/2026 lors du passage a la navigation site par site.
+      this.setState({ sites: this.sitesList.slice(), booted: true });
     } catch (e) {
       this.setState({ error: String(e && e.message || e) });
     }
