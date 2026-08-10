@@ -266,6 +266,40 @@ SITES = [
     Site("SPOTICAR UK", "spoticar-uk", "314821485",
          "www.spoticar.co.uk", "tradein.spoticar.co.uk",
          verifie=True, acces_api=True, pays="GB"),
+
+    # --- Stellantis &You ("PSAR" en interne GA4), decouvert le 10/08/2026.
+    # discover_sites.py les classait "ambigus" : le domaine de reprise n'est
+    # pas un sous-domaine de la marque (comme reprise.X.tld ailleurs) mais un
+    # domaine a part, recoveryXX.stellantisandyou.com -- motif que le
+    # deducteur automatique ne reconnait pas. Hotes releves a la main sur le
+    # meme trafic reel (fenetre elargie 2025-09-01/2026-08-08, cf. journal
+    # du run), tries par volume comme le reste du pipeline. hote_parent
+    # identique sur tous les marches : c'est le seul domaine de marque,
+    # www.stellantisandyou.com, pas de declinaison par pays ici.
+    Site("STELLANTIS &YOU AT", "stellantis-you-at", "346083628",
+         "www.stellantisandyou.com", "recoveryat.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="AT"),
+    Site("STELLANTIS &YOU BE", "stellantis-you-be", "346078383",
+         "www.stellantisandyou.com", "recoverybe.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="BE"),
+    Site("STELLANTIS &YOU DE", "stellantis-you-de", "346105870",
+         "www.stellantisandyou.com", "recoveryde.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="DE"),
+    Site("STELLANTIS &YOU ES", "stellantis-you-es", "346075442",
+         "www.stellantisandyou.com", "recoveryes.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="ES"),
+    Site("STELLANTIS &YOU FR", "stellantis-you-fr", "346047356",
+         "www.stellantisandyou.com", "www.recoveryfr.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="FR"),
+    Site("STELLANTIS &YOU IT", "stellantis-you-it", "346045227",
+         "www.stellantisandyou.com", "www.recoveryit.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="IT"),
+    Site("STELLANTIS &YOU PL", "stellantis-you-pl", "346099202",
+         "www.stellantisandyou.com", "recoverypl.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="PL"),
+    Site("STELLANTIS &YOU PT", "stellantis-you-pt", "346084920",
+         "www.stellantisandyou.com", "www.recoverypt.stellantisandyou.com",
+         verifie=True, acces_api=True, pays="PT"),
 ]
 
 PAR_SLUG = {s.slug: s for s in SITES}
