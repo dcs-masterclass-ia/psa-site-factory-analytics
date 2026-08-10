@@ -22,7 +22,7 @@ const NAV_TABS = {
   "Search Console": "Clics, impressions & position",
   "Comparaison V2": "Rapport hebdomadaire V2",
   "PageSpeed": "Performance des sites de reprise",
-  "KamIA": "Analyse rapide",
+  "KamIA": "Comment puis-je t'aider",
 };
 // mega-menu (10/08/2026) : la barre du haut n'affiche plus que des
 // groupes ("Google", "Analyse", KamIA a part) -- un onglet n'est plus
