@@ -47,7 +47,7 @@ SITE_EXTRACT = {
     "ABARTH PT":     [(162, 2026)],
 
     "ALFA ROMEO BE": [(130, 2026), (132, 2026)],
-    "ALFA ROMEO DE": [(211, 2026)],
+    "ALFA ROMEO DE": [(220, 2026)],  # corrige le 10/08/2026 : 211 renvoyait 0 ligne meme sur 500j (mauvais id) ; 220 = ALFA_ROMEO.GERMANY.de.3 (verifie via _diag_siteid.py)
     "ALFA ROMEO ES": [(157, 2026)],
     "ALFA ROMEO FR": [(143, 2026)],
     "ALFA ROMEO IT": [(168, 2026)],
