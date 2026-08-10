@@ -154,6 +154,14 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # avant le 10/08/2026) -- necessaire pour qu'une fonction serverless
     # (Node, api/gsc-compare.js) puisse interroger l'API Search Console en
     # direct pour un site donne sans redecouvrir la propriete elle-meme.
+    # setdefault D'ABORD (comme les autres cles ci-dessous) : un site sans
+    # propriete Search Console (etat normal, pas une anomalie) ne recevait
+    # jamais la cle du tout -- structure_identique la voyait alors comme
+    # "manquante" par rapport a un site modele qui, lui, en a une, et
+    # bloquait la publication. Trouve le 10/08/2026 : 20 sites en echec
+    # d'un coup (Alfa Romeo DE + les 19 Spoticar/Stellantis&You, tous sans
+    # GSC configure) au premier run complet depuis l'ajout de ce champ.
+    d.setdefault("gscProperty", None)
     if gsc_site:
         d["gscProperty"] = gsc_site
     d.setdefault("trafficMonth", {})
