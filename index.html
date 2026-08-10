@@ -1239,20 +1239,23 @@ input[type=date]{color-scheme:dark}
 
         <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:16px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
           <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Pages</div>
-          <div style="display:flex;flex-direction:column">
-            <div style="display:grid;grid-template-columns:2fr 62px 62px 60px 56px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px">
-              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span>
+          <div style="display:flex;flex-direction:column;overflow-x:auto">
+            <div style="display:grid;grid-template-columns:2fr 62px 62px 60px 56px 62px 68px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px;min-width:560px">
+              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
             <sc-for list="{{ pages }}" as="p" hint-placeholder-count="6">
-              <div style="{{ p.row }}">
+              <div style="{{ p.row }};min-width:560px">
                 <span style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.url }}</span>
                 <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text)">{{ p.clicks }}</span>
                 <span style="text-align:right;font-size:13.5px;color:var(--muted)">{{ p.impr }}</span>
                 <span style="text-align:right;{{ p.ctrStyle }}">{{ p.ctr }}</span>
                 <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2)">{{ p.pos }}</span>
+                <span style="text-align:right;font-size:13.5px;color:var(--muted)">{{ p.rebond }}</span>
+                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2)">{{ p.conv }}</span>
               </div>
             </sc-for>
           </div>
+          <div style="font-size:11px;color:var(--muted2)">Rebond et conversion (GA4) sont rapprochés par chemin d'URL — « — » quand la page n'a pas assez de trafic GA4 sur la période pour être mesurée. Les leads back-office ne sont pas attribuables à une page précise.</div>
           <div style="background:var(--warn-bg);border-radius:20px;padding:16px 18px;font-size:13px;line-height:1.5;color:var(--text2)">{{ pageInsightText }}</div>
         </div>
       </div>
@@ -2935,7 +2938,7 @@ class Component extends DCLogic {
       // navigateur/newVsReturning, ajoute au pipeline le 09/08/2026).
       audienceDevice: new Map(), browser: new Map(), newVsReturning: new Map(),
       convCanalDevice: new Map(),
-      rebondSessions: 0, rebondWeighted: 0,
+      rebondSessions: 0, rebondWeighted: 0, pagesGa4: new Map(),
     };
     for (const s of this.state.sites) {
       const d = this.data[s];
@@ -3061,6 +3064,15 @@ class Component extends DCLogic {
           const rb = d.rebondMonth[mois];
           out.rebondSessions += rb.sessions || 0;
           out.rebondWeighted += (rb.taux || 0) * (rb.sessions || 0);
+          for (const p of (rb.pages || [])) {
+            const cur = out.pagesGa4.get(p.page) || { sessions: 0, rebondWeighted: 0, conversions: 0, hasConv: false };
+            cur.sessions += p.sessions; cur.rebondWeighted += p.tauxRebond * p.sessions;
+            // p.conversions absent (ancien schema, avant le 10/08/2026) doit
+            // rester "inconnu", pas "zero" : sinon une page jamais mesuree
+            // affiche un faux 0,00% de conversion au lieu de "—".
+            if (p.conversions != null) { cur.conversions += p.conversions; cur.hasConv = true; }
+            out.pagesGa4.set(p.page, cur);
+          }
         }
       }
       // conversion par canal x device : meme principe que search console
@@ -5045,13 +5057,24 @@ class Component extends DCLogic {
     const pageList = [...agg.pages.entries()].sort((a, b) => b[1].clics - a[1].clics).slice(0, 6);
     const maxPageClicks = Math.max(1, ...pageList.map(([, v]) => v.clics));
     const totalPageClicks = pageList.reduce((s, [, v]) => s + v.clics, 0) || 1;
+    // rapproche l'URL complete Search Console (https://hote/chemin) du
+    // pagePath GA4 (/chemin seul) pour enrichir le tableau avec le taux de
+    // rebond et la conversion reels par page -- demande du 10/08/2026.
+    // Aucune donnee inventee : une page sans correspondance GA4 (peu de
+    // volume, hors fenetre...) affiche "—", jamais un chiffre suppose.
+    const cheminDe = url => { try { return new URL(url).pathname || "/"; } catch (e) { return url; } };
     const pages = pageList.map(([url, v], i) => {
       const ctrVal = v.impressions ? v.clics / v.impressions * 100 : 0;
       const weak = ctrVal < 2;
+      const ga4 = agg.pagesGa4.get(cheminDe(url));
+      const rebondVal = ga4 && ga4.sessions ? ga4.rebondWeighted / ga4.sessions : null;
+      const convVal = ga4 && ga4.sessions && ga4.hasConv ? ga4.conversions / ga4.sessions * 100 : null;
       return {
         url, clicks: fmt(v.clics), impr: fmt(v.impressions), ctr: dec(ctrVal, 1) + " %", pos: dec(v.impressions ? v.posSum / v.impressions : 0, 1), weak,
         ctrStyle: "color:" + (weak ? "var(--neg)" : "var(--text2)") + ";font-weight:600",
-        row: "display:grid;grid-template-columns:2fr 62px 62px 60px 56px;gap:12px;align-items:center;padding:11px 10px;border-radius:14px;" + (weak ? "background:var(--neg-bg)" : "") + ";animation:riseIn .6s ease " + (0.5 + i * 0.07) + "s both",
+        rebond: rebondVal == null ? "—" : dec(rebondVal, 1) + " %",
+        conv: convVal == null ? "—" : dec(convVal, 2) + " %",
+        row: "display:grid;grid-template-columns:2fr 62px 62px 60px 56px 62px 68px;gap:12px;align-items:center;padding:11px 10px;border-radius:14px;" + (weak ? "background:var(--neg-bg)" : "") + ";animation:riseIn .6s ease " + (0.5 + i * 0.07) + "s both",
       };
     });
     // encart de la table Pages : la maquette montre un potentiel de

@@ -97,15 +97,29 @@ def taux_rebond(cli, pid, hote, debut, fin):
     return round(float(l[0][0]) * 100, 2) if l else 0.0
 
 
-def taux_rebond_par_page(cli, pid, hote, debut, fin, limite=20):
-    """Sessions + taux de rebond par page (pagePath), triees par sessions
-    decroissantes -- reutilise pour le graphe "par page" et pour le tableau
-    Pages combine GA4+Search Console."""
+def rebond_et_conversion_par_page(cli, pid, hote, debut, fin, evenement, limite=20):
+    """Sessions, taux de rebond et conversions (evenement donne) par page
+    (pagePath), triees par sessions decroissantes -- reutilise pour le
+    graphe "taux de rebond par page" et pour le tableau Pages combine
+    GA4+Search Console (enrichissement demande le 10/08/2026).
+
+    `evenement` est fourni par l'appelant (jamais importe/hardcode ici) :
+    pipeline.funnel importe deja ce module, l'importer ici en retour
+    creerait un import circulaire.
+    """
     l = _rapport(cli, pid, debut, fin, ["pagePath"], ["sessions", "bounceRate"],
                  _egal("hostName", hote))
+    conversions = _rapport(cli, pid, debut, fin, ["pagePath"], ["eventCount"],
+                           _et(_egal("hostName", hote), _egal("eventName", evenement)))
+    conv_map = {p: int(n) for p, n in conversions}
     lignes = sorted(((p, int(s), round(float(b) * 100, 2)) for p, s, b in l),
                     key=lambda x: -x[1])
-    return [{"page": p, "sessions": s, "tauxRebond": b} for p, s, b in lignes[:limite]]
+    out = []
+    for p, s, b in lignes[:limite]:
+        n = conv_map.get(p, 0)
+        out.append({"page": p, "sessions": s, "tauxRebond": b,
+                    "conversions": n, "tauxConv": round(n / s * 100, 2) if s else 0.0})
+    return out
 
 
 def profils(cli, pid, hote, debut, fin):

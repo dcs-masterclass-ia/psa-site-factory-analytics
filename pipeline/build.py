@@ -216,7 +216,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # du 10/08/2026.
         try:
             taux_reb = ga4.taux_rebond(cli, s.propriete, hote_reprise, deb, f_iso)
-            pages_reb = ga4.taux_rebond_par_page(cli, s.propriete, hote_reprise, deb, f_iso)
+            pages_reb = ga4.rebond_et_conversion_par_page(
+                cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)
             d["rebondMonth"][mois] = {"taux": taux_reb, "sessions": tr, "pages": pages_reb}
             journal.append(f"{mois} : taux de rebond {taux_reb} %")
         except Exception as e:
