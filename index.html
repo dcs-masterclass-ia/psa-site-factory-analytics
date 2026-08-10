@@ -380,7 +380,7 @@ input[type=date]{color-scheme:dark}
       <sc-if value="{{ periodPickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closePeriodPicker }}"></div>
         <div style="position:absolute;top:60px;right:0;width:300px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:3px;cursor:default;animation:dropIn .18s ease both" role="none">
-          <sc-for list="{{ periods }}" as="p" hint-placeholder-count="5">
+          <sc-for list="{{ periods }}" as="p" hint-placeholder-count="6">
             <button onClick="{{ p.pickAndClose }}" style="{{ p.rowStyle }}">{{ p.label }}</button>
           </sc-for>
 
@@ -394,12 +394,16 @@ input[type=date]{color-scheme:dark}
 
           <div style="height:1px;background:var(--line);margin:8px 2px"></div>
 
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 10px">
-            <div>
-              <div style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à la période précédente</div>
-              <div style="font-size:11.5px;color:#9aa0aa;margin-top:2px">{{ compareRangeLabel }}</div>
+          <div style="padding:2px 10px">
+            <div style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à</div>
+            <div style="display:flex;gap:3px;background:var(--soft);border-radius:13px;padding:3px;margin-top:6px">
+              <sc-for list="{{ compareModes }}" as="m" hint-placeholder-count="3">
+                <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
+              </sc-for>
             </div>
-            <button onClick="{{ toggleCompare }}" style="{{ compareToggle }}"><span style="{{ compareKnob }}"></span></button>
+            <sc-if value="{{ compareActive }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:11.5px;color:#9aa0aa;margin-top:6px">{{ compareRangeLabel }}</div>
+            </sc-if>
           </div>
 
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 2px">
@@ -2008,6 +2012,25 @@ function decale(iso, n) { const d = new Date(iso); d.setDate(d.getDate() + n); r
 // l'annee etait justement ce qui manquait pour lever l'ambiguite sur les
 // axes de graphique une fois la fenetre etendue au-dela de 12 mois.
 function moisAnneeLabel(iso) { return (MONTHS[parseInt(iso.slice(5, 7), 10) - 1] || "") + " " + iso.slice(0, 4); }
+// arithmetique calendaire sur des mois "YYYY-MM" (distincte de decale(), qui
+// deplace un nombre de JOURS -- un mois n'a pas une duree fixe, decale()
+// donnerait un mois "M-1" faux d'un jour selon la longueur des mois
+// traverses). Necessaire pour la periode par defaut "Mois precedent" et ses
+// comparaisons (vs M-2, vs meme mois l'an dernier) -- demande du 10/08/2026.
+function moisDecale(aaaaMM, n) {
+  const [a, m] = aaaaMM.split("-").map(Number);
+  const d = new Date(a, m - 1 + n, 1);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function premierJourMois(aaaaMM) { return aaaaMM + "-01"; }
+function dernierJourMois(aaaaMM) {
+  const [a, m] = aaaaMM.split("-").map(Number);
+  // getters locaux, jamais toISOString() : toISOString() convertit en UTC et
+  // decale le jour d'un cran a Paris (UTC+1/+2) -- meme classe de bug que
+  // celui deja corrige ailleurs dans ce fichier sur les libelles d'axe.
+  const d = new Date(a, m, 0); // jour 0 du mois suivant = dernier jour du mois courant
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
 
 /* somme d'une serie de valeurs {jour: {canal: v}} restreinte a une plage */
 function joursDans(dJours, debut, fin) { return dJours.filter(j => j >= debut && j <= fin); }
@@ -2372,11 +2395,14 @@ class Component extends DCLogic {
   state = {
     tab: "ga4",
     navActiveTab: "ga4", // pill de nav active immediatement au clic, independant du fondu de contenu (190ms) -- voir switchTab()
-    period: "28 j",
+    // periode par defaut = dernier mois calendaire complet (pas "28 j" glissant)
+    // + comparaison au mois precedent celui-ci active par defaut -- demande du
+    // 10/08/2026, remplace l'ancien defaut "28 j"/compare booleen.
+    period: "Mois précédent",
     customDate: false,
     dateFrom: "2026-07-01",
     dateTo: "2026-07-31",
-    compare: true,
+    compareMode: "previous", // "none" | "previous" | "year"
     pickerOpen: false,   // ouverture du selecteur de site (barre de recherche/profil, en-tete)
     siteSearch: "",      // texte tape dans la barre de recherche du selecteur de site
     periodPickerOpen: false, // ouverture du selecteur de periode/date (en-tete)
@@ -2663,6 +2689,13 @@ class Component extends DCLogic {
     // desormais jusqu'a 16 mois en arriere et n'a plus rien a voir avec le
     // libelle du bouton).
     if (st.period === "12 mois") return { debut: back(365), fin: max };
+    // "Mois precedent" = dernier mois calendaire ENTIEREMENT ecoule avant le
+    // dernier jour fiable (pas le mois en cours, toujours partiel) -- mois
+    // precis, pas "les 30 derniers jours".
+    if (st.period === "Mois précédent") {
+      const m1 = moisDecale(max.slice(0, 7), -1);
+      return { debut: premierJourMois(m1), fin: dernierJourMois(m1) };
+    }
     return { debut: back(28), fin: max };
   }
   periodSignature() {
@@ -3596,7 +3629,7 @@ class Component extends DCLogic {
     };
     const currentSiteFlag = currentSite ? (PAYS_FLAG[paysDeSite(currentSite)] || "") : "";
 
-    const periods = ["7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
+    const periods = ["Mois précédent", "7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
       const on = st.period === label;
       return {
         label,
@@ -3634,19 +3667,30 @@ class Component extends DCLogic {
     const agg = this.aggregate(range.debut, range.fin);
     const days = Math.max(1, nbJours(range.debut, range.fin));
 
-    // comparaison periode precedente : fenetre de meme duree juste avant la
-    // periode affichee (pas le meme mois l'an dernier, ni le mois calendaire
-    // precedent) -- le calcul de la plage (prev) est toujours fait, meme
-    // toggle eteint, pour pouvoir afficher "vs DD/MM → DD/MM" a cote du
-    // bouton et lever l'ambiguite signalee le 09/08/2026 ("c'est pas clair
-    // ce qu'il calcule"). Seule l'agregation (couteuse) reste conditionnee
-    // au toggle.
+    // comparaison : deux modes possibles -- "previous" (periode juste avant,
+    // meme duree) ou "year" (meme periode, un an plus tot). En periode
+    // "Mois precedent", les deux sont calcules de facon calendaire (mois
+    // exact, pas un decalage de N jours qui tomberait a cheval sur deux mois
+    // selon leur longueur) -- demande du 10/08/2026 ("preciser vs M-2" +
+    // "ajouter vs annee precedente"). Le calcul est toujours fait, meme mode
+    // "none", pour afficher le libelle a cote du selecteur sans devoir
+    // rouvrir le menu. Seule l'agregation (couteuse) reste conditionnee au
+    // mode actif.
     const fmtDateShort = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : "";
-    const prev = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
-    const compareRangeLabel = "vs " + fmtDateShort(prev.debut) + " → " + fmtDateShort(prev.fin);
+    const estModeMois = st.period === "Mois précédent";
+    const prev = estModeMois
+      ? (() => { const m2 = moisDecale(range.debut.slice(0, 7), -1); return { debut: premierJourMois(m2), fin: dernierJourMois(m2) }; })()
+      : { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
+    const prevYear = estModeMois
+      ? (() => { const mA = moisDecale(range.debut.slice(0, 7), -12); return { debut: premierJourMois(mA), fin: dernierJourMois(mA) }; })()
+      : { debut: decale(range.debut, -365), fin: decale(range.fin, -365) };
+    const compareRangeLabel = "vs " + (estModeMois ? moisAnneeLabel(prev.debut) : fmtDateShort(prev.debut) + " → " + fmtDateShort(prev.fin));
+    const compareYearRangeLabel = "vs " + (estModeMois ? moisAnneeLabel(prevYear.debut) : fmtDateShort(prevYear.debut) + " → " + fmtDateShort(prevYear.fin));
+    const compareActiveRange = st.compareMode === "year" ? prevYear : prev;
+    const compareActiveLabel = st.compareMode === "year" ? compareYearRangeLabel : compareRangeLabel;
     let cmp = null;
-    if (st.compare) {
-      cmp = this.aggregate(prev.debut, prev.fin);
+    if (st.compareMode !== "none") {
+      cmp = this.aggregate(compareActiveRange.debut, compareActiveRange.fin);
     }
     const deltaBadge = (cur, ref, unit, invert) => {
       if (ref == null || !cur) return { style: "font-size:14.5px;font-weight:700;padding:5px 10px;border-radius:8px;color:var(--muted);background:var(--soft)", text: "—" };
@@ -3662,6 +3706,7 @@ class Component extends DCLogic {
     periodLabel_: void 0;
     const periodLabel = st.customDate
       ? range.debut + " → " + range.fin
+      : estModeMois ? moisAnneeLabel(range.debut)
       : "derniers " + st.period;
 
     // maquette KamIA du 08/08/2026 : badge icone degrade en haut de chaque
@@ -3721,9 +3766,8 @@ class Component extends DCLogic {
       // classement du parc a la periode precedente, pour "+N places" -- seulement
       // si la comparaison est activee (deja un cout de 64 agregations pour la
       // periode courante, on ne double pas si l'utilisateur n'en a pas besoin).
-      if (st.compare && rang > 0) {
-        const prevR = { debut: decale(range.debut, -days), fin: decale(range.fin, -days) };
-        const tauxPrev = rankSites(prevR.debut, prevR.fin);
+      if (st.compareMode !== "none" && rang > 0) {
+        const tauxPrev = rankSites(compareActiveRange.debut, compareActiveRange.fin);
         const rangPrev = tauxPrev.findIndex(x => x.site === currentSite) + 1;
         if (rangPrev > 0) {
           const gain = rangPrev - rang;
@@ -3741,7 +3785,9 @@ class Component extends DCLogic {
     // position dans le parc) plutot qu'un seul gabarit reutilise partout —
     // on suit ca a la lettre plutot que d'aplatir sur un composant generique.
     const PERIOD_PILL = { "7 j": "7 derniers jours", "28 j": "28 derniers jours", "3 mois": "3 derniers mois", "12 mois": "12 derniers mois" };
-    const periodPillLabel = st.customDate ? (range.debut + " → " + range.fin) : (PERIOD_PILL[st.period] || st.period);
+    const periodPillLabel = st.customDate ? (range.debut + " → " + range.fin)
+      : estModeMois ? moisAnneeLabel(range.debut)
+      : (PERIOD_PILL[st.period] || st.period);
     const sparkAxisLeft = st.customDate ? range.debut : "J-" + days;
     const sparkAxisRight = st.customDate ? range.fin : "Auj.";
     // pastille periode/date compacte (en-tete) : intitule court en haut
@@ -4569,16 +4615,16 @@ class Component extends DCLogic {
     const cmpCtrMoy = cmp && cmp.gscN ? cmp.gscCtrSum / cmp.gscN : null;
     const cmpPosMoy = cmp && cmp.gscN ? cmp.gscPosSum / cmp.gscN : null;
 
-    const gscKpiClics = kpiCard("Clics", fmt(agg.gscClics), gscClicsSeries, "#3b5ae0", deltaBadge(agg.gscClics, cmp && cmp.gscClics, ""), "vs période N-1", 0);
+    const gscKpiClics = kpiCard("Clics", fmt(agg.gscClics), gscClicsSeries, "#3b5ae0", deltaBadge(agg.gscClics, cmp && cmp.gscClics, ""), compareActiveLabel, 0);
     gscKpiClics.ref = el => { if (el) this.up(el, agg.gscClics, fmt); };
-    const gscKpiImpr = kpiCard("Impressions", fmt(agg.gscImpr), gscImprSeries, "#38bdf8", deltaBadge(agg.gscImpr, cmp && cmp.gscImpr, ""), "vs période N-1", 1);
+    const gscKpiImpr = kpiCard("Impressions", fmt(agg.gscImpr), gscImprSeries, "#38bdf8", deltaBadge(agg.gscImpr, cmp && cmp.gscImpr, ""), compareActiveLabel, 1);
     gscKpiImpr.ref = el => { if (el) this.up(el, agg.gscImpr, fmt); };
-    const gscKpiCtr = kpiCard("CTR", dec(ctrMoy, 2) + " %", gscClicsSeries, "#f4485c", deltaBadge(ctrMoy, cmpCtrMoy, "pts"), "vs période N-1", 2);
+    const gscKpiCtr = kpiCard("CTR", dec(ctrMoy, 2) + " %", gscClicsSeries, "#f4485c", deltaBadge(ctrMoy, cmpCtrMoy, "pts"), compareActiveLabel, 2);
     gscKpiCtr.ref = el => { if (el) this.up(el, ctrMoy, x => dec(x, 2) + " %"); };
     // position : intitule ok tel quel (score, pas un montant), mais la
     // sparkline est inversee (maxGscPos - v) pour que "monter" sur le
     // graphique signifie vraiment "s'ameliorer", comme les autres courbes.
-    const gscKpiPos = kpiCard("Position moyenne", dec(posMoy, 1), gscPosSeries.map(v => -v), "#f59e0b", deltaBadge(posMoy, cmpPosMoy, "pts", true), "vs période N-1", 3);
+    const gscKpiPos = kpiCard("Position moyenne", dec(posMoy, 1), gscPosSeries.map(v => -v), "#f59e0b", deltaBadge(posMoy, cmpPosMoy, "pts", true), compareActiveLabel, 3);
     gscKpiPos.ref = el => { if (el) this.up(el, posMoy, x => dec(x, 1)); };
 
     // clics et impressions n'ont pas du tout la meme grandeur (les
@@ -5078,10 +5124,10 @@ class Component extends DCLogic {
       periodRange: range.debut + " → " + range.fin,
       generatedLabel: new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }),
       kpis: [
-        { label: "Sessions parent", value: fmt(agg.traffic), delta: st.compare ? deltaBadge(agg.traffic, cmp && cmp.traffic, "").text : "" },
-        { label: "Sessions reprise", value: fmt(agg.reprise), delta: st.compare ? deltaBadge(agg.reprise, cmp && cmp.reprise, "").text : "" },
-        { label: "Leads", value: fmt(agg.leads), delta: st.compare ? deltaBadge(agg.leads, cmp && cmp.leads, "").text : "" },
-        { label: "Taux de conversion", value: dec(convPct, 2) + " %", delta: st.compare ? deltaBadge(convPct, cmpConvPct, "pts").text : "", note: convRankLabel ? "Rang " + convRankLabel + " sur le parc" : "" },
+        { label: "Sessions parent", value: fmt(agg.traffic), delta: st.compareMode !== "none" ? deltaBadge(agg.traffic, cmp && cmp.traffic, "").text : "" },
+        { label: "Sessions reprise", value: fmt(agg.reprise), delta: st.compareMode !== "none" ? deltaBadge(agg.reprise, cmp && cmp.reprise, "").text : "" },
+        { label: "Leads", value: fmt(agg.leads), delta: st.compareMode !== "none" ? deltaBadge(agg.leads, cmp && cmp.leads, "").text : "" },
+        { label: "Taux de conversion", value: dec(convPct, 2) + " %", delta: st.compareMode !== "none" ? deltaBadge(convPct, cmpConvPct, "pts").text : "", note: convRankLabel ? "Rang " + convRankLabel + " sur le parc" : "" },
       ],
       funnel: tunnelSteps.map(s => ({ name: s.name, value: s.value, pct: s.pct })),
       funnelInsight: tunnelLeakInsight,
@@ -5178,10 +5224,24 @@ class Component extends DCLogic {
       togglePicker: () => this.setState(s => ({ pickerOpen: !s.pickerOpen })),
       selectAll: () => this.setState({ sites: ALL.slice() }),
       clearAll: () => this.setState({ sites: [] }),
-      toggleCompare: () => this.setState(s => ({ compare: !s.compare })),
-      compareToggle: "width:52px;height:30px;border-radius:999px;border:none;cursor:pointer;padding:3px;display:flex;justify-content:" + (st.compare ? "flex-end" : "flex-start") + ";transition:background .22s ease;background:" + (st.compare ? "#4ADE80" : "var(--soft3)"),
-      compareKnob: "width:24px;height:24px;border-radius:50%;background:" + (st.compare ? "#0d0d0d" : "var(--muted)") + ";display:block;transition:background .22s ease",
-      compareRangeLabel,
+      // remplace l'ancien toggle booleen "comparer/pas comparer" par un
+      // choix a 3 etats (aucune / periode precedente / annee precedente) --
+      // demande du 10/08/2026 ("ajouter aussi une comparaison vs annee
+      // precedente"), deux comparaisons simultanees auraient surcharge
+      // chaque carte KPI d'un 2e badge, un selecteur reste lisible.
+      compareModes: [
+        { key: "none", label: "Aucune" },
+        { key: "previous", label: estModeMois ? "Mois précédent" : "Période précédente" },
+        { key: "year", label: "Année précédente" },
+      ].map(m => ({
+        label: m.label,
+        pick: () => this.setState({ compareMode: m.key }),
+        style: "flex:1;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 6px;border-radius:11px;transition:background .18s ease,color .18s ease;background:" +
+          (st.compareMode === m.key ? "var(--card)" : "transparent") + ";color:" + (st.compareMode === m.key ? "var(--text)" : "var(--text2)") +
+          (st.compareMode === m.key ? ";box-shadow:0 2px 8px -2px rgba(17,17,26,.18)" : ""),
+      })),
+      compareRangeLabel: compareActiveLabel,
+      compareActive: st.compareMode !== "none",
       pickerBtn: "display:flex;align-items:center;gap:12px;border:none;cursor:pointer;font-family:inherit;height:52px;padding:0 20px;border-radius:999px;transition:background .2s ease;background:" + (st.pickerOpen ? "var(--hover)" : "var(--card)"),
       gscKpiClics, gscKpiImpr, gscKpiCtr, gscKpiPos,
       periodPillLabel, sparkAxisLeft, sparkAxisRight,
