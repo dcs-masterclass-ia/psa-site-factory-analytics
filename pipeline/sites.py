@@ -231,6 +231,41 @@ SITES = [
     Site("ABARTH PT", "abarth-pt", "353147990",
          "www.abarth.pt", "www.retoma.abarth.pt",
          verifie=True, acces_api=True, pays="PT"),
+
+    # --- Spoticar, decouvert le 10/08/2026 via pipeline/discover_sites.py une
+    # fois l'acces GA4 accorde au compte de service -- 10/10 hotes confirmes
+    # sans ambiguite contre le trafic reel, tous coherents avec la liste de
+    # sites officielle fournie separement. ---
+    Site("SPOTICAR AT", "spoticar-at", "314701939",
+         "www.spoticar.at", "wir-kaufen-ihr-auto.spoticar.at",
+         verifie=True, acces_api=True, pays="AT"),
+    Site("SPOTICAR BE", "spoticar-be", "314457341",
+         "www.spoticar.be", "www.reprise.spoticar.be",
+         verifie=True, acces_api=True, pays="BE"),
+    Site("SPOTICAR DE", "spoticar-de", "314730457",
+         "www.spoticar.de", "autoankauf.spoticar.de",
+         verifie=True, acces_api=True, pays="DE"),
+    Site("SPOTICAR ES", "spoticar-es", "314728332",
+         "www.spoticar.es", "tasacion.spoticar.es",
+         verifie=True, acces_api=True, pays="ES"),
+    Site("SPOTICAR FR", "spoticar-fr", "314732091",
+         "www.spoticar.fr", "www.reprise.spoticar.fr",
+         verifie=True, acces_api=True, pays="FR"),
+    Site("SPOTICAR IT", "spoticar-it", "314733158",
+         "www.spoticar.it", "www.valutazioneusato.spoticar.it",
+         verifie=True, acces_api=True, pays="IT"),
+    Site("SPOTICAR LU", "spoticar-lu", "314664281",
+         "www.spoticar.lu", "www.reprise.spoticar.lu",
+         verifie=True, acces_api=True, pays="LU"),
+    Site("SPOTICAR PL", "spoticar-pl", "314818617",
+         "www.spoticar.pl", "odkup.spoticar.pl",
+         verifie=True, acces_api=True, pays="PL"),
+    Site("SPOTICAR PT", "spoticar-pt", "313851325",
+         "www.spoticar.pt", "www.retoma.spoticar.pt",
+         verifie=True, acces_api=True, pays="PT"),
+    Site("SPOTICAR UK", "spoticar-uk", "314821485",
+         "www.spoticar.co.uk", "tradein.spoticar.co.uk",
+         verifie=True, acces_api=True, pays="GB"),
 ]
 
 PAR_SLUG = {s.slug: s for s in SITES}
