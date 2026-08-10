@@ -471,7 +471,7 @@ input[type=date]{color-scheme:dark}
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:.95fr .95fr 1.1fr 1.1fr 1fr;gap:20px;margin-top:22px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.34fr 1.06fr;gap:22px;margin-top:22px">
 
       <!-- Sessions parent : barres -->
       <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:14px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
@@ -509,35 +509,18 @@ input[type=date]{color-scheme:dark}
         <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ sparkAxisLeft }}</span><span>{{ sparkAxisRight }}</span></div>
       </div>
 
-      <!-- Leads : barres mensuelles avec repere V2 -->
+      <!-- Leads GA4 : etape finale du tunnel (Estimation/tradein_request).
+           Seule source de leads affichee sur cet onglet -- les leads
+           back-office (source differente, extraction leads_extract.py) sont
+           desormais sur l'onglet Tableau, jamais mixes ici (demande du
+           10/08/2026, apres le signalement Alfa Romeo DE : 0 lead BO alors
+           que GA4 montrait de vraies conversions -- melanger les deux
+           sources sur le meme onglet rendait ce genre d'ecart invisible). -->
       <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:14px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .14s both">
         <div style="display:flex;align-items:flex-start">
           <div style="flex:1">
-            <div style="font-size:15px;color:#6b7280;font-weight:400" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads BO</div>
-            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsRef }}" style="font-size:48px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span></div>
-            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span></div>
-          </div>
-          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 24px -8px rgba(18,185,129,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.1" stroke="#fff" stroke-width="1.9"></circle><path d="M4.5 16.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:4px;height:64px">
-          <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="9">
-            <div style="{{ b.style }}"></div>
-          </sc-for>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
-      </div>
-
-      <!-- Leads GA4 : etape finale du tunnel (Estimation/tradein_request), a
-           ne pas confondre/additionner avec Leads BO (source differente) --
-           demande du 10/08/2026 apres le signalement Alfa Romeo DE (0 lead
-           BO alors que GA4 montrait de vraies conversions : mauvais siteId,
-           corrige a part ; ce KPI existe pour que ce genre d'ecart saute
-           aux yeux tout de suite au lieu de passer inapercu). -->
-      <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:14px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
-        <div style="display:flex;align-items:flex-start">
-          <div style="flex:1">
-            <div style="font-size:15px;color:#6b7280;font-weight:400" title="Conversions GA4 (evenement tradein_request, etape finale du tunnel), pas une extraction back-office">Leads GA4</div>
-            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsGa4Ref }}" style="font-size:36px;font-weight:600;letter-spacing:-1.4px;color:var(--text)">0</span></div>
+            <div style="font-size:15px;color:#6b7280;font-weight:400" title="Conversions GA4 (evenement tradein_request, etape finale du tunnel) -- pas une extraction back-office, voir l'onglet Tableau pour les leads BO">Leads GA4</div>
+            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsGa4Ref }}" style="font-size:48px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span></div>
             <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiLeadsGa4Delta.style }}">{{ kpiLeadsGa4Delta.text }}</span></div>
           </div>
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#c8a2ff,#8b5cf6);box-shadow:0 10px 24px -8px rgba(139,92,246,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 10.5 8 14.5 16 5.5" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
@@ -576,8 +559,8 @@ input[type=date]{color-scheme:dark}
 
     </div>
 
-    <!-- ============ Ligne 2 : Tunnel de conversion + Répartition des leads + Sources ============ -->
-    <div style="display:grid;grid-template-columns:1.6fr 1.05fr .95fr;gap:22px;margin-top:22px">
+    <!-- ============ Ligne 2 : Tunnel de conversion + Sources ============ -->
+    <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:22px;margin-top:22px">
 
       <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;gap:14px">
@@ -605,30 +588,6 @@ input[type=date]{color-scheme:dark}
         </sc-if>
         <sc-if value="{{ hasTunnelInsight }}" hint-placeholder-val="{{ true }}">
         <div style="background:#ffeceb;border-radius:22px;padding:20px 22px;display:flex;gap:14px;align-items:flex-start;margin-top:auto"><span style="background:#fff;color:#c0392f;font-size:11px;font-weight:600;border-radius:100px;padding:4px 10px;flex:none">KamIA</span><span style="font-size:13px;line-height:1.5;color:#8a3229">{{ tunnelLeakInsight }}</span></div>
-        </sc-if>
-      </div>
-
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
-        <div style="display:flex;align-items:center;gap:14px"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div><div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Répartition des leads</div></div>
-        <div style="display:flex;align-items:center;gap:24px;flex:1;min-height:0">
-          <div style="width:138px;height:138px;border-radius:50%;background:{{ donutGradient }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">{{ donutTotalLabel }}</div><div style="font-size:11.5px;color:#9aa0aa">leads</div></div></div>
-          <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:0">
-            <sc-for list="{{ donutRows }}" as="d" hint-placeholder-count="4">
-              <div style="{{ d.row }}"><span style="{{ d.dot }}"></span><span style="flex:1;min-width:0;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span><span style="font-weight:500;color:var(--text)">{{ d.pct }}</span></div>
-            </sc-for>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <sc-for list="{{ donutChips }}" as="c" hint-placeholder-count="4">
-            <div onClick="{{ c.pick }}" role="button" tabindex="0" style="{{ c.chip }}">{{ c.label }}</div>
-          </sc-for>
-        </div>
-        <sc-if value="{{ hasKpiDeviceRows }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:14px;margin-top:auto">
-          <sc-for list="{{ kpiDeviceRows }}" as="d" hint-placeholder-count="2">
-            <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:5px"><div style="font-size:12.5px;color:#9aa0aa">{{ d.name }}</div><div style="font-size:23px;font-weight:600;letter-spacing:-.6px;color:var(--text)">{{ d.pct }}</div></div>
-          </sc-for>
-        </div>
         </sc-if>
       </div>
 
@@ -946,77 +905,15 @@ input[type=date]{color-scheme:dark}
     </div>
     </sc-if>
 
-    <!-- ============ Ligne 6 : Leads par projet d'achat + Marques reprises + Taux de complétion ============ -->
-    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px">
-
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
-        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
-        <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:12px;flex:1;min-height:0">
-          <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
-          <div style="grid-row:span 3;background:linear-gradient(160deg,#fff1f0,#ffe4e2);border-radius:24px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:16px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <span style="width:34px;height:34px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center">
-                <sc-if value="{{ projectHero.isNew }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4485c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg></sc-if>
-                <sc-if value="{{ projectHero.isUsed }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b5ae0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></sc-if>
-                <sc-if value="{{ projectHero.isUnknown }}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></sc-if>
-              </span>
-              <span style="font-size:14.5px;font-weight:600;color:{{ projectHero.style.sub }}">{{ projectHero.name }}</span>
-            </div>
-            <div>
-              <div style="font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1;color:{{ projectHero.style.text }}">{{ projectHero.pct }}</div>
-              <div style="font-size:15px;font-weight:600;color:{{ projectHero.style.sub }};margin-top:6px">{{ projectHero.value }} leads</div>
-            </div>
-          </div>
-          </sc-if>
-          <sc-for list="{{ projectRest }}" as="p" hint-placeholder-count="3">
-            <div style="{{ p.row }};background:#f6f7f9;border-radius:20px;padding:18px 20px;align-items:center">
-              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:{{ p.style.sub }}">{{ p.name }}</div><div style="font-size:12.5px;color:{{ p.style.light }}">{{ p.value }} leads</div></div>
-              <div style="font-size:26px;font-weight:600;letter-spacing:-1px;color:{{ p.style.text }}">{{ p.pct }}</div>
-            </div>
-          </sc-for>
-        </div>
-        <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:6px;height:10px">
-          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
-            <div style="{{ p.segment }}"></div>
-          </sc-for>
-        </div>
-        </sc-if>
-      </div>
-
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .26s both">
-        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Marques reprises</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">part des véhicules estimés</div></div>
-        <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:flex-end;gap:16px">
-          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="4">
-            <div style="{{ b.colWrap }}">
-              <div style="font-size:15px;font-weight:600;color:var(--text)">{{ b.pctLabel }}</div>
-              <div style="{{ b.bar }}"></div>
-              <div style="font-size:12px;color:#4b5563;text-align:center;max-width:100%">{{ b.name }}</div>
-            </div>
-          </sc-for>
-          <sc-if value="{{ hasBrandOther }}" hint-placeholder-val="{{ false }}">
-            <div style="{{ brandOtherBar.colWrap }}">
-              <div style="font-size:15px;font-weight:600;color:#9aa0aa">{{ brandOtherBar.pctLabel }}</div>
-              <div style="{{ brandOtherBar.bar }}"></div>
-              <div style="font-size:12px;color:#9aa0aa;white-space:nowrap">Autres marques</div>
-            </div>
-          </sc-if>
-        </div>
-        </sc-if>
-        <div style="display:flex;gap:14px;margin-top:auto">
-          <div style="flex:1;background:#fff8ec;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
-            <div style="width:56px;height:56px;border-radius:50%;background:{{ ownBrandRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b45309">{{ ownBrandSharePct }}</div></div>
-            <div><div style="font-size:13.5px;font-weight:600;color:#7a4a02">Marque du site</div><div style="font-size:12.5px;color:#b08a3c;line-height:1.4">Reprises de la marque du site</div></div>
-          </div>
-          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
-            <div style="width:56px;height:56px;border-radius:50%;background:{{ conquestRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#f6f7f9;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#4b5563">{{ conquestShareLabel }}</div></div>
-            <div><div style="font-size:13.5px;font-weight:600;color:#3f4653">Conquête</div><div style="font-size:12.5px;color:#9aa0aa;line-height:1.4">reprises hors marque du site</div></div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .32s both">
+    <!-- ============ Ligne 6 : Taux de complétion (GA4) ============ -->
+    <!-- Leads par projet d'achat + Marques reprises deplaces vers l'onglet
+         Tableau le 10/08/2026 (source back-office, pas GA4). Le sous-stat
+         "Leads BO / sessions reprise" ci-dessous etait mal etiquete : il
+         utilisait deja ga4LeadsProxy (etape finale du tunnel), jamais
+         agg.leads (back-office) -- corrige en "Leads GA4 / sessions
+         reprise" pour refleter ce qu'il calcule reellement. -->
+    <div style="display:flex;margin-top:22px">
+      <div style="max-width:460px;width:100%;background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
         <div style="display:flex;align-items:flex-start;gap:14px"><div style="flex:1;font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Taux de complétion</div><div style="display:flex;align-items:baseline;gap:3px"><span ref="{{ compRef }}" style="font-size:38px;font-weight:600;letter-spacing:-1.6px;line-height:1;color:var(--text)">0,0</span><span style="font-size:16px;color:#9aa0aa">%</span></div></div>
         <div style="display:flex;align-items:center;justify-content:center;padding:6px 0">
           <svg viewBox="0 0 200 124" style="width:100%;max-width:250px;height:auto">
@@ -1026,11 +923,10 @@ input[type=date]{color-scheme:dark}
           </svg>
         </div>
         <div style="display:flex;gap:14px;margin-top:auto">
-          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9aa0aa;line-height:1.35">Leads BO / sessions reprise</div><div style="font-size:23px;font-weight:600;letter-spacing:-.8px;color:var(--text)">{{ convText }}</div></div>
+          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9aa0aa;line-height:1.35">Leads GA4 / sessions reprise</div><div style="font-size:23px;font-weight:600;letter-spacing:-.8px;color:var(--text)">{{ convText }}</div></div>
           <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9aa0aa;line-height:1.35">Part vers la reprise</div><div style="font-size:23px;font-weight:600;letter-spacing:-.8px;color:var(--text)">{{ partText }}</div></div>
         </div>
       </div>
-
     </div>
 
 
@@ -1043,38 +939,7 @@ input[type=date]{color-scheme:dark}
         <span style="background:#f5f5f7;color:#4b5563;font-size:12.5px;font-weight:500;border-radius:100px;padding:7px 14px">{{ audienceTotalLabel }}</span>
       </div>
 
-      <div style="display:grid;grid-template-columns:.8fr 1.35fr 1.15fr;gap:26px">
-        <div style="display:flex;flex-direction:column;gap:18px">
-          <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Appareil</div>
-          <sc-if value="{{ hasDeviceRows }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:46px;font-weight:600;letter-spacing:-2px;line-height:1;color:var(--text)">{{ mobilePctLabel }}</span><span style="font-size:17px;color:#9aa0aa">mobile</span></div>
-          <div style="display:flex;gap:5px;height:16px">
-            <sc-for list="{{ deviceRows }}" as="d" hint-placeholder-count="2">
-              <div style="{{ d.segStyle }}"></div>
-            </sc-for>
-          </div>
-          <div style="display:flex;gap:10px">
-            <sc-for list="{{ deviceRows }}" as="d" hint-placeholder-count="2">
-              <div style="{{ d.cardStyle }}">
-                <span style="color:{{ d.style.text }};display:flex">
-                  <sc-if value="{{ d.isMobile }}" hint-placeholder-val="{{ true }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="7.5" y="2.5" width="9" height="19" rx="2.4" stroke="currentColor" stroke-width="1.8"></rect><path d="M10.6 5.4h2.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></sc-if>
-                  <sc-if value="{{ d.isDesktop }}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4" width="19" height="12.4" rx="2.2" stroke="currentColor" stroke-width="1.8"></rect><path d="M8.4 20h7.2M12 16.4V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></sc-if>
-                  <sc-if value="{{ d.isOther }}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4.6" y="2.6" width="14.8" height="18.8" rx="2.4" stroke="currentColor" stroke-width="1.8"></rect><path d="M10.8 18.4h2.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></sc-if>
-                </span>
-                <div style="font-size:17px;font-weight:600;letter-spacing:-.5px;color:{{ d.style.text }}">{{ d.pct }}</div>
-                <div style="font-size:11.5px;color:#6b7280;text-align:center;white-space:nowrap">{{ d.name }}</div>
-              </div>
-            </sc-for>
-          </div>
-          </sc-if>
-          <sc-if value="{{ noDeviceRows }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:13.5px;font-weight:500;color:#9aa0aa;line-height:1.5">Pas de donnée appareil sur cette période.</div>
-          </sc-if>
-          <sc-if value="{{ hasAudienceInsight }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff8ec;border-radius:20px;padding:16px 18px;font-size:13px;line-height:1.5;color:#7a4a02;margin-top:auto"><b style="font-weight:600">KamIA.</b> {{ audienceInsight }}</div>
-          </sc-if>
-        </div>
-
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px">
         <div style="display:flex;flex-direction:column;gap:16px;background:var(--soft);border-radius:22px;padding:22px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
             <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9aa0aa">Navigateur</div>
@@ -1720,6 +1585,138 @@ input[type=date]{color-scheme:dark}
         <div style="padding:50px 20px;text-align:center;font-size:14.5px;font-weight:500;color:var(--muted)">{{ compareEmptyLabel }}</div>
       </sc-if>
     </div>
+  </div>
+  </sc-if>
+
+  <!-- Onglet "Tableau" (10/08/2026) : toute la donnee sourcee back-office
+       (leads_extract.py), retiree de l'onglet GA4 pour ne jamais melanger
+       les deux sources sur le meme ecran -- demande explicite le
+       10/08/2026 apres le signalement Alfa Romeo DE. Meme cartes
+       qu'avant (KPI Leads BO, repartition par marque/appareil, projet
+       d'achat, marques reprises), juste reunies ici. -->
+  <sc-if value="{{ isTableau }}" hint-placeholder-val="{{ false }}">
+  <div style="margin-top:24px">
+
+    <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:2px 4px 0">
+      <div><h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-1.2px;color:var(--text)">Leads back-office</h1><div style="font-size:14px;color:#9aa0aa;margin-top:5px">Extraction back-office · {{ periodPillLabel }}</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px">
+
+      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
+        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
+        <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:12px;flex:1;min-height:0">
+          <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-row:span 3;background:linear-gradient(160deg,#fff1f0,#ffe4e2);border-radius:24px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:16px">
+            <div style="display:flex;align-items:center;gap:11px">
+              <span style="width:34px;height:34px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center">
+                <sc-if value="{{ projectHero.isNew }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4485c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg></sc-if>
+                <sc-if value="{{ projectHero.isUsed }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b5ae0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></sc-if>
+                <sc-if value="{{ projectHero.isUnknown }}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></sc-if>
+              </span>
+              <span style="font-size:14.5px;font-weight:600;color:{{ projectHero.style.sub }}">{{ projectHero.name }}</span>
+            </div>
+            <div>
+              <div style="font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1;color:{{ projectHero.style.text }}">{{ projectHero.pct }}</div>
+              <div style="font-size:15px;font-weight:600;color:{{ projectHero.style.sub }};margin-top:6px">{{ projectHero.value }} leads</div>
+            </div>
+          </div>
+          </sc-if>
+          <sc-for list="{{ projectRest }}" as="p" hint-placeholder-count="3">
+            <div style="{{ p.row }};background:#f6f7f9;border-radius:20px;padding:18px 20px;align-items:center">
+              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:{{ p.style.sub }}">{{ p.name }}</div><div style="font-size:12.5px;color:{{ p.style.light }}">{{ p.value }} leads</div></div>
+              <div style="font-size:26px;font-weight:600;letter-spacing:-1px;color:{{ p.style.text }}">{{ p.pct }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;gap:6px;height:10px">
+          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
+            <div style="{{ p.segment }}"></div>
+          </sc-for>
+        </div>
+        </sc-if>
+      </div>
+
+      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Marques reprises</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">part des véhicules estimés</div></div>
+        <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:flex-end;gap:16px">
+          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="4">
+            <div style="{{ b.colWrap }}">
+              <div style="font-size:15px;font-weight:600;color:var(--text)">{{ b.pctLabel }}</div>
+              <div style="{{ b.bar }}"></div>
+              <div style="font-size:12px;color:#4b5563;text-align:center;max-width:100%">{{ b.name }}</div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ hasBrandOther }}" hint-placeholder-val="{{ false }}">
+            <div style="{{ brandOtherBar.colWrap }}">
+              <div style="font-size:15px;font-weight:600;color:#9aa0aa">{{ brandOtherBar.pctLabel }}</div>
+              <div style="{{ brandOtherBar.bar }}"></div>
+              <div style="font-size:12px;color:#9aa0aa;white-space:nowrap">Autres marques</div>
+            </div>
+          </sc-if>
+        </div>
+        </sc-if>
+        <div style="display:flex;gap:14px;margin-top:auto">
+          <div style="flex:1;background:#fff8ec;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
+            <div style="width:56px;height:56px;border-radius:50%;background:{{ ownBrandRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b45309">{{ ownBrandSharePct }}</div></div>
+            <div><div style="font-size:13.5px;font-weight:600;color:#7a4a02">Marque du site</div><div style="font-size:12.5px;color:#b08a3c;line-height:1.4">Reprises de la marque du site</div></div>
+          </div>
+          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
+            <div style="width:56px;height:56px;border-radius:50%;background:{{ conquestRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#f6f7f9;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#4b5563">{{ conquestShareLabel }}</div></div>
+            <div><div style="font-size:13.5px;font-weight:600;color:#3f4653">Conquête</div><div style="font-size:12.5px;color:#9aa0aa;line-height:1.4">reprises hors marque du site</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:14px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
+        <div style="display:flex;align-items:flex-start">
+          <div style="flex:1">
+            <div style="font-size:15px;color:#6b7280;font-weight:400" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads BO</div>
+            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsRef }}" style="font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span></div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span></div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 24px -8px rgba(18,185,129,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.1" stroke="#fff" stroke-width="1.9"></circle><path d="M4.5 16.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:64px">
+          <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="9">
+            <div style="{{ b.style }}"></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
+      </div>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr;gap:22px;margin-top:22px">
+      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .24s both">
+        <div style="display:flex;align-items:center;gap:14px"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div><div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Répartition des leads</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:32px;align-items:center">
+          <div style="display:flex;align-items:center;gap:24px">
+            <div style="width:138px;height:138px;border-radius:50%;background:{{ donutGradient }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">{{ donutTotalLabel }}</div><div style="font-size:11.5px;color:#9aa0aa">leads</div></div></div>
+            <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:0">
+              <sc-for list="{{ donutRows }}" as="d" hint-placeholder-count="4">
+                <div style="{{ d.row }}"><span style="{{ d.dot }}"></span><span style="flex:1;min-width:0;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span><span style="font-weight:500;color:var(--text)">{{ d.pct }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ hasKpiDeviceRows }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:14px">
+            <sc-for list="{{ kpiDeviceRows }}" as="d" hint-placeholder-count="2">
+              <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:5px"><div style="font-size:12.5px;color:#9aa0aa">{{ d.name }}</div><div style="font-size:23px;font-weight:600;letter-spacing:-.6px;color:var(--text)">{{ d.pct }}</div></div>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <sc-for list="{{ donutChips }}" as="c" hint-placeholder-count="4">
+            <div onClick="{{ c.pick }}" role="button" tabindex="0" style="{{ c.chip }}">{{ c.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
   </div>
   </sc-if>
 
@@ -3892,7 +3889,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", isTableau: st.tab === "tableau", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickAnalysisCards: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null, watchConstatsTotal: 0,
@@ -4741,7 +4738,9 @@ class Component extends DCLogic {
     const hasDeviceRows = deviceRows.length > 0;
     const mobileRow = deviceRows.find(r => r.name === "Mobile");
     const mobilePctLabel = mobileRow ? mobileRow.pct : "0 %";
-    const audienceTotalLabel = periodPillLabel + " · " + fmt(totalDevice) + " sessions estimées";
+    // sessions reprise reelles (GA4), pas totalDevice (back-office, deplace
+    // vers l'onglet Tableau le 10/08/2026 avec le reste des leads BO).
+    const audienceTotalLabel = periodPillLabel + " · " + fmt(agg.reprise) + " sessions reprise";
     // insight reel : score PageSpeed mobile (deja dans nos donnees), croise
     // avec la part mobile reelle -- pas le chiffre fictif de la maquette.
     const pagespeedMobileScore = rawSite && rawSite.pagespeed && rawSite.pagespeed.mobile ? rawSite.pagespeed.mobile.score : null;
@@ -5636,7 +5635,7 @@ class Component extends DCLogic {
       gsc: '<img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
       v2: '<svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 3v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path><path d="M6.2 7.4 3.4 12h5.6L6.2 7.4ZM13.8 7.4 11 12h5.6l-2.8-4.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg>',
       performance: '<img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
-      bigquery: '<img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
+      tableau: '<img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
       compare: '<svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 3v11a2 2 0 0 0 2 2h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M7 12l3-3 2.5 2.5L17 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     };
     const TAB_BADGE_STYLE = {
@@ -5651,17 +5650,19 @@ class Component extends DCLogic {
     // n'affiche plus que des groupes, chaque groupe deroule ses onglets
     // reels dans un panneau (icone + libelle + description courte),
     // inspire de la reference fournie (menu "Productos" en cartes).
-    // BigQuery, avant un item non cliquable a part dans la barre, devient
-    // le 4e item du groupe Google (toujours "Bientot disponible", jamais
-    // actif ni enregistre dans tabRef).
+    // Le 4e item du groupe Google etait reserve a BigQuery ("Bientot
+    // disponible", jamais actif) -- devient "Tableau" le 10/08/2026 (demande
+    // explicite : separer les leads back-office, ici, des leads GA4 restes
+    // sur l'onglet Analytics). Meme icone (deja celle de Tableau Software,
+    // coincidence gardee), desormais actif.
     const NAV_GROUP_DEFS = [
       {
         key: "google", label: "Google",
         items: [
-          { key: "ga4", label: "Analytics", desc: "Trafic, sessions et conversions" },
+          { key: "ga4", label: "Analytics", desc: "Trafic, sessions et conversions GA4" },
           { key: "gsc", label: "Search Console", desc: "Clics, impressions et position" },
           { key: "performance", label: "PageSpeed", desc: "Performance et vitesse de chargement", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
-          { key: "bigquery", label: "BigQuery", desc: "Bientôt disponible", disabled: true },
+          { key: "tableau", label: "Tableau", desc: "Leads back-office, toutes marques" },
         ],
       },
       {
@@ -5894,7 +5895,7 @@ class Component extends DCLogic {
       v2Insight, hasV2Insight: !!v2Insight, v2TipInsight, hasV2Tip,
       kamiaHeadline, kamiaRows, hasKamiaRows: kamiaRows.length > 0,
       kamiaStatusLabel, kamiaConstatCount, kamiaChips,
-      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare",
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", isTableau: st.tab === "tableau",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       hasPerfHero, perfHero,

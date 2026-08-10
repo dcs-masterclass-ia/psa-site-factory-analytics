@@ -22,14 +22,17 @@ const NAV_TABS = {
   "Search Console": "Clics, impressions & position",
   "Comparaison V2": "Rapport hebdomadaire V2",
   "PageSpeed": "Performance des sites de reprise",
+  "Tableau": "Leads back-office",
   "KamIA": "Comment puis-je t'aider",
 };
 // mega-menu (10/08/2026) : la barre du haut n'affiche plus que des
 // groupes ("Google", "Analyse", KamIA a part) -- un onglet n'est plus
 // directement visible/cliquable depuis la barre, il faut d'abord ouvrir
 // son groupe. null = pas de groupe (KamIA reste un item direct).
+// "Tableau" (ex-BigQuery, active le 10/08/2026) : onglet dedie aux leads
+// back-office, separe de GA4 pour ne jamais melanger les deux sources.
 const NAV_GROUP_OF = {
-  "GA4": "Google", "Search Console": "Google", "PageSpeed": "Google",
+  "GA4": "Google", "Search Console": "Google", "PageSpeed": "Google", "Tableau": "Google",
   "Comparaison V2": "Analyse",
   "KamIA": null,
 };
