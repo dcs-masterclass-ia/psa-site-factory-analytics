@@ -24,6 +24,27 @@ const NAV_TABS = {
   "PageSpeed": "Performance des sites de reprise",
   "KamIA": "Analyse rapide",
 };
+// mega-menu (10/08/2026) : la barre du haut n'affiche plus que des
+// groupes ("Google", "Analyse", KamIA a part) -- un onglet n'est plus
+// directement visible/cliquable depuis la barre, il faut d'abord ouvrir
+// son groupe. null = pas de groupe (KamIA reste un item direct).
+const NAV_GROUP_OF = {
+  "GA4": "Google", "Search Console": "Google", "PageSpeed": "Google",
+  "Comparaison V2": "Analyse",
+  "KamIA": null,
+};
+// libelle affiche dans la carte du mega-menu, quand il differe de la cle
+// NAV_TABS ci-dessus (seul GA4 -> "Analytics" differe actuellement).
+const NAV_ITEM_LABEL = { "GA4": "Analytics" };
+async function ouvrirOnglet(page, tab) {
+  const groupe = NAV_GROUP_OF[tab];
+  if (groupe) {
+    await page.locator("nav button", { hasText: groupe }).first().click();
+    await page.locator("button", { hasText: NAV_ITEM_LABEL[tab] || tab }).first().click();
+  } else {
+    await page.locator("nav div", { hasText: tab }).first().click();
+  }
+}
 
 test.describe("chargement de l'application", () => {
   test("demarre sans erreur JS et affiche l'en-tete", async ({ page }) => {
@@ -35,8 +56,10 @@ test.describe("chargement de l'application", () => {
     await expect(page.locator("header, nav").first()).toBeVisible();
     // le logo Converge est une image (logo-converge-noir.webp), pas du texte
     await expect(page.locator('img[alt="Converge"]').first()).toBeVisible();
-    for (const tab of Object.keys(NAV_TABS)) {
-      await expect(page.locator("nav", { hasText: tab }).first()).toBeVisible();
+    // mega-menu : seuls les GROUPES ("Google", "Analyse") + KamIA sont
+    // directement visibles dans la barre repliee, pas chaque onglet.
+    for (const label of ["Google", "Analyse", "KamIA"]) {
+      await expect(page.locator("nav", { hasText: label }).first()).toBeVisible();
     }
 
     expect(pageErrors, `erreurs JS non attendues au chargement : ${pageErrors.join(" | ")}`).toEqual([]);
@@ -58,20 +81,32 @@ test.describe("selecteur de site", () => {
     await page.goto("/", { waitUntil: "networkidle" });
 
     // choisit d'abord un site precis...
-    await page.locator('button[aria-expanded]').first().click();
+    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
+    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
+    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
+    // bon bouton.
+    await page.locator('[data-testid="site-picker-toggle"]').click();
     await page.locator('input[placeholder="Rechercher un site…"]').fill("OPEL FR");
     await page.locator('div[role="button"]').filter({ hasText: "OPEL FR" }).first().click();
     await expect(page.locator('button[aria-expanded]:has-text("OPEL FR")')).toBeVisible();
 
     // ...puis revient a la vue agregee
-    await page.locator('button[aria-expanded]').first().click();
+    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
+    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
+    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
+    // bon bouton.
+    await page.locator('[data-testid="site-picker-toggle"]').click();
     await page.locator("text=Pas de site sélectionné").click();
     await expect(page.locator("text=Tous les sites").first()).toBeVisible();
   });
 
   test("la recherche filtre la liste des sites", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await page.locator('button[aria-expanded]').first().click();
+    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
+    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
+    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
+    // bon bouton.
+    await page.locator('[data-testid="site-picker-toggle"]').click();
     await page.locator('input[placeholder="Rechercher un site…"]').fill("PEUGEOT PT");
     await expect(page.locator('div[role="button"]').filter({ hasText: "PEUGEOT PT" }).first()).toBeVisible();
     await expect(page.locator('div[role="button"]').filter({ hasText: "OPEL FR" })).toHaveCount(0);
@@ -85,13 +120,11 @@ test.describe("navigation entre onglets", () => {
       page.on("pageerror", (err) => pageErrors.push(err.message));
 
       await page.goto("/", { waitUntil: "networkidle" });
-      // "nav div" (l'item precis), pas "nav" tout court : un seul <nav>
-      // existe sur la page et contient les 5 onglets, donc `page.locator
-      // ("nav", {hasText:tab})` matchait l'element <nav> entier pour
-      // n'importe quel onglet -- le clic partait sur un point arbitraire
-      // du conteneur plutot que sur l'item vise (bug reel trouve le
-      // 10/08/2026 en ecrivant ce test, pas dans l'app).
-      await page.locator("nav div", { hasText: tab }).first().click();
+      // mega-menu (10/08/2026) : un onglet groupe (GA4/Search Console/
+      // PageSpeed/Comparaison V2) n'est plus visible/cliquable directement
+      // dans la barre, il faut d'abord ouvrir son groupe -- voir
+      // ouvrirOnglet(). KamIA reste un item direct, inchange.
+      await ouvrirOnglet(page, tab);
       // vue "tous les sites" par defaut : l'agregation sur 64 sites est
       // plus lourde qu'un site seul, attendre le vrai contenu plutot
       // qu'un delai fixe.

@@ -320,7 +320,7 @@ input[type=date]{color-scheme:dark}
     <span style="width:1px;height:26px;background:var(--line);flex:none;margin:0 10px"></span>
 
     <div style="position:relative;flex:none">
-      <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
+      <button data-testid="site-picker-toggle" onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
         <div style="position:relative;flex:none">
           <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><span ref="{{ currentSiteLogoRef }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)"></span></div>
           <sc-if value="{{ currentSiteFlag }}" hint-placeholder-val="{{ false }}">
