@@ -31,7 +31,11 @@ MOTIFS_REPRISE = (
     # trafic reel (fenetre elargie 11 mois) ET par la liste officielle des
     # sites de reprise fournie par l'utilisateur -- meme discipline que le
     # reste de la liste, pas une supposition.
-    r"^recovery[a-z]{2,4}\.",
+    # "^" seul manquait FR/IT/PT : www.recoveryfr.stellantisandyou.com etc.
+    # ont un prefixe www., contrairement a AT/BE/DE/ES/PL -- constate le
+    # 10/08/2026 (5/8 marches ecrits, FR/IT/PT restes AMBIGU malgre le motif
+    # ajoute juste avant).
+    r"^(www\.)?recovery[a-z]{2,4}\.",
 )
 
 # hotes a ecarter d'office : recette, preproduction, boutique, outils tiers.
