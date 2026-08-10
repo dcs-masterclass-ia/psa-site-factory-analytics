@@ -278,20 +278,36 @@ input[type=date]{color-scheme:dark}
       <!-- pill active : un seul element qui glisse (translateX + width
            mesures sur le DOM reel), pas un fondu de couleur par item. -->
       <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:100px;background:#fff;box-shadow:0 2px 10px rgba(17,17,26,.09);transition:transform .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1);z-index:0;pointer-events:none"></span>
-      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
-        <div onClick="{{ t.pick }}" ref="{{ t.ref }}" role="button" tabindex="0" style="{{ t.style }}">
-          <span ref="{{ t.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
-          <span>{{ t.label }}</span>
-          <sc-if value="{{ t.hasBadge }}" hint-placeholder-val="{{ false }}">
-            <span style="{{ t.badgeStyle }}">{{ t.badgeText }}</span>
+      <!-- mega-menu (10/08/2026) : chaque groupe deroule ses onglets reels
+           dans un panneau (icone + libelle + description), inspire de la
+           reference fournie (menu "Productos" en cartes). -->
+      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="2">
+        <div style="{{ g.wrapStyle }}" ref="{{ g.wrapRef }}">
+          <button onClick="{{ g.toggle }}" aria-expanded="{{ g.open }}" style="{{ g.style }}">
+            <span>{{ g.label }}</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="{{ g.chevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </button>
+          <sc-if value="{{ g.open }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ g.closeMenu }}"></div>
+            <div style="position:absolute;top:52px;left:0;z-index:61;background:#fff;border-radius:20px;padding:10px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;gap:6px;cursor:default;animation:dropIn .18s ease both" role="none">
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                <button onClick="{{ it.pick }}" disabled="{{ it.disabled }}" style="{{ it.cardStyle }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none"><span ref="{{ it.iconRef }}" style="display:flex"></span></span>
+                    <sc-if value="{{ it.hasBadge }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ it.badgeStyle }}">{{ it.badgeText }}</span>
+                    </sc-if>
+                  </div>
+                  <div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text)">{{ it.label }}</div>
+                    <div style="font-size:11.5px;color:var(--muted2);margin-top:2px;line-height:1.3">{{ it.desc }}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
           </sc-if>
         </div>
       </sc-for>
-      <!-- Big Query : pas encore disponible, jamais cliquable, jamais actif. -->
-      <div role="button" aria-disabled="true" title="Bientôt disponible" style="{{ bigQueryStyle }}">
-        <span ref="{{ bigQueryIconRef }}" style="display:flex;flex:none"></span>
-        <span>BigQuery</span>
-      </div>
       <div onClick="{{ kamiaTab.pick }}" ref="{{ kamiaTab.ref }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
         <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
         <span>KamIA</span>
@@ -2656,6 +2672,7 @@ class Component extends DCLogic {
   state = {
     tab: "ga4",
     navActiveTab: "ga4", // pill de nav active immediatement au clic, independant du fondu de contenu (190ms) -- voir switchTab()
+    navMenuOpen: null,   // mega-menu ouvert : null | "google" | "analyse"
     // periode par defaut = dernier mois calendaire complet (pas "28 j" glissant)
     // + comparaison au mois precedent celui-ci active par defaut -- demande du
     // 10/08/2026, remplace l'ancien defaut "28 j"/compare booleen.
@@ -2719,18 +2736,31 @@ class Component extends DCLogic {
      (glisser de gauche a droite/droite a gauche, pas un fondu). */
   switchTab(next) {
     if (this.state.tab === next || this.state.tabSwitching) return;
-    this.setState({ tabSwitching: true, navActiveTab: next });
+    this.setState({ tabSwitching: true, navActiveTab: next, navMenuOpen: null });
     clearTimeout(this._tabTimer);
     this._tabTimer = setTimeout(() => this.setState({ tab: next, tabSwitching: false }), 190);
+  }
+  /* mega-menu (10/08/2026) : la barre de nav n'affiche plus que des GROUPES
+     ("Google", "Analyse", KamIA a part) -- chaque onglet reel appartient a
+     un seul groupe, utilise pour savoir quel bouton de groupe doit porter
+     la pill glissante et s'ouvrir/se surligner. */
+  groupOf(tabKey) {
+    if (["ga4", "gsc", "performance"].includes(tabKey)) return "google";
+    if (["compare", "v2"].includes(tabKey)) return "analyse";
+    if (tabKey === "assistant") return "assistant";
+    return null;
+  }
+  toggleNavMenu(key) {
+    this.setState(s => ({ navMenuOpen: s.navMenuOpen === key ? null : key }));
   }
   tabRef(el, key) {
     if (!el) return;
     this._tabBtnEls = this._tabBtnEls || {};
     this._tabBtnEls[key] = el;
-    if (key === this.state.navActiveTab) this.updateTabIndicator();
+    if (key === this.groupOf(this.state.navActiveTab)) this.updateTabIndicator();
   }
   updateTabIndicator() {
-    const el = this._tabBtnEls && this._tabBtnEls[this.state.navActiveTab];
+    const el = this._tabBtnEls && this._tabBtnEls[this.groupOf(this.state.navActiveTab)];
     const ind = this._tabIndicatorEl;
     if (!el || !ind) return;
     let left = el.offsetLeft;
@@ -3818,8 +3848,8 @@ class Component extends DCLogic {
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        tabs: [], kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
-        bigQueryIconRef: () => {}, bigQueryStyle: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;color:#6b7280;cursor:not-allowed",
+        kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
+        navGroups: [],
         tabBarRef: () => {}, tabIndicatorRef: () => {},
         periods: [], marketChips: [], familyChips: [], brandRows: [],
         gscKpiClics: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
@@ -5539,12 +5569,32 @@ class Component extends DCLogic {
       warn: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--warn-bg);color:var(--warn)",
       accent: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:rgba(139,92,246,.14);color:#8b5cf6",
     };
-    const TAB_DEFS = [
-      { key: "ga4", label: "GA4" },
-      { key: "gsc", label: "Search Console" },
-      { key: "v2", label: "Comparaison V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
-      { key: "performance", label: "PageSpeed", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
-      { key: "compare", label: "Comparer" },
+    // mega-menu (10/08/2026, demande explicite : "passer la barre en mega
+    // menu, avec un onglet Google [Analytics/Search Console/PageSpeed] et
+    // un onglet Analyse [Comparer/Comparaison V2]") -- la barre du haut
+    // n'affiche plus que des groupes, chaque groupe deroule ses onglets
+    // reels dans un panneau (icone + libelle + description courte),
+    // inspire de la reference fournie (menu "Productos" en cartes).
+    // BigQuery, avant un item non cliquable a part dans la barre, devient
+    // le 4e item du groupe Google (toujours "Bientot disponible", jamais
+    // actif ni enregistre dans tabRef).
+    const NAV_GROUP_DEFS = [
+      {
+        key: "google", label: "Google",
+        items: [
+          { key: "ga4", label: "Analytics", desc: "Trafic, sessions et conversions" },
+          { key: "gsc", label: "Search Console", desc: "Clics, impressions et position" },
+          { key: "performance", label: "PageSpeed", desc: "Performance et vitesse de chargement", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
+          { key: "bigquery", label: "BigQuery", desc: "Bientôt disponible", disabled: true },
+        ],
+      },
+      {
+        key: "analyse", label: "Analyse",
+        items: [
+          { key: "compare", label: "Comparer", desc: "Plusieurs sites entre eux" },
+          { key: "v2", label: "Comparaison V2", desc: "Avant / après la bascule V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
+        ],
+      },
     ];
     // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
     // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
@@ -5554,18 +5604,38 @@ class Component extends DCLogic {
     // z-index:1 pour rester lisible par-dessus le pill qui glisse dessous.
     const navItemStyle = on => "position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:color .25s ease;font-weight:" + (on ? "600" : "500") +
       ";color:" + (on ? "#14161a" : "#6b7280");
-    // navActiveTab (pas st.tab) pilote la pill : bascule au clic, sans
-    // attendre les 190ms du fondu de contenu -- voir switchTab().
-    const tabs = TAB_DEFS.map(t => {
-      const on = st.navActiveTab === t.key;
+    // variante groupe de mega-menu : le bouton visible n'est plus lui-meme
+    // l'enfant flex direct de <nav> (un wrapper position:relative s'insere
+    // pour ancrer le panneau deroulant) -- position/z-index passent donc
+    // sur ce wrapper (voir wrapStyle plus bas), measure via tabRef() doit
+    // cibler CE wrapper pour que offsetLeft/offsetWidth restent relatifs a
+    // <nav>, pas au wrapper lui-meme.
+    const navGroupBtnStyle = on => "display:flex;align-items:center;gap:6px;width:100%;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;justify-content:center;transition:color .25s ease;font-weight:" + (on ? "600" : "500") +
+      ";color:" + (on ? "#14161a" : "#6b7280") + ";border:none;background:transparent;font-family:inherit";
+    const navGroups = NAV_GROUP_DEFS.map(g => {
+      const on = g.items.some(it => !it.disabled && it.key === st.navActiveTab);
+      const open = st.navMenuOpen === g.key;
       return {
-        label: t.label,
-        pick: () => this.switchTab(t.key),
-        ref: el => this.tabRef(el, t.key),
-        iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[t.key]; },
-        hasBadge: !!t.hasBadge, badgeText: t.badgeText || "",
-        badgeStyle: TAB_BADGE_STYLE[t.badgeLevel] || "",
-        style: navItemStyle(on),
+        key: g.key, label: g.label, open,
+        toggle: () => this.toggleNavMenu(g.key),
+        closeMenu: () => this.setState({ navMenuOpen: null }),
+        wrapRef: el => this.tabRef(el, g.key),
+        wrapStyle: "position:relative;flex:1;z-index:" + (open ? 63 : 1),
+        style: navGroupBtnStyle(on),
+        chevronStyle: "flex:none;transition:transform .2s ease;transform:rotate(" + (open ? "180deg" : "0deg") + ")",
+        items: g.items.map(it => {
+          const itOn = !it.disabled && st.navActiveTab === it.key;
+          return {
+            label: it.label, desc: it.desc, disabled: !!it.disabled,
+            pick: it.disabled ? (() => {}) : (() => this.switchTab(it.key)),
+            iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[it.key]; },
+            hasBadge: !!it.hasBadge, badgeText: it.badgeText || "",
+            badgeStyle: TAB_BADGE_STYLE[it.badgeLevel] || "",
+            cardStyle: "width:186px;padding:14px;border-radius:16px;display:flex;flex-direction:column;gap:10px;transition:background .15s ease;font-family:inherit;text-align:left;border:none;" +
+              (it.disabled ? "cursor:not-allowed;opacity:.55;background:transparent"
+                : "cursor:pointer;background:" + (itOn ? "var(--soft2)" : "transparent")),
+          };
+        }),
       };
     });
     const kamiaOn = st.navActiveTab === "assistant";
@@ -5584,10 +5654,6 @@ class Component extends DCLogic {
       badgeStyle: TAB_BADGE_STYLE.accent,
       style: navItemStyle(kamiaOn),
     };
-    // BigQuery n'a pas d'etat actif possible (pas encore branche) : jamais
-    // enregistre dans tabRef, ne participe donc jamais au pill glissant.
-    const bigQueryStyle = navItemStyle(false) + ";cursor:not-allowed";
-    const bigQueryIconRef = el => { if (el) el.innerHTML = TAB_ICON_SVG.bigquery; };
 
     // ---- rapport client (export CSV/PDF/PPT, onglet GA4) --------------
     // Source unique reutilisee par les trois formats d'export : memes
@@ -5707,7 +5773,7 @@ class Component extends DCLogic {
       : "Aucune donnée " + compareMetricLabel.toLowerCase() + " pour cette période sur les sites sélectionnés.";
 
     return {
-      tabs, kamiaTab, bigQueryIconRef, bigQueryStyle, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      navGroups, kamiaTab, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       convCanalRows, hasConvCanalRows, convDeviceLabels,
       compareMetrics, compareMetricLabel, compareGroupChips, compareSiteToggleRows, compareClear,
       compareRows, hasCompareRows, noCompareRows, compareEmptyLabel, compareSitesCount: st.compareSites.length,
