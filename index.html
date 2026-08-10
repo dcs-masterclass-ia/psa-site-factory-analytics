@@ -306,8 +306,10 @@ input[type=date]{color-scheme:dark}
     <div style="position:relative;flex:none">
       <button onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
         <div style="position:relative;flex:none">
-          <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><img ref="{{ currentSiteLogoRef }}" alt="" style="width:28px;height:28px;object-fit:contain"></div>
-          <span style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">{{ currentSiteFlag }}</span>
+          <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><span ref="{{ currentSiteLogoRef }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)"></span></div>
+          <sc-if value="{{ currentSiteFlag }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">{{ currentSiteFlag }}</span>
+          </sc-if>
         </div>
         <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
@@ -326,6 +328,19 @@ input[type=date]{color-scheme:dark}
             <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
             <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
           </div>
+          <!-- "Pas de site selectionne" : vue agregee sur les 64 sites, hors
+               de la zone de recherche/scroll (toujours visible, comme la
+               barre de recherche juste au-dessus). -->
+          <div onClick="{{ pickAllSites }}" role="button" tabindex="0" style="{{ allSitesRowStyle }}" style-hover="background:#f5f5f6">
+            <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.3"></rect><rect x="14" y="3" width="7" height="7" rx="1.3"></rect><rect x="14" y="14" width="7" height="7" rx="1.3"></rect><rect x="3" y="14" width="7" height="7" rx="1.3"></rect></svg>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13.5px;font-weight:600;color:var(--text)">Pas de site sélectionné</div>
+              <div style="font-size:11.5px;color:#9aa0aa">Résultats agrégés sur les 64 sites</div>
+            </div>
+          </div>
+          <div style="height:1px;background:var(--line);margin:8px 2px;flex:none"></div>
           <div style="overflow:auto;min-height:0;display:flex;flex-direction:column;gap:2px">
             <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
             <sc-for list="{{ sitePickerGroups }}" as="g" hint-placeholder-count="3">
@@ -498,7 +513,9 @@ input[type=date]{color-scheme:dark}
             <div style="font-size:15px;color:#6b7280;font-weight:400">Taux de conversion</div>
             <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiConvRef }}" style="font-size:36px;font-weight:600;letter-spacing:-1.4px;color:var(--text)">0</span><span style="font-size:15px;color:#9aa0aa">%</span></div>
             <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiConvDelta.style }}">{{ kpiConvDelta.text }}</span></div>
+            <sc-if value="{{ hasConvRankLabel }}" hint-placeholder-val="{{ false }}">
             <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="background:#f0ecff;color:#5b3fd1;font-size:12px;font-weight:500;border-radius:100px;padding:3px 11px">{{ convRankLabel }}</span><sc-if value="{{ hasConvRankDelta }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;color:#9aa0aa">{{ convRankDeltaText }}</span></sc-if></div>
+            </sc-if>
           </div>
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#c8a2ff,#8b5cf6);box-shadow:0 10px 24px -8px rgba(139,92,246,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.4" stroke="#fff" stroke-width="1.9"></circle><path d="M10 6.4V10l2.6 1.7" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
         </div>
@@ -3454,7 +3471,7 @@ class Component extends DCLogic {
         kpiLeadsRef: () => {}, kpiLeadsDelta: { style: "", text: "" },
         leadsBars: [], hasLeadsBars: false, leadsAxisLeft: "", leadsAxisMid: "", leadsAxisMidStyle: "", leadsAxisRight: "",
         kpiConvRef: () => {}, kpiConvDelta: { style: "", text: "" },
-        convRankLabel: "", convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
+        convRankLabel: "", hasConvRankLabel: false, convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
         convFillPctStyle: "", hasConvMedianMarker: false, convMedianMarkerStyle: "",
         kpiDeviceRows: [], hasKpiDeviceRows: false, v2DateLabel: "",
         exportMenuOpen: false, toggleExportMenu: () => {}, closeExportMenu: () => {},
@@ -3471,6 +3488,7 @@ class Component extends DCLogic {
         logout: () => this.logout(), userEmail: this._userEmail || "", userInitials: this.userInitials(),
         siteSearch: "", setSiteSearch: () => {}, toggleSitePicker: () => {}, closeSitePicker: () => {}, sitePickerOpen: false,
         sitePickerChevronStyle: "", sitePickerGroups: [], sitePickerEmpty: true, sitePickerHeading: "Tous les sites",
+        pickAllSites: () => {}, allSitesRowStyle: "",
         currentSiteLabel: "Chargement…", currentSiteRank: "",
         currentSiteLogoRef: () => {}, currentSiteFlag: "",
         togglePeriodPicker: () => {}, closePeriodPicker: () => {}, periodPickerOpen: false,
@@ -3508,12 +3526,17 @@ class Component extends DCLogic {
     // connus -- voir juste avant le "return".
     const tabFadeStyle = "margin-top:24px;transition:opacity .2s ease,transform .32s cubic-bezier(.3,.7,.4,1);opacity:" + (st.tabSwitching ? "0" : "1") + ";transform:" + (st.tabSwitching ? "translateY(6px) scale(.99)" : "translateY(0) scale(1)");
 
-    // selecteur de site (en-tete, remplace l'ancien picker multi-sites) :
-    // recherche textuelle + liste, toujours EXACTEMENT un site selectionne.
-    // Le delta (7j vs 7j precedents sur les sessions reprise) reutilise le
-    // meme principe que pipeline/watch.py, calcule ici cote client car les
-    // 64 sites sont deja charges en memoire (this.data).
-    const currentSite = st.sites[0] || null;
+    // selecteur de site (en-tete) : recherche textuelle + liste, un site
+    // exact OU "Pas de site selectionne" (vue agregee sur les 64, demande
+    // du 10/08/2026). st.sites vaut alors ALL en entier -- aggregate() le
+    // consomme deja tel quel (boucle sur this.state.sites), rien a changer
+    // cote agregation ; currentSite redevient null comme au tout premier
+    // chargement, ce qui degrade deja proprement partout ou il est utilise
+    // (logo, rang dans le parc, funnel avant/apres V2 par site...).
+    const isAllSites = st.sites.length > 1;
+    const currentSite = isAllSites ? null : (st.sites[0] || null);
+    const pickAllSites = () => this.setState({ sites: ALL.slice(), pickerOpen: false, siteSearch: "" });
+    const allSitesRowStyle = "display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px;cursor:pointer" + (isAllSites ? ";background:var(--soft)" : "");
     const siteDeltaCache = ALL.map(n => {
       const d = this.data[n] && this.data[n].daily;
       if (!d || !d.rep || d.rep.length < 14) return { name: n, delta: null };
@@ -3558,8 +3581,19 @@ class Component extends DCLogic {
     // logo de marque + drapeau du pays sur le bouton du selecteur (en-tete) :
     // meme logique que les lignes de la liste deroulante, pour qu'on
     // reconnaisse le site actif au premier coup d'oeil sans lire le texte.
+    // En mode "tous les sites", une icone generique remplace le logo (aucune
+    // marque unique ne s'applique) et le drapeau disparait.
     const currentSiteLogoUrl = currentSite ? (BRAND_LOGO[marqueDeSite(currentSite)] || "") : "";
-    const currentSiteLogoRef = el => { if (el && currentSiteLogoUrl) el.src = currentSiteLogoUrl; };
+    const currentSiteLogoRef = el => {
+      if (!el) return;
+      if (isAllSites) {
+        el.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect></svg>';
+      } else if (currentSiteLogoUrl) {
+        el.innerHTML = '<img src="' + currentSiteLogoUrl + '" alt="" style="width:28px;height:28px;object-fit:contain">';
+      } else {
+        el.innerHTML = "";
+      }
+    };
     const currentSiteFlag = currentSite ? (PAYS_FLAG[paysDeSite(currentSite)] || "") : "";
 
     const periods = ["7 j", "28 j", "3 mois", "12 mois", "Date précise"].map(label => {
@@ -3933,9 +3967,9 @@ class Component extends DCLogic {
     // (n'apparaissait que sur GA4, incoherent avec les autres onglets --
     // signale le 09/08/2026), le rang de conversion reste visible dans la
     // carte KPI dediee de l'onglet GA4.
-    const currentSiteRank = currentSiteIdx >= 0
-      ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length + (hasV2 ? " · V2" : "")
-      : "";
+    const currentSiteRank = isAllSites
+      ? "vue agrégée"
+      : (currentSiteIdx >= 0 ? "site " + (currentSiteIdx + 1) + " sur " + ALL.length + (hasV2 ? " · V2" : "") : "");
     const V2_STEP_LABELS = ["Page d'accueil", "Version", "Kilométrage", "Coordonnées", "Point de vente", "Estimation"];
     // une icone par etape plutot qu'un numero abstrait, pour que le parcours
     // se lise comme un vrai parcours (maison -> reglages -> jauge -> contact
@@ -5060,7 +5094,7 @@ class Component extends DCLogic {
     // chiffre recalcule ou invente pour l'occasion. Filtre les domaines
     // sans donnee reelle (ex. V2 sur un site qui n'a pas encore bascule)
     // plutot que d'afficher une carte vide.
-    const quickAnalysisCards = currentSite ? [
+    const quickAnalysisCards = st.sites.length ? [
       { label: "Vue d'ensemble", text: kamiaHeadline },
       hasTunnelInsight ? { label: "Tunnel de conversion", text: tunnelLeakInsight } : null,
       v2Insight ? { label: "Avant / après V2", text: v2Insight } : null,
@@ -5114,8 +5148,9 @@ class Component extends DCLogic {
       closeSitePicker: () => this.setState({ pickerOpen: false }),
       sitePickerChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.pickerOpen ? "180deg" : "0deg") + ")",
       sitePickerOpen: st.pickerOpen, sitePickerGroups, sitePickerEmpty: sitePickerFiltered.length === 0,
+      pickAllSites, allSitesRowStyle,
       sitePickerHeading: search ? "Résultats" : "Tous les sites",
-      currentSiteLabel: currentSite || "Choisir un site", currentSiteRank,
+      currentSiteLabel: isAllSites ? "Tous les sites" : (currentSite || "Choisir un site"), currentSiteRank,
       currentSiteLogoRef, currentSiteFlag,
       togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
       closePeriodPicker: () => this.setState({ periodPickerOpen: false }),
@@ -5149,7 +5184,7 @@ class Component extends DCLogic {
       kpiLeadsRef: el => { if (el) this.up(el, agg.leads, fmt); }, kpiLeadsDelta: deltaBadge(agg.leads, cmp && cmp.leads, ""),
       leadsBars, hasLeadsBars: leadsBars.length > 0, leadsAxisLeft, leadsAxisMid, leadsAxisMidStyle, leadsAxisRight,
       kpiConvRef: el => { if (el) this.up(el, convPct, x => dec(x, 2) + " %"); }, kpiConvDelta: deltaBadge(convPct, cmpConvPct, "pts"),
-      convRankLabel, convMedianLabel, convBestLabel, convRankDeltaText, hasConvRankDelta: !!convRankDeltaText, convRankDeltaStyle,
+      convRankLabel, hasConvRankLabel: !!convRankLabel, convMedianLabel, convBestLabel, convRankDeltaText, hasConvRankDelta: !!convRankDeltaText, convRankDeltaStyle,
       convFillPctStyle: "position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:" + convFillPct + "%;background:linear-gradient(90deg,#c8a2ff,#8b5cf6);transition:width 1s cubic-bezier(.3,.8,.3,1)",
       hasConvMedianMarker: convMedianPct != null, convMedianMarkerStyle: "position:absolute;top:-5px;left:" + (convMedianPct || 0) + "%;width:3px;height:22px;border-radius:2px;background:#9aa0aa",
       kpiDeviceRows, hasKpiDeviceRows: kpiDeviceRows.length > 0,
