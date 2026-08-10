@@ -156,6 +156,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("searchMonth", {})
     d.setdefault("audienceMonth", {})
     d.setdefault("rebondMonth", {})
+    d.setdefault("convCanalDevice", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
@@ -220,6 +221,14 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"{mois} : taux de rebond {taux_reb} %")
         except Exception as e:
             journal.append(f"{mois} : taux de rebond en erreur ({type(e).__name__})")
+
+        # conversion par canal d'acquisition x type d'appareil -- demande du
+        # 10/08/2026, meme evenement GA4 que le reste du Taux de conversion
+        # (voir funnel.EVENEMENT_ESTIMATION).
+        try:
+            d["convCanalDevice"][mois] = funnel.conversion_par_canal_device(cli, s.propriete, hote_reprise, deb, f_iso)
+        except Exception as e:
+            journal.append(f"{mois} : conversion par canal/device en erreur ({type(e).__name__})")
 
         # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
         # on n'ecrase jamais un funnel existant par un echec : si les deux
@@ -393,7 +402,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth", "rebondMonth"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "convCanalDevice"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 

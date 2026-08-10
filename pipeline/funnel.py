@@ -250,3 +250,30 @@ def bloc_funnel(cli, pid, hote, debut, fin, jours):
         "conversion_pct": round(steps[-1]["users"] / steps[0]["users"] * 100, 1),
         "users_per_day": round(steps[0]["users"] / jours, 1),
     }, methode
+
+
+def conversion_par_canal_device(cli, pid, hote, debut, fin):
+    """Sessions et conversions (evenement EVENEMENT_ESTIMATION) croisees par
+    canal d'acquisition et type d'appareil -- meme evenement que le funnel
+    (tradein_request, celui qui alimente deja les "GA Leads"), pour rester
+    coherent avec le Taux de conversion deja affiche ailleurs. Ici sans le
+    filtre step_name du funnel : ce dernier sert a isoler l'ETAPE finale
+    d'un entonnoir sequentiel, l'evenement seul suffit deja a compter une
+    vraie demande de reprise (c'est d'ailleurs la definition retenue pour
+    les GA Leads du Looker Studio du projet, cf. commentaire plus haut)."""
+    sessions = ga4._rapport(cli, pid, debut, fin,
+                            ["sessionDefaultChannelGroup", "deviceCategory"], ["sessions"],
+                            ga4._egal("hostName", hote))
+    conversions = ga4._rapport(cli, pid, debut, fin,
+                               ["sessionDefaultChannelGroup", "deviceCategory"], ["eventCount"],
+                               ga4._et(ga4._egal("hostName", hote), ga4._egal("eventName", EVENEMENT_ESTIMATION)))
+    conv_map = {(c, d): int(n) for c, d, n in conversions}
+    out = []
+    for c, d, s in sessions:
+        s = int(s)
+        n = conv_map.get((c, d), 0)
+        out.append({
+            "canal": c, "device": d, "sessions": s, "conversions": n,
+            "taux": round(n / s * 100, 2) if s else 0.0,
+        })
+    return sorted(out, key=lambda x: -x["sessions"])
