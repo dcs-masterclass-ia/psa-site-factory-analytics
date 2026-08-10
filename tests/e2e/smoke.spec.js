@@ -108,7 +108,11 @@ test.describe("selecteur de periode", () => {
   test("changer de periode met a jour les chiffres affiches", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
 
-    await page.locator('button[aria-expanded]:has-text("j")').click();
+    // ancien locator :has-text("j") supposait un libelle de periode par
+    // defaut contenant "j" (ex. "28 j") -- casse le 10/08/2026 quand le
+    // defaut est passe a "Mois precedent" (aucun "j" dans le libelle).
+    // data-testid stable, independant du libelle affiche.
+    await page.locator('[data-testid="period-picker-toggle"]').click();
     await page.locator('button:has-text("12 mois")').click();
     await page.waitForTimeout(800);
 
