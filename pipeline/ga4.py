@@ -84,6 +84,30 @@ def sessions_et_utilisateurs(cli, pid, hote, debut, fin):
     return (int(l[0][0]), int(l[0][1])) if l else (0, 0)
 
 
+def taux_rebond(cli, pid, hote, debut, fin):
+    """Taux de rebond du mois sur l'hote donne, en pourcentage (0-100).
+
+    Requete separee (pas ajoutee aux dimensions de sessions_par_jour/profils) :
+    bounceRate est un ratio calcule par GA4 au niveau de chaque ligne, une
+    moyenne naive sur des lignes dimensionnees (jour/pays/navigateur/...)
+    serait fausse sans ponderation par le volume de sessions. Demande sans
+    dimension = le vrai taux global sur la periode, pas une approximation.
+    """
+    l = _rapport(cli, pid, debut, fin, [], ["bounceRate"], _egal("hostName", hote))
+    return round(float(l[0][0]) * 100, 2) if l else 0.0
+
+
+def taux_rebond_par_page(cli, pid, hote, debut, fin, limite=20):
+    """Sessions + taux de rebond par page (pagePath), triees par sessions
+    decroissantes -- reutilise pour le graphe "par page" et pour le tableau
+    Pages combine GA4+Search Console."""
+    l = _rapport(cli, pid, debut, fin, ["pagePath"], ["sessions", "bounceRate"],
+                 _egal("hostName", hote))
+    lignes = sorted(((p, int(s), round(float(b) * 100, 2)) for p, s, b in l),
+                    key=lambda x: -x[1])
+    return [{"page": p, "sessions": s, "tauxRebond": b} for p, s, b in lignes[:limite]]
+
+
 def profils(cli, pid, hote, debut, fin):
     """Ventilation pays / navigateur / appareil, pour reperer un automate."""
     l = _rapport(cli, pid, debut, fin,

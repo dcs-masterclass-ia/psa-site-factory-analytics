@@ -155,6 +155,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("funnelMonth", {})
     d.setdefault("searchMonth", {})
     d.setdefault("audienceMonth", {})
+    d.setdefault("rebondMonth", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
@@ -207,6 +208,18 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         tp = ga4.sessions_total(cli, s.propriete, hote_parent, deb, f_iso)
         tr = ga4.sessions_total(cli, s.propriete, hote_reprise, deb, f_iso)
         sess, users = ga4.sessions_et_utilisateurs(cli, s.propriete, hote_reprise, deb, f_iso)
+
+        # taux de rebond (global + par page) sur l'outil de reprise -- meme
+        # perimetre que le reste de l'onglet GA4 (sessions/leads/conversion
+        # parlent tous de l'outil de reprise, pas du site parent). Demande
+        # du 10/08/2026.
+        try:
+            taux_reb = ga4.taux_rebond(cli, s.propriete, hote_reprise, deb, f_iso)
+            pages_reb = ga4.taux_rebond_par_page(cli, s.propriete, hote_reprise, deb, f_iso)
+            d["rebondMonth"][mois] = {"taux": taux_reb, "sessions": tr, "pages": pages_reb}
+            journal.append(f"{mois} : taux de rebond {taux_reb} %")
+        except Exception as e:
+            journal.append(f"{mois} : taux de rebond en erreur ({type(e).__name__})")
 
         # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
         # on n'ecrase jamais un funnel existant par un echec : si les deux
@@ -380,7 +393,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 
@@ -411,6 +424,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d["repriseMonth"]["total"] = {
         "sessions": sum(d["repriseMonth"][m]["sessions"] for m in cons),
         "rdays": sum(d["repriseMonth"][m]["rdays"] for m in cons)}
+    # taux de rebond global : moyenne ponderee par le volume de sessions de
+    # chaque mois, jamais une moyenne simple des pourcentages mensuels (un
+    # mois a 10 sessions pese sinon autant qu'un mois a 10000).
+    reb_cons = [m for m in cons if m in d["rebondMonth"]]
+    reb_sessions = sum(d["rebondMonth"][m]["sessions"] for m in reb_cons)
+    d["rebondMonth"]["total"] = {
+        "taux": round(sum(d["rebondMonth"][m]["taux"] * d["rebondMonth"][m]["sessions"] for m in reb_cons) / reb_sessions, 2) if reb_sessions else 0.0,
+        "sessions": reb_sessions,
+    }
     # leads["total"] n'etait ecrit nulle part dans le pipeline (seulement lu,
     # par ce recalcul et par le controle cumul_egale_somme_mois) — reste
     # figee a la valeur de stub_vide (0) indefiniment. Passait inapercu tant
