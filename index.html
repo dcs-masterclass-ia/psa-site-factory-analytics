@@ -5312,9 +5312,7 @@ class Component extends DCLogic {
         periodeRecente: c.periodeRecente, chiffres: ch,
         badgeStyle: "font-size:11px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:4px 10px;white-space:nowrap;background:" + gs.bg + ";color:" + gs.fg,
         badgeText: gs.label,
-        // bandeau de gravite (bordure gauche) en plus du badge texte -- lisible
-        // en un coup d'oeil dans une liste qui peut compter plusieurs constats.
-        cardStyle: "text-align:left;width:100%;box-sizing:border-box;border:none;border-left:3px solid " + gs.fg + ";background:var(--soft);border-radius:14px;padding:14px 16px 14px 13px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease;flex:none",
+        cardStyle: "text-align:left;width:100%;box-sizing:border-box;border:none;background:var(--soft);border-radius:14px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease;flex:none",
         open: () => this.openWatchModal(c.site),
       };
     });
