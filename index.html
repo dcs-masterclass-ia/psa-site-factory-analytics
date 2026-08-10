@@ -785,6 +785,33 @@ input[type=date]{color-scheme:dark}
       </div>
     </div>
 
+    <!-- ============ Ligne 4bis : Conversion par canal et device ============ -->
+    <sc-if value="{{ hasConvCanalRows }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;margin-top:22px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3.4" height="7" rx="1" fill="#fff"></rect><rect x="8.3" y="5" width="3.4" height="12" rx="1" fill="#fff"></rect><rect x="13.6" y="8" width="3.4" height="9" rx="1" fill="#fff"></rect></svg>
+        </div>
+        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Conversion par canal et device</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Taux de conversion (demande de reprise) par canal d'acquisition, sur la période affichée</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:12px">
+        <div></div>
+        <sc-for list="{{ convDeviceLabels }}" as="dl" hint-placeholder-count="3">
+          <div style="font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;text-align:center">{{ dl }}</div>
+        </sc-for>
+        <sc-for list="{{ convCanalRows }}" as="r" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--text)"><span style="{{ r.dot }}"></span>{{ r.canal }}</div>
+          <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+            <div style="background:var(--soft);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:2px">
+              <div style="font-size:17px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ c.taux }}</div>
+              <div style="font-size:11px;color:var(--muted2)">{{ c.sessions }} sess.</div>
+            </div>
+          </sc-for>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
 
     <!-- ============ Ligne 5 : Volume vs conversion tradein ============ -->
     <sc-if value="{{ hasVolConvChart }}" hint-placeholder-val="{{ false }}">
@@ -2845,6 +2872,7 @@ class Component extends DCLogic {
       // sessions -- audienceDevice est le pendant "audience" de ce meme
       // navigateur/newVsReturning, ajoute au pipeline le 09/08/2026).
       audienceDevice: new Map(), browser: new Map(), newVsReturning: new Map(),
+      convCanalDevice: new Map(),
     };
     for (const s of this.state.sites) {
       const d = this.data[s];
@@ -2957,6 +2985,21 @@ class Component extends DCLogic {
             const cur = out.pages.get(k) || { clics:0, impressions:0, posSum:0 };
             cur.clics += p.clics; cur.impressions += p.impressions; cur.posSum += p.position * p.impressions;
             out.pages.set(k, cur);
+          }
+        }
+      }
+      // conversion par canal x device : meme principe que search console
+      // ci-dessus (donnee mensuelle, mois entier des qu'il chevauche la
+      // plage -- pas de resolution jour pour ce croisement).
+      for (const mois of Object.keys(d.convCanalDevice || {})) {
+        if (mois === "total") continue;
+        const joursMois = d.daily.d.filter(x => x.slice(0, 7) === mois);
+        if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
+          for (const row of (d.convCanalDevice[mois] || [])) {
+            const k = row.canal + "|" + row.device;
+            const cur = out.convCanalDevice.get(k) || { canal: row.canal, device: row.device, sessions: 0, conversions: 0 };
+            cur.sessions += row.sessions; cur.conversions += row.conversions;
+            out.convCanalDevice.set(k, cur);
           }
         }
       }
@@ -3633,6 +3676,7 @@ class Component extends DCLogic {
         gscHeadlineInsight: "", gscQueriesTotal: 0, pageInsightText: "", posLineRef: () => {},
         channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], projectHero: null, hasProjectHero: false, projectRest: [],
+        convCanalRows: [], hasConvCanalRows: false, convDeviceLabels: [],
         brandBars: [], hasBrandBars: false, brandOtherBar: null, hasBrandOther: false,
         conquestShareLabel: "", ownBrandRing: "var(--soft3)", conquestRing: "var(--soft3)",
         totalProjAllLabel: "0", leadCells: [], queries: [], pages: [],
@@ -4123,6 +4167,29 @@ class Component extends DCLogic {
       if (out[out.length-1] !== joursCanal[n-1]) out.push(joursCanal[n-1]);
       return out.map(moisAnneeLabel);
     })();
+
+    // conversion par canal x device (nouveau, 10/08/2026) : meme liste de
+    // canaux que "Suivi des sessions par canal" juste au-dessus (majeurs,
+    // pas de ligne "Autres" ici -- une conversion par petit canal agrege
+    // n'a pas grand sens a lire), 3 colonnes fixes (mobile/desktop/tablet,
+    // seuls types reels dans les donnees).
+    const DEVICES_CONV = ["mobile", "desktop", "tablet"];
+    const DEVICE_LABEL = { mobile: "Mobile", desktop: "Desktop", tablet: "Tablette" };
+    const convCanalRows = majeurs.map((c, i) => {
+      const cells = DEVICES_CONV.map(dv => {
+        const cur = agg.convCanalDevice.get(c + "|" + dv);
+        const sessions = cur ? cur.sessions : 0;
+        const taux = sessions ? cur.conversions / sessions * 100 : null;
+        return {
+          device: DEVICE_LABEL[dv], taux: taux == null ? "—" : dec(taux, 2) + " %",
+          sessions: fmt(sessions),
+          barStyle: "height:" + (taux == null ? 0 : Math.min(100, taux / 8 * 100)) + "%;background:" + CHAN_COLORS[i % CHAN_COLORS.length] + ";border-radius:4px 4px 0 0;transition:height .6s cubic-bezier(.3,.8,.3,1)",
+        };
+      });
+      return { canal: c, dot: "width:9px;height:9px;border-radius:50%;display:block;background:" + CHAN_COLORS[i % CHAN_COLORS.length], cells };
+    });
+    const hasConvCanalRows = convCanalRows.some(r => r.cells.some(c => c.taux !== "—"));
+    const convDeviceLabels = DEVICES_CONV.map(dv => DEVICE_LABEL[dv]);
 
     // ---- trafic site parent vs site reprise, en miroir sous le detail par
     // canal : les deux volumes n'ont rien de comparable (le parent se compte
@@ -5372,6 +5439,7 @@ class Component extends DCLogic {
 
     return {
       tabs, kamiaTab, bigQueryIconRef, bigQueryStyle, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      convCanalRows, hasConvCanalRows, convDeviceLabels,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror, mirrorTotalsLabel,
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
