@@ -1725,6 +1725,10 @@ input[type=date]{color-scheme:dark}
       <div>
         <div style="font-size:27px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ v2Modal.site }}</div>
         <div style="margin-top:5px;font-size:14px;font-weight:600;color:var(--muted)">{{ v2Modal.weeksLabel }}</div>
+        <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
+          <span style="font-size:12.5px;font-weight:600;color:#3b5ae0;background:#eef1fd;border-radius:100px;padding:3px 11px">{{ v2Modal.analysedRangeLabel }}</span>
+          <span style="font-size:12.5px;font-weight:600;color:var(--text2);background:var(--soft);border-radius:100px;padding:3px 11px">{{ v2Modal.comparedRangeLabel }}</span>
+        </div>
       </div>
       <span style="{{ v2Modal.badgeStyle }}">{{ v2Modal.badgeText }}</span>
     </div>
@@ -4443,6 +4447,12 @@ class Component extends DCLogic {
         wrapStyle: "animation:riseIn .5s cubic-bezier(.2,.7,.3,1) " + Math.min(0.5, v2Cards.length * 0.05) + "s both",
         weeksLabel: hasWeeks ? w.weeks.length + " semaine" + (w.weeks.length > 1 ? "s" : "") + " suivies depuis la V2" : "Référence V1 uniquement",
         latestPeriodLabel: latest.periode,
+        // periode analysee (derniere semaine V2) vs periode comparee
+        // (reference V1, tout l'historique avant bascule) -- demande du
+        // 10/08/2026 ("ajouter plus clairement la periode analysee et la
+        // periode comparee"), affiche dans la modale ou il y a la place.
+        analysedRangeLabel: hasWeeks ? "Analysée : " + latest.periode + " (" + fmtDateShort(latest.debut) + " → " + fmtDateShort(latest.fin) + ")" : "",
+        comparedRangeLabel: "Comparée à V1 : " + fmtDateShort(baseline0.debut) + " → " + fmtDateShort(baseline0.fin),
         badgeText: !convOk ? "—" : (latest.deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(latest.deltaPts), 1) + " pts",
         badgeStyle: "font-size:14px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;color:" + convColor + ";background:" +
           (!convOk ? "var(--soft)" : latest.deltaPts >= 0 ? "var(--pos-bg)" : "var(--neg-bg)"),
