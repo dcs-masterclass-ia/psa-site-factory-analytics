@@ -1704,34 +1704,55 @@ input[type=date]{color-scheme:dark}
    <div style="flex:1 1 70%;min-width:0">
     <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;height:720px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
 
-      <div style="display:flex;align-items:center;gap:11px;padding:24px 30px;border-bottom:1px solid var(--line)">
-        <span style="width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
-          <div style="width:20.7px;height:19px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-5.4px;left:-12px;width:44.6px;height:29.7px;max-width:none"></div>
-        </span>
-        <div>
-          <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.3px">KamIA</div>
-          <div style="font-size:13.5px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
+      <div style="display:flex;align-items:center;gap:14px;padding:22px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap">
+        <!-- meme identite orbe animee que le widget KamIA de l'onglet GA4
+             (ligne ~780) -- version reduite, pas le logo Hermes orange :
+             c'est la marque visuelle reelle de l'assistant dans le reste du
+             dashboard deja refait, jamais utilisee ici avant le 10/08/2026. -->
+        <div style="width:44px;height:44px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 10px 22px -8px rgba(109,92,246,.55)">
+          <div style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(3px)"></div>
+          <div style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(2.5px);mix-blend-mode:screen"></div>
+          <div style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></div>
+          <div style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 12px rgba(12,17,32,.65)"></div>
+        </div>
+        <div style="flex:1;min-width:200px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px">KamIA</span><span style="font-size:12.5px;font-weight:600;color:var(--muted)">· {{ kamiaStatusLabel }}</span></div>
+          <div style="margin-top:2px;font-size:13px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
+        </div>
+        <div style="position:relative;flex:none">
+          <button onClick="{{ toggleChatScopePicker }}" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;height:38px;padding:0 16px;border-radius:999px;cursor:pointer;white-space:nowrap" style-hover="background:var(--hover)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>{{ chatScopeLabel }}
+          </button>
+          <sc-if value="{{ chatScopeOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ toggleChatScopePicker }}"></div>
+            <div style="position:absolute;right:0;top:46px;width:360px;background:var(--pop);border-radius:18px;padding:16px 18px;box-shadow:0 30px 70px -20px var(--shadow);animation:dropIn .2s ease both;z-index:61">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+                <div style="font-size:14px;font-weight:700;color:var(--text)">Périmètre de la conversation</div>
+                <button onClick="{{ clearChatScope }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;height:30px;padding:0 12px;border-radius:999px;cursor:pointer">Tous les sites</button>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow-y:auto">
+                <sc-for list="{{ chatScopeSites }}" as="s" hint-placeholder-count="8">
+                  <button onClick="{{ s.toggle }}" style="{{ s.style }}">{{ s.name }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
         </div>
       </div>
 
       <div style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
-          <div style="flex:1;display:flex;flex-direction:column;gap:20px;padding:6px 4px">
-            <div style="display:flex;align-items:center;gap:14px">
-              <span style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#F5411E,#8a2008);display:flex;align-items:center;justify-content:center;flex:none">
-                <div style="width:24px;height:22px;overflow:hidden;position:relative"><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp" alt="KamIA" style="position:absolute;top:-6.2px;left:-13.8px;width:51.5px;height:34.3px;max-width:none"></div>
-              </span>
-              <div>
-                <div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px">Analyse rapide · {{ currentSiteLabel }}</div>
-                <div style="font-size:13px;font-weight:500;color:var(--muted)">Ce que KamIA a déjà repéré sur ce site, à partir des données réelles de la période.</div>
-              </div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:18px;padding:6px 4px">
+            <div>
+              <div style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px">Analyse rapide · {{ currentSiteLabel }}</div>
+              <div style="margin-top:4px;font-size:13px;font-weight:500;color:var(--muted)">Ce que KamIA a déjà repéré sur ce site, à partir des données réelles de la période. Clique une carte pour lui demander de détailler.</div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <sc-for list="{{ quickAnalysisCards }}" as="c" hint-placeholder-count="4">
-                <div style="border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:16px 18px">
-                  <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#F5411E">{{ c.label }}</div>
+                <button onClick="{{ c.pick }}" style="{{ c.style }}" style-hover="filter:brightness(.97)">
+                  <div style="{{ c.labelStyle }}">{{ c.label }}</div>
                   <div style="margin-top:6px;font-size:13.5px;font-weight:500;color:var(--text2);line-height:1.5">{{ c.text }}</div>
-                </div>
+                </button>
               </sc-for>
             </div>
           </div>
@@ -1739,6 +1760,9 @@ input[type=date]{color-scheme:dark}
 
         <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
           <div style="{{ m.rowStyle }}">
+            <sc-if value="{{ m.isAssistantMsg }}" hint-placeholder-val="{{ false }}">
+              <span style="width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle at 32% 28%,#8ee7ff,#5b7cff 42%,#7c3aed 78%,#0c1120 100%);box-shadow:0 4px 10px -4px rgba(109,92,246,.55)"></span>
+            </sc-if>
             <div style="{{ m.bubbleStyle }}">
               <sc-if value="{{ m.hasAttachments }}" hint-placeholder-val="{{ false }}">
                 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
@@ -1802,7 +1826,7 @@ input[type=date]{color-scheme:dark}
         </sc-for>
         <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
           <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;font-weight:600">
-            <span style="width:8px;height:8px;border-radius:50%;background:#F5411E;animation:blip 1s ease-in-out infinite"></span>Les agents analysent…
+            <span style="width:20px;height:20px;border-radius:50%;flex:none;background:radial-gradient(circle at 32% 28%,#8ee7ff,#5b7cff 42%,#7c3aed 78%,#0c1120 100%);animation:orbBreath 1.1s ease-in-out infinite"></span>Les agents analysent…
           </div>
         </sc-if>
       </div>
@@ -1821,35 +1845,16 @@ input[type=date]{color-scheme:dark}
           </div>
         </sc-if>
 
-        <div style="position:relative">
-          <sc-if value="{{ chatScopeOpen }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;left:0;bottom:56px;width:360px;background:var(--pop);border-radius:18px;padding:16px 18px;box-shadow:0 30px 70px -20px var(--shadow);animation:dropIn .2s ease both;z-index:10">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-size:14px;font-weight:700;color:var(--text)">Périmètre de la conversation</div>
-                <button onClick="{{ clearChatScope }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;height:30px;padding:0 12px;border-radius:999px;cursor:pointer">Tous les sites</button>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px">
-                <sc-for list="{{ chatScopeSites }}" as="s" hint-placeholder-count="8">
-                  <button onClick="{{ s.toggle }}" style="{{ s.style }}">{{ s.name }}</button>
-                </sc-for>
-              </div>
-            </div>
-          </sc-if>
-
-          <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;align-items:center">
-            <input ref="{{ chatFileInputRef }}" type="file" accept="image/*,application/pdf" multiple onChange="{{ attachFiles }}" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;white-space:nowrap;border:0;opacity:0;pointer-events:none">
-            <button type="button" onClick="{{ openChatFilePicker }}" title="Joindre un fichier" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:44px;padding:0 16px;border-radius:999px;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>Joindre
-            </button>
-            <button type="button" onClick="{{ toggleChatScopePicker }}" title="Choisir le périmètre" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:44px;padding:0 16px;border-radius:999px;cursor:pointer;flex:none;white-space:nowrap" style-hover="background:var(--hover)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>{{ chatScopeLabel }}
-            </button>
-            <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none;min-width:0">
-            <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#F5411E;border:none;color:#fff;cursor:pointer;flex:none;opacity:{{ chatSendOpacity }}">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
-            </button>
-          </form>
-        </div>
+        <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;align-items:center">
+          <input ref="{{ chatFileInputRef }}" type="file" accept="image/*,application/pdf" multiple onChange="{{ attachFiles }}" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;white-space:nowrap;border:0;opacity:0;pointer-events:none">
+          <button type="button" onClick="{{ openChatFilePicker }}" title="Joindre un fichier" style="display:flex;align-items:center;justify-content:center;border:none;background:var(--soft);color:var(--text);width:44px;height:44px;border-radius:50%;cursor:pointer;flex:none" style-hover="background:var(--hover)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+          </button>
+          <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none;min-width:0">
+          <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#F5411E;border:none;color:#fff;cursor:pointer;flex:none;opacity:{{ chatSendOpacity }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
+          </button>
+        </form>
         <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:500;color:var(--muted2)">Les réponses doivent être vérifiées avant toute communication client.</div>
       </div>
     </div>
@@ -1858,10 +1863,14 @@ input[type=date]{color-scheme:dark}
    <div style="flex:1 1 30%;min-width:280px;position:sticky;top:20px">
     <div style="background:var(--card);border-radius:26px;box-sizing:border-box;height:720px;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .15s both">
       <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line)">
-        <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div>
-        <div style="margin-top:4px;font-size:12.5px;font-weight:500;color:var(--muted)">KamIA analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#a8b6ff,#6d5cf6 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </div>
+          <div><div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div><div style="margin-top:2px;font-size:12.5px;font-weight:500;color:var(--muted)">KamIA analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div></div>
+        </div>
         <sc-if value="{{ watchLastUpdate }}" hint-placeholder-val="{{ false }}">
-          <div style="margin-top:8px;font-size:11.5px;font-weight:600;color:var(--muted2)">Dernière veille : {{ watchLastUpdate }}</div>
+          <div style="margin-top:10px;font-size:11.5px;font-weight:600;color:var(--muted2)">Dernière veille : {{ watchLastUpdate }}</div>
         </sc-if>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">
           <sc-for list="{{ watchFilterChips }}" as="f" hint-placeholder-count="3">
@@ -1886,7 +1895,7 @@ input[type=date]{color-scheme:dark}
           </div>
         </sc-if>
         <sc-for list="{{ watchConstats }}" as="c" hint-placeholder-count="2">
-          <button onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--line);background:var(--soft);border-radius:16px;padding:14px 16px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease;flex:none" style-hover="background:var(--hover)">
+          <button onClick="{{ c.open }}" style="{{ c.cardStyle }}" style-hover="background:var(--hover)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
               <span style="font-size:13.5px;font-weight:800;color:var(--text)">{{ c.site }}</span>
               <span style="{{ c.badgeStyle }}">{{ c.badgeText }}</span>
@@ -5240,7 +5249,7 @@ class Component extends DCLogic {
         charts, hasCharts: charts.length > 0,
         attachmentNames: m.attachmentNames || [],
         hasAttachments: (m.attachmentNames || []).length > 0,
-        rowStyle: "display:flex;justify-content:" + (isUser ? "flex-end" : "flex-start"),
+        rowStyle: "display:flex;align-items:flex-end;gap:10px;justify-content:" + (isUser ? "flex-end" : "flex-start"),
         bubbleStyle: "max-width:" + (isUser ? "72%" : "88%") + ";padding:14px 18px;border-radius:18px;box-sizing:border-box;" +
           (isUser ? "background:#F5411E;color:#fff;border-bottom-right-radius:6px" : "background:var(--soft);color:var(--text);border-bottom-left-radius:6px"),
       };
@@ -5279,6 +5288,9 @@ class Component extends DCLogic {
         periodeRecente: c.periodeRecente, chiffres: ch,
         badgeStyle: "font-size:11px;font-weight:800;letter-spacing:.02em;border-radius:999px;padding:4px 10px;white-space:nowrap;background:" + gs.bg + ";color:" + gs.fg,
         badgeText: gs.label,
+        // bandeau de gravite (bordure gauche) en plus du badge texte -- lisible
+        // en un coup d'oeil dans une liste qui peut compter plusieurs constats.
+        cardStyle: "text-align:left;width:100%;box-sizing:border-box;border:none;border-left:3px solid " + gs.fg + ";background:var(--soft);border-radius:14px;padding:14px 16px 14px 13px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:6px;transition:background .18s ease;flex:none",
         open: () => this.openWatchModal(c.site),
       };
     });
@@ -5697,6 +5709,17 @@ class Component extends DCLogic {
     // chiffre recalcule ou invente pour l'occasion. Filtre les domaines
     // sans donnee reelle (ex. V2 sur un site qui n'a pas encore bascule)
     // plutot que d'afficher une carte vide.
+    // meme palette de teintes que les encarts "KamIA." deja utilises sur
+    // chaque onglet d'origine (tunnel=rouge/rose, v2=violet, sources=bleu,
+    // audience=ambre) + vert repris de kamiaChips -- cycle sur ces 5 tons
+    // deja etablis dans la charte plutot que d'en inventer un nouveau.
+    const QUICK_ANALYSIS_TINTS = [
+      { bg: "#ffeceb", fg: "#c0392f" },
+      { bg: "#f0ecff", fg: "#5b3fd1" },
+      { bg: "#eef4ff", fg: "#2c46b8" },
+      { bg: "#fff8ec", fg: "#7a4a02" },
+      { bg: "#e8f8f0", fg: "#0a6b4c" },
+    ];
     const quickAnalysisCards = st.sites.length ? [
       { label: "Vue d'ensemble", text: kamiaHeadline },
       hasTunnelInsight ? { label: "Tunnel de conversion", text: tunnelLeakInsight } : null,
@@ -5704,7 +5727,15 @@ class Component extends DCLogic {
       hasAudienceInsight ? { label: "Audience & environnement", text: audienceInsight } : null,
       sourceInsight ? { label: "Sources d'acquisition", text: sourceInsight } : null,
       { label: "Search Console", text: pageInsightText },
-    ].filter(Boolean) : [];
+    ].filter(Boolean).map((c, i) => {
+      const t = QUICK_ANALYSIS_TINTS[i % QUICK_ANALYSIS_TINTS.length];
+      return {
+        ...c,
+        pick: () => this.pickQuickQuestion("Détaille : " + c.text),
+        style: "display:block;width:100%;box-sizing:border-box;text-align:left;border:none;cursor:pointer;font-family:inherit;background:" + t.bg + ";border-radius:16px;padding:16px 18px",
+        labelStyle: "font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:" + t.fg,
+      };
+    }) : [];
 
     // ============ Onglet "Comparer" (nouveau, 10/08/2026) ============
     // selection independante de la navigation site par site (st.sites) --
