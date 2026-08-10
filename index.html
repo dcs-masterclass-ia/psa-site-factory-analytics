@@ -830,6 +830,55 @@ input[type=date]{color-scheme:dark}
     </div>
     </sc-if>
 
+    <!-- ============ Ligne 5bis : Taux de rebond ============ -->
+    <sc-if value="{{ hasRebondChart }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#fff;border-radius:30px;padding:32px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;margin-top:20px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#ffb199,#f59e0b);box-shadow:0 10px 22px -8px rgba(245,158,11,.45);display:flex;align-items:center;justify-content:center;flex:none">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3.5a6.5 6.5 0 1 0 6.5 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path><path d="M10 3.5 13 6.5" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg>
+        </div>
+        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Taux de rebond</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Outil de reprise — sessions mensuelles et taux de rebond sur les 12 derniers mois</div></div>
+        <div style="flex:1"></div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)"><span style="width:12px;height:12px;border-radius:4px;background:var(--soft3)"></span>Sessions</div>
+        <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)"><span style="width:18px;height:3px;border-radius:2px;background:var(--pos)"></span>Rebond</div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Moyenne</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--text)">{{ rebondAvg }} %</div><div style="font-size:12px;color:var(--muted2)">sur 12 mois</div></div>
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Dernier mois</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--text)">{{ rebondLastLabel }}</div><div style="font-size:12px;color:var(--muted2)">{{ rebondLastMonthLabel }}</div></div>
+        <div style="background:var(--soft);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Évolution</div><div style="font-size:24px;font-weight:600;letter-spacing:-.9px;color:var(--text)">{{ rebondProgress }} pts</div><div style="font-size:12px;color:var(--muted2)">sur 12 mois</div></div>
+        <sc-if value="{{ hasRebondWorstPage }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--neg-bg);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Page la plus fuyante</div><div style="font-size:19px;font-weight:600;letter-spacing:-.6px;color:var(--neg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rebondWorstPage.taux }}</div><div style="font-size:11.5px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ rebondWorstPage.page }}">{{ rebondWorstPage.page }}</div></div>
+        </sc-if>
+        <sc-if value="{{ hasRebondBestPage }}" hint-placeholder-val="{{ false }}">
+        <div style="background:var(--pos-bg);border-radius:22px;padding:18px 20px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0"><div style="font-size:12.5px;color:var(--muted2)">Page la plus engageante</div><div style="font-size:19px;font-weight:600;letter-spacing:-.6px;color:var(--pos);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rebondBestPage.taux }}</div><div style="font-size:11.5px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ rebondBestPage.page }}">{{ rebondBestPage.page }}</div></div>
+        </sc-if>
+      </div>
+      <div ref="{{ rebondChart.hoverRef }}" style="position:relative;cursor:crosshair">
+      <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block;overflow:visible">
+        <sc-for list="{{ rebondChart.gridLines }}" as="g" hint-placeholder-count="4">
+          <line ref="{{ g.lineRef }}" x1="52" x2="1224" stroke="#f2f3f5"></line>
+          <text ref="{{ g.sessLabelRef }}" x="44" text-anchor="end" font-family="Outfit,sans-serif" font-size="12.5" fill="#b6bac1"></text>
+          <text ref="{{ g.convLabelRef }}" x="1234" text-anchor="start" font-family="Outfit,sans-serif" font-size="12.5" fill="#8fd9bd"></text>
+        </sc-for>
+        <line x1="52" y1="252" x2="1224" y2="252" stroke="#e6e8ee"></line>
+        <sc-if value="{{ rebondChart.hasV2Marker }}" hint-placeholder-val="{{ false }}">
+        <line ref="{{ rebondChart.v2Ref }}" y1="14" y2="252" stroke="#c9ccd2" stroke-width="1.6" stroke-dasharray="5 6"></line>
+        </sc-if>
+        <sc-for list="{{ rebondChart.bars }}" as="bar" hint-placeholder-count="12">
+          <rect ref="{{ bar.ref }}" rx="8" fill="{{ bar.barFill }}"></rect>
+          <text ref="{{ bar.labelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12.5" font-weight="600" fill="var(--muted2)"></text>
+          <text ref="{{ bar.monthLabelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="13" fill="var(--muted2)"></text>
+        </sc-for>
+        <path ref="{{ rebondChart.lineRef }}" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+        <sc-for list="{{ rebondChart.points }}" as="pt" hint-placeholder-count="12">
+          <circle ref="{{ pt.dotRef }}" r="4" fill="#fff" stroke="var(--pos)" stroke-width="2.4"></circle>
+          <text ref="{{ pt.labelRef }}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12.5" font-weight="600" fill="var(--pos)"></text>
+        </sc-for>
+      </svg>
+      </div>
+    </div>
+    </sc-if>
+
     <!-- ============ Ligne 6 : Leads par projet d'achat + Marques reprises + Taux de complétion ============ -->
     <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px">
 
@@ -3627,6 +3676,9 @@ class Component extends DCLogic {
         periodPickerTopLabel: "", periodRangeLabel: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
         volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
+        rebondChart: null, hasRebondChart: false, rebondAvg: "0,00", rebondProgress: "0,00",
+        rebondLastLabel: "—", rebondLastMonthLabel: "", hasRebondWorstPage: false, rebondWorstPage: null,
+        hasRebondBestPage: false, rebondBestPage: null,
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
         refreshBtnStyle: "position:relative;overflow:hidden;display:flex;align-items:center;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;opacity:.6;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)",
         refreshBtnHover: "", refreshIconStyle: "", refreshTitle: "Chargement…", refreshProgressStyle: "",
@@ -3992,6 +4044,41 @@ class Component extends DCLogic {
     const volConvLast = volConvRows.length ? volConvRows[volConvRows.length - 1] : null;
     const volConvFirst = volConvRows.length ? volConvRows[0] : null;
     const volConvProgress = (volConvLast && volConvFirst) ? dec(volConvLast.conv - volConvFirst.conv, 2) : "0,00";
+
+    // Taux de rebond (nouveau, 10/08/2026) : meme composant que Volume vs
+    // conversion tradein juste au-dessus (barres = sessions, courbe = %),
+    // juste reoriente sur rebondMonth. Meme perimetre 12 mois glissants,
+    // independant de la periode choisie en en-tete.
+    const rebondRows = last12Months.map(m => {
+      const rb = (rawSite.rebondMonth || {})[m];
+      return { mois: m, label: moisAnneeLabel(m), sessions: rb ? rb.sessions : 0, conv: rb ? rb.taux : 0 };
+    });
+    const rebondChart = buildVolumeConvChart(rebondRows, v2MonthIdx);
+    const hasRebondChart = !!rebondChart && rebondChart.bars.length > 1;
+    // moyenne/evolution : seulement les mois avec une vraie donnee rattrapee
+    // (rebondMonth est un champ tout nouveau, la plupart des sites n'ont
+    // encore que les 1-2 derniers mois) -- un mois sans donnee doit etre
+    // ignore, pas compte comme "0% de rebond" (ferait chuter artificiellement
+    // la moyenne, constate a l'ecran avant ce correctif : 3,77% affiche
+    // alors que les deux seuls mois reels etaient a ~22%).
+    const rebondRowsReelles = rebondRows.filter(r => !!(rawSite.rebondMonth || {})[r.mois]);
+    const rebondAvg = dec(rebondRowsReelles.length ? rebondRowsReelles.reduce((s, r) => s + r.conv, 0) / rebondRowsReelles.length : 0, 2);
+    const rebondLast = rebondRowsReelles.length ? rebondRowsReelles[rebondRowsReelles.length - 1] : null;
+    const rebondFirst = rebondRowsReelles.length ? rebondRowsReelles[0] : null;
+    const rebondProgress = (rebondLast && rebondFirst && rebondLast !== rebondFirst) ? dec(rebondLast.conv - rebondFirst.conv, 2) : "0,00";
+    // meilleure/pire page (dernier mois avec des pages) : reperes rapides
+    // sans devoir lire tout le graphe -- seuil de 100 sessions pour eviter
+    // qu'une page anecdotique (2 sessions, 1 rebond = 50%) ne remonte.
+    const rebondPagesLatest = (() => {
+      for (let i = rebondRows.length - 1; i >= 0; i--) {
+        const rb = (rawSite.rebondMonth || {})[rebondRows[i].mois];
+        if (rb && rb.pages && rb.pages.length) return rb.pages;
+      }
+      return [];
+    })();
+    const rebondPagesRanked = rebondPagesLatest.filter(p => p.sessions >= 100).slice().sort((a, b) => b.tauxRebond - a.tauxRebond);
+    const rebondWorstPage = rebondPagesRanked.length ? rebondPagesRanked[0] : null;
+    const rebondBestPage = rebondPagesRanked.length ? rebondPagesRanked[rebondPagesRanked.length - 1] : null;
 
     // canal : top 4 + Autres, courbes lissees a partir des vraies donnees
     const joursCanal = Object.keys(agg.canal).sort();
@@ -5338,6 +5425,11 @@ class Component extends DCLogic {
       volConvChart, hasVolConvChart, volConvTotal, volConvAvgConv, volConvLast, volConvProgress,
       volConvLastLabel: volConvLast ? dec(volConvLast.conv, 2) + " %" : "—",
       volConvLastMonthLabel: volConvLast ? volConvLast.label : "",
+      rebondChart, hasRebondChart, rebondAvg, rebondProgress,
+      rebondLastLabel: rebondLast ? dec(rebondLast.conv, 2) + " %" : "—",
+      rebondLastMonthLabel: rebondLast ? rebondLast.label : "",
+      hasRebondWorstPage: !!rebondWorstPage, rebondWorstPage: rebondWorstPage ? { page: rebondWorstPage.page, taux: dec(rebondWorstPage.tauxRebond, 1) + " %", sessions: fmt(rebondWorstPage.sessions) } : null,
+      hasRebondBestPage: !!rebondBestPage, rebondBestPage: rebondBestPage ? { page: rebondBestPage.page, taux: dec(rebondBestPage.tauxRebond, 1) + " %", sessions: fmt(rebondBestPage.sessions) } : null,
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
       ga4Insights,
       hasGsc, noGsc: !hasGsc,
