@@ -25,6 +25,13 @@ MOTIFS_REPRISE = (
     r"overname", r"tasacion", r"valutazioneusato", r"valutiamoiltuousato",
     r"odkup", r"autoankauf", r"kauft-dein-auto", r"kauft-ihr-auto",
     r"wir-kaufen-ihr-auto", r"\btradein\b", r"trade-in",
+    # Stellantis&You ("PSAR" en interne GA4) : motif different des autres --
+    # pas un sous-domaine de la marque mais un domaine a part,
+    # recoveryXX.stellantisandyou.com. Confirme le 10/08/2026 par le
+    # trafic reel (fenetre elargie 11 mois) ET par la liste officielle des
+    # sites de reprise fournie par l'utilisateur -- meme discipline que le
+    # reste de la liste, pas une supposition.
+    r"^recovery[a-z]{2,4}\.",
 )
 
 # hotes a ecarter d'office : recette, preproduction, boutique, outils tiers.
