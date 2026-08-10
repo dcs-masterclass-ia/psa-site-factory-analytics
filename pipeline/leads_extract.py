@@ -103,6 +103,33 @@ SITE_EXTRACT = {
     "PEUGEOT FR":    [(4, 2016)],
     "PEUGEOT IT":    [(51, 2014)],
     "PEUGEOT LU":    [(93, 2011)],
+
+    # Spoticar + Stellantis&You, identifies le 10/08/2026 avec
+    # pipeline/_diag_siteid.py (colonnes COUNTRY / SITE NAME du CSV,
+    # meme methode que le reste de ce dictionnaire). Stellantis&You a un
+    # siteId supplementaire fourni (114, cense etre la Belgique
+    # neerlandophone ou le Luxembourg) qui n'a produit aucune ligne meme
+    # sur 580 jours -- ecarte plutot que suppose, aucun marche STELLANTIS
+    # &YOU LU dans notre perimetre (voir pipeline/sites.py).
+    "SPOTICAR AT":         [(106, 2026)],
+    "SPOTICAR BE":         [(66, 2026), (68, 2026)],
+    "SPOTICAR DE":         [(81, 2026)],
+    "SPOTICAR ES":         [(22, 2026)],
+    "SPOTICAR FR":         [(1, 2026)],
+    "SPOTICAR IT":         [(71, 2014)],
+    "SPOTICAR LU":         [(69, 2026)],
+    "SPOTICAR PL":         [(146, 2026)],
+    "SPOTICAR PT":         [(70, 2026)],
+    "SPOTICAR UK":         [(104, 2026)],
+
+    "STELLANTIS &YOU AT":  [(145, 2026)],
+    "STELLANTIS &YOU BE":  [(112, 2026), (113, 2026)],
+    "STELLANTIS &YOU DE":  [(111, 2026)],
+    "STELLANTIS &YOU ES":  [(110, 2026)],
+    "STELLANTIS &YOU FR":  [(109, 2026)],
+    "STELLANTIS &YOU IT":  [(115, 2014)],
+    "STELLANTIS &YOU PL":  [(139, 2026)],
+    "STELLANTIS &YOU PT":  [(116, 2026)],
 }
 
 # colonnes du CSV effectivement exploitees -- jamais les colonnes PII
