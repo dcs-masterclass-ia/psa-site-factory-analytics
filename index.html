@@ -1579,6 +1579,66 @@ input[type=date]{color-scheme:dark}
   </div>
   </sc-if>
 
+  <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:22px">
+    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div><div style="font-size:20px;font-weight:600;letter-spacing:-.6px;color:var(--text)">Comparer des sites</div><div style="font-size:13.5px;color:#9aa0aa;margin-top:4px">{{ compareSitesCount }} site(s) sélectionné(s) · {{ periodPillLabel }}</div></div>
+        <div style="flex:1"></div>
+        <button onClick="{{ compareClear }}" style="border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text2);background:var(--soft);height:36px;padding:0 16px;border-radius:100px">Vider la sélection</button>
+      </div>
+
+      <div>
+        <div style="font-size:12.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Ajouter par groupe</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ compareGroupChips }}" as="g" hint-placeholder-count="8">
+            <button onClick="{{ g.add }}" style="border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text2);background:var(--soft);height:34px;padding:0 15px;border-radius:100px;transition:background .18s ease" style-hover="background:var(--hover)">{{ g.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size:12.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Sites individuels</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid var(--line);border-radius:16px">
+          <sc-for list="{{ compareSiteToggleRows }}" as="r" hint-placeholder-count="24">
+            <button onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;background:transparent;padding:7px 9px;border-radius:10px;text-align:left;font-size:12.5px;color:var(--text2);transition:background .15s ease" style-hover="background:var(--soft)">
+              <span style="{{ r.box }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">{{ compareMetricLabel }}</div>
+        <div style="flex:1"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ compareMetrics }}" as="m" hint-placeholder-count="5">
+            <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasCompareRows }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="8">
+          <div style="{{ r.rowStyle }};display:grid;grid-template-columns:200px 1fr 90px;align-items:center;gap:14px">
+            <div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.flag }} {{ r.site }}</div>
+            <div style="height:20px;background:var(--soft);border-radius:8px;overflow:hidden"><div style="{{ r.barStyle }}"></div></div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--text);text-align:right;font-variant-numeric:tabular-nums">{{ r.valueText }}</div>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+      <sc-if value="{{ noCompareRows }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:50px 20px;text-align:center;font-size:14.5px;font-weight:500;color:var(--muted)">{{ compareEmptyLabel }}</div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
   <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px;display:flex;gap:20px;align-items:flex-start">
    <div style="flex:1 1 70%;min-width:0">
@@ -2565,6 +2625,8 @@ class Component extends DCLogic {
     periodPickerOpen: false, // ouverture du selecteur de periode/date (en-tete)
     exportMenuOpen: false,   // ouverture du menu Exporter (CSV/PDF/PPT, onglet GA4)
     sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
+    compareSites: [],    // selection independante pour l'onglet "Comparer" (10/08/2026) -- plusieurs sites, jamais melangee avec la navigation site par site ci-dessus
+    compareMetric: "traffic",
     dim: "brand",
     booted: false,
     error: null,
@@ -2873,6 +2935,7 @@ class Component extends DCLogic {
       // navigateur/newVsReturning, ajoute au pipeline le 09/08/2026).
       audienceDevice: new Map(), browser: new Map(), newVsReturning: new Map(),
       convCanalDevice: new Map(),
+      rebondSessions: 0, rebondWeighted: 0,
     };
     for (const s of this.state.sites) {
       const d = this.data[s];
@@ -2986,6 +3049,18 @@ class Component extends DCLogic {
             cur.clics += p.clics; cur.impressions += p.impressions; cur.posSum += p.position * p.impressions;
             out.pages.set(k, cur);
           }
+        }
+      }
+      // taux de rebond : meme principe que search console ci-dessus (donnee
+      // mensuelle, mois entier des qu'il chevauche la plage), pondere par
+      // les sessions de chaque mois -- pas une moyenne simple des taux.
+      for (const mois of Object.keys(d.rebondMonth || {})) {
+        if (mois === "total") continue;
+        const joursMois = d.daily.d.filter(x => x.slice(0, 7) === mois);
+        if (joursMois.length && joursMois[0] <= fin && joursMois[joursMois.length - 1] >= debut) {
+          const rb = d.rebondMonth[mois];
+          out.rebondSessions += rb.sessions || 0;
+          out.rebondWeighted += (rb.taux || 0) * (rb.sessions || 0);
         }
       }
       // conversion par canal x device : meme principe que search console
@@ -3654,7 +3729,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickAnalysisCards: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null,
@@ -3677,6 +3752,8 @@ class Component extends DCLogic {
         channels: [],
         channelPaths: [], channelAxisLabels: [], funnel: [], projects: [], projectHero: null, hasProjectHero: false, projectRest: [],
         convCanalRows: [], hasConvCanalRows: false, convDeviceLabels: [],
+        compareMetrics: [], compareMetricLabel: "", compareGroupChips: [], compareSiteToggleRows: [], compareClear: () => {},
+        compareRows: [], hasCompareRows: false, noCompareRows: true, compareEmptyLabel: "", compareSitesCount: 0,
         brandBars: [], hasBrandBars: false, brandOtherBar: null, hasBrandOther: false,
         conquestShareLabel: "", ownBrandRing: "var(--soft3)", conquestRing: "var(--soft3)",
         totalProjAllLabel: "0", leadCells: [], queries: [], pages: [],
@@ -5330,6 +5407,7 @@ class Component extends DCLogic {
       v2: '<svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 3v14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path><path d="M6.2 7.4 3.4 12h5.6L6.2 7.4ZM13.8 7.4 11 12h5.6l-2.8-4.6Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path></svg>',
       performance: '<img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
       bigquery: '<img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
+      compare: '<svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 3v11a2 2 0 0 0 2 2h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M7 12l3-3 2.5 2.5L17 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     };
     const TAB_BADGE_STYLE = {
       pos: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--pos-bg);color:var(--pos)",
@@ -5342,6 +5420,7 @@ class Component extends DCLogic {
       { key: "gsc", label: "Search Console" },
       { key: "v2", label: "Comparaison V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
       { key: "performance", label: "PageSpeed", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
+      { key: "compare", label: "Comparer" },
     ];
     // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
     // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
@@ -5437,9 +5516,77 @@ class Component extends DCLogic {
       { label: "Search Console", text: pageInsightText },
     ].filter(Boolean) : [];
 
+    // ============ Onglet "Comparer" (nouveau, 10/08/2026) ============
+    // selection independante de la navigation site par site (st.sites) --
+    // st.compareSites peut contenir plusieurs sites a la fois, expressement
+    // demande ("comparer 2 ou plusieurs sites entre eux, ex: toute la
+    // France, ou Peugeot ES vs Peugeot PT").
+    const COMPARE_METRICS = [
+      { key: "traffic", label: "Sessions parent" },
+      { key: "reprise", label: "Sessions reprise" },
+      { key: "leads", label: "Leads BO" },
+      { key: "conversion", label: "Taux de conversion" },
+      { key: "rebond", label: "Taux de rebond" },
+    ];
+    const compareMetrics = COMPARE_METRICS.map(m => ({
+      label: m.label,
+      pick: () => this.setState({ compareMetric: m.key }),
+      style: "border:none;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;height:38px;padding:0 18px;border-radius:100px;transition:background .18s ease,color .18s ease;background:" +
+        (st.compareMetric === m.key ? "#F5411E" : "var(--soft)") + ";color:" + (st.compareMetric === m.key ? "#fff" : "var(--text2)"),
+    }));
+    const compareMetricLabel = (COMPARE_METRICS.find(m => m.key === st.compareMetric) || COMPARE_METRICS[0]).label;
+    const compareGroupChips = paysGroups.map(([p, names]) => ({
+      label: (PAYS_FLAG[p] || "") + " " + (PAYS_LABEL[p] || p),
+      add: () => this.setState(s => ({ compareSites: [...new Set([...s.compareSites, ...names])] })),
+    })).concat(brandGroups.map(([b, names]) => ({
+      label: b.charAt(0) + b.slice(1).toLowerCase(),
+      add: () => this.setState(s => ({ compareSites: [...new Set([...s.compareSites, ...names])] })),
+    })));
+    const compareSiteToggleRows = ALL.slice().sort().map(n => {
+      const on = st.compareSites.includes(n);
+      return {
+        name: n, on,
+        toggle: () => this.setState(s => ({
+          compareSites: on ? s.compareSites.filter(x => x !== n) : [...s.compareSites, n],
+        })),
+        box: "width:18px;height:18px;border-radius:5px;flex:none;display:flex;align-items:center;justify-content:center;background:" + (on ? "#4ADE80" : "var(--soft3)") + ";color:" + (on ? "#0d0d0d" : "transparent"),
+      };
+    });
+    const compareClear = () => this.setState({ compareSites: [] });
+    // un aggregate() par site selectionne, sur la MEME plage que le reste du
+    // dashboard (range) -- reutilise exactement la meme fonction/definition
+    // que partout ailleurs (via .call() avec un `this` factice a un seul
+    // site), plutot que reecrire une deuxieme formule de conversion/rebond
+    // qui risquerait de diverger de celle deja affichee ailleurs.
+    const compareRowsRaw = st.compareSites.map(site => {
+      const a = this.aggregate.call({ state: { sites: [site] }, data: this.data }, range.debut, range.fin);
+      const ga4Proxy = a.funnelSteps && a.funnelSteps.length ? a.funnelSteps[a.funnelSteps.length - 1].users : 0;
+      const values = {
+        traffic: a.traffic, reprise: a.reprise, leads: a.leads,
+        conversion: a.reprise ? ga4Proxy / a.reprise * 100 : null,
+        rebond: a.rebondSessions ? a.rebondWeighted / a.rebondSessions : null,
+      };
+      return { site, pays: paysDeSite(site), value: values[st.compareMetric] };
+    }).filter(r => r.value != null).sort((a, b) => b.value - a.value);
+    const compareMaxVal = Math.max(1, ...compareRowsRaw.map(r => r.value));
+    const isPct = st.compareMetric === "conversion" || st.compareMetric === "rebond";
+    const compareRows = compareRowsRaw.map((r, i) => ({
+      site: r.site, flag: PAYS_FLAG[r.pays] || "",
+      valueText: isPct ? dec(r.value, 2) + " %" : fmt(Math.round(r.value)),
+      barStyle: "width:" + Math.max(2, r.value / compareMaxVal * 100) + "%;background:" + CHAN_COLORS[i % CHAN_COLORS.length] + ";border-radius:8px;height:100%;transition:width .6s cubic-bezier(.3,.8,.3,1)",
+      rowStyle: "animation:riseIn .5s ease " + Math.min(0.6, i * 0.03) + "s both",
+    }));
+    const hasCompareRows = compareRows.length > 0;
+    const noCompareRows = !hasCompareRows;
+    const compareEmptyLabel = st.compareSites.length === 0
+      ? "Aucun site sélectionné — ajoute des sites ou un groupe ci-dessus."
+      : "Aucune donnée " + compareMetricLabel.toLowerCase() + " pour cette période sur les sites sélectionnés.";
+
     return {
       tabs, kamiaTab, bigQueryIconRef, bigQueryStyle, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       convCanalRows, hasConvCanalRows, convDeviceLabels,
+      compareMetrics, compareMetricLabel, compareGroupChips, compareSiteToggleRows, compareClear,
+      compareRows, hasCompareRows, noCompareRows, compareEmptyLabel, compareSitesCount: st.compareSites.length,
       mirrorParentRef, mirrorRepriseRef, mirrorParentAreaRef, mirrorRepriseAreaRef, hasMirror, mirrorTotalsLabel,
       chartHover, hasChartHover: !!chartHover,
       hoverChannelMove: e => this.hoverChannelMove(e), hoverChannelLeave: () => this.hoverChannelLeave(),
@@ -5459,7 +5606,7 @@ class Component extends DCLogic {
       v2Insight, hasV2Insight: !!v2Insight, v2TipInsight, hasV2Tip,
       kamiaHeadline, kamiaRows, hasKamiaRows: kamiaRows.length > 0,
       kamiaStatusLabel, kamiaConstatCount, kamiaChips,
-      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant",
+      isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare",
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       hasPerfHero, perfHero,
