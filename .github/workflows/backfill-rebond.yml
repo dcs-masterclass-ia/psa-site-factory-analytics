@@ -1,0 +1,70 @@
+name: Rattrapage taux de rebond (historique complet)
+
+# Manuel uniquement, a usage ponctuel : "Taux de rebond" n'a ete ajoute au
+# pipeline que le 10/08/2026, et chaque execution de refresh.yml ne
+# retraite que les 2 derniers mois (MOIS_RECENTS, pipeline/build.py) --
+# les mois plus anciens n'ont donc jamais eu ce champ calcule, sur tous
+# les sites. Voir pipeline/backfill_rebond.py pour le detail.
+# Ecriture incrementale, site par site (meme mecanisme que
+# backfill-leads.yml) : un site publie tout de suite, le run peut
+# continuer meme si un autre echoue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites à rattraper, séparés par des virgules (vide = tous les sites exploitables)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run : calcule et affiche, n'écrit/ne commit rien"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
+
+permissions:
+  contents: write
+
+jobs:
+  rattrapage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          python -c "import json,os;json.load(open(os.environ['RUNNER_TEMP']+'/ga4.json'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Rattraper le taux de rebond
+        run: |
+          ARGS=()
+          if [ -n "${{ inputs.sites }}" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ "${{ inputs.dry_run }}" = "oui" ]; then ARGS+=(--dry-run); fi
+          python -m pipeline.backfill_rebond "${ARGS[@]}"
