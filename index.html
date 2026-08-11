@@ -1726,55 +1726,47 @@ input[type=date]{color-scheme:light}
       <sc-if value="{{ hasPaysRows }}" hint-placeholder-val="{{ false }}">
       <div style="overflow-x:auto">
         <div style="display:flex;flex-direction:column;min-width:fit-content">
-          <div style="display:flex;padding-left:176px">
-            <sc-for list="{{ paysYearGroups }}" as="y" hint-placeholder-count="2">
-              <div style="{{ y.style }}">{{ y.label }}</div>
+          <div style="display:flex;align-items:center;padding:0 0 10px;border-bottom:1px solid var(--line)">
+            <div style="width:176px;flex:none;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Pays / année</div>
+            <sc-for list="{{ paysMonthHeaderLabels }}" as="m" hint-placeholder-count="12">
+              <div style="width:56px;flex:none;text-align:right;font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.02em">{{ m }}</div>
             </sc-for>
-            <div style="{{ paysCompareHeaderStyle }}">Comparaison annuelle</div>
+            <div style="width:92px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Total</div>
+            <div style="width:90px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Évolution</div>
           </div>
-          <div style="display:flex;align-items:center;padding:8px 0 10px;border-bottom:1px solid var(--line)">
-            <div style="width:176px;flex:none;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Pays</div>
-            <sc-for list="{{ paysMonthGroups }}" as="g" hint-placeholder-count="2">
-              <div style="{{ g.style }}">
-                <sc-for list="{{ g.months }}" as="m" hint-placeholder-count="8">
-                  <div style="width:58px;flex:none;text-align:right;font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.02em">{{ m }}</div>
-                </sc-for>
-              </div>
-            </sc-for>
-            <sc-for list="{{ paysYearHeaders }}" as="y" hint-placeholder-count="2">
-              <div style="{{ y.style }}">{{ y.label }}</div>
-            </sc-for>
-            <div style="width:96px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Évolution</div>
-          </div>
-          <sc-for list="{{ paysRows }}" as="r" hint-placeholder-count="9">
-            <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft)">
-              <div style="width:176px;flex:none;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text)"><span>{{ r.flag }}</span><span>{{ r.label }}</span></div>
-              <sc-for list="{{ r.yearBlocks }}" as="g" hint-placeholder-count="2">
-                <div style="{{ g.style }}">
-                  <sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="8">
-                    <div style="width:58px;flex:none;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text2)">{{ c.value }}</div>
+          <sc-for list="{{ paysCompareRows }}" as="r" hint-placeholder-count="9">
+            <div style="padding:10px 0;border-bottom:1px solid var(--soft)">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text);padding:0 4px 4px"><span>{{ r.flag }}</span><span>{{ r.label }}</span></div>
+              <sc-for list="{{ r.years }}" as="y" hint-placeholder-count="2">
+                <div style="{{ y.rowStyle }}">
+                  <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
+                  <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
+                    <div style="width:56px;flex:none;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text2)">{{ c.value }}</div>
                   </sc-for>
+                  <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ y.totalLabel }}</div>
+                  <div style="width:90px;flex:none"></div>
                 </div>
               </sc-for>
-              <sc-for list="{{ r.yearTotals }}" as="t" hint-placeholder-count="2">
-                <div style="{{ t.style }}">{{ t.value }}</div>
-              </sc-for>
-              <div style="width:96px;flex:none;text-align:right"><span style="{{ r.delta.style }}">{{ r.delta.text }}</span></div>
+              <sc-if value="{{ r.hasDelta }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;justify-content:flex-end;padding:2px 4px 0"><span style="{{ r.delta.style }}">{{ r.delta.text }} vs année précédente</span></div>
+              </sc-if>
             </div>
           </sc-for>
-          <div style="display:flex;align-items:center;border-top:2px solid var(--line);margin-top:4px;padding-top:12px">
-            <div style="width:176px;flex:none;font-size:13.5px;font-weight:700;color:var(--text)">Total général</div>
-            <sc-for list="{{ paysTotalBlocks }}" as="g" hint-placeholder-count="2">
-              <div style="{{ g.style }}">
-                <sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="8">
-                  <div style="width:58px;flex:none;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ c }}</div>
+          <div style="padding-top:14px">
+            <div style="font-size:13.5px;font-weight:700;color:var(--text);padding:0 4px 4px">Total général</div>
+            <sc-for list="{{ paysGrandRows }}" as="y" hint-placeholder-count="2">
+              <div style="{{ y.rowStyle }}">
+                <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
+                <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
+                  <div style="width:56px;flex:none;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ c.value }}</div>
                 </sc-for>
+                <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ y.totalLabel }}</div>
+                <div style="width:90px;flex:none"></div>
               </div>
             </sc-for>
-            <sc-for list="{{ paysYearGrandTotals }}" as="t" hint-placeholder-count="2">
-              <div style="{{ t.style }}">{{ t.value }}</div>
-            </sc-for>
-            <div style="width:96px;flex:none;text-align:right"><span style="{{ paysGrandDelta.style }}">{{ paysGrandDelta.text }}</span></div>
+            <sc-if value="{{ paysGrandHasDelta }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;justify-content:flex-end;padding:2px 4px 0"><span style="{{ paysGrandDelta.style }}">{{ paysGrandDelta.text }} vs année précédente</span></div>
+            </sc-if>
           </div>
         </div>
       </div>
@@ -3989,8 +3981,8 @@ class Component extends DCLogic {
         totalProjAllLabel: "0", leadCells: [], queries: [], pages: [],
         tunnelSteps: [], hasTunnel: false, noTunnel: true, tunnelLeakInsight: "", hasTunnelInsight: false,
         donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0", donutChips: [],
-        paysYearGroups: [], paysMonthGroups: [], paysRows: [], hasPaysRows: false, paysTotalBlocks: [], paysGrandTotal: "0",
-        paysYearHeaders: [], paysYearGrandTotals: [], paysGrandDelta: { style: "", text: "" }, paysCompareHeaderStyle: "",
+        paysMonthHeaderLabels: [], paysCompareRows: [], hasPaysRows: false, paysGrandRows: [], paysGrandTotal: "0",
+        paysGrandDelta: { style: "", text: "" }, paysGrandHasDelta: false,
         sourceRows: [], hasSourceRows: false, sourceInsight: "", deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
         mobilePctLabel: "0 %", audienceTotalLabel: "", audienceInsight: "", hasAudienceInsight: false,
         browserHeroes: [], browserRows: [], hasBrowserRows: false, noBrowserRows: true,
@@ -4765,16 +4757,13 @@ class Component extends DCLogic {
     const donutGradient = hasDonut ? "conic-gradient(" + donutRows.map(r => r.color + " " + r.from + "% " + r.to + "%").join(",") + ")" : "var(--soft3)";
     const donutTotalLabel = fmt(totalBrandDonut);
 
-    // "Leads par pays" (nouveau module Tableau, demande du 11/08/2026) :
-    // somme reelle des leads back-office mensuels (d.leads[mois].total,
-    // meme champ que "Leads GCP" plus haut), groupee par pays via
-    // paysDeSite (meme mapping que le selecteur de site en en-tete).
-    // Toujours sur les 82 sites, independant du site/perimetre choisi en
-    // haut -- une repartition par pays n'a de sens qu'a l'echelle du parc.
-    const paysMonths = [...new Set(ALL.flatMap(s => Object.keys((this.data[s] && this.data[s].leads) || {}).filter(m => m !== "total")))].sort();
-    const PAYS_CELL_W = 58;
-    const PAYS_BLOCK_PAD = 8;
-    const PAYS_BLOCK_GAP = 18;
+    // "Leads par pays" (module Tableau) : somme reelle des leads
+    // back-office mensuels (d.leads[mois].total, meme champ que "Leads
+    // GCP" plus haut), groupee par pays via paysDeSite (meme mapping que
+    // le selecteur de site en en-tete). Toujours sur les 82 sites,
+    // independant du site/perimetre choisi en haut -- une repartition
+    // par pays n'a de sens qu'a l'echelle du parc.
+    const PAYS_CELL_W = 56;
     const paysByPaysMois = {};
     for (const s of ALL) {
       // "SPOTICAR UK" utilise le code "UK" (dernier mot du nom de site)
@@ -4787,72 +4776,52 @@ class Component extends DCLogic {
       const p = raw === "UK" ? "GB" : raw;
       const leads = (this.data[s] && this.data[s].leads) || {};
       const row = paysByPaysMois[p] || (paysByPaysMois[p] = {});
-      for (const m of paysMonths) row[m] = (row[m] || 0) + (((leads[m] || {}).total) || 0);
+      for (const m of Object.keys(leads)) {
+        if (m === "total") continue;
+        row[m] = (row[m] || 0) + ((leads[m] || {}).total || 0);
+      }
     }
     const paysCodes = Object.keys(paysByPaysMois).filter(p => PAYS_LABEL[p]).sort((a, b) => (PAYS_LABEL[a] || a).localeCompare(PAYS_LABEL[b] || b, "fr"));
-    // regroupement par annee (colonnes) : chaque annee devient un "bloc"
-    // avec sa propre largeur/marge/fond, repete IDENTIQUE sur la ligne
-    // d'en-tete des annees, la ligne des mois, chaque ligne pays et la
-    // ligne "Total general" -- seul moyen d'obtenir un alignement pixel
-    // parfait entre ces 4 lignes sans tableau HTML natif. L'annee la plus
-    // recente recoit un leger fond teinte (file jusqu'en bas du tableau)
-    // pour qu'on la distingue immediatement des annees precedentes --
-    // signale le 11/08/2026, l'ancienne version (juste un libelle texte
-    // au-dessus des mois, sans separation visuelle) melangeait les deux
-    // annees en un seul bloc illisible.
-    const paysYears = [...new Set(paysMonths.map(m => m.slice(0, 4)))].sort();
-    const paysMonthsByYear = paysYears.map(y => paysMonths.filter(m => m.slice(0, 4) === y));
-    const blockStyle = (isLast, tint) => "display:flex;border-radius:12px;padding:6px " + PAYS_BLOCK_PAD + "px;box-sizing:content-box;" + (tint ? "background:#eef2ff;" : "") + (isLast ? "" : "margin-right:" + PAYS_BLOCK_GAP + "px;");
-    const paysYearGroups = paysYears.map((y, gi) => {
-      const isLast = gi === paysYears.length - 1;
-      const w = paysMonthsByYear[gi].length * PAYS_CELL_W + PAYS_BLOCK_PAD * 2;
-      return {
-        label: y,
-        style: "width:" + w + "px;flex:none;text-align:center;font-size:13.5px;font-weight:700;letter-spacing:.02em;padding:6px 0;border-radius:10px;" +
-          (isLast ? "background:#dde6ff;color:#3b5ae0;" : "background:var(--soft);color:var(--muted);") +
-          (isLast ? "" : "margin-right:" + PAYS_BLOCK_GAP + "px;"),
-      };
+    const paysYears = [...new Set(ALL.flatMap(s => Object.keys((this.data[s] && this.data[s].leads) || {}).filter(m => m !== "total").map(m => m.slice(0, 4))))].sort();
+    // comparaison MOIS PAR MOIS d'une annee sur l'autre (janvier vs
+    // janvier, aout vs aout...), pas mai 2025 vs janvier 2026 -- corrige le
+    // 11/08/2026 : la version precedente empilait les mois disponibles de
+    // chaque annee cote a cote (mai..dec 2025 puis janv..aout 2026), donc
+    // "juin" n'etait jamais sous "juin", rendant toute comparaison illisible.
+    // Chaque pays affiche desormais une ligne par annee sur les 12 mois du
+    // calendrier ; un mois hors de la plage suivie (2025 avant mai, ou
+    // futur non encore ecoule) reste "—", jamais invente.
+    const paysMonthHeaderLabels = MONTHS.map(m => m.replace(".", "").toUpperCase());
+    const paysYearRowStyle = (tint) => "display:flex;align-items:center;padding:5px 4px;border-radius:10px;" + (tint ? "background:#eef2ff" : "");
+    const paysCompareRows = paysCodes.map(p => {
+      const years = paysYears.map((y, gi) => {
+        const cells = MONTHS.map((_, i) => {
+          const v = (paysByPaysMois[p] && paysByPaysMois[p][y + "-" + String(i + 1).padStart(2, "0")]) || 0;
+          return { value: v ? fmt(v) : "—", raw: v };
+        });
+        const totalRaw = cells.reduce((s, c) => s + c.raw, 0);
+        return { year: y, cells, totalLabel: fmt(totalRaw), totalRaw, rowStyle: paysYearRowStyle(gi === paysYears.length - 1) };
+      });
+      const delta = years.length >= 2
+        ? deltaBadge(years[years.length - 1].totalRaw, years[years.length - 2].totalRaw, "")
+        : { style: "", text: "" };
+      return { flag: PAYS_FLAG[p] || "", label: PAYS_LABEL[p] || p, years, hasDelta: years.length >= 2, delta };
     });
-    const paysMonthGroups = paysMonthsByYear.map((ms, gi) => ({
-      style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
-      months: ms.map(m => MONTHS[parseInt(m.slice(5, 7), 10) - 1].replace(".", "")),
-    }));
-    const paysMonthTotalsRaw = paysMonths.map(m => paysCodes.reduce((s, p) => s + (paysByPaysMois[p][m] || 0), 0));
-    // Totaux PAR ANNEE, jamais un seul total confondant mai 2025 et aout
-    // 2026 -- demande explicite du 11/08/2026 : impossible de comparer les
-    // deux annees avec un total fusionne. Une colonne par annee (largeur
-    // fixe, alignee sur les puces d'en-tete "2025"/"2026" ci-dessus) +
-    // une evolution (annee la plus recente vs la precedente), meme badge
-    // que le reste du dashboard (deltaBadge).
-    const PAYS_YEAR_COL_W = 96;
-    const paysYearColStyle = "width:" + PAYS_YEAR_COL_W + "px;flex:none;text-align:right";
-    const paysYearHeaders = paysYears.map(y => ({ label: y, style: paysYearColStyle + ";font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em" }));
-    const paysRows = paysCodes.map(p => {
-      const parAn = paysMonthsByYear.map(ms => ms.reduce((s, m) => s + (paysByPaysMois[p][m] || 0), 0));
-      const n = parAn.length;
-      return {
-        flag: PAYS_FLAG[p] || "", label: PAYS_LABEL[p] || p,
-        yearBlocks: paysMonthsByYear.map((ms, gi) => ({
-          style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
-          cells: ms.map(m => ({ value: paysByPaysMois[p][m] ? fmt(paysByPaysMois[p][m]) : "—" })),
-        })),
-        yearTotals: parAn.map(v => ({ value: fmt(v), style: paysYearColStyle + ";font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)" })),
-        delta: n >= 2 ? deltaBadge(parAn[n - 1], parAn[n - 2], "") : { style: paysYearColStyle, text: "" },
-      };
+    const paysGrandRows = paysYears.map((y, gi) => {
+      const cells = MONTHS.map((_, i) => {
+        const key = y + "-" + String(i + 1).padStart(2, "0");
+        const v = paysCodes.reduce((s, p) => s + ((paysByPaysMois[p] && paysByPaysMois[p][key]) || 0), 0);
+        return { value: v ? fmt(v) : "—", raw: v };
+      });
+      const totalRaw = cells.reduce((s, c) => s + c.raw, 0);
+      return { year: y, cells, totalLabel: fmt(totalRaw), totalRaw, rowStyle: paysYearRowStyle(gi === paysYears.length - 1) };
     });
-    const paysTotalBlocks = paysMonthsByYear.map((ms, gi) => ({
-      style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
-      cells: ms.map(m => fmt(paysCodes.reduce((s, p) => s + (paysByPaysMois[p][m] || 0), 0))),
-    }));
-    const paysYearTotalsRaw = paysMonthsByYear.map(ms => ms.reduce((s, m) => s + (paysMonthTotalsRaw[paysMonths.indexOf(m)] || 0), 0));
-    const paysYearGrandTotals = paysYearTotalsRaw.map(v => ({ value: fmt(v), style: paysYearColStyle + ";font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)" }));
-    const paysGrandDelta = paysYearTotalsRaw.length >= 2
-      ? deltaBadge(paysYearTotalsRaw[paysYearTotalsRaw.length - 1], paysYearTotalsRaw[paysYearTotalsRaw.length - 2], "")
-      : { style: paysYearColStyle, text: "" };
-    const paysGrandTotal = fmt(paysMonthTotalsRaw.reduce((a, b) => a + b, 0));
-    const hasPaysRows = paysRows.length > 0;
-    const paysCompareW = paysYears.length * PAYS_YEAR_COL_W + PAYS_YEAR_COL_W;
-    const paysCompareHeaderStyle = "width:" + paysCompareW + "px;flex:none;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted2);letter-spacing:.02em;padding:6px 0";
+    const paysGrandDelta = paysGrandRows.length >= 2
+      ? deltaBadge(paysGrandRows[paysGrandRows.length - 1].totalRaw, paysGrandRows[paysGrandRows.length - 2].totalRaw, "")
+      : { style: "", text: "" };
+    const paysGrandHasDelta = paysGrandRows.length >= 2;
+    const paysGrandTotal = fmt(paysGrandRows.reduce((s, r) => s + r.totalRaw, 0));
+    const hasPaysRows = paysCompareRows.length > 0;
 
     // "Sources" (tableau, bloc maquette) : sessions reelles par canal — pas
     // de colonne "conversion par canal" (aucune attribution lead <-> canal
@@ -6063,8 +6032,8 @@ class Component extends DCLogic {
       conquestShareLabel, ownBrandRing, conquestRing, leadCells, queries, pages,
       tunnelSteps, hasTunnel, noTunnel: !hasTunnel, tunnelLeakInsight, hasTunnelInsight,
       donutRows, hasDonut, donutGradient, donutTotalLabel, donutChips,
-      paysYearGroups, paysMonthGroups, paysRows, hasPaysRows, paysTotalBlocks, paysGrandTotal,
-      paysYearHeaders, paysYearGrandTotals, paysGrandDelta, paysCompareHeaderStyle,
+      paysMonthHeaderLabels, paysCompareRows, hasPaysRows, paysGrandRows, paysGrandTotal,
+      paysGrandDelta, paysGrandHasDelta,
       sourceRows, hasSourceRows, sourceInsight, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
       mobilePctLabel, audienceTotalLabel, audienceInsight, hasAudienceInsight,
       browserHeroes, browserRows, hasBrowserRows, noBrowserRows,
