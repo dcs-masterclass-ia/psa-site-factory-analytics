@@ -522,7 +522,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # non vide, sans le marqueur NOTE_AUTO) -- seuls les sites sans donnee ou
     # deja auto-generes sont (re)calcules, pour ameliorer tout seul avec
     # plus de recul au fil des semaines sans ecraser un travail manuel.
-    deja_curee = bool(d.get("v2steps")) and (d.get("v2") or {}).get("note") != v2_report.NOTE_AUTO
+    # is_v2_split == False explicite = l'auteur de CETTE donnee a lui-meme
+    # indique que ce n'est pas une vraie comparaison avant/apres (ex. un
+    # decoupage ad-hoc en deux moities d'un mois, sans rapport avec
+    # v2_date) -- jamais une "curation" a proteger. Trouve le 12/08/2026
+    # sur OPEL PT : bloquait le recalcul depuis des semaines alors que
+    # v2Weekly avait largement assez de recul (397j avant / 69j apres).
+    deja_curee = (bool(d.get("v2steps"))
+                  and (d.get("v2") or {}).get("note") != v2_report.NOTE_AUTO
+                  and (d.get("v2") or {}).get("is_v2_split") is not False)
     if not deja_curee:
         steps = v2_report.v2steps_depuis_hebdo(v2w) if v2w else None
         if steps:
