@@ -1739,7 +1739,7 @@ input[type=date]{color-scheme:light}
               <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--text);padding:0 4px 4px"><span>{{ r.flag }}</span><span>{{ r.label }}</span></div>
               <sc-for list="{{ r.years }}" as="y" hint-placeholder-count="2">
                 <div style="{{ y.rowStyle }}">
-                  <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
+                  <div style="width:176px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
                   <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
                     <div style="{{ c.style }}">{{ c.value }}</div>
                   </sc-for>
@@ -1756,7 +1756,7 @@ input[type=date]{color-scheme:light}
             <div style="font-size:13.5px;font-weight:700;color:var(--text);padding:0 4px 4px">Total général</div>
             <sc-for list="{{ paysGrandRows }}" as="y" hint-placeholder-count="2">
               <div style="{{ y.rowStyle }}">
-                <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
+                <div style="width:176px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
                 <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
                   <div style="{{ c.style }}">{{ c.value }}</div>
                 </sc-for>
