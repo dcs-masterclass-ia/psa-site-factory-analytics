@@ -784,32 +784,53 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
 
-    <!-- ============ Ligne 4bis : Conversion par canal et device ============ -->
-    <sc-if value="{{ hasConvCanalRows }}" hint-placeholder-val="{{ false }}">
-    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;margin-top:22px">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
-          <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3.4" height="7" rx="1" fill="#fff"></rect><rect x="8.3" y="5" width="3.4" height="12" rx="1" fill="#fff"></rect><rect x="13.6" y="8" width="3.4" height="9" rx="1" fill="#fff"></rect></svg>
+    <!-- ============ Ligne 4bis : Conversion par canal/device + Taux de complétion, sur une ligne ============ -->
+    <!-- "Taux de complétion" vivait seul sur sa propre ligne (Ligne 6,
+         plus bas) ; regroupe ici avec Conversion par canal/device pour
+         gagner une ligne d'ecran -- ce dernier passe en version compacte
+         (padding/tailles reduits) pour laisser la place. -->
+    <div style="display:flex;gap:20px;margin-top:22px;align-items:stretch">
+      <sc-if value="{{ hasConvCanalRows }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1.6;min-width:0;background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="3" y="10" width="3.4" height="7" rx="1" fill="#fff"></rect><rect x="8.3" y="5" width="3.4" height="12" rx="1" fill="#fff"></rect><rect x="13.6" y="8" width="3.4" height="9" rx="1" fill="#fff"></rect></svg>
+          </div>
+          <div><div style="font-size:17px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Conversion par canal et device</div><div style="font-size:12.5px;color:var(--muted2);margin-top:2px">Taux de conversion par canal d'acquisition, sur la période affichée</div></div>
         </div>
-        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Conversion par canal et device</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Taux de conversion (demande de reprise) par canal d'acquisition, sur la période affichée</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:12px">
-        <div></div>
-        <sc-for list="{{ convDeviceLabels }}" as="dl" hint-placeholder-count="3">
-          <div style="font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;text-align:center">{{ dl }}</div>
-        </sc-for>
-        <sc-for list="{{ convCanalRows }}" as="r" hint-placeholder-count="4">
-          <div style="display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--text)"><span style="{{ r.dot }}"></span>{{ r.canal }}</div>
-          <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
-            <div style="background:var(--soft);border-radius:14px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:2px">
-              <div style="font-size:17px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ c.taux }}</div>
-              <div style="font-size:11px;color:var(--muted2)">{{ c.sessions }} sess.</div>
-            </div>
+        <div style="display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:10px">
+          <div></div>
+          <sc-for list="{{ convDeviceLabels }}" as="dl" hint-placeholder-count="3">
+            <div style="font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.03em;text-align:center">{{ dl }}</div>
           </sc-for>
-        </sc-for>
+          <sc-for list="{{ convCanalRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text)"><span style="{{ r.dot }}"></span>{{ r.canal }}</div>
+            <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3">
+              <div style="background:var(--soft);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:2px">
+                <div style="font-size:15px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums">{{ c.taux }}</div>
+                <div style="font-size:10.5px;color:var(--muted2)">{{ c.sessions }} sess.</div>
+              </div>
+            </sc-for>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <div style="flex:1;min-width:280px;max-width:420px;background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:18px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
+        <div style="display:flex;align-items:flex-start;gap:14px"><div style="flex:1;font-size:17px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Taux de complétion</div><div style="display:flex;align-items:baseline;gap:3px"><span ref="{{ compRef }}" style="font-size:32px;font-weight:600;letter-spacing:-1.4px;line-height:1;color:var(--text)">0,0</span><span style="font-size:15px;color:#9aa0aa">%</span></div></div>
+        <div style="display:flex;align-items:center;justify-content:center;padding:2px 0">
+          <svg viewBox="0 0 200 124" style="width:100%;max-width:200px;height:auto">
+            <path d="M20 106a80 80 0 0 1 160 0" fill="none" stroke="#f2f3f5" stroke-width="17" stroke-linecap="round"></path>
+            <path ref="{{ gaugeArcRef }}" fill="none" stroke="#0d9c6c" stroke-width="17" stroke-linecap="round" style="animation:drawLine 1.2s cubic-bezier(.3,.8,.3,1) .3s forwards"></path>
+            <circle ref="{{ gaugeDotRef }}" r="7.5" fill="#fff" stroke="#12b981" stroke-width="3"></circle>
+          </svg>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:auto">
+          <div style="flex:1;background:#f6f7f9;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;color:#9aa0aa;line-height:1.35">Leads GA4 / sessions reprise</div><div style="font-size:20px;font-weight:600;letter-spacing:-.7px;color:var(--text)">{{ convText }}</div></div>
+          <div style="flex:1;background:#f6f7f9;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12px;color:#9aa0aa;line-height:1.35">Part vers la reprise</div><div style="font-size:20px;font-weight:600;letter-spacing:-.7px;color:var(--text)">{{ partText }}</div></div>
+        </div>
       </div>
     </div>
-    </sc-if>
 
 
     <!-- ============ Ligne 5 : Volume vs conversion tradein ============ -->
@@ -904,31 +925,6 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
     </sc-if>
-
-    <!-- ============ Ligne 6 : Taux de complétion (GA4) ============ -->
-    <!-- Leads par projet d'achat + Marques reprises deplaces vers l'onglet
-         Tableau le 10/08/2026 (source back-office, pas GA4). Le sous-stat
-         "Leads BO / sessions reprise" ci-dessous etait mal etiquete : il
-         utilisait deja ga4LeadsProxy (etape finale du tunnel), jamais
-         agg.leads (back-office) -- corrige en "Leads GA4 / sessions
-         reprise" pour refleter ce qu'il calcule reellement. -->
-    <div style="display:flex;margin-top:22px">
-      <div style="max-width:460px;width:100%;background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
-        <div style="display:flex;align-items:flex-start;gap:14px"><div style="flex:1;font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Taux de complétion</div><div style="display:flex;align-items:baseline;gap:3px"><span ref="{{ compRef }}" style="font-size:38px;font-weight:600;letter-spacing:-1.6px;line-height:1;color:var(--text)">0,0</span><span style="font-size:16px;color:#9aa0aa">%</span></div></div>
-        <div style="display:flex;align-items:center;justify-content:center;padding:6px 0">
-          <svg viewBox="0 0 200 124" style="width:100%;max-width:250px;height:auto">
-            <path d="M20 106a80 80 0 0 1 160 0" fill="none" stroke="#f2f3f5" stroke-width="17" stroke-linecap="round"></path>
-            <path ref="{{ gaugeArcRef }}" fill="none" stroke="#0d9c6c" stroke-width="17" stroke-linecap="round" style="animation:drawLine 1.2s cubic-bezier(.3,.8,.3,1) .3s forwards"></path>
-            <circle ref="{{ gaugeDotRef }}" r="7.5" fill="#fff" stroke="#12b981" stroke-width="3"></circle>
-          </svg>
-        </div>
-        <div style="display:flex;gap:14px;margin-top:auto">
-          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9aa0aa;line-height:1.35">Leads GA4 / sessions reprise</div><div style="font-size:23px;font-weight:600;letter-spacing:-.8px;color:var(--text)">{{ convText }}</div></div>
-          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9aa0aa;line-height:1.35">Part vers la reprise</div><div style="font-size:23px;font-weight:600;letter-spacing:-.8px;color:var(--text)">{{ partText }}</div></div>
-        </div>
-      </div>
-    </div>
-
 
     <!-- ============ Ligne 7 : Audience & environnement ============ -->
     <div style="background:#fff;border-radius:30px;padding:32px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;margin-top:22px">
@@ -1601,7 +1597,7 @@ input[type=date]{color-scheme:light}
       <div><h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-1.2px;color:var(--text)">Leads back-office</h1><div style="font-size:14px;color:#9aa0aa;margin-top:5px">Extraction back-office · {{ periodPillLabel }}</div></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1.32fr .82fr;gap:22px;margin-top:22px">
+    <div style="display:grid;grid-template-columns:1fr 1.32fr;gap:22px;margin-top:22px">
 
       <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
         <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
@@ -1670,28 +1666,19 @@ input[type=date]{color-scheme:light}
         </div>
       </div>
 
-      <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:14px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .18s both">
-        <div style="display:flex;align-items:flex-start">
-          <div style="flex:1">
-            <div style="font-size:15px;color:#6b7280;font-weight:400" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads BO</div>
-            <div style="display:flex;align-items:baseline;gap:5px;margin-top:6px"><span ref="{{ kpiLeadsRef }}" style="font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1.05;color:var(--text)">0</span></div>
-            <div style="display:flex;align-items:center;gap:9px;margin-top:7px"><span style="font-size:13px;color:#9aa0aa">{{ periodPillLabel }}</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span></div>
-          </div>
-          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 24px -8px rgba(18,185,129,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.1" stroke="#fff" stroke-width="1.9"></circle><path d="M4.5 16.5c.7-2.7 2.9-4 5.5-4s4.8 1.3 5.5 4" stroke="#fff" stroke-width="1.9" stroke-linecap="round"></path></svg></div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:4px;height:64px">
-          <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="9">
-            <div style="{{ b.style }}"></div>
-          </sc-for>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
-      </div>
-
     </div>
 
+    <!-- "Leads GCP" : bloc commun regroupant l'ancienne carte "Leads BO"
+         (KPI + tendance mensuelle) et "Répartition des leads" (donut +
+         appareil), fusionnes et renommes le 11/08/2026 sur demande. -->
     <div style="display:grid;grid-template-columns:1fr;gap:22px;margin-top:22px">
       <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .24s both">
-        <div style="display:flex;align-items:center;gap:14px"><div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div><div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Répartition des leads</div></div>
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div>
+          <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads GCP</div>
+          <div style="flex:1"></div>
+          <div style="display:flex;align-items:baseline;gap:8px"><span ref="{{ kpiLeadsRef }}" style="font-size:30px;font-weight:600;letter-spacing:-1.1px;color:var(--text)">0</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span><span style="font-size:12.5px;color:#9aa0aa">{{ periodPillLabel }}</span></div>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:32px;align-items:center">
           <div style="display:flex;align-items:center;gap:24px">
             <div style="width:138px;height:138px;border-radius:50%;background:{{ donutGradient }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:var(--text)">{{ donutTotalLabel }}</div><div style="font-size:11.5px;color:#9aa0aa">leads</div></div></div>
@@ -1708,6 +1695,14 @@ input[type=date]{color-scheme:light}
             </sc-for>
           </div>
           </sc-if>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;background:var(--soft);border-radius:22px;padding:20px 22px">
+          <div style="display:flex;align-items:flex-end;gap:4px;height:56px">
+            <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="9">
+              <div style="{{ b.style }}"></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <sc-for list="{{ donutChips }}" as="c" hint-placeholder-count="4">
@@ -5128,10 +5123,25 @@ class Component extends DCLogic {
     // sur un meme axe aurait ete trompeur, donc les trois series suivent la
     // resolution la plus grossiere, comme la maquette (axe = mois).
     const hasGsc = agg.gscN > 0 || Object.keys(agg.gscDaily).length > 0;
-    const gscMonthsSorted = Object.keys(agg.gscMonthly).sort();
+    // graphe "Clics, impressions & position" : toujours les 12 derniers mois
+    // reels disponibles, independant de la periode choisie en en-tete (meme
+    // principe que "Volume vs conversion tradein" plus haut). La Search
+    // Console n'a qu'une resolution mensuelle -- avec la periode par defaut
+    // (28 j), le filtre par date ne laissait quasiment jamais plus d'UN mois
+    // dans agg.gscMonthly : le graphe (qui exige >1 point pour tracer une
+    // vraie courbe) retombait systematiquement sur un plat a zero, quel que
+    // soit le site selectionne. Signale le 11/08/2026. Les KPI CTR/Position
+    // moyenne ci-dessus restent, eux, sur agg.gscN/gscCtrSum/gscPosSum
+    // (legitimement scopes a la periode choisie).
+    const gscMonthsSorted = [...new Set(st.sites.flatMap(s => Object.keys((this.data[s] && this.data[s].searchMonth) || {}).filter(m => m !== "total")))].sort().slice(-12);
     const gscMonthly = gscMonthsSorted.map(mois => {
-      const m = agg.gscMonthly[mois];
-      return { mois, clics: m.clics, impressions: m.impressions, ctr: m.n ? m.ctrSum / m.n : 0, position: m.n ? m.posSum / m.n : 0 };
+      let clics = 0, impressions = 0, ctrSum = 0, posSum = 0, n = 0;
+      for (const s of st.sites) {
+        const sm = this.data[s] && this.data[s].searchMonth && this.data[s].searchMonth[mois];
+        if (!sm) continue;
+        clics += sm.clics; impressions += sm.impressions; ctrSum += sm.ctr; posSum += sm.position; n++;
+      }
+      return { mois, clics, impressions, ctr: n ? ctrSum / n : 0, position: n ? posSum / n : 0 };
     });
     const gscClicsSeries = gscMonthly.map(m => m.clics);
     const gscImprSeries = gscMonthly.map(m => m.impressions);
