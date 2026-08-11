@@ -24,7 +24,7 @@ on:
         options: ["non", "oui"]
         default: "non"
       sites:
-        description: "Sites à traiter, séparés par une espace (vide = tous)"
+        description: "Sites à traiter, séparés par des virgules (vide = tous)"
         required: false
         default: ""
 
@@ -84,9 +84,20 @@ jobs:
           # preservees), rien d'autre n'est affecte.
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
-          ARGS=""
-          if [ -n "${{ inputs.sites }}" ]; then ARGS="--sites ${{ inputs.sites }}"; fi
-          if [ "${{ inputs.simulation }}" != "oui" ]; then ARGS="$ARGS --ecrire"; fi
+          # separateur virgule (pas espace) : un nom de site contient lui-meme
+          # des espaces ("OPEL PT") -- un decoupage par espace le brisait en
+          # deux arguments invalides ("OPEL", "PT"), trouve le 12/08/2026 sur
+          # un dispatch scope OPEL PT (KeyError: site inconnu : OPEL).
+          ARGS=()
+          if [ -n "${{ inputs.sites }}" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ "${{ inputs.simulation }}" != "oui" ]; then ARGS+=(--ecrire); fi
           echo "mode : $([ "${{ inputs.simulation }}" = "oui" ] && echo SIMULATION || echo ECRITURE)"
           # build.py ecrit lui-meme le recapitulatif complet dans
           # GITHUB_STEP_SUMMARY au fil de l'execution : rien a extraire ici,
@@ -99,7 +110,7 @@ jobs:
           # contraintes qu'avant, juste geree cote Python desormais). Voir
           # _commit_et_pousse dans pipeline/build.py pour la logique de
           # retry/conflit, portee depuis l'ancienne etape bash.
-          python -m pipeline.build $ARGS
+          python -m pipeline.build "${ARGS[@]}"
 
       - name: Signaler un échec de contrôle
         if: ${{ always() && inputs.simulation != 'oui' }}
