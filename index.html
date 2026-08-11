@@ -4002,7 +4002,14 @@ class Component extends DCLogic {
     // (logo, rang dans le parc, funnel avant/apres V2 par site...).
     const isAllSites = st.sites.length > 1;
     const currentSite = isAllSites ? null : (st.sites[0] || null);
-    const pickAllSites = () => this.setState({ sites: ALL.slice(), pickerOpen: false, siteSearch: "" });
+    // choisir un site (ou "tous les sites") dans le selecteur d'en-tete
+    // recadre aussi le perimetre de la conversation KamIA sur ce meme site
+    // -- signale le 11/08/2026 : le CTA KamIA restait bloque sur "tous les
+    // sites" meme apres selection d'un site precis en haut. L'utilisateur
+    // garde la main pour elargir/changer le perimetre depuis le picker de
+    // KamIA lui-meme ensuite (chatScope reste modifiable independamment
+    // jusqu'au prochain changement de site en en-tete).
+    const pickAllSites = () => this.setState({ sites: ALL.slice(), pickerOpen: false, siteSearch: "", chatScope: [] });
     const allSitesRowStyle = "display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px;cursor:pointer" + (isAllSites ? ";background:var(--soft)" : "");
     const siteDeltaCache = ALL.map(n => {
       const d = this.data[n] && this.data[n].daily;
@@ -4035,7 +4042,7 @@ class Component extends DCLogic {
         delta: s.delta == null ? "—" : (s.delta >= 0 ? "+" : "") + Math.round(s.delta) + " %",
         dot: s.delta == null ? "var(--muted2)" : s.delta >= 0 ? "var(--pos)" : "var(--neg)",
         rowStyle: "display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:16px;cursor:pointer" + (s.name === currentSite ? ";background:var(--soft)" : ""),
-        pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "" }),
+        pick: () => this.setState({ sites: [s.name], pickerOpen: false, siteSearch: "", chatScope: [s.name] }),
       });
     }
     const sitePickerGroups = Object.keys(sitePickerByPays).sort((a, b) =>
@@ -5618,7 +5625,9 @@ class Component extends DCLogic {
       toggle: () => this.toggleChatScopeSite(n),
       style: "display:flex;align-items:center;gap:8px;border:none;background:" + (st.chatScope.includes(n) ? "var(--hover)" : "var(--soft)") + ";color:var(--text);font-family:inherit;font-size:13.5px;font-weight:600;height:36px;padding:0 14px;border-radius:999px;cursor:pointer;transition:background .2s ease",
     }));
-    const chatScopeLabel = st.chatScope.length === 0 ? "Périmètre : tous les sites" : "Périmètre : " + st.chatScope.length + " site(s)";
+    const chatScopeLabel = st.chatScope.length === 0 ? "Périmètre : tous les sites"
+      : st.chatScope.length === 1 ? "Périmètre : " + st.chatScope[0]
+      : "Périmètre : " + st.chatScope.length + " site(s)";
 
     const chatAttachmentChips = st.chatAttachments.map((a, i) => ({
       name: a.name, sizeLabel: a.sizeLabel, remove: () => this.removeAttachment(i),
