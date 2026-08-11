@@ -1,0 +1,59 @@
+name: Rattrapage leads BO janvier-avril 2025
+
+# Manuel uniquement, a usage ponctuel : recupere les vrais leads
+# back-office de janvier a avril 2025, periode jamais couverte par le
+# pipeline (GA4 n'a de donnees que depuis mai 2025) -- voir
+# pipeline/backfill_leads_2025_debut.py pour le detail et les garde-fous
+# (n'ecrit jamais d["months"]/d["meta"], seulement d["leads"][mois]).
+# Ecriture incrementale, site par site (meme mecanisme que
+# backfill-leads.yml) : un site publie tout de suite, le run peut
+# continuer meme si un autre echoue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites à rattraper, séparés par des virgules (vide = tous ceux couverts par SITE_EXTRACT)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run : calcule et affiche, n'écrit/ne commit rien"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
+
+permissions:
+  contents: write
+
+jobs:
+  rattrapage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Rattraper les leads BO janv-avril 2025
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: |
+          ARGS=()
+          if [ -n "${{ inputs.sites }}" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ "${{ inputs.dry_run }}" = "oui" ]; then ARGS+=(--dry-run); fi
+          python -m pipeline.backfill_leads_2025_debut "${ARGS[@]}"
