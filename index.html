@@ -1730,7 +1730,7 @@ input[type=date]{color-scheme:light}
             <sc-for list="{{ paysYearGroups }}" as="y" hint-placeholder-count="2">
               <div style="{{ y.style }}">{{ y.label }}</div>
             </sc-for>
-            <div style="width:92px;flex:none"></div>
+            <div style="{{ paysCompareHeaderStyle }}">Comparaison annuelle</div>
           </div>
           <div style="display:flex;align-items:center;padding:8px 0 10px;border-bottom:1px solid var(--line)">
             <div style="width:176px;flex:none;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Pays</div>
@@ -1741,7 +1741,10 @@ input[type=date]{color-scheme:light}
                 </sc-for>
               </div>
             </sc-for>
-            <div style="width:92px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Total</div>
+            <sc-for list="{{ paysYearHeaders }}" as="y" hint-placeholder-count="2">
+              <div style="{{ y.style }}">{{ y.label }}</div>
+            </sc-for>
+            <div style="width:96px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Évolution</div>
           </div>
           <sc-for list="{{ paysRows }}" as="r" hint-placeholder-count="9">
             <div style="display:flex;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft)">
@@ -1753,7 +1756,10 @@ input[type=date]{color-scheme:light}
                   </sc-for>
                 </div>
               </sc-for>
-              <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ r.total }}</div>
+              <sc-for list="{{ r.yearTotals }}" as="t" hint-placeholder-count="2">
+                <div style="{{ t.style }}">{{ t.value }}</div>
+              </sc-for>
+              <div style="width:96px;flex:none;text-align:right"><span style="{{ r.delta.style }}">{{ r.delta.text }}</span></div>
             </div>
           </sc-for>
           <div style="display:flex;align-items:center;border-top:2px solid var(--line);margin-top:4px;padding-top:12px">
@@ -1765,7 +1771,10 @@ input[type=date]{color-scheme:light}
                 </sc-for>
               </div>
             </sc-for>
-            <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ paysGrandTotal }}</div>
+            <sc-for list="{{ paysYearGrandTotals }}" as="t" hint-placeholder-count="2">
+              <div style="{{ t.style }}">{{ t.value }}</div>
+            </sc-for>
+            <div style="width:96px;flex:none;text-align:right"><span style="{{ paysGrandDelta.style }}">{{ paysGrandDelta.text }}</span></div>
           </div>
         </div>
       </div>
@@ -3981,6 +3990,7 @@ class Component extends DCLogic {
         tunnelSteps: [], hasTunnel: false, noTunnel: true, tunnelLeakInsight: "", hasTunnelInsight: false,
         donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0", donutChips: [],
         paysYearGroups: [], paysMonthGroups: [], paysRows: [], hasPaysRows: false, paysTotalBlocks: [], paysGrandTotal: "0",
+        paysYearHeaders: [], paysYearGrandTotals: [], paysGrandDelta: { style: "", text: "" }, paysCompareHeaderStyle: "",
         sourceRows: [], hasSourceRows: false, sourceInsight: "", deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
         mobilePctLabel: "0 %", audienceTotalLabel: "", audienceInsight: "", hasAudienceInsight: false,
         browserHeroes: [], browserRows: [], hasBrowserRows: false, noBrowserRows: true,
@@ -4808,20 +4818,41 @@ class Component extends DCLogic {
       months: ms.map(m => MONTHS[parseInt(m.slice(5, 7), 10) - 1].replace(".", "")),
     }));
     const paysMonthTotalsRaw = paysMonths.map(m => paysCodes.reduce((s, p) => s + (paysByPaysMois[p][m] || 0), 0));
-    const paysRows = paysCodes.map(p => ({
-      flag: PAYS_FLAG[p] || "", label: PAYS_LABEL[p] || p,
-      yearBlocks: paysMonthsByYear.map((ms, gi) => ({
-        style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
-        cells: ms.map(m => ({ value: paysByPaysMois[p][m] ? fmt(paysByPaysMois[p][m]) : "—" })),
-      })),
-      total: fmt(paysMonths.reduce((s, m) => s + (paysByPaysMois[p][m] || 0), 0)),
-    }));
+    // Totaux PAR ANNEE, jamais un seul total confondant mai 2025 et aout
+    // 2026 -- demande explicite du 11/08/2026 : impossible de comparer les
+    // deux annees avec un total fusionne. Une colonne par annee (largeur
+    // fixe, alignee sur les puces d'en-tete "2025"/"2026" ci-dessus) +
+    // une evolution (annee la plus recente vs la precedente), meme badge
+    // que le reste du dashboard (deltaBadge).
+    const PAYS_YEAR_COL_W = 96;
+    const paysYearColStyle = "width:" + PAYS_YEAR_COL_W + "px;flex:none;text-align:right";
+    const paysYearHeaders = paysYears.map(y => ({ label: y, style: paysYearColStyle + ";font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em" }));
+    const paysRows = paysCodes.map(p => {
+      const parAn = paysMonthsByYear.map(ms => ms.reduce((s, m) => s + (paysByPaysMois[p][m] || 0), 0));
+      const n = parAn.length;
+      return {
+        flag: PAYS_FLAG[p] || "", label: PAYS_LABEL[p] || p,
+        yearBlocks: paysMonthsByYear.map((ms, gi) => ({
+          style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
+          cells: ms.map(m => ({ value: paysByPaysMois[p][m] ? fmt(paysByPaysMois[p][m]) : "—" })),
+        })),
+        yearTotals: parAn.map(v => ({ value: fmt(v), style: paysYearColStyle + ";font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)" })),
+        delta: n >= 2 ? deltaBadge(parAn[n - 1], parAn[n - 2], "") : { style: paysYearColStyle, text: "" },
+      };
+    });
     const paysTotalBlocks = paysMonthsByYear.map((ms, gi) => ({
       style: blockStyle(gi === paysYears.length - 1, gi === paysYears.length - 1),
       cells: ms.map(m => fmt(paysCodes.reduce((s, p) => s + (paysByPaysMois[p][m] || 0), 0))),
     }));
+    const paysYearTotalsRaw = paysMonthsByYear.map(ms => ms.reduce((s, m) => s + (paysMonthTotalsRaw[paysMonths.indexOf(m)] || 0), 0));
+    const paysYearGrandTotals = paysYearTotalsRaw.map(v => ({ value: fmt(v), style: paysYearColStyle + ";font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)" }));
+    const paysGrandDelta = paysYearTotalsRaw.length >= 2
+      ? deltaBadge(paysYearTotalsRaw[paysYearTotalsRaw.length - 1], paysYearTotalsRaw[paysYearTotalsRaw.length - 2], "")
+      : { style: paysYearColStyle, text: "" };
     const paysGrandTotal = fmt(paysMonthTotalsRaw.reduce((a, b) => a + b, 0));
     const hasPaysRows = paysRows.length > 0;
+    const paysCompareW = paysYears.length * PAYS_YEAR_COL_W + PAYS_YEAR_COL_W;
+    const paysCompareHeaderStyle = "width:" + paysCompareW + "px;flex:none;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted2);letter-spacing:.02em;padding:6px 0";
 
     // "Sources" (tableau, bloc maquette) : sessions reelles par canal — pas
     // de colonne "conversion par canal" (aucune attribution lead <-> canal
@@ -6033,6 +6064,7 @@ class Component extends DCLogic {
       tunnelSteps, hasTunnel, noTunnel: !hasTunnel, tunnelLeakInsight, hasTunnelInsight,
       donutRows, hasDonut, donutGradient, donutTotalLabel, donutChips,
       paysYearGroups, paysMonthGroups, paysRows, hasPaysRows, paysTotalBlocks, paysGrandTotal,
+      paysYearHeaders, paysYearGrandTotals, paysGrandDelta, paysCompareHeaderStyle,
       sourceRows, hasSourceRows, sourceInsight, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
       mobilePctLabel, audienceTotalLabel, audienceInsight, hasAudienceInsight,
       browserHeroes, browserRows, hasBrowserRows, noBrowserRows,
