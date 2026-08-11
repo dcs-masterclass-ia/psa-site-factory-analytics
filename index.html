@@ -4767,7 +4767,14 @@ class Component extends DCLogic {
     const PAYS_BLOCK_GAP = 18;
     const paysByPaysMois = {};
     for (const s of ALL) {
-      const p = paysDeSite(s);
+      // "SPOTICAR UK" utilise le code "UK" (dernier mot du nom de site)
+      // alors que "DS GB" utilise "GB" -- meme marche (Royaume-Uni), deux
+      // codes herites de la creation des sites. Sans ce regroupement,
+      // PAYS_LABEL (qui ne connait que "GB") filtrait silencieusement
+      // Spoticar UK hors du tableau -- trouve le 11/08/2026 en comparant
+      // aux chiffres officiels GCP fournis par l'utilisateur.
+      const raw = paysDeSite(s);
+      const p = raw === "UK" ? "GB" : raw;
       const leads = (this.data[s] && this.data[s].leads) || {};
       const row = paysByPaysMois[p] || (paysByPaysMois[p] = {});
       for (const m of paysMonths) row[m] = (row[m] || 0) + (((leads[m] || {}).total) || 0);
