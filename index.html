@@ -1719,7 +1719,7 @@ input[type=date]{color-scheme:light}
     <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;margin-top:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 18s6-5.7 6-10.5A6 6 0 0 0 4 7.5C4 12.3 10 18 10 18Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path><circle cx="10" cy="7.4" r="2.2" stroke="#fff" stroke-width="1.7"></circle></svg></div>
-        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par pays</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Extraction back-office, tous sites et toutes marques confondus</div></div>
+        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par pays</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Extraction back-office, tous sites et toutes marques confondus{{ paysCurrentMonthNote }}</div></div>
         <div style="flex:1"></div>
         <div style="text-align:right"><div style="font-size:22px;font-weight:600;letter-spacing:-.7px;color:var(--text)">{{ paysGrandTotal }}</div><div style="font-size:11.5px;color:#9aa0aa">leads au total</div></div>
       </div>
@@ -1729,7 +1729,7 @@ input[type=date]{color-scheme:light}
           <div style="display:flex;align-items:center;padding:0 0 10px;border-bottom:1px solid var(--line)">
             <div style="width:176px;flex:none;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Pays / année</div>
             <sc-for list="{{ paysMonthHeaderLabels }}" as="m" hint-placeholder-count="12">
-              <div style="width:56px;flex:none;text-align:right;font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:.02em">{{ m }}</div>
+              <div style="{{ m.style }}">{{ m.label }}</div>
             </sc-for>
             <div style="width:92px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Total</div>
             <div style="width:90px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em">Évolution</div>
@@ -1741,7 +1741,7 @@ input[type=date]{color-scheme:light}
                 <div style="{{ y.rowStyle }}">
                   <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
                   <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
-                    <div style="width:56px;flex:none;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text2)">{{ c.value }}</div>
+                    <div style="{{ c.style }}">{{ c.value }}</div>
                   </sc-for>
                   <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ y.totalLabel }}</div>
                   <div style="width:90px;flex:none"></div>
@@ -1758,7 +1758,7 @@ input[type=date]{color-scheme:light}
               <div style="{{ y.rowStyle }}">
                 <div style="width:120px;flex:none;font-size:12px;font-weight:600;color:var(--muted2);padding-left:4px">{{ y.year }}</div>
                 <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
-                  <div style="width:56px;flex:none;text-align:right;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ c.value }}</div>
+                  <div style="{{ c.style }}">{{ c.value }}</div>
                 </sc-for>
                 <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text)">{{ y.totalLabel }}</div>
                 <div style="width:90px;flex:none"></div>
@@ -3982,7 +3982,7 @@ class Component extends DCLogic {
         tunnelSteps: [], hasTunnel: false, noTunnel: true, tunnelLeakInsight: "", hasTunnelInsight: false,
         donutRows: [], hasDonut: false, donutGradient: "var(--soft3)", donutTotalLabel: "0", donutChips: [],
         paysMonthHeaderLabels: [], paysCompareRows: [], hasPaysRows: false, paysGrandRows: [], paysGrandTotal: "0",
-        paysGrandDelta: { style: "", text: "" }, paysGrandHasDelta: false,
+        paysGrandDelta: { style: "", text: "" }, paysGrandHasDelta: false, paysCurrentMonthNote: "",
         sourceRows: [], hasSourceRows: false, sourceInsight: "", deviceRows: [], hasDeviceRows: false, noDeviceRows: true,
         mobilePctLabel: "0 %", audienceTotalLabel: "", audienceInsight: "", hasAudienceInsight: false,
         browserHeroes: [], browserRows: [], hasBrowserRows: false, noBrowserRows: true,
@@ -4791,13 +4791,33 @@ class Component extends DCLogic {
     // Chaque pays affiche desormais une ligne par annee sur les 12 mois du
     // calendrier ; un mois hors de la plage suivie (2025 avant mai, ou
     // futur non encore ecoule) reste "—", jamais invente.
-    const paysMonthHeaderLabels = MONTHS.map(m => m.replace(".", "").toUpperCase());
+    const paysNow = new Date();
+    const paysCurrentYear = String(paysNow.getFullYear());
+    const paysCurrentMonthNum = paysNow.getMonth() + 1;
+    const paysHasCurrentMonth = paysYears.includes(paysCurrentYear);
+    // le mois en cours (ex. aout tant qu'il n'est pas termine) a bien ses
+    // vrais chiffres partiels des le 11/08/2026 (paysByPaysMois lit
+    // d.leads[mois] directement, jamais filtre sur "provisional" comme
+    // d.leads["total"]) -- seul manquait un signal visuel pour le
+    // distinguer d'un mois clos, cause de confusion le 11/08/2026.
+    const paysCellStyle = (isCurrent, bold) => "width:56px;flex:none;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;" +
+      (isCurrent ? "color:#3b5ae0;font-weight:700;font-style:italic" : (bold ? "font-weight:700;color:var(--text)" : "color:var(--text2)"));
+    const paysMonthHeaderLabels = MONTHS.map((m, i) => {
+      const isCurrent = paysHasCurrentMonth && (i + 1) === paysCurrentMonthNum;
+      return {
+        label: m.replace(".", "").toUpperCase() + (isCurrent ? " •" : ""),
+        style: "width:56px;flex:none;text-align:right;font-size:11px;text-transform:uppercase;letter-spacing:.02em;" +
+          (isCurrent ? "color:#3b5ae0;font-weight:700" : "color:var(--muted2)"),
+      };
+    });
+    const paysCurrentMonthNote = paysHasCurrentMonth ? " · • mois en cours, chiffres partiels" : "";
     const paysYearRowStyle = (tint) => "display:flex;align-items:center;padding:5px 4px;border-radius:10px;" + (tint ? "background:#eef2ff" : "");
     const paysCompareRows = paysCodes.map(p => {
       const years = paysYears.map((y, gi) => {
         const cells = MONTHS.map((_, i) => {
           const v = (paysByPaysMois[p] && paysByPaysMois[p][y + "-" + String(i + 1).padStart(2, "0")]) || 0;
-          return { value: v ? fmt(v) : "—", raw: v };
+          const isCurrent = y === paysCurrentYear && (i + 1) === paysCurrentMonthNum;
+          return { value: v ? fmt(v) : "—", raw: v, style: paysCellStyle(isCurrent, false) };
         });
         const totalRaw = cells.reduce((s, c) => s + c.raw, 0);
         return { year: y, cells, totalLabel: fmt(totalRaw), totalRaw, rowStyle: paysYearRowStyle(gi === paysYears.length - 1) };
@@ -4811,7 +4831,8 @@ class Component extends DCLogic {
       const cells = MONTHS.map((_, i) => {
         const key = y + "-" + String(i + 1).padStart(2, "0");
         const v = paysCodes.reduce((s, p) => s + ((paysByPaysMois[p] && paysByPaysMois[p][key]) || 0), 0);
-        return { value: v ? fmt(v) : "—", raw: v };
+        const isCurrent = y === paysCurrentYear && (i + 1) === paysCurrentMonthNum;
+        return { value: v ? fmt(v) : "—", raw: v, style: paysCellStyle(isCurrent, true) };
       });
       const totalRaw = cells.reduce((s, c) => s + c.raw, 0);
       return { year: y, cells, totalLabel: fmt(totalRaw), totalRaw, rowStyle: paysYearRowStyle(gi === paysYears.length - 1) };
@@ -6033,7 +6054,7 @@ class Component extends DCLogic {
       tunnelSteps, hasTunnel, noTunnel: !hasTunnel, tunnelLeakInsight, hasTunnelInsight,
       donutRows, hasDonut, donutGradient, donutTotalLabel, donutChips,
       paysMonthHeaderLabels, paysCompareRows, hasPaysRows, paysGrandRows, paysGrandTotal,
-      paysGrandDelta, paysGrandHasDelta,
+      paysGrandDelta, paysGrandHasDelta, paysCurrentMonthNote,
       sourceRows, hasSourceRows, sourceInsight, deviceRows, hasDeviceRows, noDeviceRows: !hasDeviceRows,
       mobilePctLabel, audienceTotalLabel, audienceInsight, hasAudienceInsight,
       browserHeroes, browserRows, hasBrowserRows, noBrowserRows,
