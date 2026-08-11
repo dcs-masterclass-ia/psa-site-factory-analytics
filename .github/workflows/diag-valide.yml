@@ -1,0 +1,50 @@
+name: Diagnostic filtre leads (doublons/tests)
+
+# Ponctuel, manuel uniquement : quantifie combien de lignes le filtre
+# _valide() de leads_extract.py retire d'une extraction brute, pour
+# verifier si l'ecart constate face au report GCP officiel (chiffres
+# bruts) vient de la ce filtre plutot que d'un site manquant -- voir
+# pipeline/_diag_valide.py. Lecture seule, aucune ecriture.
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Nom exact du site, ex. PEUGEOT FR"
+        required: true
+      debut:
+        description: "Date de debut (YYYY-MM-DD)"
+        required: true
+      fin:
+        description: "Date de fin (YYYY-MM-DD)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Comparer brut vs filtre
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: |
+          SORTIE="$RUNNER_TEMP/rapport.txt"
+          python -m pipeline._diag_valide "${{ inputs.site }}" "${{ inputs.debut }}" "${{ inputs.fin }}" | tee "$SORTIE"
+          {
+            echo '```'
+            cat "$SORTIE"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
