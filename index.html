@@ -2396,27 +2396,6 @@ function renderMarkdown(text) {
    bas) pour les courbes, un rendu barres simple sinon. Les valeurs
    viennent toujours de get_series cote serveur (jamais generees ici). */
 const CHAT_CHART_COLORS = ["#F5411E", "#4ADE80", "#60A5FA", "#F9AB00"];
-const HERMES_LOGO_BLANC = "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-blanc.webp";
-const HERMES_LOGO_NOIR = "https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/hermes-logo-noir.webp";
-// meme probleme que le logo Converge : canvas 1536x1024 tres majoritairement
-// vide, le pictogramme visible n'occupe qu'un petit cadre centre (mesure via
-// le canal alpha : blanc (412,185)-(1126,840), noir (415,187)-(1092,822)).
-// hermesCrop precalcule le recadrage (conteneur overflow:hidden + image
-// agrandie/positionnee) pour une hauteur cible donnee.
-function hermesCrop(src, bbox, targetH) {
-  const [x0, y0, x1, y1] = bbox;
-  const s = targetH / (y1 - y0);
-  const wrapW = (x1 - x0) * s;
-  return {
-    src,
-    wrapStyle: "width:" + wrapW.toFixed(1) + "px;height:" + targetH + "px;overflow:hidden;position:relative",
-    imgStyle: "position:absolute;top:-" + (y0 * s).toFixed(1) + "px;left:-" + (x0 * s).toFixed(1) + "px;width:" + (1536 * s).toFixed(1) + "px;height:" + (1024 * s).toFixed(1) + "px;max-width:none",
-  };
-}
-const HERMES_LOGO_CROP = {
-  tabBlanc: hermesCrop(HERMES_LOGO_BLANC, [412, 185, 1126, 840], 20),
-  tabNoir: hermesCrop(HERMES_LOGO_NOIR, [415, 187, 1092, 822], 20),
-};
 function buildChatChart(spec) {
   if (!spec) return null;
   const series = (spec.series || []).filter(s => Array.isArray(s.values) && s.values.length > 1);
@@ -5889,12 +5868,22 @@ class Component extends DCLogic {
       pick: () => this.switchTab("assistant"),
       ref: el => this.tabRef(el, "assistant"),
       // KamIA garde son propre logo (comme dans l'ancien front) plutot que
-      // l'icone generique -- toujours le trace fonce, le fond de l'item
-      // est blanc (actif) ou transparent (inactif), jamais sombre.
+      // l'icone generique -- meme orbe anime que le hero du chat (voir
+      // ~ligne 763, memes keyframes orbSpin/orbSpinRev/orbBreath/orbHue),
+      // juste redimensionne pour la barre de menu. Remplace le logo statique
+      // Hermes noir/blanc (HERMES_LOGO_CROP) le 12/08/2026, demande du meme
+      // jour ("le meme [orbe], anime dans le menu").
       iconRef: el => {
         if (!el) return;
-        const c = HERMES_LOGO_CROP.tabNoir;
-        el.innerHTML = '<div style="' + c.wrapStyle + '"><img src="' + c.src + '" alt="" style="' + c.imgStyle + '"></div>';
+        el.innerHTML =
+          '<span style="position:relative;width:20px;height:20px;border-radius:50%;flex:none;display:inline-block;box-shadow:0 3px 8px -3px rgba(109,92,246,.55)">' +
+            '<span style="position:absolute;inset:-45%;border-radius:50%;opacity:.55;filter:blur(2px);background:radial-gradient(circle,rgba(124,58,237,.45),rgba(124,58,237,0) 70%);animation:orbBreath 4.5s ease-in-out infinite"></span>' +
+            '<span style="position:absolute;inset:0;border-radius:50%;overflow:hidden">' +
+              '<span style="position:absolute;inset:-20%;background:conic-gradient(from 0deg,#6d5cf6,#8ee7ff,#c084fc,#f472b6,#6d5cf6);animation:orbSpin 8s linear infinite,orbHue 10s ease-in-out infinite"></span>' +
+              '<span style="position:absolute;inset:0;background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%)"></span>' +
+              '<span style="position:absolute;inset:0;background:radial-gradient(circle at 68% 78%,rgba(12,17,32,.35),rgba(12,17,32,0) 60%)"></span>' +
+            '</span>' +
+          '</span>';
       },
       hasBadge: watchConstatsCurrentSite > 0, badgeText: String(watchConstatsCurrentSite),
       badgeStyle: TAB_BADGE_STYLE.accent,
