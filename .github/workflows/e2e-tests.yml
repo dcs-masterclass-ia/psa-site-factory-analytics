@@ -20,6 +20,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # data/ vit desormais dans un repo prive separe (12/08/2026) -- voir
+      # refresh.yml pour le detail. Lecture seule ici : depth par defaut.
+      # Note : si ce workflow tourne un jour sur une PR venant d'un fork
+      # (repo de code passe public), les secrets ne sont pas transmis par
+      # GitHub -- ce checkout echouerait alors, a traiter separement.
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"

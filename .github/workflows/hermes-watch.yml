@@ -37,6 +37,17 @@ jobs:
         with:
           token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
 
+      # data/ vit desormais dans un repo prive separe (12/08/2026) -- voir
+      # refresh.yml pour le detail.
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 0
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -56,10 +67,14 @@ jobs:
         run: node scripts/hermes_watch.js "$RUNNER_TEMP/watch_candidats.json"
 
       - name: Committer si quelque chose a changé
+        # tourne dans data/ (son propre checkout git depuis le 12/08/2026,
+        # repo separe dcs-masterclass-ia/psa-site-factory-data) -- plus dans
+        # le repo de code.
+        working-directory: data
         run: |
           git config user.name "dcs-masterclass-ia"
           git config user.email "m.foureau@autobiz.com"
-          git add data/hermes_watch.json
+          git add hermes_watch.json
           if git diff --cached --quiet; then
             echo "Aucun changement, pas de commit."
             exit 0
@@ -75,9 +90,9 @@ jobs:
               git push origin "HEAD:$GITHUB_REF_NAME" && exit 0
             fi
             CONFLITS=$(git diff --name-only --diff-filter=U)
-            if [ "$CONFLITS" = "data/hermes_watch.json" ]; then
-              git checkout --theirs data/hermes_watch.json
-              git add data/hermes_watch.json
+            if [ "$CONFLITS" = "hermes_watch.json" ]; then
+              git checkout --theirs hermes_watch.json
+              git add hermes_watch.json
               if git rebase --continue && git push origin "HEAD:$GITHUB_REF_NAME"; then
                 exit 0
               fi

@@ -36,6 +36,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # data/ vit desormais dans un repo prive separe (12/08/2026) -- voir
+      # refresh.yml pour le detail. Lecture seule ici : depth par defaut.
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

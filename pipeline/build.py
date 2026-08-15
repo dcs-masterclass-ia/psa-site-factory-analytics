@@ -575,7 +575,13 @@ def nettoie(d):
 
 
 def _git(*args):
-    return subprocess.run(["git", *args], cwd=RACINE, capture_output=True, text=True)
+    # cwd=DATA (pas RACINE) depuis le 12/08/2026 : data/ est desormais son
+    # propre checkout git, pointant sur le repo prive separe
+    # dcs-masterclass-ia/psa-site-factory-data -- le repo de code ne
+    # contient plus les vraies donnees (permet de le passer public sans
+    # exposer les chiffres business). Voir _commit_et_pousse pour
+    # l'ajustement des chemins correspondant.
+    return subprocess.run(["git", *args], cwd=DATA, capture_output=True, text=True)
 
 
 def _configure_git():
@@ -585,10 +591,11 @@ def _configure_git():
 
 def _commit_et_pousse(chemins, message):
     """Committe et pousse un petit sous-ensemble de fichiers deja ecrits sur
-    disque (chemins relatifs a RACINE, ex. "data/opel-fr.json"). Ne leve
-    jamais : un push qui echoue est journalise puis le run continue avec le
-    site suivant, jamais un fichier deja ecrit ne doit faire perdre le
-    travail des autres sites.
+    disque (chemins relatifs a RACINE, ex. "data/opel-fr.json" -- l'appelant
+    garde cette convention historique, seul _git tourne desormais dans
+    data/). Ne leve jamais : un push qui echoue est journalise puis le run
+    continue avec le site suivant, jamais un fichier deja ecrit ne doit
+    faire perdre le travail des autres sites.
 
     Retourne (succes: bool, detail: str). "detail" est vide en succes."""
     # branche cible lue dynamiquement (jamais "main" en dur) : GITHUB_REF_NAME
@@ -597,7 +604,11 @@ def _commit_et_pousse(chemins, message):
     # --ref staging (-> staging) -- c'est ce qui permet a un run de pipeline
     # lance depuis la preprod de ne jamais toucher aux donnees de prod.
     branche = os.environ.get("GITHUB_REF_NAME", "main")
-    rel = [str(c) for c in chemins]
+    # chemins relatifs a RACINE ("data/xxx.json") -> relatifs a DATA ("xxx.json"),
+    # puisque _git tourne maintenant avec cwd=DATA (12/08/2026, split du repo
+    # de donnees). str(c) reste passe tel quel si un appelant fournit deja
+    # un chemin relatif a DATA (aucun cas actuel, mais robuste aux deux).
+    rel = [str(Path(c).relative_to("data")) if str(c).startswith("data/") else str(c) for c in chemins]
     r = _git("add", *rel)
     if r.returncode != 0:
         return False, f"git add : {r.stderr.strip()}"
