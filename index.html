@@ -4717,9 +4717,19 @@ class Component extends DCLogic {
     const activeDonutMap = { brand: agg.brand, fuel: agg.fuel, project: agg.project, device: agg.device }[this._donutDim] || agg.brand;
     const DONUT_COLORS = ["#3b5ae0", "#7d99ff", "#a8c0ff", "#dbe2ff"];
     const brandDonutList = [...activeDonutMap.entries()].sort((a, b) => b[1] - a[1]);
-    const totalBrandDonut = brandDonutList.reduce((s, [, v]) => s + v, 0) || 1;
+    const donutMapTotal = brandDonutList.reduce((s, [, v]) => s + v, 0);
+    // le total du donut doit toujours egaler le KPI "Leads GCP" (agg.leads,
+    // somme jour par jour, exhaustive) -- les repartitions par dimension
+    // (marque/carburant/projet/appareil) viennent d'un top 20 cote
+    // back-office qui exclut aussi les lignes sans valeur pour cette
+    // dimension (leads_extract._top, "if nom"). Sans correction, le donut
+    // affichait un total silencieusement plus bas que le KPI (633 vs 658,
+    // constate le 15/08/2026) -- la difference est ajoutee a "Autres"
+    // plutot que de disparaitre.
+    const totalBrandDonut = agg.leads || 1;
+    const donutNonRenseigne = Math.max(0, agg.leads - donutMapTotal);
     const donutSlicesSrc = brandDonutList.slice(0, 3);
-    const donutOtherTotal = brandDonutList.slice(3).reduce((s, [, v]) => s + v, 0);
+    const donutOtherTotal = brandDonutList.slice(3).reduce((s, [, v]) => s + v, 0) + donutNonRenseigne;
     const donutSlices = donutSlicesSrc.concat(donutOtherTotal ? [["Autres", donutOtherTotal]] : []);
     let donutAcc = 0;
     const donutRows = donutSlices.map(([name, v], i) => {
