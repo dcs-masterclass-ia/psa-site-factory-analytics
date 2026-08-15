@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "sh scripts/fetch-data.sh",
+  "buildCommand": "sh scripts/fetch-data.sh",
   "cleanUrls": true,
   "headers": [
     {
