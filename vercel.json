@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "sh scripts/fetch-data.sh",
+  "outputDirectory": ".",
   "cleanUrls": true,
   "headers": [
     {
