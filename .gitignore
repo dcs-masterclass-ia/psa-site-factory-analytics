@@ -1,3 +1,8 @@
+# data/ vit desormais dans le repo prive separe psa-site-factory-data
+# (12/08/2026) -- checkout separe (voir scripts/fetch-data.sh et les
+# workflows GitHub Actions), plus suivi ici.
+/data/
+
 # clés de comptes de service — ne doivent jamais être versionnées
 psa-reporting*.json
 ga4-consolidation*.json
