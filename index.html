@@ -10,6 +10,7 @@
      chargees en differe (defer) pour ne pas retarder le premier rendu --
      seulement utilisees au clic sur les boutons d'export. -->
 <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 </head>
 <body>
@@ -2030,6 +2031,14 @@ input[type=date]{color-scheme:light}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 19h16"></path></svg>Synthèse PDF client
     </button>
 
+    <!-- letter-spacing explicite (imperceptible) plutot que "normal" herite
+         par defaut : contournement d'un bug connu de html2canvas qui avale
+         les espaces entre mots des que le texte n'a pas de letter-spacing
+         explicite ("Sessions et leads" -> "Sessionsetleads"), constate le
+         20/08/2026 sur l'export PDF (exportV2Pdf). Cascade a tous les
+         descendants qui n'ecrasent pas eux-memes cette valeur (les libelles
+         KPI le font deja, restent inchanges). -->
+    <div ref="{{ v2Modal.captureRef }}" style="letter-spacing:.01px">
     <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:110px">
       <div>
         <div style="font-size:27px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ v2Modal.site }}</div>
@@ -2041,6 +2050,17 @@ input[type=date]{color-scheme:light}
       </div>
       <span style="{{ v2Modal.badgeStyle }}">{{ v2Modal.badgeText }}</span>
     </div>
+
+    <sc-if value="{{ v2Modal.hasPeriodOptions }}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:18px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Période analysée</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ v2Modal.periodOptions }}" as="po" hint-placeholder-count="4">
+          <button onClick="{{ po.pick }}" style="{{ po.style }}">{{ po.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
 
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px">
       <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
@@ -2167,6 +2187,7 @@ input[type=date]{color-scheme:light}
         </div>
         </sc-if>
       </div>
+    </div>
     </div>
   </div>
   </div>
@@ -3373,6 +3394,11 @@ class Component extends DCLogic {
   openV2Modal(site) {
     this._v2ModalSite = site;
     this._v2ModalClosing = false;
+    // periode analysee reinitialisee a "la plus recente" a chaque ouverture
+    // -- un choix fait sur un site ne doit pas persister silencieusement
+    // sur le suivant (index different d'un site a l'autre, nombre de
+    // semaines suivies pas forcement le meme).
+    this._v2PeriodIdx = null;
     this.forceUpdate();
   }
   closeV2Modal() {
@@ -3384,6 +3410,14 @@ class Component extends DCLogic {
       this._v2ModalClosing = false;
       this.forceUpdate();
     }, 220);
+  }
+  /* choix manuel de la periode analysee dans la modale V2 (KPI, funnel,
+     appareil, PDF) -- par defaut la plus recente semaine suivie, mais le
+     KAM doit pouvoir revenir sur une semaine plus ancienne pour analyser
+     une periode precise plutot que subir "toujours la derniere". */
+  setV2Period(idx) {
+    this._v2PeriodIdx = idx;
+    this.forceUpdate();
   }
 
   /* meme mecanique que openV2Modal/closeV2Modal, pour le detail d'un
@@ -3556,127 +3590,64 @@ class Component extends DCLogic {
   }
 
   /* synthese client V2 en PDF (bouton "Synthese PDF client" de la modale de
-     detail, onglet Comparaison V2) : memes donnees que la modale et
-     exportV2Csv (this._v2Report, construit juste au-dessus dans toState()),
-     jamais un chiffre recalcule ici. Primitives jsPDF dupliquees depuis
-     exportGa4Pdf plutot que factorisees : ce sont les deux seuls PDF du
-     produit, une abstraction commune n'aurait servi qu'a ces deux appelants
-     et aurait risque de casser l'export GA4 deja en prod pour un gain nul. */
-  exportV2Pdf() {
+     detail, onglet Comparaison V2) : capture reelle du DOM de la modale
+     (html2canvas, ref v2Modal.captureRef) plutot qu'une mise en page
+     reconstruite a la main avec les primitives jsPDF (comme exportGa4Pdf) --
+     demande du 20/08/2026 ("il doit etre des modules du front en PDF") : le
+     PDF doit etre visuellement identique a ce que le KAM voit a l'ecran
+     (charte, cartes, courbes), pas une reinterpretation textuelle. La
+     periode capturee est celle choisie dans le selecteur "Période analysée"
+     de la modale (setV2Period), jamais figee sur la derniere semaine --
+     c'est bien le DOM deja a jour avec ce choix qui est photographie. */
+  async exportV2Pdf() {
+    const el = this._v2ModalCaptureEl;
     const r = this._v2Report;
-    if (!r || !window.jspdf) return;
+    if (!el || !r || !window.html2canvas || !window.jspdf) return;
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: "mm", format: "a4" });
-    const PAGE_W = 210, PAGE_H = 297, MARGIN = 16, CONTENT_W = PAGE_W - MARGIN * 2;
-    const INK = [20, 22, 26], MUTED = [107, 114, 128], MUTED2 = [154, 160, 170], LINE = [230, 232, 238];
-    const ACCENT = [245, 65, 30], POS = [18, 185, 129], NEG = [244, 72, 92], SOFT = [246, 247, 249];
-    let y = 0;
-
-    // meme assainissement que exportGa4Pdf : les polices standard jsPDF ne
-    // couvrent que WinAnsi/Latin-1, l'espace insecable de Intl.NumberFormat
-    // et les fleches Unicode (↑/↓) s'y rendent en caracteres corrompus.
-    const pdfText = v => String(v == null ? "" : v)
-      .replace(/[\xa0 ]/g, " ")
-      .replace(/↑\s*/g, "+").replace(/↓\s*/g, "-").replace(/→/g, "->");
-
-    const checkPageBreak = need => {
-      if (y + need > PAGE_H - MARGIN) { doc.addPage(); y = MARGIN; }
-    };
-    const header = () => {
-      doc.setFillColor(...INK);
-      doc.rect(0, 0, PAGE_W, 34, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(16);
-      doc.text(pdfText(r.site), MARGIN, 15);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5);
-      doc.text(pdfText(r.brand + " · " + r.country + "  —  Bascule V2 du " + r.v2DateLabel), MARGIN, 23);
-      doc.setFontSize(8.5); doc.setTextColor(200, 203, 210);
-      doc.text(pdfText("Synthèse avant / après V2 · générée le " + r.generatedLabel), MARGIN, 29.5);
-      doc.setTextColor(...INK);
-      y = 44;
-    };
-    const sectionTitle = title => {
-      checkPageBreak(12);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(12.5); doc.setTextColor(...INK);
-      doc.text(pdfText(title), MARGIN, y);
-      doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
-      doc.line(MARGIN, y + 2.4, PAGE_W - MARGIN, y + 2.4);
-      y += 9;
-    };
-    const insightBox = text => {
-      if (!text) return;
-      const lines = doc.setFont("helvetica", "normal").setFontSize(9.5).splitTextToSize(pdfText(text), CONTENT_W - 10);
-      const h = lines.length * 4.6 + 8;
-      checkPageBreak(h + 4);
-      doc.setFillColor(...SOFT);
-      doc.roundedRect(MARGIN, y, CONTENT_W, h, 2, 2, "F");
-      doc.setTextColor(63, 70, 83);
-      doc.text(lines, MARGIN + 5, y + 6.5);
-      doc.setTextColor(...INK);
-      y += h + 7;
-    };
-    const table = (rows, widths, align) => {
-      checkPageBreak(rows.length * 6.2 + 4);
-      doc.setFontSize(9.5);
-      for (let i = 0; i < rows.length; i++) {
-        const isHead = i === 0;
-        if (isHead) { doc.setFont("helvetica", "bold"); doc.setTextColor(...MUTED); }
-        else { doc.setFont("helvetica", "normal"); doc.setTextColor(...INK); }
-        let x = MARGIN;
-        rows[i].forEach((cell, ci) => {
-          const a = (align && align[ci]) || "left";
-          doc.text(pdfText(cell), a === "right" ? x + widths[ci] : x, y, { align: a === "right" ? "right" : "left" });
-          x += widths[ci];
-        });
-        y += isHead ? 5.6 : 6.2;
-        if (isHead) { doc.setDrawColor(...LINE); doc.line(MARGIN, y - 3.6, PAGE_W - MARGIN, y - 3.6); }
-      }
-      doc.setTextColor(...INK);
-      y += 5;
-    };
-
-    header();
-
-    sectionTitle("Indicateurs clés — " + r.analysedRangeLabel);
-    insightBox(r.comparedRangeLabel);
-    const kpiW = (CONTENT_W - 3 * 4) / 4;
-    checkPageBreak(28);
-    r.kpis.forEach((k, i) => {
-      const x = MARGIN + i * (kpiW + 4);
-      doc.setFillColor(...SOFT);
-      doc.roundedRect(x, y, kpiW, 24, 2, 2, "F");
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED);
-      doc.text(pdfText(k.label), x + 4, y + 6.5);
-      doc.setFont("helvetica", "bold"); doc.setFontSize(13.5); doc.setTextColor(...INK);
-      doc.text(pdfText(k.value), x + 4, y + 14.5);
-      if (k.delta) {
-        const good = k.delta.indexOf("↑") === 0 || k.delta.indexOf("+") === 0;
-        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...(good ? POS : NEG));
-        doc.text(pdfText(k.delta), x + 4, y + 20.5);
-      } else if (k.note) {
-        doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED2);
-        doc.text(pdfText(k.note), x + 4, y + 20.5);
-      }
+    const bg = getComputedStyle(el).backgroundColor;
+    // le contournement du bug d'espaces avales par html2canvas (texte sans
+    // letter-spacing explicite) est en CSS sur v2Modal.captureRef, pas ici
+    // -- voir son commentaire dans le template.
+    const canvas = await window.html2canvas(el, {
+      scale: 2,
+      backgroundColor: (bg && bg !== "rgba(0, 0, 0, 0)") ? bg : "#ffffff",
+      useCORS: true,
     });
-    doc.setTextColor(...INK);
-    y += 32;
 
-    sectionTitle("Évolution trafic reprise & leads, V1 vs chaque période depuis la bascule");
-    table([["Période", "Jours", "Sess. reprise/j", "Leads/j", "Conversion"]].concat(
-      r.periods.map(p => [p.label, String(p.jours), p.sessionsRepriseParJour, p.leadsParJour, p.conversion])),
-      [CONTENT_W - 118, 22, 32, 26, 38], ["left", "right", "right", "right", "right"]);
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const PAGE_W = 210, PAGE_H = 297, MARGIN = 10, HEADER_H = 14, FOOTER_H = 8;
+    const usableW = PAGE_W - MARGIN * 2;
+    const mmPerPx = usableW / canvas.width;
+    const pagePx = Math.max(1, Math.floor((PAGE_H - MARGIN * 2 - HEADER_H - FOOTER_H) / mmPerPx));
+    const totalPages = Math.max(1, Math.ceil(canvas.height / pagePx));
 
-    sectionTitle("Détail du parcours, étape par étape");
-    table([["Étape", "Avant V2", "Après V2", "Écart"]].concat(
-      r.funnel.map(f => [f.name, f.avant, f.apres, f.delta])),
-      [CONTENT_W - 90, 30, 30, 30], ["left", "right", "right", "right"]);
+    const bandeEntete = () => {
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(20, 22, 26);
+      doc.text(r.site + " — Synthèse V2", MARGIN, MARGIN + 4);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(154, 160, 170);
+      doc.text("Généré le " + r.generatedLabel, PAGE_W - MARGIN, MARGIN + 4, { align: "right" });
+      doc.setDrawColor(230, 232, 238); doc.setLineWidth(0.3);
+      doc.line(MARGIN, MARGIN + HEADER_H - 4, PAGE_W - MARGIN, MARGIN + HEADER_H - 4);
+    };
+    const piedDePage = pageNum => {
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(154, 160, 170);
+      doc.text("Page " + pageNum + " / " + totalPages, PAGE_W - MARGIN, PAGE_H - MARGIN + 2, { align: "right" });
+    };
 
-    if (r.hasChannels) {
-      doc.addPage(); y = MARGIN;
-      sectionTitle("Synthèse par canal d'acquisition (sessions à l'entrée du parcours)");
-      table([["Canal", "Avant V2", "Après V2", "Évolution"]].concat(
-        r.channels.map(c => [c.name, c.avant, c.apres, c.evolution])),
-        [CONTENT_W - 90, 30, 30, 30], ["left", "right", "right", "right"]);
+    let renderedPx = 0, pageNum = 0;
+    while (renderedPx < canvas.height) {
+      const sliceH = Math.min(pagePx, canvas.height - renderedPx);
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = sliceH;
+      pageCanvas.getContext("2d").drawImage(canvas, 0, renderedPx, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+      const imgData = pageCanvas.toDataURL("image/jpeg", 0.94);
+      if (pageNum > 0) doc.addPage();
+      pageNum++;
+      bandeEntete();
+      doc.addImage(imgData, "JPEG", MARGIN, MARGIN + HEADER_H, usableW, sliceH * mmPerPx);
+      piedDePage(pageNum);
+      renderedPx += sliceH;
     }
 
     doc.save("synthese-v2-" + r.site.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".pdf");
@@ -5241,16 +5212,83 @@ class Component extends DCLogic {
     // card correspondante, seulement quand une card est ouverte ----
     const v2ModalCard = this._v2ModalSite ? v2Cards.find(c => c.site === this._v2ModalSite) : null;
 
+    // ---- periode analysee dans la modale : la derniere semaine par defaut,
+    // mais choisissable (setV2Period) parmi toutes les semaines suivies
+    // depuis la bascule -- KPI, funnel, appareil et export PDF en dependent
+    // tous, jamais juste "la derniere" en dur. Index 0 = V1 (reference,
+    // jamais selectionnable comme periode analysee), 1..N = semaines.
+    const v2ReportRows = v2ModalCard ? v2RawRows.filter(r => r.marque === v2ModalCard.site) : [];
+    const v2BaselineRow = v2ReportRows[0] || null;
+    const v2LastIdx = v2ReportRows.length - 1;
+    const v2SelIdx = (this._v2PeriodIdx != null && this._v2PeriodIdx >= 1 && this._v2PeriodIdx <= v2LastIdx)
+      ? this._v2PeriodIdx : v2LastIdx;
+    const v2SelectedRow = v2ReportRows[v2SelIdx] || null;
+    const v2HasWeeks = v2ReportRows.length > 1;
+    const v2PeriodOptions = v2ReportRows.slice(1).map((row, i) => ({
+      idx: i + 1, label: row.periode, active: (i + 1) === v2SelIdx,
+      pick: () => this.setV2Period(i + 1),
+      style: "flex:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;padding:6px 13px;border-radius:100px;white-space:nowrap;transition:background .18s ease,color .18s ease;background:" +
+        ((i + 1) === v2SelIdx ? "#F5411E" : "var(--soft)") + ";color:" + ((i + 1) === v2SelIdx ? "#fff" : "var(--text2)"),
+    }));
+
+    // vue recalculee pour la periode selectionnee (KPI/funnel/appareil) --
+    // mêmes formules que la card portefeuille (qui reste figee sur "la
+    // derniere" pour le coup d'oeil multi-sites), juste rejouees sur
+    // v2SelectedRow plutot que "latest" : la card et la modale peuvent donc
+    // diverger volontairement une fois une periode choisie dans la modale.
+    let v2SelView = null;
+    if (v2ModalCard && v2SelectedRow && v2BaselineRow) {
+      const row = v2SelectedRow, base = v2BaselineRow;
+      const funnelCompact = v2HasWeeks ? V2_STEP_KEYS.map((k, i) => {
+        const v1 = base[k], v2v = row[k];
+        const delta = (v1 != null && v2v != null) ? v2v - v1 : null;
+        return {
+          name: V2_STEP_LABELS[i],
+          v2Text: v2v == null ? "—" : dec(v2v, 0) + " %",
+          barStyle: "position:absolute;inset:0;border-radius:4px;width:" + Math.max(0, Math.min(100, v2v || 0)) + "%;background:linear-gradient(90deg,#F5411E,#F9AB00);animation:growW .8s cubic-bezier(.3,.8,.3,1) " + (0.1 + i * 0.06) + "s both",
+          markerStyle: v1 == null ? "display:none" : "position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--text2);left:" + Math.max(0, Math.min(100, v1)).toFixed(1) + "%",
+          deltaText: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 0) + " pts",
+          deltaStyle: "font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;color:" + (delta == null ? "var(--muted)" : delta >= 0 ? "var(--pos)" : "var(--neg)"),
+        };
+      }) : [];
+      const dMobile = row.mobilePct || 0, dDesktop = row.desktopPct || 0;
+      const dAutres = (row.mobilePct != null && row.desktopPct != null) ? Math.max(0, 100 - dMobile - dDesktop) : 0;
+      const convOk = v2HasWeeks && row.deltaPts != null;
+      const convColor = !convOk ? "var(--muted)" : row.deltaPts >= 0 ? "var(--pos)" : "var(--neg)";
+      const mobOk = v2HasWeeks && row.mobileDeltaPts != null;
+      const mobColor = !mobOk ? "var(--muted)" : row.mobileDeltaPts >= 0 ? "var(--pos)" : "var(--neg)";
+      v2SelView = {
+        analysedRangeLabel: "Analysée : " + row.periode + " (" + fmtDateShort(row.debut) + " → " + fmtDateShort(row.fin) + ")",
+        badgeText: !convOk ? "—" : (row.deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(row.deltaPts), 1) + " pts",
+        badgeStyle: "font-size:14px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;color:" + convColor + ";background:" +
+          (!convOk ? "var(--soft)" : row.deltaPts >= 0 ? "var(--pos-bg)" : "var(--neg-bg)"),
+        badgeDeltaText: !convOk ? "" : (row.deltaPts >= 0 ? "+" : "") + dec(row.deltaPts, 1) + " pts vs V1",
+        badgeDeltaStyle: "font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" + convColor,
+        conversionLabel: !convOk ? "Conversion V2 : —" : "Conversion V2 : " + (row.deltaPts >= 0 ? "+" : "") + dec(row.deltaPts, 1) + " pts",
+        badgeStyle2: "font-variant-numeric:tabular-nums;color:" + convColor,
+        leadsParJour: dec(row.leadsParJour, 1),
+        sessionsReprise: fmt(row.sessionsReprise),
+        conversion: row.conversionPct != null ? dec(row.conversionPct, 1) + " %" : "—",
+        mobilePct: row.mobilePct == null ? "—" : dec(row.mobilePct, 0) + " %",
+        mobileDeltaText: !mobOk ? "" : (row.mobileDeltaPts >= 0 ? "+" : "") + dec(row.mobileDeltaPts, 1) + " pts vs V1",
+        mobileDeltaStyle: "font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" + mobColor,
+        funnelCompact, hasFunnelCompact: funnelCompact.length > 0,
+        deviceMobilePct: dec(dMobile, 0) + " %", deviceDesktopPct: dec(dDesktop, 0) + " %", deviceAutresPct: dec(dAutres, 0) + " %",
+        hasAutres: dAutres >= 1,
+        deviceMobileBarStyle: "width:" + dMobile.toFixed(1) + "%;background:#4A9BF5;animation:growW .8s cubic-bezier(.3,.8,.3,1) .1s both",
+        deviceDesktopBarStyle: "width:" + dDesktop.toFixed(1) + "%;background:#7B7BF0;animation:growW .8s cubic-bezier(.3,.8,.3,1) .18s both",
+        deviceAutresBarStyle: "width:" + dAutres.toFixed(1) + "%;background:var(--muted2);animation:growW .8s cubic-bezier(.3,.8,.3,1) .26s both",
+      };
+    }
+
     // ---- synthese client V2, prete a exporter en PDF (exportV2Pdf) ----
     // memes donnees reelles que la card/la modale (v2RawRows, filtre sur le
-    // site ouvert) + v2channels (repartition canal avant/apres, seule donnee
-    // pas deja exposee a la modale) -- jamais de chiffre recalcule ou invente
-    // pour l'occasion, cf. exportGa4Pdf plus haut pour le meme principe.
-    if (v2ModalCard) {
+    // site ouvert, periode selectionnee ci-dessus) + v2channels (repartition
+    // canal avant/apres, seule donnee pas deja exposee a la modale) --
+    // jamais de chiffre recalcule ou invente pour l'occasion, cf.
+    // exportGa4Pdf plus haut pour le meme principe.
+    if (v2ModalCard && v2SelView) {
       const v2SiteData = this.data[v2ModalCard.site] || {};
-      const v2ReportRows = v2RawRows.filter(r => r.marque === v2ModalCard.site);
-      const baselineRow = v2ReportRows[0] || null;
-      const latestRow = v2ReportRows[v2ReportRows.length - 1] || null;
       const chanMap = {};
       for (const row of v2SiteData.v2channels || []) {
         if (row.c === "Total") continue;
@@ -5263,14 +5301,14 @@ class Component extends DCLogic {
         brand: marqueDeSite(v2ModalCard.site).split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" "),
         country: PAYS_LABEL[v2ModalCard.pays] || v2ModalCard.pays,
         v2DateLabel: fmtDateShort(v2SiteData.v2_date || ""),
-        analysedRangeLabel: v2ModalCard.analysedRangeLabel,
+        analysedRangeLabel: v2SelView.analysedRangeLabel,
         comparedRangeLabel: v2ModalCard.comparedRangeLabel,
         generatedLabel: new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }),
         kpis: [
-          { label: "Leads / jour", value: v2ModalCard.leadsParJour },
-          { label: "Sessions reprise (dernière période)", value: v2ModalCard.sessionsReprise, note: v2ModalCard.weeksLabel },
-          { label: "Taux de conversion", value: v2ModalCard.conversion, delta: v2ModalCard.badgeDeltaText },
-          { label: "Part mobile", value: v2ModalCard.mobilePct, delta: v2ModalCard.mobileDeltaText },
+          { label: "Leads / jour", value: v2SelView.leadsParJour },
+          { label: "Sessions reprise (période analysée)", value: v2SelView.sessionsReprise, note: v2ModalCard.weeksLabel },
+          { label: "Taux de conversion", value: v2SelView.conversion, delta: v2SelView.badgeDeltaText },
+          { label: "Part mobile", value: v2SelView.mobilePct, delta: v2SelView.mobileDeltaText },
         ],
         periods: v2ReportRows.map(r => ({
           label: r.periode,
@@ -5281,12 +5319,12 @@ class Component extends DCLogic {
           conversion: r.conversionPct != null ? dec(r.conversionPct, 1) + " %" : "—",
         })),
         funnel: V2_STEP_KEYS.map((k, i) => {
-          const v1 = baselineRow ? baselineRow[k] : null, v2 = latestRow ? latestRow[k] : null;
-          const delta = (v1 != null && v2 != null) ? v2 - v1 : null;
+          const v1 = v2BaselineRow ? v2BaselineRow[k] : null, v2v = v2SelectedRow ? v2SelectedRow[k] : null;
+          const delta = (v1 != null && v2v != null) ? v2v - v1 : null;
           return {
             name: V2_STEP_LABELS[i],
             avant: v1 == null ? "—" : dec(v1, 0) + " %",
-            apres: v2 == null ? "—" : dec(v2, 0) + " %",
+            apres: v2v == null ? "—" : dec(v2v, 0) + " %",
             delta: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 0) + " pts",
           };
         }),
@@ -5304,8 +5342,11 @@ class Component extends DCLogic {
 
     const v2Modal = v2ModalCard ? {
       ...v2ModalCard,
+      ...(v2SelView || {}),
+      periodOptions: v2PeriodOptions, hasPeriodOptions: v2PeriodOptions.length > 1,
       exportPdf: () => this.exportV2Pdf(),
       close: () => this.closeV2Modal(),
+      captureRef: el => { this._v2ModalCaptureEl = el; },
       // enveloppe fixe centree en flex plutot que inset:0+margin:auto : avec
       // top/bottom a 0 et une hauteur en contenu (max-height, pas height),
       // le centrage vertical par marges automatiques n'est pas garanti par
