@@ -2026,7 +2026,11 @@ input[type=date]{color-scheme:light}
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
     </button>
 
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:56px">
+    <button onClick="{{ v2Modal.exportPdf }}" title="Synthèse V2 prête à envoyer au client" style="position:absolute;top:26px;right:76px;display:flex;align-items:center;gap:9px;background:#F5411E;border:none;border-radius:999px;padding:0 18px;height:38px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .18s ease,filter .18s ease" style-hover="transform:translateY(-2px);filter:brightness(1.08)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 19h16"></path></svg>Synthèse PDF client
+    </button>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:110px">
       <div>
         <div style="font-size:27px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ v2Modal.site }}</div>
         <div style="margin-top:5px;font-size:14px;font-weight:600;color:var(--muted)">{{ v2Modal.weeksLabel }}</div>
@@ -3551,6 +3555,133 @@ class Component extends DCLogic {
     URL.revokeObjectURL(url);
   }
 
+  /* synthese client V2 en PDF (bouton "Synthese PDF client" de la modale de
+     detail, onglet Comparaison V2) : memes donnees que la modale et
+     exportV2Csv (this._v2Report, construit juste au-dessus dans toState()),
+     jamais un chiffre recalcule ici. Primitives jsPDF dupliquees depuis
+     exportGa4Pdf plutot que factorisees : ce sont les deux seuls PDF du
+     produit, une abstraction commune n'aurait servi qu'a ces deux appelants
+     et aurait risque de casser l'export GA4 deja en prod pour un gain nul. */
+  exportV2Pdf() {
+    const r = this._v2Report;
+    if (!r || !window.jspdf) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const PAGE_W = 210, PAGE_H = 297, MARGIN = 16, CONTENT_W = PAGE_W - MARGIN * 2;
+    const INK = [20, 22, 26], MUTED = [107, 114, 128], MUTED2 = [154, 160, 170], LINE = [230, 232, 238];
+    const ACCENT = [245, 65, 30], POS = [18, 185, 129], NEG = [244, 72, 92], SOFT = [246, 247, 249];
+    let y = 0;
+
+    // meme assainissement que exportGa4Pdf : les polices standard jsPDF ne
+    // couvrent que WinAnsi/Latin-1, l'espace insecable de Intl.NumberFormat
+    // et les fleches Unicode (↑/↓) s'y rendent en caracteres corrompus.
+    const pdfText = v => String(v == null ? "" : v)
+      .replace(/[\xa0 ]/g, " ")
+      .replace(/↑\s*/g, "+").replace(/↓\s*/g, "-").replace(/→/g, "->");
+
+    const checkPageBreak = need => {
+      if (y + need > PAGE_H - MARGIN) { doc.addPage(); y = MARGIN; }
+    };
+    const header = () => {
+      doc.setFillColor(...INK);
+      doc.rect(0, 0, PAGE_W, 34, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(16);
+      doc.text(pdfText(r.site), MARGIN, 15);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5);
+      doc.text(pdfText(r.brand + " · " + r.country + "  —  Bascule V2 du " + r.v2DateLabel), MARGIN, 23);
+      doc.setFontSize(8.5); doc.setTextColor(200, 203, 210);
+      doc.text(pdfText("Synthèse avant / après V2 · générée le " + r.generatedLabel), MARGIN, 29.5);
+      doc.setTextColor(...INK);
+      y = 44;
+    };
+    const sectionTitle = title => {
+      checkPageBreak(12);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(12.5); doc.setTextColor(...INK);
+      doc.text(pdfText(title), MARGIN, y);
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+      doc.line(MARGIN, y + 2.4, PAGE_W - MARGIN, y + 2.4);
+      y += 9;
+    };
+    const insightBox = text => {
+      if (!text) return;
+      const lines = doc.setFont("helvetica", "normal").setFontSize(9.5).splitTextToSize(pdfText(text), CONTENT_W - 10);
+      const h = lines.length * 4.6 + 8;
+      checkPageBreak(h + 4);
+      doc.setFillColor(...SOFT);
+      doc.roundedRect(MARGIN, y, CONTENT_W, h, 2, 2, "F");
+      doc.setTextColor(63, 70, 83);
+      doc.text(lines, MARGIN + 5, y + 6.5);
+      doc.setTextColor(...INK);
+      y += h + 7;
+    };
+    const table = (rows, widths, align) => {
+      checkPageBreak(rows.length * 6.2 + 4);
+      doc.setFontSize(9.5);
+      for (let i = 0; i < rows.length; i++) {
+        const isHead = i === 0;
+        if (isHead) { doc.setFont("helvetica", "bold"); doc.setTextColor(...MUTED); }
+        else { doc.setFont("helvetica", "normal"); doc.setTextColor(...INK); }
+        let x = MARGIN;
+        rows[i].forEach((cell, ci) => {
+          const a = (align && align[ci]) || "left";
+          doc.text(pdfText(cell), a === "right" ? x + widths[ci] : x, y, { align: a === "right" ? "right" : "left" });
+          x += widths[ci];
+        });
+        y += isHead ? 5.6 : 6.2;
+        if (isHead) { doc.setDrawColor(...LINE); doc.line(MARGIN, y - 3.6, PAGE_W - MARGIN, y - 3.6); }
+      }
+      doc.setTextColor(...INK);
+      y += 5;
+    };
+
+    header();
+
+    sectionTitle("Indicateurs clés — " + r.analysedRangeLabel);
+    insightBox(r.comparedRangeLabel);
+    const kpiW = (CONTENT_W - 3 * 4) / 4;
+    checkPageBreak(28);
+    r.kpis.forEach((k, i) => {
+      const x = MARGIN + i * (kpiW + 4);
+      doc.setFillColor(...SOFT);
+      doc.roundedRect(x, y, kpiW, 24, 2, 2, "F");
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED);
+      doc.text(pdfText(k.label), x + 4, y + 6.5);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(13.5); doc.setTextColor(...INK);
+      doc.text(pdfText(k.value), x + 4, y + 14.5);
+      if (k.delta) {
+        const good = k.delta.indexOf("↑") === 0 || k.delta.indexOf("+") === 0;
+        doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(...(good ? POS : NEG));
+        doc.text(pdfText(k.delta), x + 4, y + 20.5);
+      } else if (k.note) {
+        doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(...MUTED2);
+        doc.text(pdfText(k.note), x + 4, y + 20.5);
+      }
+    });
+    doc.setTextColor(...INK);
+    y += 32;
+
+    sectionTitle("Évolution trafic reprise & leads, V1 vs chaque période depuis la bascule");
+    table([["Période", "Jours", "Sess. reprise/j", "Leads/j", "Conversion"]].concat(
+      r.periods.map(p => [p.label, String(p.jours), p.sessionsRepriseParJour, p.leadsParJour, p.conversion])),
+      [CONTENT_W - 118, 22, 32, 26, 38], ["left", "right", "right", "right", "right"]);
+
+    sectionTitle("Détail du parcours, étape par étape");
+    table([["Étape", "Avant V2", "Après V2", "Écart"]].concat(
+      r.funnel.map(f => [f.name, f.avant, f.apres, f.delta])),
+      [CONTENT_W - 90, 30, 30, 30], ["left", "right", "right", "right"]);
+
+    if (r.hasChannels) {
+      doc.addPage(); y = MARGIN;
+      sectionTitle("Synthèse par canal d'acquisition (sessions à l'entrée du parcours)");
+      table([["Canal", "Avant V2", "Après V2", "Évolution"]].concat(
+        r.channels.map(c => [c.name, c.avant, c.apres, c.evolution])),
+        [CONTENT_W - 90, 30, 30, 30], ["left", "right", "right", "right"]);
+    }
+
+    doc.save("synthese-v2-" + r.site.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + new Date().toISOString().slice(0, 10) + ".pdf");
+  }
+
   /* declenche le telechargement d'un Blob deja construit -- factorise le
      boilerplate <a>/click/revoke repete par les 3 formats d'export
      (exportV2Csv l'a en dur plus haut, garde tel quel pour ne pas toucher
@@ -3924,7 +4055,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     if (!st.booted) {
-      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", isTableau: st.tab === "tableau", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
+      return { isGa4: st.tab === "ga4", isGsc: st.tab === "gsc", isV2: st.tab === "v2", isPerf: st.tab === "performance", isAssistant: st.tab === "assistant", isCompare: st.tab === "compare", isTableau: st.tab === "tableau", perfRows: [], perfGroups: [], hasPerfRows: false, noPerfRows: true, hasPerfHero: false, perfHero: null, v2Cards: [], v2Groups: [], hasV2Rows: false, noV2Rows: true, v2Modal: null, hasV2Modal: false, queriesModal: null, hasQueriesModal: false, openQueriesModal: () => {}, v2ExportCsv: () => {}, exportV2Pdf: () => {}, scopeLabel: "Chargement…", scopeDetail: "", periodLabel: "",
         chatMessages: [], noChatMessages: true, chatBusy: false, chatInput: "", chatSendOpacity: ".6",
         setChatInput: () => {}, sendChatMessage: () => {}, quickAnalysisCards: [],
         watchConstats: [], hasWatchConstats: false, noWatchConstats: true, watchLastUpdate: null, watchConstatsTotal: 0,
@@ -5109,8 +5240,71 @@ class Component extends DCLogic {
     // ---- modale de detail : construite a part, sur la meme donnee que la
     // card correspondante, seulement quand une card est ouverte ----
     const v2ModalCard = this._v2ModalSite ? v2Cards.find(c => c.site === this._v2ModalSite) : null;
+
+    // ---- synthese client V2, prete a exporter en PDF (exportV2Pdf) ----
+    // memes donnees reelles que la card/la modale (v2RawRows, filtre sur le
+    // site ouvert) + v2channels (repartition canal avant/apres, seule donnee
+    // pas deja exposee a la modale) -- jamais de chiffre recalcule ou invente
+    // pour l'occasion, cf. exportGa4Pdf plus haut pour le meme principe.
+    if (v2ModalCard) {
+      const v2SiteData = this.data[v2ModalCard.site] || {};
+      const v2ReportRows = v2RawRows.filter(r => r.marque === v2ModalCard.site);
+      const baselineRow = v2ReportRows[0] || null;
+      const latestRow = v2ReportRows[v2ReportRows.length - 1] || null;
+      const chanMap = {};
+      for (const row of v2SiteData.v2channels || []) {
+        if (row.c === "Total") continue;
+        const e = chanMap[row.c] || (chanMap[row.c] = { pre: 0, post: 0 });
+        if (row.p === "pre_v2") e.pre += row.u || 0;
+        else if (row.p === "post_v2") e.post += row.u || 0;
+      }
+      this._v2Report = {
+        site: v2ModalCard.site,
+        brand: marqueDeSite(v2ModalCard.site).split(" ").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" "),
+        country: PAYS_LABEL[v2ModalCard.pays] || v2ModalCard.pays,
+        v2DateLabel: fmtDateShort(v2SiteData.v2_date || ""),
+        analysedRangeLabel: v2ModalCard.analysedRangeLabel,
+        comparedRangeLabel: v2ModalCard.comparedRangeLabel,
+        generatedLabel: new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" }),
+        kpis: [
+          { label: "Leads / jour", value: v2ModalCard.leadsParJour },
+          { label: "Sessions reprise (dernière période)", value: v2ModalCard.sessionsReprise, note: v2ModalCard.weeksLabel },
+          { label: "Taux de conversion", value: v2ModalCard.conversion, delta: v2ModalCard.badgeDeltaText },
+          { label: "Part mobile", value: v2ModalCard.mobilePct, delta: v2ModalCard.mobileDeltaText },
+        ],
+        periods: v2ReportRows.map(r => ({
+          label: r.periode,
+          jours: r.jours,
+          sessionsReprise: fmt(r.sessionsReprise),
+          sessionsRepriseParJour: r.jours ? dec(r.sessionsReprise / r.jours, 1) : "—",
+          leadsParJour: dec(r.leadsParJour, 1),
+          conversion: r.conversionPct != null ? dec(r.conversionPct, 1) + " %" : "—",
+        })),
+        funnel: V2_STEP_KEYS.map((k, i) => {
+          const v1 = baselineRow ? baselineRow[k] : null, v2 = latestRow ? latestRow[k] : null;
+          const delta = (v1 != null && v2 != null) ? v2 - v1 : null;
+          return {
+            name: V2_STEP_LABELS[i],
+            avant: v1 == null ? "—" : dec(v1, 0) + " %",
+            apres: v2 == null ? "—" : dec(v2, 0) + " %",
+            delta: delta == null ? "—" : (delta >= 0 ? "+" : "") + dec(delta, 0) + " pts",
+          };
+        }),
+        channels: Object.entries(chanMap).sort((a, b) => b[1].post - a[1].post).map(([name, e]) => ({
+          name,
+          avant: fmt(e.pre),
+          apres: fmt(e.post),
+          evolution: e.pre ? (e.post >= e.pre ? "+" : "") + dec((e.post - e.pre) / e.pre * 100, 0) + " %" : "—",
+        })),
+        hasChannels: Object.keys(chanMap).length > 0,
+      };
+    } else {
+      this._v2Report = null;
+    }
+
     const v2Modal = v2ModalCard ? {
       ...v2ModalCard,
+      exportPdf: () => this.exportV2Pdf(),
       close: () => this.closeV2Modal(),
       // enveloppe fixe centree en flex plutot que inset:0+margin:auto : avec
       // top/bottom a 0 et une hauteur en contenu (max-height, pas height),
