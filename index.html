@@ -2054,11 +2054,21 @@ input[type=date]{color-scheme:light}
     <sc-if value="{{ v2Modal.hasPeriodOptions }}" hint-placeholder-val="{{ false }}">
     <div style="margin-top:18px">
       <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Période analysée</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <sc-for list="{{ v2Modal.periodOptions }}" as="po" hint-placeholder-count="4">
           <button onClick="{{ po.pick }}" style="{{ po.style }}">{{ po.label }}</button>
         </sc-for>
+        <span style="font-size:12px;font-weight:600;color:var(--muted2)">ou</span>
+        <input type="date" value="{{ v2Modal.customDebut }}" onChange="{{ v2Modal.setCustomDebut }}" style="border:1px solid var(--line);background:var(--card);border-radius:100px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">
+        <span style="font-size:12px;color:var(--muted2)">→</span>
+        <input type="date" value="{{ v2Modal.customFin }}" onChange="{{ v2Modal.setCustomFin }}" style="border:1px solid var(--line);background:var(--card);border-radius:100px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">
+        <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ v2Modal.clearCustom }}" style="border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:#F5411E;padding:5px 4px">Effacer</button>
+        </sc-if>
       </div>
+      <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:8px;font-size:11.5px;font-weight:600;color:var(--muted2)">Période personnalisée : le détail du parcours (funnel) reste indisponible, réservé aux semaines précalculées.</div>
+      </sc-if>
     </div>
     </sc-if>
 
@@ -2125,7 +2135,7 @@ input[type=date]{color-scheme:light}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:32px">
       <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
-        <div style="font-size:14px;font-weight:800;color:var(--text)">Funnel — dernière semaine vs V1</div>
+        <div style="font-size:14px;font-weight:800;color:var(--text)">Funnel — {{ v2Modal.periodeLabel }} vs V1</div>
         <sc-if value="{{ v2Modal.hasFunnelCompact }}" hint-placeholder-val="{{ false }}">
         <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px">
           <sc-for list="{{ v2Modal.funnelCompact }}" as="fs" hint-placeholder-count="6">
@@ -2149,6 +2159,9 @@ input[type=date]{color-scheme:light}
           Repère : niveau V1
         </div>
         </sc-if>
+        <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:20px;font-size:12.5px;font-weight:600;color:var(--muted2)">Indisponible sur une période personnalisée (nécessite une requête GA4 dédiée, réservée aux semaines précalculées).</div>
+        </sc-if>
       </div>
 
       <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
@@ -2157,7 +2170,7 @@ input[type=date]{color-scheme:light}
           <span style="font-size:32px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ v2Modal.deviceMobilePct }}</span>
           <span style="{{ v2Modal.mobileDeltaStyle }}">{{ v2Modal.mobileDeltaText }}</span>
         </div>
-        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">part mobile, dernière semaine</div>
+        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">part mobile, {{ v2Modal.periodeLabel }}</div>
         <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:18px">
           <div style="{{ v2Modal.deviceMobileBarStyle }}"></div>
           <div style="{{ v2Modal.deviceDesktopBarStyle }}"></div>
@@ -2353,6 +2366,52 @@ const nf1 = new Intl.NumberFormat("fr-FR", { minimumFractionDigits:1, maximumFra
 const dec = (v, d) => (v == null || !isFinite(v)) ? "—" : v.toFixed(d).replace(".", ",");
 const fmt = n => (n == null || !isFinite(n)) ? "—" : nf.format(Math.round(n));
 const esc = s => String(s == null ? "" : s);
+
+// agregation d'une plage de dates arbitraire sur les series deja chargees
+// cote client (daily.d/u/rep, leads.<mois>.daily/dailyDevice) -- portage
+// JS de pipeline/v2_report.py (_agrege_jours/_agrege_leads/
+// _agrege_leads_par_device), pour la periode personnalisee de la modale V2
+// (setV2CustomRange) : mêmes séries réelles, aucune requête GA4
+// supplémentaire, donc pas de funnel (lui reste calculé côté pipeline,
+// uniquement pour les semaines déjà précalculées).
+const agregeJours = (joursIso, valeurs, debutIso, finIso) => {
+  let total = 0;
+  for (let i = 0; i < joursIso.length; i++) {
+    const v = valeurs ? valeurs[i] : null;
+    if (v == null) continue;
+    if (joursIso[i] >= debutIso && joursIso[i] <= finIso) total += v;
+  }
+  return total;
+};
+const agregeLeads = (leadsParMois, debutIso, finIso) => {
+  let total = 0;
+  for (const [mois, bloc] of Object.entries(leadsParMois || {})) {
+    if (mois === "total") continue;
+    const daily = bloc.daily || [];
+    for (let i = 0; i < daily.length; i++) {
+      const v = daily[i];
+      if (v == null) continue;
+      const jour = mois + "-" + String(i + 1).padStart(2, "0");
+      if (jour >= debutIso && jour <= finIso) total += v;
+    }
+  }
+  return total;
+};
+const agregeLeadsParDevice = (leadsParMois, debutIso, finIso) => {
+  const out = {};
+  for (const [mois, bloc] of Object.entries(leadsParMois || {})) {
+    if (mois === "total") continue;
+    for (const [valeur, serie] of Object.entries(bloc.dailyDevice || {})) {
+      for (let i = 0; i < serie.length; i++) {
+        const v = serie[i];
+        if (v == null) continue;
+        const jour = mois + "-" + String(i + 1).padStart(2, "0");
+        if (jour >= debutIso && jour <= finIso) out[valeur] = (out[valeur] || 0) + v;
+      }
+    }
+  }
+  return out;
+};
 
 const MONTHS = ["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 // dates completes "YYYY-MM-DD" partout (plus de "MM-DD" + annee supposee) :
@@ -3399,6 +3458,7 @@ class Component extends DCLogic {
     // sur le suivant (index different d'un site a l'autre, nombre de
     // semaines suivies pas forcement le meme).
     this._v2PeriodIdx = null;
+    this._v2CustomRange = null;
     this.forceUpdate();
   }
   closeV2Modal() {
@@ -3417,6 +3477,24 @@ class Component extends DCLogic {
      une periode precise plutot que subir "toujours la derniere". */
   setV2Period(idx) {
     this._v2PeriodIdx = idx;
+    this._v2CustomRange = null;
+    this.forceUpdate();
+  }
+  /* periode personnalisee (dates libres, ex. "16 juillet au 17 aout") --
+     recalculee cote client a partir des series deja chargees (sessions,
+     leads, appareil), voir agregeJours/agregeLeads/agregeLeadsParDevice.
+     Le funnel reste indisponible sur ces dates (necessite une requete GA4
+     que seul le pipeline fait, pour les semaines deja precalculees) --
+     jamais approxime sur la semaine la plus proche. */
+  setV2CustomRange(debut, fin) {
+    // stocke toujours la paire, meme incomplete : les deux champs date
+    // sont deux onChange independants, l'un remplit "debut" pendant que
+    // "fin" est encore vide (et inversement) -- si on effacait tout des
+    // qu'un seul manque, le premier champ saisi serait perdu au moment de
+    // saisir le second. v2CustomActive (calcule a l'affichage) est le
+    // seul endroit qui decide si la paire est utilisable.
+    this._v2CustomRange = (debut || fin) ? { debut: debut || "", fin: fin || "" } : null;
+    this._v2PeriodIdx = null;
     this.forceUpdate();
   }
 
@@ -5211,25 +5289,55 @@ class Component extends DCLogic {
     // ---- modale de detail : construite a part, sur la meme donnee que la
     // card correspondante, seulement quand une card est ouverte ----
     const v2ModalCard = this._v2ModalSite ? v2Cards.find(c => c.site === this._v2ModalSite) : null;
+    const v2SiteData = v2ModalCard ? (this.data[v2ModalCard.site] || {}) : {};
 
     // ---- periode analysee dans la modale : la derniere semaine par defaut,
-    // mais choisissable (setV2Period) parmi toutes les semaines suivies
-    // depuis la bascule -- KPI, funnel, appareil et export PDF en dependent
-    // tous, jamais juste "la derniere" en dur. Index 0 = V1 (reference,
-    // jamais selectionnable comme periode analysee), 1..N = semaines.
+    // mais choisissable parmi toutes les semaines suivies depuis la bascule
+    // (setV2Period) OU sur des dates libres (setV2CustomRange, "16 juillet
+    // au 17 aout") -- KPI, appareil et export PDF en dependent tous, jamais
+    // juste "la derniere" en dur. Index 0 = V1 (reference, jamais
+    // selectionnable comme periode analysee), 1..N = semaines. Le funnel
+    // (etapes du parcours) reste reserve aux semaines precalculees par le
+    // pipeline (requete GA4 dediee, cf. pipeline/v2_report.py) : une
+    // periode personnalisee n'a jamais ce detail, jamais approxime sur la
+    // semaine la plus proche.
     const v2ReportRows = v2ModalCard ? v2RawRows.filter(r => r.marque === v2ModalCard.site) : [];
     const v2BaselineRow = v2ReportRows[0] || null;
     const v2LastIdx = v2ReportRows.length - 1;
-    const v2SelIdx = (this._v2PeriodIdx != null && this._v2PeriodIdx >= 1 && this._v2PeriodIdx <= v2LastIdx)
+    const v2CustomRange = this._v2CustomRange;
+    const v2CustomActive = !!(v2CustomRange && v2CustomRange.debut && v2CustomRange.fin && v2CustomRange.fin >= v2CustomRange.debut);
+    const v2SelIdx = (!v2CustomActive && this._v2PeriodIdx != null && this._v2PeriodIdx >= 1 && this._v2PeriodIdx <= v2LastIdx)
       ? this._v2PeriodIdx : v2LastIdx;
-    const v2SelectedRow = v2ReportRows[v2SelIdx] || null;
+    const v2CustomRow = (v2ModalCard && v2CustomActive) ? (() => {
+      const daily = v2SiteData.daily || {};
+      const joursIso = daily.d || [];
+      const sp = agregeJours(joursIso, daily.u, v2CustomRange.debut, v2CustomRange.fin);
+      const sr = agregeJours(joursIso, daily.rep, v2CustomRange.debut, v2CustomRange.fin);
+      const lv = agregeLeads(v2SiteData.leads, v2CustomRange.debut, v2CustomRange.fin);
+      const dv = bucketDevice(agregeLeadsParDevice(v2SiteData.leads, v2CustomRange.debut, v2CustomRange.fin));
+      const dvTotal = dv.mobile + dv.desktop + dv.autres;
+      const mobilePct = dvTotal ? dv.mobile / dvTotal * 100 : null;
+      const desktopPct = dvTotal ? dv.desktop / dvTotal * 100 : null;
+      const baseMobilePct = v2BaselineRow ? v2BaselineRow.mobilePct : null;
+      const mobileDeltaPts = (mobilePct != null && baseMobilePct != null) ? mobilePct - baseMobilePct : null;
+      const jours = Math.round((new Date(v2CustomRange.fin) - new Date(v2CustomRange.debut)) / 86400000) + 1;
+      return {
+        marque: v2ModalCard.site, periode: "Personnalisée", isBaseline: false,
+        debut: v2CustomRange.debut, fin: v2CustomRange.fin, jours,
+        sessionsParent: sp, sessionsReprise: sr, leads: lv, leadsParJour: jours ? lv / jours : 0,
+        conversionPct: null, deltaPts: null, mobilePct, desktopPct, mobileDeltaPts,
+      };
+    })() : null;
+    const v2SelectedRow = v2CustomActive ? v2CustomRow : (v2ReportRows[v2SelIdx] || null);
     const v2HasWeeks = v2ReportRows.length > 1;
     const v2PeriodOptions = v2ReportRows.slice(1).map((row, i) => ({
-      idx: i + 1, label: row.periode, active: (i + 1) === v2SelIdx,
+      idx: i + 1, label: row.periode, active: !v2CustomActive && (i + 1) === v2SelIdx,
       pick: () => this.setV2Period(i + 1),
       style: "flex:none;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;padding:6px 13px;border-radius:100px;white-space:nowrap;transition:background .18s ease,color .18s ease;background:" +
-        ((i + 1) === v2SelIdx ? "#F5411E" : "var(--soft)") + ";color:" + ((i + 1) === v2SelIdx ? "#fff" : "var(--text2)"),
+        (!v2CustomActive && (i + 1) === v2SelIdx ? "#F5411E" : "var(--soft)") + ";color:" + (!v2CustomActive && (i + 1) === v2SelIdx ? "#fff" : "var(--text2)"),
     }));
+    const v2CustomDebutInput = v2CustomRange ? v2CustomRange.debut : "";
+    const v2CustomFinInput = v2CustomRange ? v2CustomRange.fin : "";
 
     // vue recalculee pour la periode selectionnee (KPI/funnel/appareil) --
     // mêmes formules que la card portefeuille (qui reste figee sur "la
@@ -5239,7 +5347,11 @@ class Component extends DCLogic {
     let v2SelView = null;
     if (v2ModalCard && v2SelectedRow && v2BaselineRow) {
       const row = v2SelectedRow, base = v2BaselineRow;
-      const funnelCompact = v2HasWeeks ? V2_STEP_KEYS.map((k, i) => {
+      // funnel dispo seulement si la ligne porte reellement les etapes
+      // (semaines precalculees) -- jamais pour v2CustomRow, qui ne les a
+      // pas puisqu'aucune requete GA4 n'est faite cote client.
+      const hasStepData = V2_STEP_KEYS.some(k => row[k] != null);
+      const funnelCompact = (v2HasWeeks && hasStepData) ? V2_STEP_KEYS.map((k, i) => {
         const v1 = base[k], v2v = row[k];
         const delta = (v1 != null && v2v != null) ? v2v - v1 : null;
         return {
@@ -5255,9 +5367,10 @@ class Component extends DCLogic {
       const dAutres = (row.mobilePct != null && row.desktopPct != null) ? Math.max(0, 100 - dMobile - dDesktop) : 0;
       const convOk = v2HasWeeks && row.deltaPts != null;
       const convColor = !convOk ? "var(--muted)" : row.deltaPts >= 0 ? "var(--pos)" : "var(--neg)";
-      const mobOk = v2HasWeeks && row.mobileDeltaPts != null;
+      const mobOk = row.mobileDeltaPts != null;
       const mobColor = !mobOk ? "var(--muted)" : row.mobileDeltaPts >= 0 ? "var(--pos)" : "var(--neg)";
       v2SelView = {
+        periodeLabel: row.periode,
         analysedRangeLabel: "Analysée : " + row.periode + " (" + fmtDateShort(row.debut) + " → " + fmtDateShort(row.fin) + ")",
         badgeText: !convOk ? "—" : (row.deltaPts >= 0 ? "↑ +" : "↓ ") + dec(Math.abs(row.deltaPts), 1) + " pts",
         badgeStyle: "font-size:14px;font-weight:700;padding:5px 10px;border-radius:8px;white-space:nowrap;color:" + convColor + ";background:" +
@@ -5269,6 +5382,7 @@ class Component extends DCLogic {
         leadsParJour: dec(row.leadsParJour, 1),
         sessionsReprise: fmt(row.sessionsReprise),
         conversion: row.conversionPct != null ? dec(row.conversionPct, 1) + " %" : "—",
+        hasFunnelForPeriod: hasStepData,
         mobilePct: row.mobilePct == null ? "—" : dec(row.mobilePct, 0) + " %",
         mobileDeltaText: !mobOk ? "" : (row.mobileDeltaPts >= 0 ? "+" : "") + dec(row.mobileDeltaPts, 1) + " pts vs V1",
         mobileDeltaStyle: "font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" + mobColor,
@@ -5288,7 +5402,6 @@ class Component extends DCLogic {
     // jamais de chiffre recalcule ou invente pour l'occasion, cf.
     // exportGa4Pdf plus haut pour le meme principe.
     if (v2ModalCard && v2SelView) {
-      const v2SiteData = this.data[v2ModalCard.site] || {};
       const chanMap = {};
       for (const row of v2SiteData.v2channels || []) {
         if (row.c === "Total") continue;
@@ -5344,6 +5457,11 @@ class Component extends DCLogic {
       ...v2ModalCard,
       ...(v2SelView || {}),
       periodOptions: v2PeriodOptions, hasPeriodOptions: v2PeriodOptions.length > 1,
+      customDebut: v2CustomDebutInput, customFin: v2CustomFinInput,
+      customActive: v2CustomActive,
+      setCustomDebut: e => this.setV2CustomRange(e.target.value, v2CustomFinInput),
+      setCustomFin: e => this.setV2CustomRange(v2CustomDebutInput, e.target.value),
+      clearCustom: () => this.setV2CustomRange(null, null),
       exportPdf: () => this.exportV2Pdf(),
       close: () => this.closeV2Modal(),
       captureRef: el => { this._v2ModalCaptureEl = el; },
