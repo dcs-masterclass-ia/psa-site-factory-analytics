@@ -71,3 +71,14 @@ jobs:
           fi
           # commit + push site par site geres directement par pipeline/pagespeed.py
           # (via pipeline.build._commit_et_pousse), plus de step separee ici.
+
+      - name: Déclencher le redéploiement Vercel
+        # data/ vit dans un repo separe depuis le 15/08/2026 -- voir
+        # refresh.yml pour le detail. Sans ce hook, une mesure publiee
+        # ne serait jamais servie par le site.
+        run: |
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
+            exit 0
+          fi
+          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"

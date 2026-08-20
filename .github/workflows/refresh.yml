@@ -149,6 +149,22 @@ jobs:
             echo "::warning::pipeline.json illisible a cette etape (${STATUT#illisible:}) — probablement un push avorte juste avant. La donnee sur origin/main n'est pas forcement affectee, mais verifier le job manuellement."
           fi
 
+      - name: Déclencher le redéploiement Vercel
+        # data/ vit dans un repo separe depuis le 15/08/2026 -- Vercel ne
+        # surveille que le repo de code, donc un push de donnees seul ne
+        # redeploie plus rien automatiquement (trouve le 20/08/2026 : 5
+        # jours de donnees a jour cote pipeline, jamais servies, faute de
+        # redeploiement). Ce hook comble ce trou. Toujours declenche
+        # (meme si un site est en echec de controle) : les autres sites
+        # du run ont quand meme ete publies, ca vaut la peine de redeployer.
+        if: ${{ always() && inputs.simulation != 'oui' }}
+        run: |
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
+            exit 0
+          fi
+          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+
       - name: Effacer la clé
         if: always()
         run: rm -f "$RUNNER_TEMP/ga4.json"
