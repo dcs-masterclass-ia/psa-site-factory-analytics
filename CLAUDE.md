@@ -23,7 +23,26 @@ install/build anything for this static site).
     session cookie (`psf_session`).
   - `config.js` — exposes the OAuth client ID to the client.
   - `agent.js` — "Agent KAM" orchestrator (Claude Sonnet 5, tool-use loop
-    over `api/_lib/tools.js`) powering the Hermes/KamIA assistant.
+    over `api/_lib/tools.js`) powering the Hermes/KamIA assistant. Two
+    response modes on the same endpoint: default is buffered JSON
+    (`{answer, agentsConsultes, charts, history}`, used by the production
+    chat in `index.html`, unchanged since before AG-UI work); `?stream=1`
+    switches to the real AG-UI protocol (SSE, `RunAgentInput` in →
+    `TEXT_MESSAGE_*`/`TOOL_CALL_*`/`RUN_*` events out), consumed only by the
+    beta panel below. `ask_agent_dashboard` (auto-edits `index.html` and
+    opens a PR) triggers an AG-UI interrupt in stream mode — the run pauses
+    and the client must confirm/cancel via `resume` before it executes;
+    the JSON mode still auto-executes it as before (no interrupt support
+    there).
+  - `hermes-agui.js` (repo root) — **generated**, do not edit by hand.
+    React + `@ag-ui/client` panel for Hermes/KamIA ("Hermes β" floating
+    button, mounted outside the `text/x-dc` DSL tree so it can't be wiped
+    by the DSL's own re-renders). Source in `panel/hermes-agui/src/`,
+    rebuild with `cd panel/hermes-agui && node build.js`. Reuses the
+    `window.React`/`window.ReactDOM` globals `support.js` already loads
+    (no bundled React copy) — see the `react-shim.js`/`reactdom-shim.js`
+    lazy accessors, required because the bundle can execute before
+    `support.js` has finished loading React.
   - `gsc-compare.js` — on-demand Search Console comparison for arbitrary
     date ranges (live API call; the stored data is monthly resolution only
     — the project's rule is never to interpolate/invent numbers).

@@ -150,6 +150,191 @@ async function* runAgentLoop(messages) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Mode AG-UI (?stream=1) : consomme par le panneau React Hermes (panel/).
+// Recoit un RunAgentInput standard (threadId, runId, messages, resume?) et
+// emet le protocole d'evenements AG-UI (TEXT_MESSAGE_*, TOOL_CALL_*,
+// RUN_STARTED/FINISHED/ERROR) au fil de la meme boucle tool-use que le mode
+// JSON. Contrairement au mode JSON, l'appel a ask_agent_dashboard (qui edite
+// index.html et ouvre une PR) declenche un interrupt AG-UI -- l'execution
+// est suspendue et RUN_FINISHED renvoie outcome:{type:"interrupt", ...} ;
+// l'utilisateur doit confirmer avant que le tour ne reprenne via `resume`.
+// ---------------------------------------------------------------------------
+
+const CONFIRM_BEFORE_EXEC = new Set(["ask_agent_dashboard"]);
+
+function aguiUserContentToBlocks(content) {
+  if (typeof content === "string") return [{ type: "text", text: content }];
+  if (!Array.isArray(content)) return [{ type: "text", text: "" }];
+  return content
+    .map((part) => {
+      if (part.type === "text") return { type: "text", text: part.text };
+      if (part.type === "image" && part.source) {
+        return part.source.type === "data"
+          ? { type: "image", source: { type: "base64", media_type: part.source.mimeType, data: part.source.value } }
+          : { type: "image", source: { type: "url", url: part.source.value } };
+      }
+      return { type: "text", text: "" };
+    })
+    .filter((b) => !(b.type === "text" && b.text === ""));
+}
+
+/** Convertit les Message[] du protocole AG-UI en messages Claude (blocks). */
+function aguiMessagesToClaude(aguiMessages) {
+  const claudeMessages = [];
+  const systemExtra = [];
+  for (const m of aguiMessages || []) {
+    if (m.role === "system" || m.role === "developer") {
+      if (m.content) systemExtra.push(m.content);
+    } else if (m.role === "user") {
+      claudeMessages.push({ role: "user", content: aguiUserContentToBlocks(m.content) });
+    } else if (m.role === "assistant") {
+      const blocks = [];
+      if (m.content) blocks.push({ type: "text", text: m.content });
+      for (const tc of m.toolCalls || []) {
+        let input = {};
+        try {
+          input = JSON.parse(tc.function.arguments || "{}");
+        } catch (_) {}
+        blocks.push({ type: "tool_use", id: tc.id, name: tc.function.name, input });
+      }
+      claudeMessages.push({ role: "assistant", content: blocks });
+    } else if (m.role === "tool") {
+      const block = { type: "tool_result", tool_use_id: m.toolCallId, content: m.content };
+      const last = claudeMessages[claudeMessages.length - 1];
+      if (last && last.role === "user" && Array.isArray(last.content) && last.content.every((b) => b.type === "tool_result")) {
+        last.content.push(block);
+      } else {
+        claudeMessages.push({ role: "user", content: [block] });
+      }
+    }
+  }
+  return { claudeMessages, system: systemExtra.join("\n\n") };
+}
+
+function findToolUseById(claudeMessages, id) {
+  for (let i = claudeMessages.length - 1; i >= 0; i--) {
+    const m = claudeMessages[i];
+    if (m.role !== "assistant" || !Array.isArray(m.content)) continue;
+    const block = m.content.find((b) => b.type === "tool_use" && b.id === id);
+    if (block) return block;
+  }
+  return null;
+}
+
+function interruptMessageFor(block) {
+  if (block.name === "ask_agent_dashboard") {
+    const req = (block.input && block.input.request) || "";
+    return `Hermes propose de modifier le dashboard (ouverture d'une Pull Request GitHub) : "${req}". Confirmer ?`;
+  }
+  return `Action groupee avec une modification du dashboard, en attente de confirmation (${labelForTool(block.name)}).`;
+}
+
+/** Applique les reponses `resume` d'un interrupt precedent : execute (ou annule) les tool_use en attente et pousse le message tool_result correspondant. */
+async function applyResume(claudeMessages, resume) {
+  const toolResults = [];
+  for (const entry of resume) {
+    const block = findToolUseById(claudeMessages, entry.interruptId);
+    if (!block) continue;
+    if (entry.status === "resolved") {
+      try {
+        const result = await runTool(block.name, block.input);
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: typeof result === "string" ? result : JSON.stringify(result) });
+      } catch (e) {
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Erreur : " + (e && e.message ? e.message : e), is_error: true });
+      }
+    } else {
+      toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Action annulee par l'utilisateur.", is_error: true });
+    }
+  }
+  if (toolResults.length > 0) claudeMessages.push({ role: "user", content: toolResults });
+}
+
+async function runAguiLoop(send, claudeMessages, system, threadId, runId) {
+  const agentsConsultes = new Set();
+  const charts = [];
+  const sendState = () => send({ type: "STATE_SNAPSHOT", snapshot: { agentsConsultes: [...agentsConsultes], charts } });
+
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
+    let finalContent = null;
+    let stopReason = null;
+    const messageId = require("crypto").randomUUID();
+    let textStarted = false;
+
+    for await (const ev of callClaudeStream({
+      model: KAM_MODEL,
+      system: system ? `${SYSTEM}\n\n${system}` : SYSTEM,
+      messages: claudeMessages,
+      tools: TOOLS,
+      thinking: { type: "adaptive" },
+      effort: KAM_EFFORT,
+      maxTokens: 4096,
+    })) {
+      if (ev.type === "text-delta") {
+        if (!textStarted) {
+          send({ type: "TEXT_MESSAGE_START", messageId, role: "assistant" });
+          textStarted = true;
+        }
+        send({ type: "TEXT_MESSAGE_CONTENT", messageId, delta: ev.text });
+      } else if (ev.type === "tool-call") {
+        agentsConsultes.add(labelForTool(ev.name));
+        send({ type: "TOOL_CALL_START", toolCallId: ev.id, toolCallName: ev.name, parentMessageId: messageId });
+        send({ type: "TOOL_CALL_ARGS", toolCallId: ev.id, delta: JSON.stringify(ev.input) });
+        send({ type: "TOOL_CALL_END", toolCallId: ev.id });
+      } else if (ev.type === "message-complete") {
+        finalContent = ev.content;
+        stopReason = ev.stop_reason;
+      }
+    }
+    if (textStarted) send({ type: "TEXT_MESSAGE_END", messageId });
+
+    claudeMessages.push({ role: "assistant", content: finalContent });
+
+    if (stopReason !== "tool_use") {
+      sendState();
+      send({ type: "RUN_FINISHED", threadId, runId, outcome: { type: "success" } });
+      return;
+    }
+
+    const toolUses = finalContent.filter((b) => b.type === "tool_use");
+
+    if (toolUses.some((b) => CONFIRM_BEFORE_EXEC.has(b.name))) {
+      const interrupts = toolUses.map((b) => ({
+        id: b.id,
+        reason: CONFIRM_BEFORE_EXEC.has(b.name) ? "confirm_dashboard_edit" : "batched_with_dashboard_edit",
+        toolCallId: b.id,
+        message: interruptMessageFor(b),
+        metadata: { toolName: b.name, input: b.input },
+      }));
+      sendState();
+      send({ type: "RUN_FINISHED", threadId, runId, outcome: { type: "interrupt", interrupts } });
+      return;
+    }
+
+    const toolResults = [];
+    for (const block of toolUses) {
+      agentsConsultes.add(labelForTool(block.name));
+      if (block.name === "show_chart") {
+        charts.push(block.input);
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Graphique pris en compte, il sera affiche a l'utilisateur." });
+        sendState();
+        continue;
+      }
+      try {
+        const result = await runTool(block.name, block.input);
+        const content = typeof result === "string" ? result : JSON.stringify(result);
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content });
+        send({ type: "TOOL_CALL_RESULT", messageId: require("crypto").randomUUID(), toolCallId: block.id, content, role: "tool" });
+      } catch (e) {
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Erreur : " + (e && e.message ? e.message : e), is_error: true });
+      }
+    }
+    claudeMessages.push({ role: "user", content: toolResults });
+  }
+
+  send({ type: "RUN_ERROR", message: "Trop d'etapes necessaires pour conclure." });
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Methode non autorisee." });
@@ -162,6 +347,40 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const wantsAgui = req.query && req.query.stream === "1";
+
+  if (wantsAgui) {
+    const input = req.body || {};
+    const { threadId, runId, messages: aguiMessages, resume } = input;
+    if (!threadId || !runId || !Array.isArray(aguiMessages)) {
+      res.status(400).json({ error: "RunAgentInput invalide (threadId/runId/messages requis)." });
+      return;
+    }
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+    const send = (ev) => res.write(`data: ${JSON.stringify(ev)}\n\n`);
+    send({ type: "RUN_STARTED", threadId, runId });
+
+    try {
+      const { claudeMessages, system } = aguiMessagesToClaude(aguiMessages);
+      if (Array.isArray(resume) && resume.length > 0) {
+        await applyResume(claudeMessages, resume);
+      }
+      await runAguiLoop(send, claudeMessages, system, threadId, runId);
+    } catch (e) {
+      send({ type: "RUN_ERROR", message: String(e && e.message ? e.message : e) });
+    } finally {
+      res.end();
+    }
+    return;
+  }
+
+  // Mode JSON bufferise -- comportement inchange pour le front actuel.
   const { question, history, scope, attachments } = req.body || {};
   if (!question || typeof question !== "string") {
     res.status(400).json({ error: "question requise." });
@@ -171,39 +390,14 @@ module.exports = async function handler(req, res) {
   const messages = Array.isArray(history) ? history.slice(-20) : [];
   messages.push({ role: "user", content: buildInitialContent(question, scope, attachments) });
 
-  const wantsStream = (req.query && req.query.stream === "1") || req.headers.accept === "text/event-stream";
-
-  if (!wantsStream) {
-    // Mode JSON bufferise -- comportement inchange pour le front actuel.
-    try {
-      for await (const ev of runAgentLoop(messages)) {
-        if (ev.type === "done") {
-          res.status(200).json({ answer: ev.answer, agentsConsultes: ev.agentsConsultes, charts: ev.charts, history: ev.history });
-          return;
-        }
-      }
-    } catch (e) {
-      res.status(500).json({ error: String(e && e.message ? e.message : e) });
-    }
-    return;
-  }
-
-  // Mode SSE -- destine au futur panneau React/AG-UI (phase 2).
-  res.writeHead(200, {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache, no-transform",
-    Connection: "keep-alive",
-    "X-Accel-Buffering": "no",
-  });
-  const send = (ev) => res.write(`data: ${JSON.stringify(ev)}\n\n`);
   try {
     for await (const ev of runAgentLoop(messages)) {
-      send(ev);
-      if (ev.type === "done") break;
+      if (ev.type === "done") {
+        res.status(200).json({ answer: ev.answer, agentsConsultes: ev.agentsConsultes, charts: ev.charts, history: ev.history });
+        return;
+      }
     }
   } catch (e) {
-    send({ type: "error", message: String(e && e.message ? e.message : e) });
-  } finally {
-    res.end();
+    res.status(500).json({ error: String(e && e.message ? e.message : e) });
   }
 };

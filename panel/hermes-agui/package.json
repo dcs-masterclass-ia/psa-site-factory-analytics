@@ -1,0 +1,20 @@
+{
+  "name": "hermes-agui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  },
+  "dependencies": {
+    "@ag-ui/client": "^0.0.58",
+    "@ag-ui/core": "^0.0.58"
+  }
+}
