@@ -10,7 +10,7 @@
  * la verification ci-dessous est une defense en profondeur.
  */
 
-const { callClaude } = require("./_lib/anthropic");
+const { callClaudeStream } = require("./_lib/anthropic");
 const { TOOLS, runTool } = require("./_lib/tools");
 const { verifySessionFromRequest } = require("./_lib/auth");
 
@@ -68,6 +68,88 @@ function buildInitialContent(question, scope, attachments) {
   return blocks;
 }
 
+/**
+ * Boucle tool-use partagee par les deux modes de reponse (JSON bufferise et
+ * SSE). Yield des evenements incrementaux au fil des tours ; le dernier
+ * evenement est toujours "done" avec la meme forme que l'ancienne reponse
+ * JSON (answer/agentsConsultes/charts/history), pour rester compatible avec
+ * le front actuel qui ne consomme que ca.
+ */
+async function* runAgentLoop(messages) {
+  const agentsConsultes = new Set();
+  const charts = [];
+
+  for (let i = 0; i < MAX_ITERATIONS; i++) {
+    let finalContent = null;
+    let stopReason = null;
+
+    for await (const ev of callClaudeStream({
+      model: KAM_MODEL,
+      system: SYSTEM,
+      messages,
+      tools: TOOLS,
+      thinking: { type: "adaptive" },
+      effort: KAM_EFFORT,
+      maxTokens: 4096,
+    })) {
+      if (ev.type === "text-delta") {
+        yield { type: "text-delta", text: ev.text };
+      } else if (ev.type === "tool-call") {
+        yield { type: "tool-call-start", toolName: ev.name, label: labelForTool(ev.name) };
+      } else if (ev.type === "message-complete") {
+        finalContent = ev.content;
+        stopReason = ev.stop_reason;
+      }
+    }
+
+    messages.push({ role: "assistant", content: finalContent });
+
+    if (stopReason !== "tool_use") {
+      const answer = (finalContent || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      yield { type: "done", answer, agentsConsultes: [...agentsConsultes], charts, history: messages };
+      return;
+    }
+
+    const toolUses = finalContent.filter(b => b.type === "tool_use");
+    const toolResults = [];
+    for (const block of toolUses) {
+      agentsConsultes.add(labelForTool(block.name));
+      if (block.name === "show_chart") {
+        charts.push(block.input);
+        yield { type: "chart", spec: block.input };
+        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Graphique pris en compte, il sera affiche a l'utilisateur." });
+        continue;
+      }
+      try {
+        const result = await runTool(block.name, block.input);
+        yield { type: "tool-call-end", toolName: block.name };
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: block.id,
+          content: typeof result === "string" ? result : JSON.stringify(result),
+        });
+      } catch (e) {
+        yield { type: "tool-call-error", toolName: block.name, message: e && e.message ? e.message : String(e) };
+        toolResults.push({
+          type: "tool_result",
+          tool_use_id: block.id,
+          content: "Erreur : " + (e && e.message ? e.message : e),
+          is_error: true,
+        });
+      }
+    }
+    messages.push({ role: "user", content: toolResults });
+  }
+
+  yield {
+    type: "done",
+    answer: "Desole, je n'ai pas reussi a conclure sur cette question (trop d'etapes necessaires).",
+    agentsConsultes: [...agentsConsultes],
+    charts,
+    history: messages,
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).json({ error: "Methode non autorisee." });
@@ -89,63 +171,39 @@ module.exports = async function handler(req, res) {
   const messages = Array.isArray(history) ? history.slice(-20) : [];
   messages.push({ role: "user", content: buildInitialContent(question, scope, attachments) });
 
-  const agentsConsultes = new Set();
-  const charts = [];
+  const wantsStream = (req.query && req.query.stream === "1") || req.headers.accept === "text/event-stream";
 
-  try {
-    for (let i = 0; i < MAX_ITERATIONS; i++) {
-      const resp = await callClaude({
-        model: KAM_MODEL,
-        system: SYSTEM,
-        messages,
-        tools: TOOLS,
-        thinking: { type: "adaptive" },
-        effort: KAM_EFFORT,
-        maxTokens: 4096,
-      });
-      messages.push({ role: "assistant", content: resp.content });
-
-      if (resp.stop_reason !== "tool_use") {
-        const answer = (resp.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
-        res.status(200).json({ answer, agentsConsultes: [...agentsConsultes], charts, history: messages });
-        return;
-      }
-
-      const toolUses = resp.content.filter(b => b.type === "tool_use");
-      const toolResults = [];
-      for (const block of toolUses) {
-        agentsConsultes.add(labelForTool(block.name));
-        if (block.name === "show_chart") {
-          charts.push(block.input);
-          toolResults.push({ type: "tool_result", tool_use_id: block.id, content: "Graphique pris en compte, il sera affiche a l'utilisateur." });
-          continue;
-        }
-        try {
-          const result = await runTool(block.name, block.input);
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: typeof result === "string" ? result : JSON.stringify(result),
-          });
-        } catch (e) {
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: "Erreur : " + (e && e.message ? e.message : e),
-            is_error: true,
-          });
+  if (!wantsStream) {
+    // Mode JSON bufferise -- comportement inchange pour le front actuel.
+    try {
+      for await (const ev of runAgentLoop(messages)) {
+        if (ev.type === "done") {
+          res.status(200).json({ answer: ev.answer, agentsConsultes: ev.agentsConsultes, charts: ev.charts, history: ev.history });
+          return;
         }
       }
-      messages.push({ role: "user", content: toolResults });
+    } catch (e) {
+      res.status(500).json({ error: String(e && e.message ? e.message : e) });
     }
+    return;
+  }
 
-    res.status(200).json({
-      answer: "Desole, je n'ai pas reussi a conclure sur cette question (trop d'etapes necessaires).",
-      agentsConsultes: [...agentsConsultes],
-      charts,
-      history: messages,
-    });
+  // Mode SSE -- destine au futur panneau React/AG-UI (phase 2).
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  const send = (ev) => res.write(`data: ${JSON.stringify(ev)}\n\n`);
+  try {
+    for await (const ev of runAgentLoop(messages)) {
+      send(ev);
+      if (ev.type === "done") break;
+    }
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    send({ type: "error", message: String(e && e.message ? e.message : e) });
+  } finally {
+    res.end();
   }
 };
