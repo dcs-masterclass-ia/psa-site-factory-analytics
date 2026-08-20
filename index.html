@@ -2158,9 +2158,12 @@ input[type=date]{color-scheme:light}
           <span style="width:10px;height:2px;background:var(--text2);display:inline-block;border-radius:1px"></span>
           Repère : niveau V1
         </div>
+        <sc-if value="{{ v2Modal.hasFunnelCoverageNote }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:14px;font-size:11.5px;font-weight:600;color:var(--muted2)">{{ v2Modal.funnelCoverageNote }}</div>
         </sc-if>
-        <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:20px;font-size:12.5px;font-weight:600;color:var(--muted2)">Indisponible sur une période personnalisée (nécessite une requête GA4 dédiée, réservée aux semaines précalculées).</div>
+        </sc-if>
+        <sc-if value="{{ v2Modal.showFunnelUnavailable }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:20px;font-size:12.5px;font-weight:600;color:var(--muted2)">Indisponible sur cette période : aucune semaine précalculée par le pipeline ne la couvre entièrement (nécessite une requête GA4 dédiée).</div>
         </sc-if>
       </div>
 
@@ -5321,12 +5324,42 @@ class Component extends DCLogic {
       const baseMobilePct = v2BaselineRow ? v2BaselineRow.mobilePct : null;
       const mobileDeltaPts = (mobilePct != null && baseMobilePct != null) ? mobilePct - baseMobilePct : null;
       const jours = Math.round((new Date(v2CustomRange.fin) - new Date(v2CustomRange.debut)) / 86400000) + 1;
-      return {
+      const row = {
         marque: v2ModalCard.site, periode: "Personnalisée", isBaseline: false,
         debut: v2CustomRange.debut, fin: v2CustomRange.fin, jours,
         sessionsParent: sp, sessionsReprise: sr, leads: lv, leadsParJour: jours ? lv / jours : 0,
         conversionPct: null, deltaPts: null, mobilePct, desktopPct, mobileDeltaPts,
       };
+      // le funnel (etapes du parcours) n'est jamais requete a la volee cote
+      // client, MAIS quand la plage personnalisee est couverte par une ou
+      // plusieurs semaines DEJA precalculees par le pipeline (v2Weekly.weeks,
+      // meme requete GA4 que les pastilles), on peut sommer leurs vrais
+      // compteurs par etape plutot que declarer le funnel indisponible --
+      // c'est le cas typique d'une plage qui correspond juste a "toutes les
+      // semaines suivies" (ex. 16 juillet -> 17 aout). Seules les semaines
+      // ENTIEREMENT contenues dans [debut, fin] comptent : une semaine a
+      // cheval sur le bord de la plage demandee ne serait pas fidele si on
+      // l'incluait quand meme.
+      const weeksInside = ((v2SiteData.v2Weekly || {}).weeks || [])
+        .filter(w => w.funnel && w.debut >= v2CustomRange.debut && w.fin <= v2CustomRange.fin);
+      if (weeksInside.length) {
+        const stepTotals = {};
+        for (const w of weeksInside) for (const s of w.funnel) stepTotals[s.step] = (stepTotals[s.step] || 0) + s.users;
+        const firstTotal = stepTotals[V2_STEP_LABELS[0]] || 0;
+        V2_STEP_KEYS.forEach((k, i) => {
+          const total = stepTotals[V2_STEP_LABELS[i]];
+          row[k] = (total != null && firstTotal) ? total / firstTotal * 100 : null;
+        });
+        const lastTotal = stepTotals[V2_STEP_LABELS[V2_STEP_LABELS.length - 1]];
+        row.conversionPct = (lastTotal != null && firstTotal) ? lastTotal / firstTotal * 100 : null;
+        row.deltaPts = (row.conversionPct != null && v2BaselineRow && v2BaselineRow.conversionPct != null)
+          ? row.conversionPct - v2BaselineRow.conversionPct : null;
+        const couverte = weeksInside[0].debut === v2CustomRange.debut && weeksInside[weeksInside.length - 1].fin === v2CustomRange.fin;
+        row.funnelCoverageNote = couverte ? null :
+          "Funnel calculé sur les semaines précalculées couvertes par cette plage : " +
+          fmtDateShort(weeksInside[0].debut) + " → " + fmtDateShort(weeksInside[weeksInside.length - 1].fin) + ".";
+      }
+      return row;
     })() : null;
     const v2SelectedRow = v2CustomActive ? v2CustomRow : (v2ReportRows[v2SelIdx] || null);
     const v2HasWeeks = v2ReportRows.length > 1;
@@ -5383,6 +5416,9 @@ class Component extends DCLogic {
         sessionsReprise: fmt(row.sessionsReprise),
         conversion: row.conversionPct != null ? dec(row.conversionPct, 1) + " %" : "—",
         hasFunnelForPeriod: hasStepData,
+        funnelCoverageNote: row.funnelCoverageNote || null,
+        hasFunnelCoverageNote: !!row.funnelCoverageNote,
+        showFunnelUnavailable: v2CustomActive && !hasStepData,
         mobilePct: row.mobilePct == null ? "—" : dec(row.mobilePct, 0) + " %",
         mobileDeltaText: !mobOk ? "" : (row.mobileDeltaPts >= 0 ? "+" : "") + dec(row.mobileDeltaPts, 1) + " pts vs V1",
         mobileDeltaStyle: "font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;color:" + mobColor,
