@@ -3031,6 +3031,13 @@ class Component extends DCLogic {
     if (!question || this.state.chatBusy) return;
     const attachments = this.state.chatAttachments;
     const scope = this.state.chatScope;
+    // site/onglet actuellement affiches a l'ecran, envoyes a part de
+    // chatScope (qui reste un choix manuel independant, cf.
+    // CLAUDE.md/plan "intelligence dashboard") -- sert de repli cote
+    // serveur seulement quand rien n'est scope et que la question est
+    // ambigue ("ce site", "ici").
+    const view = (this.state.sites.length === 1)
+      ? { site: this.state.sites[0], tab: this.state.tab } : null;
     const messages = this.state.chatMessages.concat([{
       role: "user", text: question, hasAgents: false, agentBadges: [], charts: [],
       attachmentNames: attachments.map(a => a.name),
@@ -3040,7 +3047,7 @@ class Component extends DCLogic {
       const r = await fetch("/api/agent", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question, history: this.state.chatHistory, scope, attachments }),
+        body: JSON.stringify({ question, history: this.state.chatHistory, scope, attachments, view }),
       });
       const json = await r.json();
       if (!r.ok) throw new Error(json.error || "Erreur de l'assistant.");

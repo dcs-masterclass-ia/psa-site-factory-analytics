@@ -9,7 +9,7 @@
  */
 
 const { callClaude } = require("./anthropic");
-const { loadSite, listSites } = require("./data");
+const { loadSite, loadSiteRaw, listSites } = require("./data");
 const { getFile, createBranch, updateFile, createPullRequest } = require("./github");
 
 // Haiku 4.5, pas Sonnet : les agents specialistes resument/interpretent des
@@ -77,6 +77,70 @@ function getSeries(site, metric, months) {
   return { labels, values };
 }
 
+// seuils repris de pipeline/insights.py (PLANCHER_ENTREES, seuil "mois
+// incomplet" sur tdays) -- un mois sans assez de recul ou d'entrees dans le
+// parcours fausserait le classement (petit echantillon = pourcentage
+// instable), meme logique de garde-fou que les insights generes au build.
+const PEERS_PLANCHER_ENTREES = 30;
+const PEERS_PLANCHER_JOURS = 20;
+
+// dernier mois "fiable" du funnel pour un site : le plus recent avec assez
+// de jours releves ET assez d'entrees dans le parcours pour que son taux de
+// conversion ne soit pas du bruit statistique.
+function derniereMoisFunnelFiable(raw) {
+  const fm = raw.funnelMonth || {};
+  const tm = raw.trafficMonth || {};
+  const mois = Object.keys(fm).filter(m => m !== "total").sort();
+  for (let i = mois.length - 1; i >= 0; i--) {
+    const m = mois[i];
+    const bloc = fm[m];
+    const steps = bloc && bloc.steps;
+    const entrees = steps && steps.length ? steps[0].users : 0;
+    const tdays = (tm[m] || {}).tdays;
+    if (bloc && bloc.conversion_pct != null && entrees >= PEERS_PLANCHER_ENTREES
+        && (tdays == null || tdays >= PEERS_PLANCHER_JOURS)) {
+      return { mois: m, valeur: bloc.conversion_pct };
+    }
+  }
+  return null;
+}
+
+// rang/mediane/meilleur d'un site parmi tout le parc -- meme perimetre
+// (tous les sites, pas de filtre marque/marche) et meme metrique (taux de
+// conversion du funnel) que le rang deja affiche cote client sur l'onglet
+// GA4 (index.html, ~ligne 4412), pour ne jamais dire au KAM un chiffre
+// different de ce qu'il voit deja a l'ecran. Une seule metrique pour
+// l'instant, extensible plus tard si l'usage le justifie.
+function compareToPeers(site, metric) {
+  if (metric !== "conversion_funnel") {
+    return { error: "Metrique non supportee. Seule 'conversion_funnel' est disponible pour l'instant." };
+  }
+  const points = [];
+  for (const nom of listSites()) {
+    const raw = loadSiteRaw(nom);
+    if (!raw) continue;
+    const r = derniereMoisFunnelFiable(raw);
+    if (r) points.push({ site: nom, valeur: r.valeur, mois: r.mois });
+  }
+  const moi = points.find(p => p.site === site);
+  if (!moi) {
+    return { error: "Pas assez de donnees fiables (funnel) pour ce site sur cette metrique -- verifie le nom exact avec list_sites." };
+  }
+  points.sort((a, b) => b.valeur - a.valeur);
+  const rang = points.findIndex(p => p.site === site) + 1;
+  const valeursTriees = points.map(p => p.valeur).sort((a, b) => a - b);
+  const mid = Math.floor(valeursTriees.length / 2);
+  const mediane = valeursTriees.length % 2
+    ? valeursTriees[mid] : (valeursTriees[mid - 1] + valeursTriees[mid]) / 2;
+  const meilleur = points[0];
+  return {
+    site, metrique: "conversion_funnel", mois_utilise: moi.mois,
+    valeur: moi.valeur, rang, total_sites: points.length,
+    mediane_parc: Math.round(mediane * 100) / 100,
+    meilleur_site: meilleur.site, meilleur_valeur: meilleur.valeur,
+  };
+}
+
 async function askSpecialist(systemPrompt, question, sites) {
   const ctx = siteContext(sites);
   if (Object.keys(ctx).length === 0) {
@@ -137,6 +201,19 @@ const TOOLS = [
         sites: { type: "array", items: { type: "string" } },
       },
       required: ["question", "sites"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "compare_to_peers",
+    description: "Compare un site a l'ensemble du parc sur une metrique (rang, mediane du parc, meilleur site) -- utilise pour repondre a 'comment se situe ce site', 'est-ce dans la moyenne', 'est-ce un bon ou mauvais chiffre'. Seule la metrique 'conversion_funnel' (taux de conversion du parcours de reprise) est disponible pour l'instant.",
+    input_schema: {
+      type: "object",
+      properties: {
+        site: { type: "string", description: "Nom exact du site (voir list_sites)." },
+        metric: { type: "string", enum: ["conversion_funnel"] },
+      },
+      required: ["site", "metric"],
       additionalProperties: false,
     },
   },
@@ -333,6 +410,9 @@ async function runTool(name, input) {
   if (name === "get_series") {
     const result = getSeries(input.site, input.metric, input.months);
     return result || { error: "Site ou metrique inconnu -- verifie avec list_sites." };
+  }
+  if (name === "compare_to_peers") {
+    return compareToPeers(input.site, input.metric);
   }
   if (name === "ask_agent_dashboard") {
     return await runDashboardAgent(input.spec || "");

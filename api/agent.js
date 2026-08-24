@@ -27,9 +27,10 @@ const MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024; // 4 Mo par fichier (base64 decode
 const SYSTEM = `Tu es Agent KAM, le cerveau de l'assistant "Hermes" du dashboard PSA Site Factory. Les personnes qui te parlent sont des Key Account Managers qui suivent la performance de sites de reprise automobile (trafic, leads, conversion).
 
 Regles :
-- Reponds en interrogeant les agents specialises a ta disposition (list_sites, ask_agent_analytics, ask_agent_business, ask_agent_ux, get_series, show_chart, ask_agent_dashboard) plutot qu'a partir de connaissances generales -- ce sont eux qui ont acces aux vraies donnees.
-- Utilise list_sites si tu n'es pas sur du nom exact d'un site. Si un "Perimetre selectionne" est indique dans le message de l'utilisateur, priorise ces sites sauf si la question en nomme explicitement d'autres.
+- Reponds en interrogeant les agents specialises a ta disposition (list_sites, ask_agent_analytics, ask_agent_business, ask_agent_ux, get_series, compare_to_peers, show_chart, ask_agent_dashboard) plutot qu'a partir de connaissances generales -- ce sont eux qui ont acces aux vraies donnees.
+- Utilise list_sites si tu n'es pas sur du nom exact d'un site. Si un "Perimetre selectionne" est indique dans le message de l'utilisateur, priorise ces sites sauf si la question en nomme explicitement d'autres. Si rien n'est selectionne et que la question est ambigue ("ce site", "ici", "on"), utilise en repli le site/onglet indique par "Actuellement affiche dans le dashboard" quand ce contexte est present.
 - Pour une question d'analyse ("pourquoi X a baisse", "quel impact business", "quelles actions proposer"), appelle plusieurs agents pertinents (analytics + business + ux selon le cas) puis synthetise UNE reponse argumentee et chiffree qui croise leurs constats -- jamais une simple liste de chiffres juxtaposes sans interpretation.
+- Pour une question de positionnement ("comment se situe ce site", "est-ce dans la moyenne", "est-ce un bon chiffre"), appelle compare_to_peers plutot que de qualifier un chiffre a l'instinct -- un chiffre n'est "bon" ou "mauvais" que compare au reste du parc.
 - Visualisation : quand une evolution chiffree (trafic, leads, funnel...) est au coeur de la reponse, appelle get_series pour obtenir les vraies valeurs puis show_chart pour les afficher -- ne recopie JAMAIS des valeurs approximees depuis le texte d'un autre agent dans un graphique, elles doivent venir de get_series.
 - N'appelle ask_agent_dashboard que si la demande porte explicitement sur une modification du dashboard lui-meme (nouveau graphique, nouveau module...).
 - Si des pieces jointes sont fournies, elles apparaissent directement dans ce message -- appuie-toi dessus si la question les concerne.
@@ -43,12 +44,22 @@ function labelForTool(name) {
     ask_agent_business: "Business",
     ask_agent_ux: "UX",
     get_series: "Données",
+    compare_to_peers: "Comparaison",
     show_chart: "Visualisation",
     ask_agent_dashboard: "Dashboard",
   }[name] || name;
 }
 
-function buildInitialContent(question, scope, attachments) {
+// libelle humain pour l'onglet actuellement affiche -- doit rester en phase
+// avec les cles internes (st.tab) de index.html, cf. TAB_LABELS_VIEW plus
+// bas dans ce fichier si de nouveaux onglets sont ajoutes.
+const TAB_LABELS_VIEW = {
+  ga4: "Vue d'ensemble (GA4)", gsc: "Search Console", v2: "Comparaison V2",
+  performance: "PageSpeed", tableau: "Tableau (leads back-office)",
+  assistant: "KamIA", compare: "Comparatif",
+};
+
+function buildInitialContent(question, scope, attachments, view) {
   const blocks = [];
   for (const att of (attachments || []).slice(0, MAX_ATTACHMENTS)) {
     if (!att || !att.dataBase64 || !att.mediaType) continue;
@@ -61,6 +72,14 @@ function buildInitialContent(question, scope, attachments) {
     }
   }
   let text = question;
+  // "Actuellement affiche" (site+onglet a l'ecran, automatique) reste une
+  // ligne DISTINCTE du "Perimetre selectionne" (choix manuel de
+  // l'utilisateur, chatScope) -- jamais fusionnes : chatScope doit pouvoir
+  // rester independant du site consulte (cf. plan "intelligence dashboard").
+  if (view && typeof view.site === "string" && view.site) {
+    const tabLabel = TAB_LABELS_VIEW[view.tab] || view.tab || "";
+    text += `\n\n(Actuellement affiché dans le dashboard : ${view.site}${tabLabel ? ", onglet " + tabLabel : ""} -- a utiliser seulement si aucun perimetre n'est selectionne et que la question est ambigue)`;
+  }
   if (Array.isArray(scope) && scope.length > 0) {
     text += `\n\n(Perimetre selectionne par l'utilisateur : ${scope.join(", ")})`;
   }
@@ -381,14 +400,14 @@ module.exports = async function handler(req, res) {
   }
 
   // Mode JSON bufferise -- comportement inchange pour le front actuel.
-  const { question, history, scope, attachments } = req.body || {};
+  const { question, history, scope, attachments, view } = req.body || {};
   if (!question || typeof question !== "string") {
     res.status(400).json({ error: "question requise." });
     return;
   }
 
   const messages = Array.isArray(history) ? history.slice(-20) : [];
-  messages.push({ role: "user", content: buildInitialContent(question, scope, attachments) });
+  messages.push({ role: "user", content: buildInitialContent(question, scope, attachments, view) });
 
   try {
     for await (const ev of runAgentLoop(messages)) {

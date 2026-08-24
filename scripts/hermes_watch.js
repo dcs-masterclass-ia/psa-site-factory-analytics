@@ -14,17 +14,19 @@ const fs = require("fs");
 const path = require("path");
 const { askSpecialist } = require("../api/_lib/tools");
 
-const WATCH_SYSTEM = `Tu es l'analyste de veille automatique du dashboard PSA Site Factory. On te donne un site dont le trafic ou les leads ont significativement bouge sur les 7 derniers jours par rapport aux 7 precedents, avec les chiffres bruts en contexte.
+const WATCH_SYSTEM = `Tu es l'analyste de veille automatique du dashboard PSA Site Factory. On te donne un site retenu par le pre-tri statistique pour au moins un signal : trafic ou leads qui ont significativement bouge sur les 7 derniers jours vs les 7 precedents, une regression PageSpeed entre les deux derniers releves, et/ou une degradation de position Google Search Console d'un mois sur l'autre.
 
 Reponds en deux parties, separees par une ligne contenant UNIQUEMENT "---" :
 1. Une synthese d'UNE phrase (20 mots maximum) : le fait principal et sa cause probable, sans detail chiffre.
-2. L'analyse complete en 3 a 5 phrases : cause la plus probable en te basant sur les donnees fournies (funnel, canaux, leads par marque/appareil si disponibles), impact business, action concrete si pertinente.
+2. L'analyse complete en 3 a 5 phrases : cause la plus probable en te basant sur les donnees fournies (funnel, canaux, leads par marque/appareil si disponibles), impact business, action concrete si pertinente. Si plusieurs signaux distincts (trafic/leads, PageSpeed, position SEO) sont presents en meme temps, dis-le explicitement et propose une explication qui les relie si les donnees le permettent -- c'est le signal le plus utile, ne le traite jamais comme des faits separes sans le mentionner.
 
 Sois direct et factuel, ne cite que des donnees presentes dans le JSON fourni -- si tu ne peux pas conclure avec certitude, dis-le clairement plutot que de deviner. Ne mets rien avant la synthese ni en dehors de ces deux parties.`;
 
 function gravite(c) {
   const pire = Math.max(Math.abs(c.sessionsDelta || 0), Math.abs(c.leadsDelta || 0));
-  if (c.anomalieDetectee || pire >= 50) return "important";
+  const signauxCroises = [!!c.trafficLeadsSignificatif, !!c.pagespeedRegression, !!c.seoDegradation]
+    .filter(Boolean).length;
+  if (c.anomalieDetectee || pire >= 50 || signauxCroises >= 2) return "important";
   return "a_surveiller";
 }
 
@@ -50,6 +52,15 @@ function question(c) {
     parts.push(`leads : ${c.leadsRecent} contre ${c.leadsPrecedent} (${c.leadsDelta > 0 ? "+" : ""}${c.leadsDelta} %)`);
   }
   if (c.anomalieDetectee) parts.push("un trafic automatise a ete detecte recemment sur ce site");
+  if (c.pagespeedRegression) {
+    const { deltas, dateRecente, datePrecedente } = c.pagespeedRegression;
+    const detail = Object.entries(deltas).map(([plateforme, delta]) => `${plateforme} ${delta} pts`).join(", ");
+    parts.push(`regression PageSpeed entre le releve du ${datePrecedente} et celui du ${dateRecente} (${detail})`);
+  }
+  if (c.seoDegradation) {
+    const { moisPrecedent, moisRecent, positionPrecedente, positionRecente, deltaPosition } = c.seoDegradation;
+    parts.push(`position Google Search Console degradee de ${positionPrecedente} a ${positionRecente} (+${deltaPosition}) entre ${moisPrecedent} et ${moisRecent}`);
+  }
   return `Periode recente analysee : ${c.periodeRecente}. Constat : ${parts.join(" ; ")}. Explique et evalue l'impact.`;
 }
 

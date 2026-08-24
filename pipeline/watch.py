@@ -33,6 +33,56 @@ VOLUME_MIN = 20            # sous ce volume hebdo (sessions OU leads), un
                             # ecart en % n'est pas fiable (bruit statistique
                             # sur de petits chiffres) -- on ignore le site.
 
+# signaux croises (PageSpeed, SEO) : independants du delta sessions/leads
+# ci-dessus -- un site peut se degrader sur l'un sans que l'autre ait encore
+# bouge (ex. une regression de perf avant que ca se voie sur le trafic).
+PAGESPEED_SEUIL_PTS = 15   # points perdus (mobile OU desktop) entre les
+                            # deux derniers releves pour declencher
+SEARCH_SEUIL_POSITION = 3.0  # positions perdues sur GSC, mois vs mois precedent
+SEARCH_PLANCHER_IMPR = 50  # meme plancher que PLANCHER_GSC_IMPR (pipeline/insights.py) --
+                            # sous ce volume d'impressions, un ecart de position est du bruit
+
+
+def _pagespeed_regression(pagespeed):
+    """None si rien d'assez net -- deux releves dates minimum, chute d'au
+    moins PAGESPEED_SEUIL_PTS sur mobile ou desktop entre les deux derniers."""
+    historique = (pagespeed or {}).get("historique") or {}
+    dates = sorted(historique.keys())
+    if len(dates) < 2:
+        return None
+    precedent, recent = historique[dates[-2]], historique[dates[-1]]
+    deltas = {}
+    for plateforme in ("mobile", "desktop"):
+        p, r = precedent.get(plateforme), recent.get(plateforme)
+        if p is not None and r is not None and (p - r) >= PAGESPEED_SEUIL_PTS:
+            deltas[plateforme] = r - p
+    if not deltas:
+        return None
+    return {"deltas": deltas, "dateRecente": dates[-1], "datePrecedente": dates[-2]}
+
+
+def _seo_degradation(search_month):
+    """None si rien d'assez net -- deux mois avec assez d'impressions pour
+    que la position ne soit pas du bruit, degradation d'au moins
+    SEARCH_SEUIL_POSITION entre les deux derniers mois."""
+    mois = sorted(m for m in (search_month or {}) if m != "total")
+    if len(mois) < 2:
+        return None
+    precedent, recent = search_month[mois[-2]], search_month[mois[-1]]
+    if (precedent.get("impressions", 0) < SEARCH_PLANCHER_IMPR
+            or recent.get("impressions", 0) < SEARCH_PLANCHER_IMPR):
+        return None
+    # position GSC : un chiffre plus grand = plus loin dans les resultats,
+    # donc pire -- delta positif ici veut dire une degradation.
+    delta_position = recent.get("position", 0) - precedent.get("position", 0)
+    if delta_position < SEARCH_SEUIL_POSITION:
+        return None
+    return {
+        "deltaPosition": round(delta_position, 1),
+        "moisRecent": mois[-1], "moisPrecedent": mois[-2],
+        "positionRecente": recent.get("position"), "positionPrecedente": precedent.get("position"),
+    }
+
 
 def _charge(slug):
     chemin = DATA / f"{slug}.json"
@@ -85,15 +135,28 @@ def evalue_site(d):
         (ecart_sess is not None and abs(ecart_sess) >= SEUIL_ECART_PCT) or
         (ecart_leads is not None and abs(ecart_leads) >= SEUIL_ECART_PCT)
     )
-    if not (significatif or anomalie):
+
+    # signaux croises : declenchent independamment du trafic/leads --
+    # capte une regression PageSpeed ou une degradation SEO avant qu'elle
+    # ne se voie forcement deja sur les sessions/leads.
+    pagespeed_regression = _pagespeed_regression(d.get("pagespeed"))
+    seo_degradation = _seo_degradation(d.get("searchMonth"))
+
+    if not (significatif or anomalie or pagespeed_regression or seo_degradation):
         return None
 
     return {
         "sessionsDelta": ecart_sess, "leadsDelta": ecart_leads,
+        "trafficLeadsSignificatif": significatif,  # distingue "chiffre present" de
+        # "assez marque pour compter comme signal" -- utilise par
+        # scripts/hermes_watch.js (gravite()) pour ne pas confondre un delta
+        # anodin avec un vrai signal croise.
         "anomalieDetectee": anomalie,
         "sessionsRecent": sess_recent, "sessionsPrecedent": sess_prec,
         "leadsRecent": leads_recent, "leadsPrecedent": leads_prec,
         "periodeRecente": f"{debut_recent.isoformat()}..{fin.isoformat()}",
+        "pagespeedRegression": pagespeed_regression,
+        "seoDegradation": seo_degradation,
     }
 
 
