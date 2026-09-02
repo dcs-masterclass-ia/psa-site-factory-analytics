@@ -95,10 +95,23 @@ async function* callClaudeStream({ model, system, messages, tools, toolChoice, t
       const payload = JSON.parse(dataLine.slice(5).trim());
 
       if (payload.type === "content_block_start") {
-        blocks[payload.index] =
-          payload.content_block.type === "tool_use"
-            ? { type: "tool_use", id: payload.content_block.id, name: payload.content_block.name, _json: "" }
-            : { type: "text", text: "" };
+        const cb = payload.content_block;
+        if (cb.type === "tool_use") {
+          blocks[payload.index] = { type: "tool_use", id: cb.id, name: cb.name, _json: "" };
+        } else if (cb.type === "thinking") {
+          // extended thinking (thinking: {type:"adaptive"}) -- distinct du
+          // texte final : deltas separes (thinking_delta/signature_delta),
+          // jamais de "text_delta". Le confondre avec un bloc texte laisse
+          // un {type:"text", text:""} vide dans l'historique renvoye a
+          // l'API au tour suivant, que Claude rejette ("text content
+          // blocks must be non-empty") -- bug reel corrige ici, pas un
+          // souci de cle API.
+          blocks[payload.index] = { type: "thinking", thinking: "", signature: "" };
+        } else if (cb.type === "redacted_thinking") {
+          blocks[payload.index] = { type: "redacted_thinking", data: cb.data };
+        } else {
+          blocks[payload.index] = { type: "text", text: "" };
+        }
       } else if (payload.type === "content_block_delta") {
         const block = blocks[payload.index];
         if (payload.delta.type === "text_delta") {
@@ -106,6 +119,10 @@ async function* callClaudeStream({ model, system, messages, tools, toolChoice, t
           yield { type: "text-delta", text: payload.delta.text };
         } else if (payload.delta.type === "input_json_delta") {
           block._json += payload.delta.partial_json;
+        } else if (payload.delta.type === "thinking_delta") {
+          block.thinking += payload.delta.thinking;
+        } else if (payload.delta.type === "signature_delta") {
+          block.signature += payload.delta.signature;
         }
       } else if (payload.type === "content_block_stop") {
         const block = blocks[payload.index];
@@ -130,7 +147,16 @@ async function* callClaudeStream({ model, system, messages, tools, toolChoice, t
     type: "message-complete",
     content: blocks
       .filter(Boolean)
-      .map((b) => (b.type === "tool_use" ? { type: "tool_use", id: b.id, name: b.name, input: b.input } : { type: "text", text: b.text })),
+      // un bloc texte vide (ne devrait plus arriver avec le fix ci-dessus,
+      // garde-fou tout de meme) fait rejeter le message par l'API au tour
+      // suivant -- jamais le renvoyer dans l'historique.
+      .filter((b) => !(b.type === "text" && !b.text))
+      .map((b) => {
+        if (b.type === "tool_use") return { type: "tool_use", id: b.id, name: b.name, input: b.input };
+        if (b.type === "thinking") return { type: "thinking", thinking: b.thinking, signature: b.signature };
+        if (b.type === "redacted_thinking") return { type: "redacted_thinking", data: b.data };
+        return { type: "text", text: b.text };
+      }),
     stop_reason: stopReason,
   };
 }
