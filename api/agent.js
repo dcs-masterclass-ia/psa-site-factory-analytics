@@ -20,6 +20,14 @@ const { verifySessionFromRequest } = require("./_lib/auth");
 // (api/_lib/tools.js), le KAM orchestre et synthetise.
 const KAM_MODEL = "claude-sonnet-5";
 const KAM_EFFORT = "medium";
+// thinking (adaptive) et le texte final partagent ce budget -- 4096 etait
+// trop bas : sur une question qui enchaine plusieurs agents (Sites +
+// Business + Donnees), le raisonnement pouvait consommer tout le budget
+// avant meme d'ecrire la reponse, laissant stop_reason:"max_tokens" et un
+// texte vide (repondu par le front comme "(pas de reponse)"). 4096 restait
+// bien pour la boucle interne des agents specialistes (askSpecialist,
+// api/_lib/tools.js) qui n'utilisent pas le thinking adaptatif.
+const KAM_MAX_TOKENS = 16000;
 const MAX_ITERATIONS = 6;
 const MAX_ATTACHMENTS = 3;
 const MAX_ATTACHMENT_BYTES = 4 * 1024 * 1024; // 4 Mo par fichier (base64 decode)
@@ -109,7 +117,7 @@ async function* runAgentLoop(messages) {
       tools: TOOLS,
       thinking: { type: "adaptive" },
       effort: KAM_EFFORT,
-      maxTokens: 4096,
+      maxTokens: KAM_MAX_TOKENS,
     })) {
       if (ev.type === "text-delta") {
         yield { type: "text-delta", text: ev.text };
@@ -124,7 +132,16 @@ async function* runAgentLoop(messages) {
     messages.push({ role: "assistant", content: finalContent });
 
     if (stopReason !== "tool_use") {
-      const answer = (finalContent || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      let answer = (finalContent || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+      // filet de securite : ne jamais renvoyer une reponse vide en
+      // silence (le front l'affichait comme "(pas de reponse)", sans
+      // indice sur la cause) -- arrive si stop_reason:"max_tokens" a
+      // coupe la generation avant le texte (voir KAM_MAX_TOKENS ci-dessus).
+      if (!answer.trim()) {
+        answer = stopReason === "max_tokens"
+          ? "La reponse a ete coupee avant d'etre generee (limite de tokens atteinte pendant le raisonnement). Reessaie, ou reformule une question plus ciblee."
+          : "Je n'ai pas reussi a formuler de reponse pour cette question. Reessaie en la reformulant.";
+      }
       yield { type: "done", answer, agentsConsultes: [...agentsConsultes], charts, history: messages };
       return;
     }
@@ -287,7 +304,7 @@ async function runAguiLoop(send, claudeMessages, system, threadId, runId) {
       tools: TOOLS,
       thinking: { type: "adaptive" },
       effort: KAM_EFFORT,
-      maxTokens: 4096,
+      maxTokens: KAM_MAX_TOKENS,
     })) {
       if (ev.type === "text-delta") {
         if (!textStarted) {
@@ -310,6 +327,16 @@ async function runAguiLoop(send, claudeMessages, system, threadId, runId) {
     claudeMessages.push({ role: "assistant", content: finalContent });
 
     if (stopReason !== "tool_use") {
+      // meme filet de securite que le mode JSON (runAgentLoop) : jamais de
+      // reponse vide en silence (cf. KAM_MAX_TOKENS ci-dessus).
+      if (!textStarted) {
+        const fallback = stopReason === "max_tokens"
+          ? "La reponse a ete coupee avant d'etre generee (limite de tokens atteinte pendant le raisonnement). Reessaie, ou reformule une question plus ciblee."
+          : "Je n'ai pas reussi a formuler de reponse pour cette question. Reessaie en la reformulant.";
+        send({ type: "TEXT_MESSAGE_START", messageId, role: "assistant" });
+        send({ type: "TEXT_MESSAGE_CONTENT", messageId, delta: fallback });
+        send({ type: "TEXT_MESSAGE_END", messageId });
+      }
       sendState();
       send({ type: "RUN_FINISHED", threadId, runId, outcome: { type: "success" } });
       return;
