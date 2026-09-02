@@ -51,12 +51,26 @@ install/build anything for this static site).
   - `refresh.js` — triggers the `refresh.yml` GitHub Actions workflow
     on demand from the UI, using a fine-grained GitHub token kept
     server-side only.
+  - `kamia-conversations.js` — per-user KamIA chat history. Stores one
+    JSON file per profile (`kamia/<sha256(email)>.json`) in the private
+    **data repo** via the GitHub Contents API (`_lib/store.js`). `GET`
+    returns the conversation list (metadata only), `GET ?id=` one full
+    conversation, `PUT {upsert:[…],delete:[…]}` merges changes into the
+    file. The client (`index.html`) keeps a `localStorage` mirror for
+    instant paint / offline resilience and **batches** writes (flush on
+    conversation switch, every ~2 min, and on `visibilitychange`/
+    `pagehide`) — not one commit per message.
   - `_lib/` — shared helpers (`anthropic.js`, `auth.js`, `data.js`,
-    `github.js`, `google.js`, `tools.js`).
+    `github.js`, `store.js`, `google.js`, `tools.js`). `store.js` reuses
+    `DATA_REPO_TOKEN`, which therefore now needs **Contents: Read and
+    write** on `psa-site-factory-data` (it was read-only for
+    `fetch-data.sh`). Writes go to `KAMIA_STORE_BRANCH` (default `main`).
 - **`middleware.js`**: Vercel Edge Middleware, the *real* access control.
-  Guards `/data/:path*` and the sensitive `/api/*` routes by verifying the
+  Guards `/data/:path*` and the sensitive `/api/*` routes (`agent`,
+  `refresh`, `perf-ticket`, `kamia-conversations`) by verifying the
   `psf_session` HMAC cookie — the client-side login screen alone would not
-  stop someone from fetching `/data/*.json` directly.
+  stop someone from fetching `/data/*.json` directly. Add any new
+  session-protected endpoint to the `matcher` array.
 - **`pipeline/`** (Python): the data pipeline. `build.py` is the entry
   point — extracts GA4 (`ga4.py`, `funnel.py`, `channel.py`), Search
   Console (`search_console.py`, `insights.py`), leads/BO

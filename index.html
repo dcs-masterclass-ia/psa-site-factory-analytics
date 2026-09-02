@@ -2114,7 +2114,10 @@ input[type=date]{color-scheme:light}
           <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px">
             <div style="flex:1">
               <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Conversations</div>
-              <div style="margin-top:2px;font-size:12.5px;font-weight:500;color:var(--muted)">Enregistrées sur ce navigateur, pour {{ userEmail }}.</div>
+              <div style="margin-top:2px;font-size:12.5px;font-weight:500;color:var(--muted)">Historique de {{ userEmail }}, synchronisé sur ton compte.</div>
+              <sc-if value="{{ chatConvSyncLabel }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:4px;font-size:11px;font-weight:600;color:var(--muted2)">{{ chatConvSyncLabel }}</div>
+              </sc-if>
             </div>
             <button onClick="{{ toggleChatConvPicker }}" title="Fermer" style="width:30px;height:30px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="background:var(--hover)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
@@ -3071,6 +3074,7 @@ class Component extends DCLogic {
     chatConversations: [], // historique local (localStorage, cle par profil connecte) : { id, title, createdAt, updatedAt, messages, history, scope }
     chatConvId: null,      // id de la conversation courante (null = pas encore persistee)
     chatConvOpen: false,   // tiroir "Conversations" (onglet KamIA)
+    chatConvSync: "idle",  // etat de synchro serveur : idle | pending | saving | ok | error
   };
 
   /* le canevas est concu a largeur fixe (1780px, comme le modele fourni) ;
@@ -3180,21 +3184,80 @@ class Component extends DCLogic {
   setChatInput(e) { this.setState({ chatInput: e.target.value }); }
   pickQuickQuestion(text) { this.setState({ chatInput: text }, () => this.sendChatMessage()); }
   goToChatWith(text) { this.setState({ tab: "assistant" }, () => this.pickQuickQuestion(text)); }
-  /* ---- historique local des conversations KamIA (localStorage, cle par profil connecte) ---- */
+  /* ---- historique des conversations KamIA -----------------------------------
+   * Source de verite : /api/kamia-conversations (fichier par profil dans le
+   * repo de donnees prive). localStorage sert de cache d'affichage (peinture
+   * immediate au chargement) et de filet si l'API est indisponible.
+   * Ecritures groupees : saveCurrentConversation() ne touche que l'etat local
+   * + le cache ; le push serveur est differe (flush) au changement de
+   * conversation, toutes les ~2 min, et quand l'onglet passe en arriere-plan
+   * ou se ferme -- pour ne pas commiter a chaque message.
+   * -------------------------------------------------------------------------- */
   _convKey() { return "kamia:conversations:" + (this._userEmail || "anon"); }
-  loadConversations() {
-    let list = [];
+  _readConvCache() {
     try {
       const raw = localStorage.getItem(this._convKey());
-      if (raw) list = JSON.parse(raw);
-    } catch (e) { list = []; }
-    if (!Array.isArray(list)) list = [];
-    this.setState({ chatConversations: list });
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) { return []; }
   }
   persistConversations(list) {
     try { localStorage.setItem(this._convKey(), JSON.stringify(list)); } catch (e) {}
   }
-  // enregistre l'etat courant de la conversation (appele apres chaque echange)
+  loadConversations() {
+    if (!this._userEmail) return; // pas connecte : rien a charger
+    this._convPendingUpsert = new Set();
+    this._convPendingDelete = new Set();
+    // 1) peinture immediate depuis le cache local
+    const cached = this._readConvCache();
+    this.setState({ chatConversations: cached });
+    // 2) reconciliation avec le serveur
+    this._reconcileConversations(cached);
+    // 3) flush periodique tant qu'il reste des changements a pousser
+    if (!this._convFlushTimer) {
+      this._convFlushTimer = setInterval(() => this.flushConversations(), 120000);
+    }
+    if (!this._convVisWired) {
+      this._convVisWired = true;
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") this.flushConversations({ keepalive: true });
+      });
+      window.addEventListener("pagehide", () => this.flushConversations({ keepalive: true }));
+    }
+  }
+  async _reconcileConversations(cached) {
+    let serverMeta = null;
+    try {
+      const r = await fetch("/api/kamia-conversations", { headers: { accept: "application/json" } });
+      if (r.ok) serverMeta = (await r.json()).conversations || [];
+    } catch (e) { /* hors ligne : on reste sur le cache */ }
+    if (!serverMeta) { this.setState({ chatConvSync: "error" }); return; }
+
+    const byId = new Map();
+    // le serveur fait foi pour la liste ; on garde les messages deja en cache
+    for (const meta of serverMeta) {
+      const local = cached.find(c => c.id === meta.id);
+      const localNewer = local && local.messages && (local.updatedAt || 0) > (meta.updatedAt || 0);
+      const localSame = local && local.messages && (local.updatedAt || 0) === (meta.updatedAt || 0);
+      if (localNewer || localSame) {
+        byId.set(meta.id, { ...local, title: meta.title || local.title, createdAt: local.createdAt || meta.createdAt });
+        if (localNewer) this._convPendingUpsert.add(meta.id); // edits locaux pas encore pousses
+      } else {
+        byId.set(meta.id, { ...meta, _stub: true });
+      }
+    }
+    // conversations locales absentes du serveur (creees hors ligne / a migrer)
+    for (const local of cached) {
+      if (byId.has(local.id) || !local.messages || !local.messages.length) continue;
+      byId.set(local.id, local);
+      this._convPendingUpsert.add(local.id);
+    }
+    const list = [...byId.values()].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    this.persistConversations(list);
+    this.setState({ chatConversations: list, chatConvSync: this._convPendingUpsert.size ? "pending" : "ok" });
+    if (this._convPendingUpsert.size) this.flushConversations();
+  }
+  // upsert local (etat + cache) ; le push serveur est differe
   saveCurrentConversation() {
     const st = this.state;
     if (!st.chatMessages.length) return;
@@ -3215,16 +3278,67 @@ class Component extends DCLogic {
     if (idx >= 0) list[idx] = entry; else list.unshift(entry);
     list.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
     this.persistConversations(list);
-    this.setState({ chatConversations: list, chatConvId: id });
+    (this._convPendingUpsert || (this._convPendingUpsert = new Set())).add(id);
+    this.setState({ chatConversations: list, chatConvId: id, chatConvSync: "pending" });
+  }
+  async flushConversations(opts) {
+    const up = this._convPendingUpsert || new Set();
+    const del = this._convPendingDelete || new Set();
+    if (!up.size && !del.size) return;
+    const list = this.state.chatConversations;
+    const upsert = [...up]
+      .map(id => list.find(c => c.id === id))
+      .filter(c => c && c.messages && c.messages.length);
+    const payload = { upsert, delete: [...del] };
+    const bodyStr = JSON.stringify(payload);
+    // fetch keepalive plafonne le corps a ~64 Ko : au-dela on tente un envoi
+    // normal (l'onglet se ferme peut-etre avant, mais le prochain chargement
+    // reprendra le flush via les ids encore en attente).
+    const keepalive = !!(opts && opts.keepalive) && bodyStr.length < 60000;
+    // on considere l'envoi comme "parti" : en cas d'echec on remet les ids
+    this._convPendingUpsert = new Set();
+    this._convPendingDelete = new Set();
+    this.setState({ chatConvSync: "saving" });
+    try {
+      const r = await fetch("/api/kamia-conversations", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: bodyStr,
+        keepalive,
+      });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      this.setState({ chatConvSync: "ok" });
+    } catch (e) {
+      upsert.forEach(c => this._convPendingUpsert.add(c.id));
+      del.forEach(id => this._convPendingDelete.add(id));
+      this.setState({ chatConvSync: "error" });
+    }
   }
   newChatConversation() {
     this.saveCurrentConversation();
+    this.flushConversations();
     this.setState({ chatMessages: [], chatHistory: [], chatConvId: null, chatInput: "", chatAttachments: [], chatConvOpen: false });
   }
-  openChatConversation(id) {
-    const conv = this.state.chatConversations.find(c => c.id === id);
+  async openChatConversation(id) {
+    let conv = this.state.chatConversations.find(c => c.id === id);
     if (!conv) return;
     this.saveCurrentConversation();
+    this.flushConversations();
+    // conversation encore en "stub" (metadonnees seules) : on va chercher le corps
+    if (conv._stub || !conv.messages) {
+      try {
+        const r = await fetch("/api/kamia-conversations?id=" + encodeURIComponent(id));
+        if (r.ok) {
+          const full = (await r.json()).conversation;
+          if (full) {
+            conv = full;
+            const list = this.state.chatConversations.map(c => (c.id === id ? full : c));
+            this.persistConversations(list);
+            this.setState({ chatConversations: list });
+          }
+        }
+      } catch (e) { /* on ouvre avec ce qu'on a */ }
+    }
     this.setState({
       chatMessages: conv.messages || [], chatHistory: conv.history || [], chatScope: conv.scope || [],
       chatConvId: conv.id, chatConvOpen: false, chatInput: "", chatAttachments: [],
@@ -3233,9 +3347,12 @@ class Component extends DCLogic {
   deleteChatConversation(id) {
     const list = this.state.chatConversations.filter(c => c.id !== id);
     this.persistConversations(list);
-    const patch = { chatConversations: list };
+    (this._convPendingDelete || (this._convPendingDelete = new Set())).add(id);
+    if (this._convPendingUpsert) this._convPendingUpsert.delete(id);
+    const patch = { chatConversations: list, chatConvSync: "pending" };
     if (this.state.chatConvId === id) { patch.chatMessages = []; patch.chatHistory = []; patch.chatConvId = null; }
     this.setState(patch);
+    this.flushConversations();
   }
   toggleChatConvPicker() { this.setState(s => ({ chatConvOpen: !s.chatConvOpen })); }
   toggleChatScopePicker() { this.setState(s => ({ chatScopeOpen: !s.chatScopeOpen })); }
@@ -4385,7 +4502,7 @@ class Component extends DCLogic {
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatConvOpen: false, toggleChatConvPicker: () => {}, newChatConversation: () => {},
-        chatConvList: [], hasChatConvList: false, noChatConvList: true,
+        chatConvList: [], hasChatConvList: false, noChatConvList: true, chatConvSyncLabel: "",
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
         kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
@@ -6899,6 +7016,7 @@ class Component extends DCLogic {
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
       quickAnalysisCards,
       chatConvOpen: st.chatConvOpen,
+      chatConvSyncLabel: ({ saving: "Sauvegarde…", pending: "Sauvegarde…", ok: "Synchronisé", error: "Hors ligne — réessai auto" }[st.chatConvSync] || ""),
       toggleChatConvPicker: () => this.toggleChatConvPicker(),
       newChatConversation: () => this.newChatConversation(),
       hasChatConvList: st.chatConversations.length > 0, noChatConvList: st.chatConversations.length === 0,
