@@ -1929,7 +1929,7 @@ input[type=date]{color-scheme:light}
         </div>
       </div>
 
-      <div style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
+      <div id="kamiaChatScroll" style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
         <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
           <!-- ecran d'accueil centre (comme un vrai assistant, pas une
                grille de widgets BI) : la question se pose ici, les
@@ -3151,6 +3151,14 @@ class Component extends DCLogic {
     this.setState(s => ({ chatAttachments: s.chatAttachments.filter((_, i) => i !== idx) }));
   }
 
+  scrollKamiaToBottom() {
+    // auto-scroll de la conversation KamIA en bas a chaque nouveau message
+    // (double rAF : laisser le DSL re-rendre la liste avant de mesurer)
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const el = document.getElementById("kamiaChatScroll");
+      if (el) el.scrollTop = el.scrollHeight;
+    }));
+  }
   async sendChatMessage(e) {
     if (e && e.preventDefault) e.preventDefault();
     const question = (this.state.chatInput || "").trim();
@@ -3169,6 +3177,7 @@ class Component extends DCLogic {
       attachmentNames: attachments.map(a => a.name),
     }]);
     this.setState({ chatMessages: messages, chatInput: "", chatAttachments: [], chatBusy: true });
+    this.scrollKamiaToBottom();
     try {
       const r = await fetch("/api/agent", {
         method: "POST",
@@ -3186,11 +3195,13 @@ class Component extends DCLogic {
         chatHistory: json.history || this.state.chatHistory,
         chatBusy: false,
       });
+      this.scrollKamiaToBottom();
     } catch (e) {
       this.setState({
         chatMessages: messages.concat([{ role: "assistant", text: "Erreur : " + (e && e.message ? e.message : e), hasAgents: false, agentBadges: [], charts: [], attachmentNames: [] }]),
         chatBusy: false,
       });
+      this.scrollKamiaToBottom();
     }
   }
   wireLogin() {
