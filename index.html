@@ -673,9 +673,22 @@ input[type=date]{color-scheme:light}
       </sc-if>
     </div>
 
+    <!-- ============ Groupe repliable "Canaux & acquisition" (08/09/2026) ============
+         Retour KAM : onglet GA4 trop dense, aucune hierarchie entre les 10
+         sections empilees. Regroupe Ligne 4/4bis/4ter sous un en-tete
+         cliquable -- ouvert par defaut (encore tres consulte au quotidien),
+         a la difference du groupe "Analyse avancee" plus bas. -->
+    <div style="margin-top:22px;background:#fff;border-radius:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);overflow:hidden">
+      <div onClick="{{ toggleGa4Canaux }}" style="display:flex;align-items:center;gap:12px;padding:22px 26px;cursor:pointer;user-select:none">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 8px 18px -8px rgba(59,90,224,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M3 14.5 7.2 9l3.1 3.3L17 4.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div style="flex:1"><div style="font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--text)">Canaux &amp; acquisition</div><div style="font-size:12.5px;color:var(--muted2);margin-top:2px">Sessions par canal, conversion par canal/device, benchmark du parc</div></div>
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="none" style="{{ ga4CanauxChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+      <sc-if value="{{ ga4CanauxOpen }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:0 26px 26px">
 
     <!-- ============ Ligne 4 : Suivi des sessions par canal + KamIA ============ -->
-    <div style="display:grid;grid-template-columns:2.15fr 1fr;gap:22px;margin-top:22px">
+    <div style="display:grid;grid-template-columns:2.15fr 1fr;gap:22px">
 
       <div style="background:#fff;border-radius:30px;padding:28px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:20px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -879,6 +892,24 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
     </sc-if>
+
+      </div>
+      </sc-if>
+    </div>
+    <!-- ============ /Groupe "Canaux & acquisition" ============ -->
+
+    <!-- ============ Groupe repliable "Analyse avancee" (08/09/2026) ============
+         Volume/conversion 12 mois, rebond, audience, saisonnalite, rupture --
+         modules plus recents et moins consultes au quotidien que "Canaux".
+         Replie par defaut, mais toujours accessible d'un clic, pas retire. -->
+    <div style="margin-top:22px;background:#fff;border-radius:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);overflow:hidden">
+      <div onClick="{{ toggleGa4Avance }}" style="display:flex;align-items:center;gap:12px;padding:22px 26px;cursor:pointer;user-select:none">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#c8a2ff,#8b5cf6);box-shadow:0 8px 18px -8px rgba(139,92,246,.45);display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6" r="3.2" stroke="#fff" stroke-width="1.8"></circle><path d="M4 17c0-2.9 2.4-5.3 5.3-5.3h1.4c2.9 0 5.3 2.4 5.3 5.3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
+        <div style="flex:1"><div style="font-size:18px;font-weight:700;letter-spacing:-.4px;color:var(--text)">Analyse avancée</div><div style="font-size:12.5px;color:var(--muted2);margin-top:2px">Volume/conversion 12 mois, rebond, audience, saisonnalité, rupture de tendance</div></div>
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="none" style="{{ ga4AvanceChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="var(--muted)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </div>
+      <sc-if value="{{ ga4AvanceOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:0 26px 26px">
 
     <!-- ============ Ligne 5 : Volume vs conversion tradein ============ -->
     <sc-if value="{{ hasVolConvChart }}" hint-placeholder-val="{{ false }}">
@@ -1103,6 +1134,11 @@ input[type=date]{color-scheme:light}
       </div>
       </sc-if>
     </div>
+
+      </div>
+      </sc-if>
+    </div>
+    <!-- ============ /Groupe "Analyse avancée" ============ -->
   </div>
   </sc-if>
 
@@ -3048,6 +3084,11 @@ class Component extends DCLogic {
     siteSearch: "",      // texte tape dans la barre de recherche du selecteur de site
     periodPickerOpen: false, // ouverture du selecteur de periode/date (en-tete)
     exportMenuOpen: false,   // ouverture du menu Exporter (CSV/PDF/PPT, onglet GA4)
+    // Regroupement onglet GA4 (08/09/2026) : "Canaux" ouvert par defaut,
+    // "Analyse avancee" repliee par defaut -- preference relue depuis
+    // localStorage si l'utilisateur l'a deja changee (sinon defaut ci-dessous).
+    ga4CanauxOpen: (() => { try { return localStorage.getItem("psf_ga4_canaux_open") !== "0"; } catch (e) { return true; } })(),
+    ga4AvanceOpen: (() => { try { return localStorage.getItem("psf_ga4_avance_open") === "1"; } catch (e) { return false; } })(),
     sites: [],           // toujours UN SEUL site depuis la refonte du 08/08/2026 (navigation site par site) -- rempli au chargement
     compareSites: [],    // selection independante pour l'onglet "Comparer" (10/08/2026) -- plusieurs sites, jamais melangee avec la navigation site par site ci-dessus
     compareMetric: "traffic",
@@ -4571,6 +4612,8 @@ class Component extends DCLogic {
         currentSiteLabel: "Chargement…", currentSiteRank: "",
         currentSiteLogoRef: () => {}, currentSiteFlag: "",
         togglePeriodPicker: () => {}, closePeriodPicker: () => {}, periodPickerOpen: false,
+        toggleGa4Canaux: () => {}, toggleGa4Avance: () => {}, ga4CanauxOpen: true, ga4AvanceOpen: false,
+        ga4CanauxChevronStyle: "", ga4AvanceChevronStyle: "",
         periodPickerTopLabel: "", periodRangeLabel: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
         volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
@@ -7053,6 +7096,27 @@ class Component extends DCLogic {
       togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
       closePeriodPicker: () => this.setState({ periodPickerOpen: false }),
       periodPickerOpen: st.periodPickerOpen, periodPickerTopLabel, periodRangeLabel,
+      // Regroupement de l'onglet GA4 (retour KAM, 08/09/2026) : 10 sections
+      // empilees sans hierarchie -- "Canaux & acquisition" replie/deplie
+      // (ouvert par defaut, encore tres consulte), "Analyse avancee" repliee
+      // par defaut (modules recents -- benchmark, saisonnalite, rupture --
+      // moins consultes au quotidien, disponibles sans polluer la vue de
+      // base). Preference retenue par onglet dans localStorage, pas
+      // seulement en memoire, pour ne pas re-forcer un choix a chaque visite.
+      ga4CanauxOpen: st.ga4CanauxOpen,
+      ga4AvanceOpen: st.ga4AvanceOpen,
+      toggleGa4Canaux: () => this.setState(s => {
+        const v = !s.ga4CanauxOpen;
+        try { localStorage.setItem("psf_ga4_canaux_open", v ? "1" : "0"); } catch (e) {}
+        return { ga4CanauxOpen: v };
+      }),
+      toggleGa4Avance: () => this.setState(s => {
+        const v = !s.ga4AvanceOpen;
+        try { localStorage.setItem("psf_ga4_avance_open", v ? "1" : "0"); } catch (e) {}
+        return { ga4AvanceOpen: v };
+      }),
+      ga4CanauxChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.ga4CanauxOpen ? "180deg" : "0deg") + ")",
+      ga4AvanceChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.ga4AvanceOpen ? "180deg" : "0deg") + ")",
       volConvChart, hasVolConvChart, volConvTotal, volConvAvgConv, volConvLast, volConvProgress,
       volConvLastLabel: volConvLast ? dec(volConvLast.conv, 2) + " %" : "—",
       volConvLastMonthLabel: volConvLast ? volConvLast.label : "",
