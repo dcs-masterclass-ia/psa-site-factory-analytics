@@ -1081,204 +1081,206 @@ input[type=date]{color-scheme:light}
   <div style="{{ tabFadeStyle }}">
 
     <sc-if value="{{ noGsc }}" hint-placeholder-val="{{ false }}">
-      <div style="background:var(--card);border-radius:26px;padding:60px;text-align:center;animation:riseIn .6s ease both">
-        <div style="font-size:20px;font-weight:700;color:var(--text)">Search Console indisponible sur ce périmètre</div>
-        <div style="margin-top:8px;font-size:15px;font-weight:500;color:var(--muted)">Aucun des sites sélectionnés n'a de propriété Search Console rattachée, ou la période n'a pas encore été relevée.</div>
+      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:60px;text-align:center">
+        <div style="font-size:20px;font-weight:700;color:#121214">Search Console indisponible sur ce périmètre</div>
+        <div style="margin-top:8px;font-size:15px;font-weight:500;color:#9a9fa6">Aucun des sites sélectionnés n'a de propriété Search Console rattachée, ou la période n'a pas encore été relevée.</div>
       </div>
     </sc-if>
 
     <sc-if value="{{ hasGsc }}" hint-placeholder-val="{{ true }}">
-    <div style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;flex-direction:column;gap:34px">
 
-      <div style="display:grid;grid-template-columns:repeat(4,1fr) 1.5fr;gap:22px">
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:12px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .04s both">
-          <div style="display:flex">
-            <div style="flex:1;font-size:15px;color:var(--muted)">Clics</div>
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M4 11l5-6v4h7l-5 6v-4H4Z" fill="#fff"></path></svg></div>
-          </div>
-          <div ref="{{ gscKpiClics.ref }}" style="font-size:34px;font-weight:600;letter-spacing:-1.3px;color:var(--text);white-space:nowrap">0</div>
-          <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiClics.deltaStyle }}">{{ gscKpiClics.delta }}</span><span style="font-size:12.5px;color:var(--muted2)">{{ gscKpiClics.note }}</span></div>
-          <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:36px;overflow:visible"><path ref="{{ gscKpiClics.sparkRef }}" fill="none" stroke="{{ gscKpiClics.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">L'essentiel</span>
+          <span style="flex:1;height:1px;background:#e8e8ec"></span>
+          <span style="font-size:13px;color:#9a9fa6">{{ periodPillLabel }}</span>
         </div>
-
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:12px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .08s both">
-          <div style="display:flex">
-            <div style="flex:1;font-size:15px;color:var(--muted)">Impressions</div>
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#8ee7ff,#38bdf8);box-shadow:0 10px 22px -8px rgba(56,189,248,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M2 10s3-5 8-5 8 5 8 5-3 5-8 5-8-5-8-5Z" stroke="#fff" stroke-width="1.8"></path><circle cx="10" cy="10" r="2.2" fill="#fff"></circle></svg></div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) 1.5fr;gap:20px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="font-size:14.5px;color:#6d727a">Clics</div>
+            <div ref="{{ gscKpiClics.ref }}" style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;white-space:nowrap">0</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiClics.deltaStyle }}">{{ gscKpiClics.delta }}</span><span style="font-size:12px;color:#9a9fa6">{{ gscKpiClics.note }}</span></div>
+            <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:32px;overflow:visible"><path ref="{{ gscKpiClics.sparkRef }}" fill="none" stroke="{{ gscKpiClics.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
           </div>
-          <div ref="{{ gscKpiImpr.ref }}" style="font-size:34px;font-weight:600;letter-spacing:-1.3px;color:var(--text);white-space:nowrap">0</div>
-          <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiImpr.deltaStyle }}">{{ gscKpiImpr.delta }}</span><span style="font-size:12.5px;color:var(--muted2)">{{ gscKpiImpr.note }}</span></div>
-          <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:36px;overflow:visible"><path ref="{{ gscKpiImpr.sparkRef }}" fill="none" stroke="{{ gscKpiImpr.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
-        </div>
-
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:12px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
-          <div style="display:flex">
-            <div style="flex:1;font-size:15px;color:var(--muted)">CTR</div>
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#ff8b95,#f4485c);box-shadow:0 10px 22px -8px rgba(244,72,92,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M5 15 15 5M15 5H9m6 0v6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="font-size:14.5px;color:#6d727a">Impressions</div>
+            <div ref="{{ gscKpiImpr.ref }}" style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;white-space:nowrap">0</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiImpr.deltaStyle }}">{{ gscKpiImpr.delta }}</span><span style="font-size:12px;color:#9a9fa6">{{ gscKpiImpr.note }}</span></div>
+            <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:32px;overflow:visible"><path ref="{{ gscKpiImpr.sparkRef }}" fill="none" stroke="{{ gscKpiImpr.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
           </div>
-          <div ref="{{ gscKpiCtr.ref }}" style="font-size:34px;font-weight:600;letter-spacing:-1.3px;color:var(--text);white-space:nowrap">0 %</div>
-          <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiCtr.deltaStyle }}">{{ gscKpiCtr.delta }}</span><span style="font-size:12.5px;color:var(--muted2)">{{ gscKpiCtr.note }}</span></div>
-          <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:36px;overflow:visible"><path ref="{{ gscKpiCtr.sparkRef }}" fill="none" stroke="{{ gscKpiCtr.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
-        </div>
-
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:12px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .16s both">
-          <div style="display:flex">
-            <div style="flex:1;font-size:15px;color:var(--muted)">Position moyenne</div>
-            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#ffd479,#f59e0b);box-shadow:0 10px 22px -8px rgba(245,158,11,.6);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M5 8l5-5 5 5" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="font-size:14.5px;color:#6d727a">CTR</div>
+            <div ref="{{ gscKpiCtr.ref }}" style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;white-space:nowrap">0 %</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiCtr.deltaStyle }}">{{ gscKpiCtr.delta }}</span><span style="font-size:12px;color:#9a9fa6">{{ gscKpiCtr.note }}</span></div>
+            <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:32px;overflow:visible"><path ref="{{ gscKpiCtr.sparkRef }}" fill="none" stroke="{{ gscKpiCtr.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
           </div>
-          <div ref="{{ gscKpiPos.ref }}" style="font-size:34px;font-weight:600;letter-spacing:-1.3px;color:var(--text);white-space:nowrap">0</div>
-          <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiPos.deltaStyle }}">{{ gscKpiPos.delta }}</span><span style="font-size:12.5px;color:var(--muted2)">{{ gscKpiPos.note }}</span></div>
-          <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:36px;overflow:visible"><path ref="{{ gscKpiPos.sparkRef }}" fill="none" stroke="{{ gscKpiPos.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
-        </div>
-
-        <div style="background:linear-gradient(140deg,#14161a,#2a2f3a);border-radius:30px;padding:26px;box-shadow:0 16px 40px -14px rgba(17,17,26,.4);display:flex;flex-direction:column;gap:12px;color:#fff;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .2s both">
-          <div style="display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#a8b6ff,#6d5cf6 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2.5l1.7 4.3L16 8.5l-4.3 1.7L10 14.5l-1.7-4.3L4 8.5l4.3-1.7L10 2.5Z" fill="#fff"></path></svg></div><div style="font-size:12.5px;font-weight:500;letter-spacing:.08em;color:#b9bfcc">KAMIA · SEO</div></div>
-          <div style="font-size:15px;line-height:1.55;font-weight:400;text-wrap:pretty;flex:1">{{ gscHeadlineInsight }}</div>
-          <div style="display:flex;gap:8px;margin-top:auto">
-            <span onClick="{{ scrollToQueries }}" role="button" tabindex="0" style="background:rgba(255,255,255,.12);border-radius:100px;padding:8px 14px;font-size:12.5px;cursor:pointer">Voir le détail</span>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0">
+            <div style="font-size:14.5px;color:#6d727a">Position moyenne</div>
+            <div ref="{{ gscKpiPos.ref }}" style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;white-space:nowrap">0</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="{{ gscKpiPos.deltaStyle }}">{{ gscKpiPos.delta }}</span><span style="font-size:12px;color:#9a9fa6">{{ gscKpiPos.note }}</span></div>
+            <svg viewBox="0 0 120 36" preserveAspectRatio="none" style="width:100%;height:32px;overflow:visible"><path ref="{{ gscKpiPos.sparkRef }}" fill="none" stroke="{{ gscKpiPos.sparkColor }}" stroke-width="2.2" stroke-linecap="round"></path></svg>
+          </div>
+          <div style="position:relative;border-radius:20px;padding:22px;overflow:hidden;display:flex;flex-direction:column;gap:10px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22);min-width:0">
+            <div style="display:flex;align-items:center;gap:9px"><span style="width:22px;height:22px;flex:none;border-radius:11px;background:radial-gradient(circle at 32% 28%,#e4d9ff,#9d7bff 45%,#f2545b);box-shadow:0 0 0 4px rgba(157,123,255,.16)"></span><span style="font-size:11px;font-weight:700;letter-spacing:.07em;color:#cfc4ff">KAMIA · SEO</span></div>
+            <div style="font-size:14px;line-height:1.5;color:#f3f0ff;flex:1">{{ gscHeadlineInsight }}</div>
+            <div onClick="{{ scrollToQueries }}" role="button" tabindex="0" style="display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:11px;background:rgba(255,255,255,.12);color:#fff;font-size:12.5px;cursor:pointer;width:fit-content">Voir le détail</div>
           </div>
         </div>
       </div>
 
-      <div style="background:#fff;border-radius:30px;padding:28px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:18px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .22s both">
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Clics, impressions & position</div>
-          <div style="flex:1"></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:3px;background:#5b7cff;display:block"></span>Clics</div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)"><span style="width:10px;height:10px;border-radius:3px;background:#bfe3ff;display:block"></span>Impressions</div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)"><span style="width:16px;height:3px;background:#f59e0b;display:block"></span>Position</div>
+      <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Performances de recherche</span>
+          <span style="flex:1;height:1px;background:#e8e8ec"></span>
         </div>
-        <div style="position:relative" onMouseMove="{{ hoverGscMove }}" onMouseLeave="{{ hoverGscLeave }}">
-          <svg viewBox="0 0 900 230" preserveAspectRatio="none" style="width:100%;height:230px;display:block">
-            <defs><linearGradient id="gscImprFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(191,227,255,.85)"></stop><stop offset="1" stop-color="rgba(191,227,255,0)"></stop></linearGradient></defs>
-            <g stroke="var(--grid)"><line x1="0" y1="30" x2="900" y2="30"></line><line x1="0" y1="90" x2="900" y2="90"></line><line x1="0" y1="150" x2="900" y2="150"></line><line x1="0" y1="210" x2="900" y2="210"></line></g>
-            <path ref="{{ imprFillRef }}" fill="url(#gscImprFill)" stroke="none"></path>
-            <path ref="{{ imprLineRef }}" fill="none" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
-            <path ref="{{ clicsLineRef }}" fill="none" stroke="#5b7cff" stroke-width="2.8" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
-            <path ref="{{ posLineRef }}" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="7 6" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
-          </svg>
-          <sc-if value="{{ hasGscHover }}" hint-placeholder-val="{{ false }}">
-            <div style="position:absolute;top:0;bottom:0;width:1px;background:var(--line);pointer-events:none;{{ gscHover.guideStyle }}"></div>
-            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.imprDotStyle }}"></span>
-            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#5b7cff;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.clicsDotStyle }}"></span>
-            <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.posDotStyle }}"></span>
-            <div style="{{ gscHover.tooltipStyle }}">
-              <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px">{{ gscHover.label }}</div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2);padding:2px 0">
-                <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#5b7cff;display:inline-block"></span>Clics</span>
-                <span style="font-variant-numeric:tabular-nums;color:var(--text);font-weight:800">{{ gscHover.clicsText }}</span>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px">
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px">
+            <div style="font-size:18px;font-weight:600;color:#121214">Clics, impressions &amp; position</div>
+            <div style="flex:1"></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6d727a"><span style="width:16px;height:3px;border-radius:2px;background:#3b76e8"></span>Clics</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6d727a"><span style="width:12px;height:12px;border-radius:4px;background:#d7e4fb"></span>Impressions</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#6d727a"><span style="width:16px;height:0;border-top:3px dashed #e08a33"></span>Position</div>
+          </div>
+          <div style="position:relative" onMouseMove="{{ hoverGscMove }}" onMouseLeave="{{ hoverGscLeave }}">
+            <svg viewBox="0 0 900 230" preserveAspectRatio="none" style="width:100%;height:230px;display:block">
+              <defs><linearGradient id="gscImprFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(191,227,255,.85)"></stop><stop offset="1" stop-color="rgba(191,227,255,0)"></stop></linearGradient></defs>
+              <g stroke="#f2f3f5"><line x1="0" y1="30" x2="900" y2="30"></line><line x1="0" y1="90" x2="900" y2="90"></line><line x1="0" y1="150" x2="900" y2="150"></line><line x1="0" y1="210" x2="900" y2="210"></line></g>
+              <path ref="{{ imprFillRef }}" fill="url(#gscImprFill)" stroke="none"></path>
+              <path ref="{{ imprLineRef }}" fill="none" stroke="#38bdf8" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+              <path ref="{{ clicsLineRef }}" fill="none" stroke="#3b76e8" stroke-width="2.8" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+              <path ref="{{ posLineRef }}" fill="none" stroke="#e08a33" stroke-width="2.4" stroke-dasharray="7 6" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+            </svg>
+            <sc-if value="{{ hasGscHover }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:0;bottom:0;width:1px;background:#f0f0f2;pointer-events:none;{{ gscHover.guideStyle }}"></div>
+              <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.imprDotStyle }}"></span>
+              <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#3b76e8;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.clicsDotStyle }}"></span>
+              <span style="position:absolute;width:8px;height:8px;border-radius:50%;background:#e08a33;box-shadow:0 0 0 2px #fff;pointer-events:none;{{ gscHover.posDotStyle }}"></span>
+              <div style="{{ gscHover.tooltipStyle }}">
+                <div style="font-size:12.5px;font-weight:700;color:#6d727a;margin-bottom:6px">{{ gscHover.label }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:#3f4653;padding:2px 0"><span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#3b76e8;display:inline-block"></span>Clics</span><span style="font-variant-numeric:tabular-nums;color:#121214;font-weight:800">{{ gscHover.clicsText }}</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:#3f4653;padding:2px 0"><span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;display:inline-block"></span>Impressions</span><span style="font-variant-numeric:tabular-nums;color:#121214;font-weight:800">{{ gscHover.imprText }}</span></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:#3f4653;padding:2px 0"><span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#e08a33;display:inline-block"></span>Position</span><span style="font-variant-numeric:tabular-nums;color:#121214;font-weight:800">{{ gscHover.posText }}</span></div>
               </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2);padding:2px 0">
-                <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#38bdf8;display:inline-block"></span>Impressions</span>
-                <span style="font-variant-numeric:tabular-nums;color:var(--text);font-weight:800">{{ gscHover.imprText }}</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;font-weight:600;color:var(--text2);padding:2px 0">
-                <span style="display:flex;align-items:center;gap:7px"><span style="width:7px;height:7px;border-radius:50%;background:#f59e0b;display:inline-block"></span>Position</span>
-                <span style="font-variant-numeric:tabular-nums;color:var(--text);font-weight:800">{{ gscHover.posText }}</span>
-              </div>
-            </div>
-          </sc-if>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted2)">
-          <sc-for list="{{ gscAxisLabels }}" as="al" hint-placeholder-count="12"><span>{{ al }}</span></sc-for>
+            </sc-if>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#b6bac1">
+            <sc-for list="{{ gscAxisLabels }}" as="al" hint-placeholder-count="12"><span>{{ al }}</span></sc-for>
+          </div>
         </div>
       </div>
 
-      <div id="queriesAnchor" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;scroll-margin-top:24px">
+      <div id="queriesAnchor" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:20px;align-items:start;scroll-margin-top:24px">
 
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:16px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .26s both">
-          <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Requêtes</div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="display:grid;grid-template-columns:2fr 62px 74px 56px 52px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px">
-              <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span>
-            </div>
-            <sc-for list="{{ queries }}" as="q" hint-placeholder-count="6">
-              <div style="{{ q.row }}">
-                <span style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.term }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text)">{{ q.clicks }}</span>
-                <span style="text-align:right;font-size:13.5px;color:var(--muted)">{{ q.impr }}</span>
-                <span style="text-align:right;{{ q.ctrStyle }}">{{ q.ctr }}</span>
-                <span style="text-align:right;{{ q.posStyle }}">{{ q.pos }}</span>
-              </div>
-            </sc-for>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:8px">
+            <div style="font-size:18px;font-weight:600;color:#121214">Requêtes</div>
+            <div onClick="{{ openQueriesModal }}" role="button" tabindex="0" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ gscQueriesTotal }} requêtes</div>
           </div>
-          <div onClick="{{ openQueriesModal }}" role="button" tabindex="0" style="font-size:13px;font-weight:500;color:var(--accent);cursor:pointer;width:fit-content">Voir les {{ gscQueriesTotal }} requêtes</div>
-        </div>
-
-        <div style="background:#fff;border-radius:30px;padding:26px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:16px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
-          <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)">Pages</div>
-          <div style="display:flex;flex-direction:column;gap:3px;overflow-x:auto">
-            <div style="display:grid;grid-template-columns:2fr 62px 62px 60px 56px 62px 68px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px;min-width:560px">
-              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
-            </div>
-            <sc-for list="{{ pages }}" as="p" hint-placeholder-count="6">
-              <div style="{{ p.row }};min-width:560px">
-                <span style="font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.url }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text)">{{ p.clicks }}</span>
-                <span style="text-align:right;font-size:13.5px;color:var(--muted)">{{ p.impr }}</span>
-                <span style="text-align:right;{{ p.ctrStyle }}">{{ p.ctr }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2)">{{ p.pos }}</span>
-                <span style="text-align:right;font-size:13.5px;color:var(--muted)">{{ p.rebond }}</span>
-                <span style="text-align:right;font-size:13.5px;font-weight:600;color:var(--text2)">{{ p.conv }}</span>
-              </div>
-            </sc-for>
+          <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
+            <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
           </div>
-          <div style="font-size:11px;color:var(--muted2)">Rebond et conversion (GA4) sont rapprochés par chemin d'URL — « — » quand la page n'a pas assez de trafic GA4 sur la période pour être mesurée. Les leads back-office ne sont pas attribuables à une page précise.</div>
-          <div style="background:var(--warn-bg);border-radius:20px;padding:16px 18px;font-size:13px;line-height:1.5;color:var(--text2)">{{ pageInsightText }}</div>
-        </div>
-      </div>
-
-      <div style="background:#fff;border-radius:30px;padding:28px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:18px;margin-top:22px">
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Comparaison de périodes</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Choisis une plage de dates, comparée automatiquement à la même durée juste avant — requête en direct, pas de délai de traitement</div></div>
-          <div style="flex:1"></div>
-          <div style="display:flex;gap:6px">
-            <sc-for list="{{ gscCompareDimButtons }}" as="m" hint-placeholder-count="2">
-              <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
-            </sc-for>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <input type="date" value="{{ gscCompareDebut }}" onChange="{{ setGscCompareDebut }}" style="background:var(--soft);border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;padding:9px 14px;border-radius:12px">
-          <span style="font-size:13px;color:var(--muted2)">→</span>
-          <input type="date" value="{{ gscCompareFin }}" onChange="{{ setGscCompareFin }}" style="background:var(--soft);border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;padding:9px 14px;border-radius:12px">
-          <button onClick="{{ runGscCompare }}" disabled="{{ gscCompareRunDisabled }}" style="{{ gscCompareBtnStyle }}">{{ gscCompareRunLabel }}</button>
-          <sc-if value="{{ hasGscCompareResult }}" hint-placeholder-val="{{ false }}">
-            <span style="font-size:12.5px;color:var(--muted2)">{{ gscComparePeriodLabel }}</span>
-          </sc-if>
-        </div>
-        <sc-if value="{{ hasGscCompareError }}" hint-placeholder-val="{{ false }}">
-          <div style="background:var(--neg-bg);border-radius:16px;padding:14px 16px;font-size:13px;color:var(--neg)">{{ gscCompareError }}</div>
-        </sc-if>
-        <sc-if value="{{ hasGscCompareRows }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;flex-direction:column;overflow-x:auto">
-          <div style="display:grid;grid-template-columns:2fr 90px 90px 90px 62px 56px;gap:12px;font-size:11.5px;color:var(--muted2);padding-bottom:11px;min-width:560px">
-            <span>{{ gscCompareDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">vs période préc.</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span>
-          </div>
-          <sc-for list="{{ gscCompareRows }}" as="r" hint-placeholder-count="8">
-            <div style="display:grid;grid-template-columns:2fr 90px 90px 90px 62px 56px;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);min-width:560px">
-              <span style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.cle }}</span>
-              <span style="text-align:right;font-size:13px;font-weight:700;color:var(--text)">{{ r.clics }}</span>
-              <span style="text-align:right;font-size:12.5px;{{ r.deltaStyle }}">{{ r.deltaText }}</span>
-              <span style="text-align:right;font-size:13px;color:var(--muted)">{{ r.impr }}</span>
-              <span style="text-align:right;font-size:13px;color:var(--text2)">{{ r.ctr }}</span>
-              <span style="text-align:right;font-size:13px;color:var(--text2)">{{ r.pos }}</span>
+          <sc-for list="{{ queries }}" as="q" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
+              <span style="font-size:14.5px;font-weight:500;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ q.term }}</span>
+              <span style="text-align:right;font-size:14.5px;font-weight:600;color:#2f2f33">{{ q.clicks }}</span>
+              <span style="text-align:right;font-size:14.5px;color:#2f2f33">{{ q.impr }}</span>
+              <span style="text-align:right;{{ q.ctrStyle }}">{{ q.ctr }}</span>
+              <span style="text-align:right;{{ q.posStyle }}">{{ q.pos }}</span>
             </div>
           </sc-for>
         </div>
-        </sc-if>
+
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
+          <div style="font-size:18px;font-weight:600;color:#121214">Pages</div>
+          <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Search Console rapproché de GA4 par URL</div>
+          <div style="overflow-x:auto">
+          <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6;min-width:560px">
+            <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
+          </div>
+          <sc-for list="{{ pages }}" as="p" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;min-width:560px">
+              <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.url }}</span>
+              <span style="text-align:right;font-size:14px;font-weight:600;color:#2f2f33">{{ p.clicks }}</span>
+              <span style="text-align:right;font-size:14px;color:#2f2f33">{{ p.impr }}</span>
+              <span style="text-align:right;{{ p.ctrStyle }}">{{ p.ctr }}</span>
+              <span style="text-align:right;font-size:14px;font-weight:600;color:#3f4653">{{ p.pos }}</span>
+              <span style="text-align:right;font-size:14px;color:#2f2f33">{{ p.rebond }}</span>
+              <span style="text-align:right;font-size:14px;font-weight:600;color:#3f4653">{{ p.conv }}</span>
+            </div>
+          </sc-for>
+          </div>
+          <div style="font-size:12px;color:#9a9fa6;margin-top:12px">Rebond et conversion (GA4) sont rapprochés par chemin d'URL — « — » quand la page n'a pas assez de trafic GA4. Les leads back-office ne sont pas attribuables à une page précise.</div>
+          <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
+            <span style="width:22px;height:22px;flex:none;border-radius:11px;background:radial-gradient(circle at 32% 28%,#e4d9ff,#9d7bff 45%,#f2545b);box-shadow:0 0 0 4px rgba(157,123,255,.16)"></span>
+            <span style="min-width:0"><span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LECTURE</span><span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ pageInsightText }}</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison de périodes</span>
+          <span style="flex:1;height:1px;background:#e8e8ec"></span>
+          <span style="font-size:13px;color:#9a9fa6">Appel API en direct · pas de délai de traitement</span>
+        </div>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
+          <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px">
+            <div>
+              <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Dimension</div>
+              <div style="display:flex;gap:6px">
+                <sc-for list="{{ gscCompareDimButtons }}" as="m" hint-placeholder-count="2">
+                  <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de début</div>
+              <input type="date" value="{{ gscCompareDebut }}" onChange="{{ setGscCompareDebut }}" style="height:40px;padding:0 14px;border:1px solid #ececee;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:600;color:#121214;background:#fff;cursor:pointer">
+            </div>
+            <div>
+              <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de fin</div>
+              <input type="date" value="{{ gscCompareFin }}" onChange="{{ setGscCompareFin }}" style="height:40px;padding:0 14px;border:1px solid #ececee;border-radius:12px;font-family:inherit;font-size:13.5px;font-weight:600;color:#121214;background:#fff;cursor:pointer">
+            </div>
+            <button onClick="{{ runGscCompare }}" disabled="{{ gscCompareRunDisabled }}" style="{{ gscCompareBtnStyle }}">{{ gscCompareRunLabel }}</button>
+            <sc-if value="{{ hasGscCompareResult }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:#9a9fa6">{{ gscComparePeriodLabel }}</span></sc-if>
+          </div>
+          <sc-if value="{{ hasGscCompareError }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:flex-start;gap:12px;border-radius:16px;background:#fdf3f3;border:1px solid #f6dedc;padding:14px 16px">
+              <span style="font-size:14px;color:#8d3b38">{{ gscCompareError }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasGscCompareRows }}" hint-placeholder-val="{{ false }}">
+          <div style="overflow-x:auto">
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6;min-width:560px">
+              <span>{{ gscCompareDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">Δ clics</span><span style="text-align:right">Impressions</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
+            </div>
+            <sc-for list="{{ gscCompareRows }}" as="r" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;min-width:560px">
+                <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.cle }}</span>
+                <span style="font-size:14.5px;font-weight:700;color:#121214;text-align:right">{{ r.clics }}</span>
+                <span style="text-align:right;font-size:13px;{{ r.deltaStyle }}">{{ r.deltaText }}</span>
+                <span style="text-align:right;font-size:14.5px;color:#2f2f33">{{ r.impr }}</span>
+                <span style="text-align:right;font-size:14.5px;color:#3f4653">{{ r.ctr }}</span>
+                <span style="text-align:right;font-size:14.5px;color:#3f4653">{{ r.pos }}</span>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
       </div>
     </div>
     </sc-if>
   </div>
   </sc-if>
 
+
   <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px">
-    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;box-sizing:border-box;display:flex;flex-direction:column">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
         <div>
-          <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Rapport hebdomadaire V2</div>
+          <div style="font-size:20px;font-weight:600;color:#121214;letter-spacing:-.4px">Rapport hebdomadaire V2</div>
           <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Chaque site comparé à sa propre référence V1 (avant sa bascule), semaine par semaine depuis son passage à la V2 · {{ scopeLabel }}</div>
         </div>
         <button onClick="{{ v2ExportCsv }}" style="display:flex;align-items:center;gap:11px;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:46px;color:#ffffff;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;transition:transform .18s ease,filter .18s ease" style-hover="transform:translateY(-2px);filter:brightness(1.08)">
@@ -1352,7 +1354,7 @@ input[type=date]{color-scheme:light}
   <div style="margin-top:24px">
 
     <sc-if value="{{ hasPerfHero }}" hint-placeholder-val="{{ false }}">
-    <div style="background:var(--card);border-radius:26px;padding:30px 32px;box-sizing:border-box;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) both">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;box-sizing:border-box">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:16px">
           <span style="width:56px;height:56px;border-radius:50%;background:linear-gradient(140deg,#ff8b95,#f4485c);box-shadow:0 10px 24px -8px rgba(244,72,92,.5);display:flex;align-items:center;justify-content:center;flex:none">
@@ -1455,9 +1457,9 @@ input[type=date]{color-scheme:light}
     </div>
     </sc-if>
 
-    <div style="background:var(--card);border-radius:26px;padding:28px 30px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;box-sizing:border-box;display:flex;flex-direction:column;margin-top:22px">
       <div>
-        <div style="font-size:22px;font-weight:700;color:var(--text);letter-spacing:-.2px">Performance des sites de reprise</div>
+        <div style="font-size:20px;font-weight:600;color:#121214;letter-spacing:-.4px">Performance des sites de reprise</div>
         <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:var(--muted)">Score PageSpeed Insights (Lighthouse) sur l'hôte de reprise de chaque site, trié du moins bon au meilleur — relevé ponctuel, pas de mise à jour automatique.</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:16px">
           <sc-for list="{{ perfFilterChips }}" as="f" hint-placeholder-count="4">
@@ -1593,9 +1595,9 @@ input[type=date]{color-scheme:light}
 
   <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px;display:flex;flex-direction:column;gap:22px">
-    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:20px">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:20px">
       <div style="display:flex;align-items:center;gap:14px">
-        <div><div style="font-size:20px;font-weight:600;letter-spacing:-.6px;color:var(--text)">Comparer des sites</div><div style="font-size:13.5px;color:#9aa0aa;margin-top:4px">{{ compareSitesCount }} site(s) sélectionné(s) · {{ periodPillLabel }}</div></div>
+        <div><div style="font-size:20px;font-weight:600;letter-spacing:-.6px;color:#121214">Comparer des sites</div><div style="font-size:13.5px;color:#9aa0aa;margin-top:4px">{{ compareSitesCount }} site(s) sélectionné(s) · {{ periodPillLabel }}</div></div>
         <div style="flex:1"></div>
         <button onClick="{{ compareClear }}" style="border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text2);background:var(--soft);height:36px;padding:0 16px;border-radius:100px">Vider la sélection</button>
       </div>
@@ -1622,9 +1624,9 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
 
-    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">{{ compareMetricLabel }}</div>
+        <div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">{{ compareMetricLabel }}</div>
         <div style="flex:1"></div>
         <div style="display:flex;flex-wrap:wrap;gap:8px">
           <sc-for list="{{ compareMetrics }}" as="m" hint-placeholder-count="5">
@@ -1666,7 +1668,7 @@ input[type=date]{color-scheme:light}
 
     <div style="display:grid;grid-template-columns:1fr 1.32fr;gap:22px;margin-top:22px">
 
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
+      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
         <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
         <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:12px;flex:1;min-height:0">
           <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
@@ -1701,7 +1703,7 @@ input[type=date]{color-scheme:light}
         </sc-if>
       </div>
 
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:24px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
+      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:24px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
         <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Marques reprises</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">part des véhicules estimés</div></div>
         <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:flex-end;gap:16px">
@@ -1739,7 +1741,7 @@ input[type=date]{color-scheme:light}
          (KPI + tendance mensuelle) et "Répartition des leads" (donut +
          appareil), fusionnes et renommes le 11/08/2026 sur demande. -->
     <div style="display:grid;grid-template-columns:1fr;gap:22px;margin-top:22px">
-      <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .24s both">
+      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .24s both">
         <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
           <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div>
           <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--text)" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads GCP</div>
@@ -1783,7 +1785,7 @@ input[type=date]{color-scheme:light}
          reelle des leads back-office, tous sites/marques confondus,
          toujours a l'echelle du parc entier (independant du site choisi
          en en-tete -- voir paysByPaysMois dans render()). -->
-    <div style="background:#fff;border-radius:30px;padding:30px;box-shadow:0 4px 24px rgba(17,17,26,.045);display:flex;flex-direction:column;gap:22px;margin-top:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
+    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;margin-top:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 18s6-5.7 6-10.5A6 6 0 0 0 4 7.5C4 12.3 10 18 10 18Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path><circle cx="10" cy="7.4" r="2.2" stroke="#fff" stroke-width="1.7"></circle></svg></div>
         <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:var(--text)">Leads par pays</div><div style="font-size:13px;color:var(--muted2);margin-top:2px">Extraction back-office, tous sites et toutes marques confondus{{ paysCurrentMonthNote }}</div></div>
@@ -1853,7 +1855,7 @@ input[type=date]{color-scheme:light}
          voir kamiaAlertsOpen/toggleKamiaAlerts. L'etat vide n'est plus une
          grille de cartes mais un vrai ecran d'accueil centre, la saisie
          restant ancree en bas une fois la conversation commencee. -->
-    <div class="hermes-shell" style="background:var(--card);border-radius:26px;box-sizing:border-box;display:flex;flex-direction:column;height:720px;position:relative;overflow:hidden;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .1s both">
+    <div class="hermes-shell" style="background:#fff;border:1px solid #efeff1;border-radius:22px;box-sizing:border-box;display:flex;flex-direction:column;height:720px;position:relative;overflow:hidden">
 
       <div style="display:flex;align-items:center;gap:14px;padding:22px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap">
         <!-- meme identite orbe animee que le widget KamIA de l'onglet GA4
