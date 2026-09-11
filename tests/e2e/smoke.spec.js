@@ -25,28 +25,16 @@ const NAV_TABS = {
   "Tableau": "Leads back-office",
   "KamIA": "Comment puis-je t'aider",
 };
-// mega-menu (10/08/2026) : la barre du haut n'affiche plus que des
-// groupes ("Google", "Analyse", KamIA a part) -- un onglet n'est plus
-// directement visible/cliquable depuis la barre, il faut d'abord ouvrir
-// son groupe. null = pas de groupe (KamIA reste un item direct).
-// "Tableau" (ex-BigQuery, active le 10/08/2026) : onglet dedie aux leads
-// back-office, separe de GA4 pour ne jamais melanger les deux sources.
-const NAV_GROUP_OF = {
-  "GA4": "Google", "Search Console": "Google", "PageSpeed": "Google", "Tableau": "Google",
-  "Comparaison V2": "Analyse",
-  "KamIA": null,
+// nav laterale a icones (refonte 09/09/2026, maquette "Analytics GA4 v2") :
+// remplace le mega-menu deroulant -- chaque destination est directement un
+// bouton avec un attribut title (pas de texte visible, icone seule), plus
+// besoin d'ouvrir un groupe avant de cliquer un onglet.
+const NAV_TITLE = {
+  "GA4": "Analytics", "Search Console": "Search Console", "PageSpeed": "PageSpeed",
+  "Tableau": "Tableau", "Comparaison V2": "Comparaison V2", "KamIA": "KamIA",
 };
-// libelle affiche dans la carte du mega-menu, quand il differe de la cle
-// NAV_TABS ci-dessus (seul GA4 -> "Analytics" differe actuellement).
-const NAV_ITEM_LABEL = { "GA4": "Analytics" };
 async function ouvrirOnglet(page, tab) {
-  const groupe = NAV_GROUP_OF[tab];
-  if (groupe) {
-    await page.locator("nav button", { hasText: groupe }).first().click();
-    await page.locator("button", { hasText: NAV_ITEM_LABEL[tab] || tab }).first().click();
-  } else {
-    await page.locator("nav div", { hasText: tab }).first().click();
-  }
+  await page.locator(`nav button[title="${NAV_TITLE[tab]}"]`).first().click();
 }
 
 test.describe("chargement de l'application", () => {
@@ -59,10 +47,10 @@ test.describe("chargement de l'application", () => {
     await expect(page.locator("header, nav").first()).toBeVisible();
     // le logo Converge est une image (logo-converge-noir.webp), pas du texte
     await expect(page.locator('img[alt="Converge"]').first()).toBeVisible();
-    // mega-menu : seuls les GROUPES ("Google", "Analyse") + KamIA sont
-    // directement visibles dans la barre repliee, pas chaque onglet.
-    for (const label of ["Google", "Analyse", "KamIA"]) {
-      await expect(page.locator("nav", { hasText: label }).first()).toBeVisible();
+    // nav laterale a icones : chaque destination est un bouton title="..."
+    // directement visible et cliquable, plus de groupe a ouvrir avant.
+    for (const title of ["Analytics", "Search Console", "PageSpeed", "Tableau", "KamIA"]) {
+      await expect(page.locator(`nav button[title="${title}"]`).first()).toBeVisible();
     }
 
     expect(pageErrors, `erreurs JS non attendues au chargement : ${pageErrors.join(" | ")}`).toEqual([]);

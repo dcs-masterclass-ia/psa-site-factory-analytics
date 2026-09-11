@@ -258,78 +258,64 @@ input[type=date]{color-scheme:light}
 <div ref="{{ scaleSizerRef }}" style="width:100%;overflow:hidden">
 <div ref="{{ scaleCanvasRef }}" style="width:1780px;background:var(--bg);padding:36px 44px 44px;box-sizing:border-box;animation:fadeIn .5s ease both;transform-origin:top left">
 
-  <!-- toute la barre (logo, nav, site, periode, compte) est UNE seule pill
-       blanche avec une seule ombre -- pas des sous-pills separees qui
-       flottent chacune avec leur propre fond/ombre (confusion signalee le
-       09/08/2026, corrigee sur la maquette de reference). -->
-  <header style="display:flex;align-items:center;gap:4px;position:relative;z-index:40;background:#fff;border-radius:100px;padding:6px 6px 6px 24px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+  <!-- Refonte visuelle complete (09/09/2026, maquette "Analytics GA4 v2"
+       fournie par l'utilisateur) : nav laterale a icones + barre superieure
+       fine, remplace l'ancienne pill unique horizontale. Toute la logique
+       (switchTab, site/periode picker, export, KamIA) est REUTILISEE telle
+       quelle -- seul l'habillage change. Vrai logo Converge, vraie bille
+       KamIA animee (orbSpin/orbHue/orbSpinRev, cf CSS) et vrais logos
+       produits Google (TAB_ICON_SVG) conserves a la demande explicite,
+       jamais les icones dessinees a la main de la maquette source. -->
+  <div style="display:flex;gap:22px;align-items:flex-start">
+
+  <nav style="position:sticky;top:20px;flex:none;width:68px;background:#fff;border-radius:26px;box-shadow:0 4px 24px rgba(17,17,26,.06);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:8px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+    <sc-for list="{{ sideNavItems }}" as="n" hint-placeholder-count="6">
+      <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:var(--soft)">
+        <span ref="{{ n.iconRef }}" style="display:flex;align-items:center;justify-content:center"></span>
+        <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}">
+          <span style="{{ n.badgeStyle }}">{{ n.badgeText }}</span>
+        </sc-if>
+      </button>
+    </sc-for>
+    <span style="width:28px;height:1px;background:var(--line);flex:none;margin:4px 0"></span>
+    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaSideStyle }}" style-hover="background:var(--soft)">
+      <span style="width:30px;height:30px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 6px 14px -6px rgba(109,92,246,.55)">
+        <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(2px)"></span>
+        <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1.8px);mix-blend-mode:screen"></span>
+        <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
+        <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 8px rgba(12,17,32,.65)"></span>
+      </span>
+      <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
+        <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
+      </sc-if>
+    </button>
+    <span style="flex:1"></span>
+    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7d99ff,#3b5ae0);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
+  </nav>
+
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:20px">
+
+  <header style="display:flex;align-items:center;gap:4px;position:relative;z-index:40;background:#fff;border-radius:100px;padding:6px 6px 6px 22px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
     <div style="display:flex;align-items:center;flex:none">
       <!-- vrai logo Converge (comme l'ancien front), pas une icone generique
            + texte : logo-converge-noir.webp est un canvas 1536x1024 tres
            majoritairement vide, recadre sur le mot-symbole reellement visible. -->
-      <div style="width:189.5px;height:40px;overflow:hidden;position:relative">
-        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-120.6px;left:-134px;width:448.5px;height:299px;max-width:none">
+      <div style="width:158px;height:33px;overflow:hidden;position:relative">
+        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-99.5px;left:-110.5px;width:369.8px;height:246.4px;max-width:none">
       </div>
     </div>
 
-    <span style="width:1px;height:26px;background:var(--line);flex:none;margin:0 18px"></span>
-
-    <!-- nav = pill grise pleine largeur, items a largeur egale et contenu
-         centre -- copie de la maquette de reference fournie le 09/08/2026. -->
-    <nav ref="{{ tabBarRef }}" style="position:relative;flex:1;min-width:0;display:flex;align-items:center;gap:2px;background:#f4f5f7;border-radius:100px;padding:4px">
-      <!-- pill active : un seul element qui glisse (translateX + width
-           mesures sur le DOM reel), pas un fondu de couleur par item. -->
-      <span ref="{{ tabIndicatorRef }}" style="position:absolute;top:4px;bottom:4px;left:4px;width:0;border-radius:100px;background:#fff;box-shadow:0 2px 10px rgba(17,17,26,.09);transition:transform .35s cubic-bezier(.4,0,.2,1),width .35s cubic-bezier(.4,0,.2,1);z-index:0;pointer-events:none"></span>
-      <!-- mega-menu (10/08/2026) : chaque groupe deroule ses onglets reels
-           dans un panneau (icone + libelle + description), inspire de la
-           reference fournie (menu "Productos" en cartes). -->
-      <sc-for list="{{ navGroups }}" as="g" hint-placeholder-count="2">
-        <div style="{{ g.wrapStyle }}" ref="{{ g.wrapRef }}">
-          <button onClick="{{ g.toggle }}" aria-expanded="{{ g.open }}" style="{{ g.style }}">
-            <span>{{ g.label }}</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="{{ g.chevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          </button>
-          <sc-if value="{{ g.open }}" hint-placeholder-val="{{ false }}">
-            <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ g.closeMenu }}"></div>
-            <div style="position:absolute;top:52px;left:0;z-index:61;background:#fff;border-radius:20px;padding:10px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;gap:6px;cursor:default;animation:dropIn .18s ease both" role="none">
-              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
-                <button onClick="{{ it.pick }}" disabled="{{ it.disabled }}" style="{{ it.cardStyle }}">
-                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                    <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none"><span ref="{{ it.iconRef }}" style="display:flex"></span></span>
-                    <sc-if value="{{ it.hasBadge }}" hint-placeholder-val="{{ false }}">
-                      <span style="{{ it.badgeStyle }}">{{ it.badgeText }}</span>
-                    </sc-if>
-                  </div>
-                  <div>
-                    <div style="font-size:14px;font-weight:700;color:var(--text)">{{ it.label }}</div>
-                    <div style="font-size:11.5px;color:var(--muted2);margin-top:2px;line-height:1.3">{{ it.desc }}</div>
-                  </div>
-                </button>
-              </sc-for>
-            </div>
-          </sc-if>
-        </div>
-      </sc-for>
-      <div onClick="{{ kamiaTab.pick }}" ref="{{ kamiaTab.ref }}" role="button" tabindex="0" style="{{ kamiaTab.style }}">
-        <span ref="{{ kamiaTab.iconRef }}" style="display:flex;flex:none;color:inherit"></span>
-        <span>KamIA</span>
-        <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
-          <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
-        </sc-if>
-      </div>
-    </nav>
-
-    <span style="width:1px;height:26px;background:var(--line);flex:none;margin:0 10px"></span>
+    <span style="flex:1"></span>
 
     <div style="position:relative;flex:none">
       <button data-testid="site-picker-toggle" onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
         <div style="position:relative;flex:none">
-          <div style="width:44px;height:44px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><span ref="{{ currentSiteLogoRef }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)"></span></div>
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><span ref="{{ currentSiteLogoRef }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)"></span></div>
           <sc-if value="{{ currentSiteFlag }}" hint-placeholder-val="{{ false }}">
-            <span style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:10px;line-height:1">{{ currentSiteFlag }}</span>
+            <span style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1">{{ currentSiteFlag }}</span>
           </sc-if>
         </div>
-        <div style="text-align:left"><div style="font-size:15.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:12px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
+        <div style="text-align:left"><div style="font-size:14.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:11.5px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
 
@@ -440,7 +426,35 @@ input[type=date]{color-scheme:light}
       </sc-if>
     </div>
 
-    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#7d99ff,#3b5ae0);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
+    <!-- Export (CSV/PDF/PPT, donnees GA4) : deplace ici depuis la ligne de
+         titre de l'onglet GA4 (maquette source) -- reste conditionne a cet
+         onglet (sc-if isGa4), le fonctionnement ne change pas, seul
+         l'emplacement visuel bouge. -->
+    <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;flex:none">
+      <button onClick="{{ toggleExportMenu }}" aria-expanded="{{ exportMenuOpen }}" style="display:flex;align-items:center;gap:8px;background:var(--soft);color:#4b5563;font-size:13px;font-weight:500;border:none;border-radius:100px;padding:9px 16px;cursor:pointer;font-family:inherit;white-space:nowrap">
+        Exporter
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
+      </button>
+      <sc-if value="{{ exportMenuOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeExportMenu }}"></div>
+        <div style="position:absolute;top:44px;right:0;width:280px;z-index:61;background:#fff;border-radius:18px;padding:8px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;cursor:default;animation:dropIn .18s ease both" role="none">
+          <div onClick="{{ exportGa4Csv }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+            <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:#4b5563"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export CSV</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Données détaillées, toutes les sections</div></div>
+          </div>
+          <div onClick="{{ exportGa4Pdf }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+            <span style="width:34px;height:34px;border-radius:10px;background:rgba(244,72,92,.12);display:flex;align-items:center;justify-content:center;flex:none;color:var(--neg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PDF</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Rapport prêt à envoyer au client</div></div>
+          </div>
+          <div onClick="{{ exportGa4Ppt }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
+            <span style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.14);display:flex;align-items:center;justify-content:center;flex:none;color:#b45309"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PowerPoint</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Diaporama modifiable pour le client</div></div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
   </header>
 
   <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
@@ -2188,6 +2202,8 @@ input[type=date]{color-scheme:light}
   </div>
   </sc-if>
 
+  </div>
+  </div>
   </div>
   <!-- les deux modales ci-dessous sortent volontairement de scaleCanvasRef
        (fermé juste au-dessus) : cet element porte un transform:scale(...)
@@ -4547,7 +4563,7 @@ class Component extends DCLogic {
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
         kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
-        navGroups: [],
+        navGroups: [], sideNavItems: [], kamiaSideStyle: "",
         tabBarRef: () => {}, tabIndicatorRef: () => {},
         periods: [], marketChips: [], familyChips: [], brandRows: [],
         gscKpiClics: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
@@ -6814,6 +6830,27 @@ class Component extends DCLogic {
         ],
       },
     ];
+    // Nav laterale a icones (refonte 09/09/2026) : aplatit les 6 destinations
+    // des deux groupes NAV_GROUP_DEFS en une seule colonne verticale --
+    // remplace le mega-menu deroulant, meme switchTab()/TAB_ICON_SVG que
+    // l'ancien nav, juste un habillage differe (plus de sous-menu a ouvrir).
+    const sideNavItemsFlat = NAV_GROUP_DEFS.reduce((acc, g) => acc.concat(g.items), []);
+    const sideNavItems = sideNavItemsFlat.map(it => {
+      const on = !it.disabled && st.navActiveTab === it.key;
+      return {
+        title: it.label,
+        pick: it.disabled ? (() => {}) : (() => this.switchTab(it.key)),
+        iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[it.key]; },
+        hasBadge: !!it.hasBadge, badgeText: it.badgeText || "",
+        badgeStyle: "position:absolute;top:2px;right:2px;font-size:9px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:1px 5px;white-space:nowrap;" +
+          (it.badgeLevel === "neg" ? "background:var(--neg-bg);color:var(--neg)" : it.badgeLevel === "pos" ? "background:var(--pos-bg);color:var(--pos)" : "background:var(--warn-bg);color:var(--warn)"),
+        style: "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s ease;" +
+          (it.disabled ? "cursor:not-allowed;opacity:.45;background:transparent" : "cursor:pointer;background:" + (on ? "var(--soft2)" : "transparent")),
+      };
+    });
+    const kamiaSideStyle = "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;background:" +
+      (st.navActiveTab === "assistant" ? "var(--soft2)" : "transparent");
+
     // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
     // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
     // par item (ca ferait un fondu de couleur) : c'est un seul element
@@ -7023,7 +7060,7 @@ class Component extends DCLogic {
       : "Aucune donnée " + compareMetricLabel.toLowerCase() + " pour cette période sur les sites sélectionnés.";
 
     return {
-      navGroups, kamiaTab, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      navGroups, sideNavItems, kamiaSideStyle, kamiaTab, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       convCanalRows, hasConvCanalRows, convDeviceLabels,
       canalBestLabel, hasCanalBestLabel, canalWorstLabel, hasCanalWorstLabel,
       compareMetrics, compareMetricLabel, compareGroupChips, compareSiteToggleRows, compareClear,
