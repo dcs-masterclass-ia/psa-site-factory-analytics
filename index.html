@@ -210,7 +210,7 @@ if (document.documentElement.getAttribute("data-env") === "preprod") {
 <helmet data-dc-atomics>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* Theme clair unique (refonte du 08/08/2026, maquette KamIA) : plus de
    :root[data-theme=light] distinct ni de bascule -- une seule palette,
@@ -221,7 +221,7 @@ if (document.documentElement.getAttribute("data-env") === "preprod") {
    ne jamais confondre visuellement avec la prod. data-env pose par le script
    juste apres <body>, base sur le hostname (aucune donnee serveur requise). */
 :root[data-env=preprod]{--active-bg:#7c5cff;--active-fg:#ffffff;--active-mark:#6a4ce0;--accent:#7c5cff}
-html,body{margin:0;padding:0;background:var(--page);font-family:'Outfit',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;background:var(--page);font-family:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent);text-decoration:none}a:hover{filter:brightness(1.15)}
 input[type=date]{color-scheme:light}
 @keyframes riseIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
@@ -269,6 +269,7 @@ input[type=date]{color-scheme:light}
   <div style="display:flex;gap:22px;align-items:flex-start">
 
   <nav style="position:sticky;top:20px;flex:none;width:68px;background:#fff;border-radius:26px;box-shadow:0 4px 24px rgba(17,17,26,.06);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:8px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+    <span style="font-size:9px;font-weight:600;letter-spacing:.08em;color:#b3b7bd;flex:none;margin-bottom:2px">DATA</span>
     <sc-for list="{{ sideNavItems }}" as="n" hint-placeholder-count="6">
       <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:var(--soft)">
         <span ref="{{ n.iconRef }}" style="display:flex;align-items:center;justify-content:center"></span>
@@ -295,7 +296,7 @@ input[type=date]{color-scheme:light}
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:20px">
 
-  <header style="display:flex;align-items:center;gap:4px;position:relative;z-index:40;background:#fff;border-radius:100px;padding:6px 6px 6px 22px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+  <header style="display:flex;align-items:center;gap:16px;position:relative;z-index:40;background:#fff;border-radius:26px;padding:14px 18px 14px 22px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards;flex-wrap:wrap">
     <div style="display:flex;align-items:center;flex:none">
       <!-- vrai logo Converge (comme l'ancien front), pas une icone generique
            + texte : logo-converge-noir.webp est un canvas 1536x1024 tres
@@ -305,17 +306,19 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
 
-    <span style="flex:1"></span>
+    <span style="width:1px;height:26px;background:var(--line);flex:none"></span>
+
+    <!-- Bloc titre de page, une ligne + sous-titre (maquette source
+         "Analytics — GA4" / "Marché entier · 82 sites · 30 j..."). -->
+    <div style="flex:1 1 150px;min-width:0">
+      <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitleLabel }}</div>
+      <div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageSubtitleLabel }}</div>
+    </div>
 
     <div style="position:relative;flex:none">
-      <button data-testid="site-picker-toggle" onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:12px;background:transparent;border:none;border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;font-family:inherit;transition:background .15s ease" style-hover="background:var(--soft)">
-        <div style="position:relative;flex:none">
-          <div style="width:38px;height:38px;border-radius:50%;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden"><span ref="{{ currentSiteLogoRef }}" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--muted)"></span></div>
-          <sc-if value="{{ currentSiteFlag }}" hint-placeholder-val="{{ false }}">
-            <span style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,17,26,.06);display:flex;align-items:center;justify-content:center;font-size:9px;line-height:1">{{ currentSiteFlag }}</span>
-          </sc-if>
-        </div>
-        <div style="text-align:left"><div style="font-size:14.5px;font-weight:700;letter-spacing:-.3px;color:var(--text);white-space:nowrap">{{ currentSiteLabel }}</div><div style="font-size:11.5px;color:#9aa0aa;font-weight:500;white-space:nowrap">{{ currentSiteRank }}</div></div>
+      <button data-testid="site-picker-toggle" onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="{{ sitePickerPillStyle }}">
+        <span style="width:9px;height:9px;border-radius:5px;background:var(--accent);flex:none"></span>
+        <span style="white-space:nowrap">{{ currentSiteLabel }}</span>
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
 
@@ -370,15 +373,11 @@ input[type=date]{color-scheme:light}
       </sc-if>
     </div>
 
-    <span style="width:1px;height:26px;background:var(--line);flex:none;margin:0 10px"></span>
-
     <div style="position:relative;flex:none">
-      <button data-testid="period-picker-toggle" onClick="{{ togglePeriodPicker }}" aria-expanded="{{ periodPickerOpen }}" style="position:relative;z-index:62;display:flex;align-items:center;gap:10px;background:transparent;border:none;border-radius:100px;padding:6px 14px;cursor:pointer;font-family:inherit;text-align:left;transition:background .15s ease" style-hover="background:var(--soft)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.9" stroke-linecap="round" style="flex:none"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M8 3v4M16 3v4M3 11h18"></path></svg>
-        <div>
-          <div style="font-size:11.5px;color:#9aa0aa;font-weight:600;white-space:nowrap">{{ periodPickerTopLabel }}</div>
-          <div style="font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums">{{ periodRangeLabel }}</div>
-        </div>
+      <button data-testid="period-picker-toggle" onClick="{{ togglePeriodPicker }}" aria-expanded="{{ periodPickerOpen }}" style="{{ periodPickerPillStyle }}">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6d727a" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"></rect><path d="M3.5 10h17M8 3v4M16 3v4"></path></svg>
+        <span style="white-space:nowrap;font-variant-numeric:tabular-nums">{{ periodPickerCombinedLabel }}</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2" stroke-linecap="round" style="flex:none;{{ sitePickerChevronStyle }}"><path d="m6 9 6 6 6-6"></path></svg>
       </button>
 
       <sc-if value="{{ periodPickerOpen }}" hint-placeholder-val="{{ false }}">
@@ -432,9 +431,9 @@ input[type=date]{color-scheme:light}
          l'emplacement visuel bouge. -->
     <sc-if value="{{ isGa4 }}" hint-placeholder-val="{{ true }}">
     <div style="position:relative;flex:none">
-      <button onClick="{{ toggleExportMenu }}" aria-expanded="{{ exportMenuOpen }}" style="display:flex;align-items:center;gap:8px;background:var(--soft);color:#4b5563;font-size:13px;font-weight:500;border:none;border-radius:100px;padding:9px 16px;cursor:pointer;font-family:inherit;white-space:nowrap">
+      <button onClick="{{ toggleExportMenu }}" aria-expanded="{{ exportMenuOpen }}" style="display:flex;align-items:center;gap:9px;height:40px;padding:0 18px;border:none;border-radius:12px;background:#141414;color:#fff;font-size:14.5px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap" style-hover="background:#2e2e32">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M8 11l4 4 4-4M4.5 19.5h15"></path></svg>
         Exporter
-        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
       <sc-if value="{{ exportMenuOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeExportMenu }}"></div>
@@ -4562,7 +4561,9 @@ class Component extends DCLogic {
         isGa4DetailSources: true, isGa4DetailCanaux: false, isGa4DetailDevice: false,
         isGa4DetailCompletion: false, isGa4DetailBenchmark: false, isGa4DetailVolConv: false,
         isGa4DetailRebond: false, isGa4DetailAudience: false, isGa4DetailSaisonnalite: false,
-        periodPickerTopLabel: "", periodRangeLabel: "",
+        periodPickerTopLabel: "", periodRangeLabel: "", periodPickerCombinedLabel: "",
+        sitePickerPillStyle: "", periodPickerPillStyle: "",
+        pageTitleLabel: "", pageSubtitleLabel: "",
         volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
         volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
         rebondChart: null, hasRebondChart: false, rebondAvg: "0,00", rebondProgress: "0,00",
@@ -4957,6 +4958,11 @@ class Component extends DCLogic {
     // debut/fin reelle, on ne les invente pas).
     const periodPickerTopLabel = st.customDate ? "Période personnalisée" : st.period;
     const periodRangeLabel = fmtDateShort(range.debut) + " → " + fmtDateShort(range.fin);
+    // maquette source : pastille periode+comparaison combinee sur une seule
+    // ligne ("01/09 → 30/09/26 · vs préc.") -- st.compareMode/compareRangeLabel
+    // deja calcules plus bas dans toState(), reutilises tels quels ici.
+    const periodPickerCombinedLabel = periodRangeLabel + (st.compareMode !== "none" ? " · vs préc." : "");
+    const headerPillStyle = open => "position:relative;z-index:62;display:flex;align-items:center;gap:9px;height:40px;padding:0 14px;border:1px solid " + (open ? "var(--accent)" : "#ececee") + ";border-radius:12px;font-size:14.5px;color:var(--text);cursor:pointer;white-space:nowrap;background:" + (open ? "var(--soft)" : "#fff") + ";font-family:inherit";
 
     // barres CSS (colonnes flex) : suffisent pour un spark decoratif, pas
     // besoin de SVG. Les series quotidiennes sont regroupees en ~8 barres
@@ -7065,6 +7071,11 @@ class Component extends DCLogic {
       togglePeriodPicker: () => this.setState(s => ({ periodPickerOpen: !s.periodPickerOpen })),
       closePeriodPicker: () => this.setState({ periodPickerOpen: false }),
       periodPickerOpen: st.periodPickerOpen, periodPickerTopLabel, periodRangeLabel,
+      periodPickerCombinedLabel,
+      sitePickerPillStyle: headerPillStyle(st.sitePickerOpen),
+      periodPickerPillStyle: headerPillStyle(st.periodPickerOpen),
+      pageTitleLabel: (sideNavItemsFlat.find(it => it.key === st.navActiveTab) || {}).label || (st.navActiveTab === "assistant" ? "KamIA" : ""),
+      pageSubtitleLabel: scopeLabel + " · " + currentSiteRank + " · " + periodPickerCombinedLabel,
       // Regroupement de l'onglet GA4 (retour KAM, 08/09/2026) : 10 sections
       // empilees sans hierarchie -- "Canaux & acquisition" replie/deplie
       // (ouvert par defaut, encore tres consulte), "Analyse avancee" repliee
