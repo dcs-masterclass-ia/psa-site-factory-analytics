@@ -18,7 +18,7 @@ test.beforeEach(async ({ context }) => {
 // element a part qui glisse sous les items, voir navItemStyle/
 // tabIndicatorRef dans index.html).
 const NAV_TABS = {
-  "GA4": "Vue d'ensemble",
+  "GA4": "L'essentiel",
   "Search Console": "Clics, impressions & position",
   "Comparaison V2": "Rapport hebdomadaire V2",
   "PageSpeed": "Performance des sites de reprise",
