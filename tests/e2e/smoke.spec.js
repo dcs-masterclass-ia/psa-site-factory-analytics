@@ -13,30 +13,23 @@ test.beforeEach(async ({ context }) => {
   ]);
 });
 
-// un marqueur de contenu reel, propre a chaque onglet -- plus robuste que
-// verifier des couleurs CSS d'implementation (le curseur actif est un
-// element a part qui glisse sous les items, voir navItemStyle/
-// tabIndicatorRef dans index.html).
-// Comparer/Comparaison V2/KamIA ont ete retires du menu le 13/09/2026 --
-// absents de la maquette de reference (qui ne montre que GA4/Search
-// Console/PageSpeed/Tableau comme pages ; KamIA n'y est qu'une bulle de
-// chat flottante, deja couverte par le panneau "Hermes β" independant).
+// Le clone pixel-perfect de la maquette (13/09/2026) n'utilise ni <header>/
+// <nav> semantiques ni data-testid sur la nav laterale -- chaque
+// destination est un <div title="..."> dans la colonne d'icones (84px).
+// Titres reels (index.html, colonne DATA) : le libelle "GA4" du menu
+// s'appelle "Google Analytics 4" en title, pas "Analytics".
 const NAV_TABS = {
   "GA4": "L'essentiel",
   "Search Console": "Clics, impressions & position",
-  "PageSpeed": "Performance des sites de reprise",
+  "PageSpeed": "Site sélectionné",
   "Tableau": "Leads back-office",
 };
-// nav laterale a icones (refonte 09/09/2026, maquette "Analytics GA4 v2") :
-// remplace le mega-menu deroulant -- chaque destination est directement un
-// bouton avec un attribut title (pas de texte visible, icone seule), plus
-// besoin d'ouvrir un groupe avant de cliquer un onglet.
 const NAV_TITLE = {
-  "GA4": "Analytics", "Search Console": "Search Console", "PageSpeed": "PageSpeed",
-  "Tableau": "Tableau",
+  "GA4": "Google Analytics 4", "Search Console": "Search Console",
+  "PageSpeed": "PageSpeed Insights", "Tableau": "Tableau",
 };
 async function ouvrirOnglet(page, tab) {
-  await page.locator(`nav button[title="${NAV_TITLE[tab]}"]`).first().click();
+  await page.locator(`div[title="${NAV_TITLE[tab]}"]`).first().click();
 }
 
 test.describe("chargement de l'application", () => {
@@ -46,63 +39,51 @@ test.describe("chargement de l'application", () => {
 
     await page.goto("/", { waitUntil: "networkidle" });
 
-    await expect(page.locator("header, nav").first()).toBeVisible();
-    // le logo Converge est une image (logo-converge-noir.webp), pas du texte
+    // le logo Converge est une image, pas du texte
     await expect(page.locator('img[alt="Converge"]').first()).toBeVisible();
-    // nav laterale a icones : chaque destination est un bouton title="..."
-    // directement visible et cliquable, plus de groupe a ouvrir avant.
-    for (const title of ["Analytics", "Search Console", "PageSpeed", "Tableau"]) {
-      await expect(page.locator(`nav button[title="${title}"]`).first()).toBeVisible();
+    // nav laterale a icones : chaque destination est un div title="..."
+    for (const title of Object.values(NAV_TITLE)) {
+      await expect(page.locator(`div[title="${title}"]`).first()).toBeVisible();
     }
 
     expect(pageErrors, `erreurs JS non attendues au chargement : ${pageErrors.join(" | ")}`).toEqual([]);
   });
 
-  test("charge par defaut en vue \"Tous les sites\" (agregee)", async ({ page }) => {
+  test("charge par defaut en vue \"Marché entier\" (agregee, vraies donnees)", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page.locator("text=Tous les sites").first()).toBeVisible();
-    await expect(page.locator("text=vue agrégée").first()).toBeVisible();
+    // boot() charge pipeline.json + tous les data/<site>.json avant de
+    // peupler st.sites -- attendre le vrai contenu plutot qu'un delai fixe.
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
 
     // les cartes KPI doivent afficher de vrais totaux, pas des zeros
-    const leadsCard = page.locator("text=Leads").first();
+    const leadsCard = page.locator("text=Leads GA4").first();
     await expect(leadsCard).toBeVisible();
   });
 });
 
-test.describe("selecteur de site", () => {
-  test("l'option \"Pas de site sélectionné\" bascule en vue agregee", async ({ page }) => {
+test.describe("selecteur de perimetre", () => {
+  test("choisir un site precis puis revenir a \"Marché entier\"", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
 
-    // choisit d'abord un site precis...
-    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
-    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
-    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
-    // bon bouton.
-    await page.locator('[data-testid="site-picker-toggle"]').click();
-    await page.locator('input[placeholder="Rechercher un site…"]').fill("OPEL FR");
-    await page.locator('div[role="button"]').filter({ hasText: "OPEL FR" }).first().click();
-    await expect(page.locator('button[aria-expanded]:has-text("OPEL FR")')).toBeVisible();
+    await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.locator('[data-testid="scope-search-input"]').fill("OPEL FR");
+    await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("OPEL FR");
 
-    // ...puis revient a la vue agregee
-    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
-    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
-    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
-    // bon bouton.
-    await page.locator('[data-testid="site-picker-toggle"]').click();
-    await page.locator("text=Pas de site sélectionné").click();
-    await expect(page.locator("text=Tous les sites").first()).toBeVisible();
+    await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.locator('[data-testid="scope-item"]').filter({ hasText: "Marché entier" }).first().click();
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier");
   });
 
   test("la recherche filtre la liste des sites", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    // data-testid stable : depuis le mega-menu (10/08/2026), les boutons
-    // "Google"/"Analyse" portent aussi aria-expanded et precedent celui-ci
-    // dans le DOM -- .first() sur aria-expanded seul seul ne cible plus le
-    // bon bouton.
-    await page.locator('[data-testid="site-picker-toggle"]').click();
-    await page.locator('input[placeholder="Rechercher un site…"]').fill("PEUGEOT PT");
-    await expect(page.locator('div[role="button"]').filter({ hasText: "PEUGEOT PT" }).first()).toBeVisible();
-    await expect(page.locator('div[role="button"]').filter({ hasText: "OPEL FR" })).toHaveCount(0);
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
+
+    await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.locator('[data-testid="scope-search-input"]').fill("PEUGEOT PT");
+    await expect(page.locator('[data-testid="scope-item"]').filter({ hasText: "PEUGEOT PT" }).first()).toBeVisible();
+    await expect(page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" })).toHaveCount(0);
   });
 });
 
@@ -113,10 +94,10 @@ test.describe("navigation entre onglets", () => {
       page.on("pageerror", (err) => pageErrors.push(err.message));
 
       await page.goto("/", { waitUntil: "networkidle" });
+      // vue "Marché entier" par defaut : l'agregation sur ~82 sites reels
+      // est plus lourde qu'un site seul, attendre boot() avant de naviguer.
+      await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
       await ouvrirOnglet(page, tab);
-      // vue "tous les sites" par defaut : l'agregation sur 64 sites est
-      // plus lourde qu'un site seul, attendre le vrai contenu plutot
-      // qu'un delai fixe.
       // attendre le vrai contenu avant de lire pageErrors : une erreur
       // pendant le rendu se produit au meme moment que l'affichage du
       // contenu, verifier apres capture les deux de facon fiable.
@@ -129,15 +110,15 @@ test.describe("navigation entre onglets", () => {
 test.describe("selecteur de periode", () => {
   test("changer de periode met a jour les chiffres affiches", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
 
-    // ancien locator :has-text("j") supposait un libelle de periode par
-    // defaut contenant "j" (ex. "28 j") -- casse le 10/08/2026 quand le
-    // defaut est passe a "Mois precedent" (aucun "j" dans le libelle).
-    // data-testid stable, independant du libelle affiche.
+    const rangeLabelAvant = await page.locator('[data-testid="period-picker-toggle"]').innerText();
+
     await page.locator('[data-testid="period-picker-toggle"]').click();
-    await page.locator('button:has-text("12 mois")').click();
-    await page.waitForTimeout(800);
+    await page.locator('span', { hasText: /^14 derniers jours$/ }).first().click();
+    await page.waitForTimeout(500);
 
-    await expect(page.locator("text=12 derniers mois").first()).toBeVisible();
+    const rangeLabelApres = await page.locator('[data-testid="period-picker-toggle"]').innerText();
+    expect(rangeLabelApres).not.toEqual(rangeLabelAvant);
   });
 });
