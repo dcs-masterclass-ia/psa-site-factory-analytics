@@ -455,8 +455,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
           <div>
-            <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device</div>
-            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:14px">Taux de conversion croisé · delta vs période précédente</div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
+              <div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device</div>
+                <div style="font-size:13.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
+              </div>
+              <span onClick="{{ openMatrix }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ matrixCount }} canaux</span>
+            </div>
+            <div style="margin-bottom:10px"></div>
             <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
               <span>Canal</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
@@ -772,6 +778,35 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.sessions }}</span>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.leads }}</span>
                 <span style="font-size:15px;font-weight:500;color:#121214;text-align:right">{{ ch.share }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ matrixModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
+        <div style="width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:18px;font-weight:600;color:#121214">Tous les canaux × device</div>
+              <div style="font-size:13.5px;color:#9a9fa6">{{ matrixCount }} canaux · {{ rangeLabel }}</div>
+            </div>
+            <span onClick="{{ closeMatrix }}" style="width:36px;height:36px;flex:none;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b4b4f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </span>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
+            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>Canal</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
+            </div>
+            <sc-for list="{{ allMatrix }}" as="row" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+                <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
+                <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
+                <div style="{{ row.d3 }}"><span style="font-size:15px;font-weight:600">{{ row.v3 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g3 }}</span></div>
               </div>
             </sc-for>
           </div>
@@ -1665,7 +1700,8 @@ class Component extends DCLogic {
     const cell=v=>`display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:11px;padding:8px 6px;color:#121214;background:${v>=2?'#e7e0fd':v>=1.3?'#f0ecfe':v>=0.9?'#f7f5ff':'#f7f7f9'}`;
     const canauxDevice = [...new Set([...agg.convCanalDevice.values()].map(r=>r.canal))];
     const tauxFor = (map,canal,device) => { const row=map.get(canal+'|'+device); return row && row.sessions ? row.conversions/row.sessions*100 : null; };
-    const matrix = canauxDevice.map(canal=>{
+    const sessionsTotalCanal = canal => ['desktop','mobile','tablet'].reduce((a,dev)=>{ const row=agg.convCanalDevice.get(canal+'|'+dev); return a+(row?row.sessions||0:0); },0);
+    const mkMatrixRow = canal => {
       const v1=tauxFor(agg.convCanalDevice,canal,'desktop'), v2v=tauxFor(agg.convCanalDevice,canal,'mobile'), v3=tauxFor(agg.convCanalDevice,canal,'tablet');
       const g=(now,dev)=> cmp ? (()=>{ const p=tauxFor(cmp.convCanalDevice,canal,dev); return (now!=null&&p!=null)?(now-p):null; })() : null;
       const gLabel = x => x==null? '—' : (x>0?'+':'')+dec(x,2)+' pt';
@@ -1673,7 +1709,9 @@ class Component extends DCLogic {
         d1:cell(v1||0), v1:v1==null?'—':dec(v1,2)+' %', g1:gLabel(g(v1,'desktop')),
         d2:cell(v2v||0), v2:v2v==null?'—':dec(v2v,2)+' %', g2:gLabel(g(v2v,'mobile')),
         d3:cell(v3||0), v3:v3==null?'—':dec(v3,2)+' %', g3:gLabel(g(v3,'tablet'))};
-    });
+    };
+    const allMatrix = canauxDevice.slice().sort((a,b)=>sessionsTotalCanal(b)-sessionsTotalCanal(a)).map(mkMatrixRow);
+    const matrix = allMatrix.slice(0,6);
 
     // audience & saisonnalite : reel (agg.browser/newVsReturning), jour de
     // semaine reel sur les sessions reprise/leads quotidiens de la periode
@@ -2412,7 +2450,10 @@ class Component extends DCLogic {
       kpis, kpiRate:dec(rate,2)+' %', rateSpark, kpiRateDelta,
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, trendRangeLabel, v2, matrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      matrixCount:allMatrix.length,
+      openMatrix:()=>set({matrixModal:true}), closeMatrix:()=>set({matrixModal:false}),
+      matrixModal:!!st.matrixModal,
       channelCount:allChannels.length,
       openChannels:()=>set({channelsModal:true}), closeChannels:()=>set({channelsModal:false}),
       channelsModal:!!st.channelsModal,
