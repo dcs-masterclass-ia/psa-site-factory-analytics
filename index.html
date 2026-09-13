@@ -268,7 +268,12 @@ input[type=date]{color-scheme:light}
        jamais les icones dessinees a la main de la maquette source. -->
   <div style="display:flex;gap:0;align-items:stretch">
 
-  <nav style="position:sticky;top:0;align-self:flex-start;flex:none;width:84px;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+  <nav style="position:sticky;top:0;align-self:stretch;flex:none;width:84px;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+    <!-- logo Converge : vit dans la nav laterale (comme la maquette source),
+         pas dans le header -- nouvel asset (13/09/2026), pictogramme seul. -->
+    <div style="width:32px;height:32px;overflow:hidden;position:relative;flex:none;margin-bottom:4px">
+      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir+-+copie.png" alt="Converge" style="position:absolute;top:-86.6px;left:-96.4px;width:327.7px;height:218.5px;max-width:none">
+    </div>
     <span style="font-size:9px;font-weight:600;letter-spacing:.08em;color:#b3b7bd;flex:none;margin-bottom:2px">DATA</span>
     <sc-for list="{{ sideNavItems }}" as="n" hint-placeholder-count="6">
       <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:#f4f4f6">
@@ -297,24 +302,9 @@ input[type=date]{color-scheme:light}
   <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:20px">
 
   <header style="display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #ececee;padding:16px 30px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards;flex-wrap:wrap">
-    <div style="display:flex;align-items:center;flex:none">
-      <!-- vrai logo Converge (comme l'ancien front), pas une icone generique --
-           nouvel asset (13/09/2026) : uniquement le pictogramme (pas de mot-
-           symbole dans l'image), canvas 1536x1024 tres majoritairement vide,
-           recadre sur l'icone reellement visible + "Converge" en texte reel
-           a cote (Poppins, meme police que le reste). -->
-      <div style="display:flex;align-items:center;gap:9px">
-        <div style="width:28px;height:28px;overflow:hidden;position:relative;flex:none">
-          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir+-+copie.png" alt="Converge" style="position:absolute;top:-81.2px;left:-90.4px;width:307.2px;height:204.8px;max-width:none">
-        </div>
-        <span style="font-size:19px;font-weight:600;letter-spacing:-.02em;color:#121214">Converge</span>
-      </div>
-    </div>
-
-    <span style="width:1px;height:26px;background:#f2f2f4;flex:none"></span>
-
     <!-- Bloc titre de page, une ligne + sous-titre (maquette source
-         "Analytics — GA4" / "Marché entier · 82 sites · 30 j..."). -->
+         "Analytics — GA4" / "Marché entier · 82 sites · 30 j..."). Le logo
+         Converge vit dans la nav laterale (comme la maquette), pas ici. -->
     <div style="flex:1 1 150px;min-width:0">
       <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitleLabel }}</div>
       <div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageSubtitleLabel }}</div>
