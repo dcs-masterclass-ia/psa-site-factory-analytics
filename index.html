@@ -271,15 +271,15 @@ input[type=date]{color-scheme:light}
   <nav style="position:sticky;top:0;align-self:flex-start;flex:none;width:84px;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
     <span style="font-size:9px;font-weight:600;letter-spacing:.08em;color:#b3b7bd;flex:none;margin-bottom:2px">DATA</span>
     <sc-for list="{{ sideNavItems }}" as="n" hint-placeholder-count="6">
-      <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:var(--soft)">
+      <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:#f4f4f6">
         <span ref="{{ n.iconRef }}" style="display:flex;align-items:center;justify-content:center"></span>
         <sc-if value="{{ n.hasBadge }}" hint-placeholder-val="{{ false }}">
           <span style="{{ n.badgeStyle }}">{{ n.badgeText }}</span>
         </sc-if>
       </button>
     </sc-for>
-    <span style="width:28px;height:1px;background:var(--line);flex:none;margin:4px 0"></span>
-    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaSideStyle }}" style-hover="background:var(--soft)">
+    <span style="width:28px;height:1px;background:#f2f2f4;flex:none;margin:4px 0"></span>
+    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaSideStyle }}" style-hover="background:#f4f4f6">
       <span style="width:30px;height:30px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 6px 14px -6px rgba(109,92,246,.55)">
         <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(2px)"></span>
         <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1.8px);mix-blend-mode:screen"></span>
@@ -291,7 +291,7 @@ input[type=date]{color-scheme:light}
       </sc-if>
     </button>
     <span style="flex:1"></span>
-    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#7d99ff,#3b5ae0);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
+    <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:42px;height:42px;border-radius:21px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
   </nav>
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:20px">
@@ -311,61 +311,61 @@ input[type=date]{color-scheme:light}
       </div>
     </div>
 
-    <span style="width:1px;height:26px;background:var(--line);flex:none"></span>
+    <span style="width:1px;height:26px;background:#f2f2f4;flex:none"></span>
 
     <!-- Bloc titre de page, une ligne + sous-titre (maquette source
          "Analytics — GA4" / "Marché entier · 82 sites · 30 j..."). -->
     <div style="flex:1 1 150px;min-width:0">
-      <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--text);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitleLabel }}</div>
+      <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitleLabel }}</div>
       <div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageSubtitleLabel }}</div>
     </div>
 
     <div style="position:relative;flex:none">
       <button data-testid="site-picker-toggle" onClick="{{ toggleSitePicker }}" aria-expanded="{{ sitePickerOpen }}" style="{{ sitePickerPillStyle }}">
-        <span style="width:9px;height:9px;border-radius:5px;background:var(--accent);flex:none"></span>
+        <span style="width:9px;height:9px;border-radius:5px;background:#7c63ee;flex:none"></span>
         <span style="white-space:nowrap">{{ currentSiteLabel }}</span>
         <svg width="13" height="13" viewBox="0 0 12 12" fill="none" style="flex:none;{{ sitePickerChevronStyle }}"><path d="M2.5 4.5 6 8l3.5-3.5" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
       </button>
 
       <sc-if value="{{ sitePickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeSitePicker }}"></div>
-        <div style="position:absolute;top:60px;left:0;width:100%;min-width:340px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;max-height:70vh;cursor:default;animation:dropIn .18s ease both" role="none">
+        <div style="position:absolute;top:48px;left:0;width:100%;min-width:340px;z-index:61;background:#fff;border:1px solid #ececee;border-radius:18px;padding:10px;box-shadow:0 18px 40px rgba(16,24,40,.14);display:flex;flex-direction:column;max-height:70vh;cursor:default;animation:dropIn .18s ease both" role="none">
           <!-- barre de recherche hors de la zone de scroll (pas position:sticky) :
                sous le canevas mis a l'echelle via transform:scale (scaleCanvasRef),
                un sticky a l'interieur d'un overflow:auto peut se faire deborder
                par le contenu pendant le defilement (glitch de compositing Chrome
                transform+sticky, visible en scroll rapide/trackpad, signale le
                09/08/2026). Header hors-scroll = plus de sticky, plus de glitch. -->
-          <div style="display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:14px;padding:10px 14px;flex:none;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px;background:#f4f4f6;border-radius:12px;height:40px;padding:0 12px;flex:none;margin-bottom:8px">
             <svg width="15" height="15" viewBox="0 0 18 18" fill="none" style="flex:none"><circle cx="7.6" cy="7.6" r="5.4" stroke="#9aa0aa" stroke-width="1.8"></circle><path d="m11.8 11.8 4 4" stroke="#9aa0aa" stroke-width="1.8" stroke-linecap="round"></path></svg>
-            <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:var(--text);font-weight:500">
+            <input value="{{ siteSearch }}" onInput="{{ setSiteSearch }}" placeholder="Rechercher un site…" autofocus style="border:none;outline:none;background:transparent;flex:1;min-width:0;font-family:inherit;font-size:14px;color:#121214;font-weight:500">
           </div>
           <!-- "Pas de site selectionne" : vue agregee sur les 64 sites, hors
                de la zone de recherche/scroll (toujours visible, comme la
                barre de recherche juste au-dessus). -->
           <div onClick="{{ pickAllSites }}" role="button" tabindex="0" style="{{ allSitesRowStyle }}" style-hover="background:#f5f5f6">
-            <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:var(--muted)">
+            <div style="width:26px;height:26px;border-radius:8px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;flex:none;color:#9a9fa6">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.3"></rect><rect x="14" y="3" width="7" height="7" rx="1.3"></rect><rect x="14" y="14" width="7" height="7" rx="1.3"></rect><rect x="3" y="14" width="7" height="7" rx="1.3"></rect></svg>
             </div>
             <div style="flex:1;min-width:0">
-              <div style="font-size:13.5px;font-weight:600;color:var(--text)">Pas de site sélectionné</div>
+              <div style="font-size:13.5px;font-weight:600;color:#121214">Pas de site sélectionné</div>
               <div style="font-size:11.5px;color:#9aa0aa">Résultats agrégés sur les 64 sites</div>
             </div>
           </div>
-          <div style="height:1px;background:var(--line);margin:8px 2px;flex:none"></div>
+          <div style="height:1px;background:#f2f2f4;margin:8px 2px;flex:none"></div>
           <div style="overflow:auto;min-height:0;display:flex;flex-direction:column;gap:2px">
             <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9aa0aa;padding:4px 10px 8px">{{ sitePickerHeading }}</div>
             <sc-for list="{{ sitePickerGroups }}" as="g" hint-placeholder-count="3">
               <div style="display:flex;align-items:center;gap:8px;padding:10px 10px 4px">
                 <span style="font-size:14px;flex:none">{{ g.flag }}</span>
-                <span style="font-size:12px;font-weight:800;color:var(--text);white-space:nowrap">{{ g.label }}</span>
-                <span style="height:1px;flex:1;background:var(--line)"></span>
+                <span style="font-size:12px;font-weight:800;color:#121214;white-space:nowrap">{{ g.label }}</span>
+                <span style="height:1px;flex:1;background:#f2f2f4"></span>
                 <span style="font-size:11px;font-weight:700;color:#9aa0aa;white-space:nowrap">{{ g.count }}</span>
               </div>
               <sc-for list="{{ g.rows }}" as="s" hint-placeholder-count="4">
                 <div onClick="{{ s.pick }}" role="button" tabindex="0" style="{{ s.rowStyle }}" style-hover="background:#f5f5f6">
-                  <div style="width:26px;height:26px;border-radius:8px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden"><img ref="{{ s.logoRef }}" alt="" style="width:20px;height:20px;object-fit:contain"></div>
-                  <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
+                  <div style="width:26px;height:26px;border-radius:8px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;flex:none;overflow:hidden"><img ref="{{ s.logoRef }}" alt="" style="width:20px;height:20px;object-fit:contain"></div>
+                  <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.host }}</div></div>
                   <div style="font-size:12.5px;font-weight:700;color:{{ s.dot }};flex:none">{{ s.delta }}</div>
                 </div>
               </sc-for>
@@ -387,9 +387,9 @@ input[type=date]{color-scheme:light}
 
       <sc-if value="{{ periodPickerOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closePeriodPicker }}"></div>
-        <div style="position:absolute;top:60px;right:0;width:300px;z-index:61;background:#fff;border-radius:22px;padding:14px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:3px;cursor:default;animation:dropIn .18s ease both" role="none">
+        <div style="position:absolute;top:48px;right:0;width:300px;z-index:61;background:#fff;border:1px solid #ececee;border-radius:18px;padding:14px;box-shadow:0 18px 40px rgba(16,24,40,.14);display:flex;flex-direction:column;gap:3px;cursor:default;animation:dropIn .18s ease both" role="none">
           <div style="display:flex;justify-content:flex-end;margin:-4px -4px 2px 0">
-            <button onClick="{{ closePeriodPicker }}" title="Fermer" style="width:28px;height:28px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
+            <button onClick="{{ closePeriodPicker }}" title="Fermer" style="width:28px;height:28px;border-radius:50%;border:none;background:#f4f4f6;color:#6d727a;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s ease,transform .2s ease" style-hover="background:#eaeaee;transform:rotate(90deg)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
             </button>
           </div>
@@ -398,18 +398,18 @@ input[type=date]{color-scheme:light}
           </sc-for>
 
           <sc-if value="{{ customDate }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:14px;padding:9px 12px;margin-top:2px;animation:dropIn .2s ease both">
-              <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;flex:1;min-width:0">
-              <span style="font-size:13px;color:var(--muted2)">→</span>
-              <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;background:#f4f4f6;border-radius:12px;padding:9px 12px;margin-top:2px;animation:dropIn .2s ease both">
+              <input type="date" value="{{ dateFrom }}" onChange="{{ setFrom }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:#121214;cursor:pointer;flex:1;min-width:0">
+              <span style="font-size:13px;color:#9a9fa6">→</span>
+              <input type="date" value="{{ dateTo }}" onChange="{{ setTo }}" style="background:transparent;border:none;outline:none;font-family:inherit;font-size:13.5px;font-weight:600;color:#121214;cursor:pointer;flex:1;min-width:0">
             </div>
           </sc-if>
 
-          <div style="height:1px;background:var(--line);margin:8px 2px"></div>
+          <div style="height:1px;background:#f2f2f4;margin:8px 2px"></div>
 
           <div style="padding:2px 10px">
-            <div style="font-size:13.5px;font-weight:600;color:var(--text2)">Comparer à</div>
-            <div style="display:flex;gap:3px;background:var(--soft);border-radius:13px;padding:3px;margin-top:6px">
+            <div style="font-size:13.5px;font-weight:600;color:#2f2f33">Comparer à</div>
+            <div style="display:flex;gap:3px;background:#f4f4f6;border-radius:13px;padding:3px;margin-top:6px">
               <sc-for list="{{ compareModes }}" as="m" hint-placeholder-count="3">
                 <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
               </sc-for>
@@ -421,7 +421,7 @@ input[type=date]{color-scheme:light}
 
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 2px">
             <div style="font-size:11.5px;color:#9aa0aa;line-height:1.4">{{ lastUpdateLabel }}</div>
-            <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="position:relative;overflow:hidden;width:36px;height:36px;border-radius:50%;background:var(--soft);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s ease" style-hover="background:var(--hover)">
+            <button onClick="{{ refresh }}" disabled="{{ refreshBusy }}" title="{{ refreshTitle }}" style="position:relative;overflow:hidden;width:36px;height:36px;border-radius:50%;background:#f4f4f6;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s ease" style-hover="background:#eaeaee">
               <span style="{{ refreshProgressStyle }}"></span>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;{{ refreshIconStyle }}"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path></svg>
             </button>
@@ -442,18 +442,18 @@ input[type=date]{color-scheme:light}
       </button>
       <sc-if value="{{ exportMenuOpen }}" hint-placeholder-val="{{ false }}">
         <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ closeExportMenu }}"></div>
-        <div style="position:absolute;top:44px;right:0;width:280px;z-index:61;background:#fff;border-radius:18px;padding:8px;box-shadow:0 26px 60px -14px rgba(17,17,26,.24);display:flex;flex-direction:column;gap:2px;cursor:default;animation:dropIn .18s ease both" role="none">
+        <div style="position:absolute;top:48px;right:0;width:280px;z-index:61;background:#fff;border:1px solid #ececee;border-radius:18px;padding:8px;box-shadow:0 18px 40px rgba(16,24,40,.14);display:flex;flex-direction:column;gap:2px;cursor:default;animation:dropIn .18s ease both" role="none">
           <div onClick="{{ exportGa4Csv }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
-            <span style="width:34px;height:34px;border-radius:10px;background:var(--soft);display:flex;align-items:center;justify-content:center;flex:none;color:#4b5563"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
-            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export CSV</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Données détaillées, toutes les sections</div></div>
+            <span style="width:34px;height:34px;border-radius:10px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;flex:none;color:#4b5563"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+            <div><div style="font-size:13.5px;font-weight:600;color:#121214">Export CSV</div><div style="font-size:11.5px;color:#9a9fa6;margin-top:1px">Données détaillées, toutes les sections</div></div>
           </div>
           <div onClick="{{ exportGa4Pdf }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
-            <span style="width:34px;height:34px;border-radius:10px;background:rgba(244,72,92,.12);display:flex;align-items:center;justify-content:center;flex:none;color:var(--neg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
-            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PDF</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Rapport prêt à envoyer au client</div></div>
+            <span style="width:34px;height:34px;border-radius:10px;background:rgba(244,72,92,.12);display:flex;align-items:center;justify-content:center;flex:none;color:#a33c39"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
+            <div><div style="font-size:13.5px;font-weight:600;color:#121214">Export PDF</div><div style="font-size:11.5px;color:#9a9fa6;margin-top:1px">Rapport prêt à envoyer au client</div></div>
           </div>
           <div onClick="{{ exportGa4Ppt }}" role="button" tabindex="0" style="display:flex;align-items:center;gap:12px;padding:10px;border-radius:12px;cursor:pointer" style-hover="background:#f5f5f6">
             <span style="width:34px;height:34px;border-radius:10px;background:rgba(245,158,11,.14);display:flex;align-items:center;justify-content:center;flex:none;color:#b45309"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path><path d="M14 2v6h6"></path></svg></span>
-            <div><div style="font-size:13.5px;font-weight:600;color:var(--text)">Export PowerPoint</div><div style="font-size:11.5px;color:#9aa0aa;margin-top:1px">Diaporama modifiable pour le client</div></div>
+            <div><div style="font-size:13.5px;font-weight:600;color:#121214">Export PowerPoint</div><div style="font-size:11.5px;color:#9a9fa6;margin-top:1px">Diaporama modifiable pour le client</div></div>
           </div>
         </div>
       </sc-if>
@@ -1470,7 +1470,7 @@ input[type=date]{color-scheme:light}
     </sc-if>
 
     <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;margin-top:22px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Classement des sites</span>
+      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">{{ perfParcLabel }}</span>
       <span style="flex:1;height:1px;background:#e8e8ec"></span>
     </div>
     <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;box-sizing:border-box;display:flex;flex-direction:column">
@@ -1690,13 +1690,10 @@ input[type=date]{color-scheme:light}
   <sc-if value="{{ isTableau }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px">
 
-    <div style="display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:2px 4px 0">
-      <div><h1 style="margin:0;font-size:30px;font-weight:600;letter-spacing:-1.2px;color:#121214">Leads back-office</h1><div style="font-size:14px;color:#9aa0aa;margin-top:5px">Extraction back-office · {{ periodPillLabel }}</div></div>
-    </div>
-
-    <div style="display:flex;align-items:baseline;gap:12px;margin-top:26px;margin-bottom:14px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Répartition</span>
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads back-office</span>
       <span style="flex:1;height:1px;background:#e8e8ec"></span>
+      <span style="font-size:13px;color:#9a9fa6">Extraction back-office · {{ periodPillLabel }}</span>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1.32fr;gap:22px">
 
@@ -1773,7 +1770,7 @@ input[type=date]{color-scheme:light}
          (KPI + tendance mensuelle) et "Répartition des leads" (donut +
          appareil), fusionnes et renommes le 11/08/2026 sur demande. -->
     <div style="display:flex;align-items:baseline;gap:12px;margin-top:26px;margin-bottom:14px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Tendance</span>
+      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyse du portefeuille</span>
       <span style="flex:1;height:1px;background:#e8e8ec"></span>
     </div>
     <div style="display:grid;grid-template-columns:1fr;gap:22px">
@@ -1821,11 +1818,7 @@ input[type=date]{color-scheme:light}
          reelle des leads back-office, tous sites/marques confondus,
          toujours a l'echelle du parc entier (independant du site choisi
          en en-tete -- voir paysByPaysMois dans render()). -->
-    <div style="display:flex;align-items:baseline;gap:12px;margin-top:26px;margin-bottom:14px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Détail géographique</span>
-      <span style="flex:1;height:1px;background:#e8e8ec"></span>
-    </div>
-    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
+    <div style="margin-top:22px;background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 18s6-5.7 6-10.5A6 6 0 0 0 4 7.5C4 12.3 10 18 10 18Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path><circle cx="10" cy="7.4" r="2.2" stroke="#fff" stroke-width="1.7"></circle></svg></div>
         <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">Leads par pays</div><div style="font-size:13px;color:#9a9fa6;margin-top:2px">Extraction back-office, tous sites et toutes marques confondus{{ paysCurrentMonthNote }}</div></div>
@@ -4523,7 +4516,7 @@ class Component extends DCLogic {
         watchModal: null, hasWatchModal: false,
         watchFilterChips: [],
         kamiaAlertsOpen: false, toggleKamiaAlerts: () => {},
-        perfFilterChips: [], perfTicketModal: null, hasPerfTicketModal: false,
+        perfFilterChips: [], perfTicketModal: null, hasPerfTicketModal: false, perfParcLabel: "",
         chatScopeOpen: false, chatScopeLabel: "Périmètre : tous les sites", chatScopeSites: [],
         toggleChatScopePicker: () => {}, clearChatScope: () => {},
         chatConvOpen: false, toggleChatConvPicker: () => {}, newChatConversation: () => {},
@@ -4724,7 +4717,7 @@ class Component extends DCLogic {
         label,
         pickAndClose: () => this.setState({ period: label, customDate: label === "Date précise", periodPickerOpen: label === "Date précise" }),
         rowStyle: "display:flex;align-items:center;width:100%;text-align:left;border:none;cursor:pointer;font-family:inherit;font-size:14px;font-weight:" + (on ? "700" : "500") + ";padding:10px 12px;border-radius:14px;transition:background .18s ease,color .18s ease;background:" +
-          (on ? "var(--soft)" : "transparent") + ";color:" + (on ? "var(--text)" : "var(--text2)"),
+          (on ? "#f7f6fe" : "transparent") + ";color:" + (on ? "#121214" : "#2f2f33"),
       };
     });
 
@@ -5003,7 +4996,7 @@ class Component extends DCLogic {
     // ligne ("01/09 → 30/09/26 · vs préc.") -- st.compareMode/compareRangeLabel
     // deja calcules plus bas dans toState(), reutilises tels quels ici.
     const periodPickerCombinedLabel = periodRangeLabel + (st.compareMode !== "none" ? " · vs préc." : "");
-    const headerPillStyle = open => "position:relative;z-index:62;display:flex;align-items:center;gap:9px;height:40px;padding:0 14px;border:1px solid " + (open ? "var(--accent)" : "#ececee") + ";border-radius:12px;font-size:14.5px;color:var(--text);cursor:pointer;white-space:nowrap;background:" + (open ? "var(--soft)" : "#fff") + ";font-family:inherit";
+    const headerPillStyle = open => "position:relative;z-index:62;display:flex;align-items:center;gap:9px;height:40px;padding:0 14px;border:1px solid " + (open ? "#b6a5f8" : "#ececee") + ";border-radius:12px;font-size:14.5px;color:#121214;cursor:pointer;white-space:nowrap;background:" + (open ? "#f7f6fe" : "#fff") + ";font-family:inherit";
 
     // barres CSS (colonnes flex) : suffisent pour un spark decoratif, pas
     // besoin de SVG. Les series quotidiennes sont regroupees en ~8 barres
@@ -6822,13 +6815,13 @@ class Component extends DCLogic {
         iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[it.key]; },
         hasBadge: !!it.hasBadge, badgeText: it.badgeText || "",
         badgeStyle: "position:absolute;top:2px;right:2px;font-size:9px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:1px 5px;white-space:nowrap;" +
-          (it.badgeLevel === "neg" ? "background:var(--neg-bg);color:var(--neg)" : it.badgeLevel === "pos" ? "background:var(--pos-bg);color:var(--pos)" : "background:var(--warn-bg);color:var(--warn)"),
-        style: "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s ease;" +
-          (it.disabled ? "cursor:not-allowed;opacity:.45;background:transparent" : "cursor:pointer;background:" + (on ? "var(--soft2)" : "transparent")),
+          (it.badgeLevel === "neg" ? "background:#fce9e8;color:#a33c39" : it.badgeLevel === "pos" ? "background:#eaf7ef;color:#1f9254" : "background:#fdf0dd;color:#9a6413"),
+        style: "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;transition:background .15s,box-shadow .15s;" +
+          (it.disabled ? "cursor:not-allowed;opacity:.45;background:transparent" : "cursor:pointer;" + (on ? "background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8" : "background:transparent")),
       };
     });
-    const kamiaSideStyle = "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;background:" +
-      (st.navActiveTab === "assistant" ? "var(--soft2)" : "transparent");
+    const kamiaSideStyle = "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;" +
+      (st.navActiveTab === "assistant" ? "background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8" : "background:transparent");
 
     // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
     // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
@@ -7069,7 +7062,7 @@ class Component extends DCLogic {
       v2Cards, v2Groups, hasV2Rows, noV2Rows, v2Modal, hasV2Modal, v2ExportCsv: () => this.exportV2Csv(),
       perfRows, perfGroups, hasPerfRows: perfRows.length > 0, noPerfRows: perfRows.length === 0,
       hasPerfHero, perfHero,
-      perfFilterChips, perfTicketModal, hasPerfTicketModal,
+      perfFilterChips, perfTicketModal, hasPerfTicketModal, perfParcLabel: "Parc — " + ALL.length + " sites",
       chatMessages, noChatMessages: chatMessages.length === 0, chatBusy: st.chatBusy, chatInput: st.chatInput,
       chatSendOpacity: (st.chatBusy || !st.chatInput.trim()) ? ".6" : "1",
       setChatInput: e => this.setChatInput(e), sendChatMessage: e => this.sendChatMessage(e),
@@ -7115,8 +7108,9 @@ class Component extends DCLogic {
       periodPickerCombinedLabel,
       sitePickerPillStyle: headerPillStyle(st.sitePickerOpen),
       periodPickerPillStyle: headerPillStyle(st.periodPickerOpen),
-      pageTitleLabel: (sideNavItemsFlat.find(it => it.key === st.navActiveTab) || {}).label || (st.navActiveTab === "assistant" ? "KamIA" : ""),
-      pageSubtitleLabel: scopeLabel + " · " + currentSiteRank + " · " + periodPickerCombinedLabel,
+      pageTitleLabel: ({ ga4: "Analytics — GA4", gsc: "Search Console", performance: "PageSpeed — parc",
+        tableau: "Tableau — leads back-office", compare: "Comparer", v2: "Comparaison V2", assistant: "KamIA" })[st.navActiveTab] || "",
+      pageSubtitleLabel: (isAllSites ? "Tous les sites" : (currentSite || "Choisir un site")) + " · " + currentSiteRank + " · " + periodPickerCombinedLabel,
       // Regroupement de l'onglet GA4 (retour KAM, 08/09/2026) : 10 sections
       // empilees sans hierarchie -- "Canaux & acquisition" replie/deplie
       // (ouvert par defaut, encore tres consulte), "Analyse avancee" repliee
@@ -7202,8 +7196,8 @@ class Component extends DCLogic {
         label: m.label,
         pick: () => this.setState({ compareMode: m.key }),
         style: "flex:1;border:none;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 6px;border-radius:11px;transition:background .18s ease,color .18s ease;background:" +
-          (st.compareMode === m.key ? "var(--card)" : "transparent") + ";color:" + (st.compareMode === m.key ? "var(--text)" : "var(--text2)") +
-          (st.compareMode === m.key ? ";box-shadow:0 2px 8px -2px rgba(17,17,26,.18)" : ""),
+          (st.compareMode === m.key ? "#fff" : "transparent") + ";color:" + (st.compareMode === m.key ? "#121214" : "#2f2f33") +
+          (st.compareMode === m.key ? ";box-shadow:0 1px 3px rgba(16,24,40,.1)" : ""),
       })),
       compareRangeLabel: compareActiveLabel,
       compareActive: st.compareMode !== "none",
