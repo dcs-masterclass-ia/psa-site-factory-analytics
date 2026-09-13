@@ -789,13 +789,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Leads back-office</div>
               <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
                 <span style="font-size:58px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ tbLeads }}</span>
-                <span style="font-size:14px;font-weight:600;color:#1f9254;background:#eaf7ef;border-radius:10px;padding:5px 12px;white-space:nowrap;margin-bottom:10px">↑ 7,8 %</span>
+                <span style="{{ tbLeadsDelta.style }}margin-bottom:10px">{{ tbLeadsDelta.text }}</span>
               </div>
               <div style="margin:16px 0 4px">{{ tbSpark }}</div>
               <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#6d727a;flex-wrap:wrap">
-                <span>82 sites · 14 marques</span>
+                <span>{{ perimetreTbLabel }}</span>
                 <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
-                <span>écart GA4 / BO : 4,1 %</span>
+                <span>écart GA4 / BO : {{ ecartGa4Bo }}</span>
               </div>
             </div>
             <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
@@ -816,7 +816,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyse du portefeuille</span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
-            <span style="font-size:13px;color:#9a9fa6">Médiane parc : 87,0 % traités · 4 h 12 de délai</span>
+            <span style="font-size:13px;color:#9a9fa6">{{ medianEntryLabel }}</span>
           </div>
 
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:20px;align-items:stretch">
@@ -824,16 +824,16 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px;display:flex;flex-direction:column">
               <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:4px">
                 <div>
-                  <div style="font-size:18px;font-weight:600;color:#121214">Marques : volume vs performance</div>
-                  <div style="font-size:13.5px;color:#9a9fa6">Écart du taux de traitement à la médiane du parc</div>
+                  <div style="font-size:18px;font-weight:600;color:#121214">Marques reprises : volume</div>
+                  <div style="font-size:13.5px;color:#9a9fa6">Écart de part de volume à la médiane des marques listées</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:3px">
                   <span onClick="{{ sortVolume }}" style="{{ brandSortVol }}">Volume</span>
-                  <span onClick="{{ sortPerf }}" style="{{ brandSortPerf }}">Performance</span>
+                  <span onClick="{{ sortPerf }}" style="{{ brandSortPerf }}">Alphabétique</span>
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:10px 6px;font-size:13px;color:#9a9fa6">
-                <span>Marque</span><span style="text-align:right">Leads</span><span style="text-align:center">Écart médiane</span><span style="text-align:right">Traités</span>
+                <span>Marque</span><span style="text-align:right">Leads</span><span style="text-align:center">Écart médiane</span><span style="text-align:right">Part</span>
               </div>
               <sc-for list="{{ brandPerf }}" as="b" hint-placeholder-count="6">
                 <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
@@ -866,10 +866,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
 
             <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px;display:flex;flex-direction:column">
-              <div style="font-size:18px;font-weight:600;color:#121214">Pays : qualité de traitement</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:4px">Volume, délai de premier contact et leads perdus faute de rappel</div>
+              <div style="font-size:18px;font-weight:600;color:#121214">Pays : volume &amp; qualité d'entrée</div>
+              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:4px">Volume, part du portefeuille et part des leads saisis avec immatriculation</div>
               <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:10px 6px;font-size:13px;color:#9a9fa6">
-                <span>Pays</span><span style="text-align:right">Leads</span><span style="text-align:right">Délai</span><span style="text-align:right">Traités / perdus</span>
+                <span>Pays</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">Avec plaque</span>
               </div>
               <sc-for list="{{ countryPerf }}" as="c" hint-placeholder-count="5">
                 <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
@@ -881,10 +881,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <span style="{{ c.delayStyle }}">{{ c.delay }}</span>
                   <span style="min-width:0">
                     <span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
-                      <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#fbe4e2;overflow:hidden"><span style="{{ c.bar }}"></span></span>
+                      <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ c.bar }}"></span></span>
                       <span style="font-size:14px;font-weight:600;color:#121214;white-space:nowrap">{{ c.rate }}</span>
                     </span>
-                    <span style="display:block;font-size:12.5px;color:#a33c39;text-align:right;margin-top:3px">{{ c.lost }} perdus</span>
+                    <span style="display:block;font-size:12.5px;color:#9a9fa6;text-align:right;margin-top:3px">{{ c.lost }} manuel</span>
                   </span>
                 </div>
               </sc-for>
@@ -905,8 +905,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
 
             <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px;display:flex;flex-direction:column">
-              <div style="font-size:18px;font-weight:600;color:#121214">Projet d'achat × valeur</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Un tiers des leads n'a pas de projet — et pèse 9 % de la valeur</div>
+              <div style="font-size:18px;font-weight:600;color:#121214">Projet d'achat</div>
+              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">{{ noProjectPct }} % des leads n'ont pas de projet d'achat déclaré</div>
               <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
                 <div style="width:140px;flex:none">{{ tbProjectDonut }}</div>
                 <div style="flex:1 1 190px;min-width:0;display:flex;flex-direction:column;gap:14px">
@@ -919,7 +919,6 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;padding-left:21px">
                         <span style="font-size:13px;color:#9a9fa6;white-space:nowrap">{{ p.detail }}</span>
-                        <span style="{{ p.badgeStyle }}">{{ p.badge }}</span>
                       </div>
                     </div>
                   </sc-for>
@@ -935,15 +934,15 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   </span>
                   <span style="min-width:0">
                     <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LEVIER</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">Qualifier le projet dès le formulaire ferait gagner ≈ <span style="font-weight:600;color:#8fe6bb">118 k€</span> de valeur atelier sur les 1 172 leads « sans projet ».</span>
+                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ projectInsight }}</span>
                   </span>
                 </div>
               </div>
             </div>
 
             <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px;display:flex;flex-direction:column">
-              <div style="font-size:18px;font-weight:600;color:#121214">Appareil : où se perd le lead</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Part du volume, transformation BO et étape de décrochage</div>
+              <div style="font-size:18px;font-weight:600;color:#121214">Appareil : répartition des leads</div>
+              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Part du volume de leads back-office par type d'appareil</div>
               <div style="display:flex;flex-direction:column;gap:16px">
                 <sc-for list="{{ devicePerf }}" as="d" hint-placeholder-count="3">
                   <div>
@@ -951,11 +950,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                       <span style="font-size:15px;color:#121214;flex:1;min-width:0">{{ d.name }}</span>
                       <span style="font-size:15px;font-weight:600;color:#121214;white-space:nowrap">{{ d.value }}</span>
                       <span style="font-size:13px;color:#9a9fa6;white-space:nowrap">{{ d.pct }}</span>
-                      <span style="{{ d.indexStyle }}">{{ d.index }}</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px">
                       <span style="flex:1;height:10px;border-radius:5px;background:#f2f2f4;overflow:hidden"><span style="{{ d.bar }}"></span></span>
-                      <span style="font-size:12.5px;color:#9a9fa6;width:150px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.drop }}</span>
                     </div>
                   </div>
                 </sc-for>
@@ -970,7 +967,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   </span>
                   <span style="min-width:0">
                     <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LECTURE</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">Mobile fait 61 % du volume pour 44 % des leads validés — indice <span style="font-weight:600;color:#ff9b94">0,72</span>. L'aligner sur desktop vaudrait <span style="font-weight:600;color:#8fe6bb">+412 leads validés/mois</span>.</span>
+                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ deviceInsight }}</span>
                   </span>
                 </div>
               </div>
@@ -1270,6 +1267,32 @@ class Component extends DCLogic {
           const qcur = out.queries.get(q.requete) || { name:q.requete, clics:0, impressions:0, posSum:0 };
           qcur.clics += q.clics||0; qcur.impressions += q.impressions||0; qcur.posSum += (q.position||0)*(q.impressions||0);
           out.queries.set(q.requete, qcur);
+        }
+      }
+    }
+    return out;
+  }
+
+  /* leads back-office (leads[mois].{brand,project,device,entry}, reel --
+     cf. pipeline/leads_extract.py) : jamais this.<methode> ici, appelee
+     aussi via .call({state,data}, ...) pour les vues par pays/parc. */
+  aggregateLeadsBreakdown(debutIso, finIso) {
+    const out = { brand:new Map(), project:new Map(), device:new Map(), entryAvec:0, entryTotal:0 };
+    for (const s of this.state.sites) {
+      const d = this.data && this.data[s];
+      if (!d || !d.leads) continue;
+      for (const mois of Object.keys(d.leads)) {
+        if (mois === 'total') continue;
+        const [anMois,moisNum] = mois.split('-').map(Number);
+        const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
+        if (finMois < debutIso || debutMois > finIso) continue;
+        const lm = d.leads[mois];
+        (lm.brand||[]).forEach(([n,c])=>out.brand.set(n,(out.brand.get(n)||0)+c));
+        (lm.project||[]).forEach(([n,c])=>out.project.set(n,(out.project.get(n)||0)+c));
+        (lm.device||[]).forEach(([n,c])=>out.device.set(n,(out.device.get(n)||0)+c));
+        if (lm.entry) {
+          const avec=lm.entry['Avec immatriculation']||0, sansPlaque=lm.entry['Marque / modele']||0;
+          out.entryAvec += avec; out.entryTotal += avec+sansPlaque;
         }
       }
     }
@@ -1873,77 +1896,141 @@ class Component extends DCLogic {
     else if (ticketResult && ticketResult.empty) ticketText='Aucune opportunité d’optimisation mesurée pour ce site — pas de ticket à générer.';
     else if (ticketResult && ticketResult.title) ticketText=ticketResult.title+'\n\n'+ticketResult.body;
 
-    // ---------- Tableau / GCP ----------
-    const tbLeadsV=3348*f;
+    // ---------- Tableau / GCP (reel : leads[mois].{brand,project,device,
+    // entry}, cf. pipeline/leads_extract.py) ----------
+    // pas de "taux de traitement" / "delai de contact" / "valeur atelier" :
+    // ces notions n'existent nulle part dans l'extraction back-office
+    // reelle (verifie sur pipeline/leads_extract.py) -- jamais inventees ici.
+    const titleCase=s=>s.toLowerCase().split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1):w).join(' ');
+    const paysDeSiteTb=n=>n.split(' ').slice(-1)[0];
+    const marqueDeSiteTb=n=>n.split(' ').slice(0,-1).join(' ');
+
+    const boAgg = this.aggregateLeadsBreakdown(debut, fin);
+    const boCmp = cmpRange ? this.aggregateLeadsBreakdown(cmpRange.debut, cmpRange.fin) : null;
+    const boLeads = agg.leads; // meme total reel que celui deja agrege pour l'onglet GA4 (d.leads[mois].daily)
+    const ga4Leads = leads; // proxy funnel GA4 (tradein_request), calcule plus haut -- jamais reconcilie avec le BO
+    const ecartGa4Bo = ga4Leads ? dec(Math.abs(boLeads-ga4Leads)/ga4Leads*100,1)+' %' : '—';
+    const devTotal = Array.from(boAgg.device.values()).reduce((a,b)=>a+b,0);
+    const boCmpDevTotal = boCmp ? Array.from(boCmp.device.values()).reduce((a,b)=>a+b,0) : 0;
+    const entryPct = boAgg.entryTotal ? boAgg.entryAvec/boAgg.entryTotal*100 : null;
+    const entryPctCmp = boCmp && boCmp.entryTotal ? boCmp.entryAvec/boCmp.entryTotal*100 : null;
+    const mobilePct = devTotal ? (boAgg.device.get('mobile')||0)/devTotal*100 : null;
+    const mobilePctCmp = boCmpDevTotal ? (boCmp.device.get('mobile')||0)/boCmpDevTotal*100 : null;
+
+    // mediane reelle (part avec immatriculation) sur tout le parc, pour
+    // situer le perimetre selectionne -- jamais "% traites" (inexistant).
+    let medianEntryLabel = 'médiane parc indisponible';
+    if (this._allSites && this._allSites.length) {
+      const vals = this._allSites.map(n=>{
+        const bo = this.aggregateLeadsBreakdown.call({state:{sites:[n]},data:this.data}, debut, fin);
+        return bo.entryTotal ? bo.entryAvec/bo.entryTotal*100 : null;
+      }).filter(x=>x!=null).sort((a,b)=>a-b);
+      if (vals.length) {
+        const mid=Math.floor(vals.length/2);
+        const med = vals.length%2 ? vals[mid] : (vals[mid-1]+vals[mid])/2;
+        medianEntryLabel = 'médiane parc : '+dec(med,1)+' % avec immatriculation';
+      }
+    }
+
+    const tbLeadsV = boLeads;
+    const tbLeadsDelta = deltaBadge(boLeads, cmp&&cmp.leads);
     const tbKpis=[
-      {label:'Leads validés BO',value:this.fmt(2914*f),delta:'↑ 6,2 %',deltaStyle:badge('',true)},
-      {label:'Taux de traitement',value:'87,0 %',delta:'↑ 1,4 pt',deltaStyle:badge('',true)},
-      {label:'Délai moyen 1er contact',value:'4 h 12',delta:'↓ 38 min',deltaStyle:badge('',true)}
+      {label:'Leads back-office',value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
+      {label:'Part avec immatriculation',value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(entryPct, entryPctCmp, ' pt'))},
+      {label:'Part mobile',value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(mobilePct, mobilePctCmp, ' pt'))}
     ];
-    const tbSpark=this.spark([2610,2740,2690,2880,3020,3180,3348],'#7c63ee',420);
-    // marques : volume + écart de taux de traitement à la médiane
-    const brandsRaw=[['Opel',842,91.2],['Peugeot',714,88.4],['Citroën',536,79.6],['Renault',498,86.1],['Fiat',392,92.8],['Dacia',366,74.3]];
-    const median=87.0;
-    const sortedBrands=brandsRaw.slice().sort((a,b)=> (st.brandSort==='perf') ? b[2]-a[2] : b[1]-a[1]);
-    const maxDev=Math.max.apply(null,brandsRaw.map(b=>Math.abs(b[2]-median)));
-    const brandPerf=sortedBrands.map((b,i)=>{
-      const dev=b[2]-median, w=Math.abs(dev)/maxDev*48;
+    const tbSpark = safeSpark(leadsBuckets.length?leadsBuckets:[0,0,0,0,0,0,0],'#7c63ee');
+    const nbSitesTb = st.sites.length;
+    const nbMarquesTb = new Set(st.sites.map(marqueDeSiteTb)).size;
+    const perimetreTbLabel = nbSitesTb+' site'+(nbSitesTb>1?'s':'')+' · '+nbMarquesTb+' marque'+(nbMarquesTb>1?'s':'');
+
+    // marques (vehicule repris, reel) : volume + ecart de part de volume a
+    // la mediane des marques listees (jamais un "taux de traitement").
+    const brandTotal = Array.from(boAgg.brand.values()).reduce((a,b)=>a+b,0) || 1;
+    const brandRows = Array.from(boAgg.brand.entries()).map(([name,c])=>({name,leads:c,share:c/brandTotal*100}));
+    const sortedBrandRows = brandRows.slice().sort((a,b)=> (st.brandSort==='perf') ? a.name.localeCompare(b.name) : b.leads-a.leads).slice(0,8);
+    const shareSorted = sortedBrandRows.map(r=>r.share).sort((a,b)=>a-b);
+    const shareMedian = shareSorted.length ? (shareSorted.length%2 ? shareSorted[Math.floor(shareSorted.length/2)] : (shareSorted[shareSorted.length/2-1]+shareSorted[shareSorted.length/2])/2) : 0;
+    const maxDevBrand = Math.max(1, ...sortedBrandRows.map(r=>Math.abs(r.share-shareMedian)));
+    const brandPerf = sortedBrandRows.map((r,i)=>{
+      const dev=r.share-shareMedian, w=Math.abs(dev)/maxDevBrand*48;
       return {
-        name:b[0], rank:i+1, leads:this.fmt(b[1]*f),
+        name:titleCase(r.name), rank:i+1, leads:this.fmt(r.leads),
         rankStyle:`width:20px;height:20px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:${i<2?'#fff':'#8a8f98'};background:${i<2?'#7c63ee':'#f2f2f4'}`,
         divBar:`position:absolute;top:3px;height:10px;border-radius:3px;${dev>=0?`left:50%;width:${w}%;background:#3fae7a`:`right:50%;width:${w}%;background:#e8544a`}`,
-        rate:b[2].toFixed(1).replace('.',',')+' %',
+        rate:dec(r.share,1)+' %',
         rateStyle:`font-size:14.5px;font-weight:600;text-align:right;white-space:nowrap;color:${dev>=0?'#2b8f62':'#a33c39'}`
       };
     });
-    const worstBrand=brandsRaw.slice().sort((a,b)=>a[2]-b[2])[0];
-    const brandInsight=`${worstBrand[0]} traite ${(median-worstBrand[2]).toFixed(1).replace('.',',')} pt sous la médiane du parc, soit ≈ ${this.fmt(worstBrand[1]*f*(median-worstBrand[2])/100)} leads non rappelés sur la période.`;
+    const brandInsight = sortedBrandRows.length
+      ? `${titleCase(sortedBrandRows[0].name)} concentre ${dec(sortedBrandRows[0].share,1)} % des véhicules repris (${this.fmt(sortedBrandRows[0].leads)} leads), la marque la plus représentée du portefeuille sur la période.`
+      : 'Aucune donnée de marque disponible sur la période.';
 
-    // pays : délai + taux de traitement + pertes
-    const ctRaw=[['France',1486,'3 h 40',89.4],['Portugal',742,'4 h 05',87.8],['Espagne',598,'6 h 20',78.2],['Italie',324,'5 h 10',83.6],['Belgique',198,'2 h 55',92.1]];
-    const delayNum=d=>Number(d.split(' h ')[0])+Number(d.split(' h ')[1])/60;
-    const countryPerf=ctRaw.map(c=>{
-      const late=delayNum(c[2])>4.2;
-      return {
-        name:c[0], leads:this.fmt(c[1]*f), delay:c[2],
-        dot:`width:9px;height:9px;flex:none;border-radius:5px;background:${c[3]>=87?'#3fae7a':c[3]>=82?'#e8a33d':'#e8544a'}`,
-        delayStyle:`font-size:14.5px;text-align:right;white-space:nowrap;color:${late?'#a33c39':'#2f2f33'};font-weight:${late?600:400}`,
-        rate:c[3].toFixed(1).replace('.',',')+' %',
-        bar:`display:block;width:${c[3]}%;height:100%;border-radius:4px;background:#3fae7a`,
-        lost:this.fmt(c[1]*f*(100-c[3])/100)
-      };
+    // pays (derives des vrais noms de site du perimetre selectionne, reel) :
+    // volume + part d'entrees avec immatriculation (jamais de delai/pertes,
+    // absents du back-office).
+    const sitesParPays = {};
+    (st.sites||[]).forEach(n=>{ const p=paysDeSiteTb(n); (sitesParPays[p]=sitesParPays[p]||[]).push(n); });
+    const countryRows = [];
+    Object.keys(sitesParPays).forEach(pays=>{
+      const a = this.aggregate.call({state:{sites:sitesParPays[pays]},data:this.data}, debut, fin);
+      const bo = this.aggregateLeadsBreakdown.call({state:{sites:sitesParPays[pays]},data:this.data}, debut, fin);
+      countryRows.push({ name:pays, leads:a.leads, entryPct: bo.entryTotal?bo.entryAvec/bo.entryTotal*100:null, manuel: bo.entryTotal-bo.entryAvec });
     });
-    const worstCt=ctRaw.slice().sort((a,b)=>a[3]-b[3])[0];
-    const countryInsight=`${worstCt[0]} cumule le plus long délai (${worstCt[2]}) et le plus faible taux de traitement (${worstCt[3].toFixed(1).replace('.',',')} %) : ${this.fmt(worstCt[1]*f*(100-worstCt[3])/100)} leads jamais rappelés.`;
-    const prRaw=[['Projet VN',1172,'#7c63ee'],['Projet VO',1004,'#b6a5f8'],['Sans projet',1172,'#e2dcfc']];
-    const ptot=prRaw.reduce((a,p)=>a+p[1],0);
-    const tbProjects=prRaw.map(p=>({name:p[0],value:this.fmt(p[1]*f),pct:Math.round(p[1]/ptot*100)+' %',
-      dot:`width:11px;height:11px;border-radius:6px;flex:none;background:${p[2]}`}));
-    const DC=2*Math.PI*54; let off=0;
-    const donutArcs=prRaw.map((p,i)=>{
-      const frac=p[1]/ptot, el=h('circle',{key:'d'+i,cx:70,cy:70,r:54,fill:'none',stroke:p[2],strokeWidth:22,
-        strokeDasharray:`${DC*frac-3} ${DC}`,strokeDashoffset:-DC*off,transform:'rotate(-90 70 70)'});
-      off+=frac; return el;
-    });
-    const tbProjectDonut=h('svg',{viewBox:'0 0 140 140',width:'100%',style:{display:'block',height:'auto',maxWidth:'150px',margin:'0 auto'}},
-      donutArcs.concat([h('text',{key:'c',x:70,y:76,textAnchor:'middle',fontSize:20,fontWeight:600,fill:'#121214',fontFamily:F},this.fmt(tbLeadsV))]));
-    const dvRaw=[['Mobile',2042,'#7c63ee',0.72,'décroche sur « Coordonnées »'],['Desktop',1004,'#3fae7a',1.38,'décroche sur « Point de vente »'],['Tablette',302,'#e8a33d',0.94,'décroche sur « Version »']];
-    const dtot=dvRaw.reduce((a,d)=>a+d[1],0);
-    const devicePerf=dvRaw.map(d=>({
-      name:d[0], value:this.fmt(d[1]*f), pct:Math.round(d[1]/dtot*100)+' % du volume',
-      index:'indice '+d[3].toFixed(2).replace('.',','),
-      indexStyle:`font-size:12.5px;font-weight:600;border-radius:8px;padding:3px 8px;white-space:nowrap;${d[3]>=1?'color:#2b8f62;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`,
-      bar:`display:block;width:${(d[1]/dtot*100).toFixed(1)}%;height:100%;border-radius:5px;background:${d[2]}`,
-      drop:d[4]
+    countryRows.sort((a,b)=>b.leads-a.leads);
+    const countryTotal = countryRows.reduce((a,c)=>a+c.leads,0) || 1;
+    const countryPerf = countryRows.map(c=>({
+      name:c.name, leads:this.fmt(c.leads),
+      dot:`width:9px;height:9px;flex:none;border-radius:5px;background:${c.entryPct==null?'#c2c5cb':c.entryPct>=90?'#3fae7a':c.entryPct>=75?'#e8a33d':'#e8544a'}`,
+      delayStyle:'font-size:14.5px;text-align:right;white-space:nowrap;color:#2f2f33',
+      delay:dec(c.leads/countryTotal*100,1)+' %',
+      rate:c.entryPct==null?'—':dec(c.entryPct,1)+' %',
+      bar:c.entryPct==null?'display:block;width:0%;height:100%;border-radius:4px;background:#e2e2e6':`display:block;width:${c.entryPct}%;height:100%;border-radius:4px;background:#3fae7a`,
+      lost:c.entryPct==null?'—':this.fmt(c.manuel)
     }));
+    const worstCt = countryRows.filter(c=>c.entryPct!=null).sort((a,b)=>a.entryPct-b.entryPct)[0];
+    const countryInsight = worstCt
+      ? `${worstCt.name} a la plus faible part d'entrées avec immatriculation du portefeuille (${dec(worstCt.entryPct,1)} %) : plus de friction à la qualification qu'ailleurs.`
+      : 'Donnée insuffisante pour comparer les pays sur cette période.';
 
-    const prPerf=[['Projet VN',1172,'#7c63ee','Panier moyen 24 800 €','fort'],['Projet VO',1004,'#b6a5f8','Panier moyen 14 200 €','moyen'],['Sans projet',1172,'#e2dcfc','Valeur atelier seule','faible']];
-    const projectPerf=prPerf.map(p=>({
-      name:p[0], value:this.fmt(p[1]*f), detail:p[3],
-      dot:`width:11px;height:11px;border-radius:6px;flex:none;background:${p[2]}`,
-      badge:p[4],
-      badgeStyle:`font-size:12px;font-weight:600;border-radius:8px;padding:3px 8px;white-space:nowrap;${p[4]==='fort'?'color:#2b8f62;background:#eaf7ef':p[4]==='moyen'?'color:#9a6413;background:#fdf0dd':'color:#6d727a;background:#f2f2f4'}`
+    // projet d'achat (reel : "VN"/"VO"/"No purchase project") -- jamais de
+    // panier moyen ni de valeur atelier, absents du back-office.
+    const projColors={'VN':'#7c63ee','VO':'#b6a5f8','No purchase project':'#e2dcfc'};
+    const projLabelFr=n=>n==='No purchase project'?'Sans projet':n==='VN'?'Projet VN':n==='VO'?'Projet VO':titleCase(n);
+    const projRows = Array.from(boAgg.project.entries()).map(([name,c])=>({name,count:c})).sort((a,b)=>b.count-a.count);
+    const ptot = projRows.reduce((a,p)=>a+p.count,0) || 1;
+    const tbProjectDonut = (()=>{
+      const DC=2*Math.PI*54; let off=0;
+      const donutArcs=projRows.map((p,i)=>{
+        const frac=p.count/ptot, el=h('circle',{key:'d'+i,cx:70,cy:70,r:54,fill:'none',stroke:projColors[p.name]||'#c8c8ce',strokeWidth:22,
+          strokeDasharray:`${DC*frac-3} ${DC}`,strokeDashoffset:-DC*off,transform:'rotate(-90 70 70)'});
+        off+=frac; return el;
+      });
+      return h('svg',{viewBox:'0 0 140 140',width:'100%',style:{display:'block',height:'auto',maxWidth:'150px',margin:'0 auto'}},
+        donutArcs.concat([h('text',{key:'c',x:70,y:76,textAnchor:'middle',fontSize:20,fontWeight:600,fill:'#121214',fontFamily:F},this.fmt(ptot))]));
+    })();
+    const projectPerf = projRows.map(p=>({
+      name:projLabelFr(p.name), value:this.fmt(p.count),
+      dot:`width:11px;height:11px;border-radius:6px;flex:none;background:${projColors[p.name]||'#c8c8ce'}`,
+      detail:Math.round(p.count/ptot*100)+' % du volume'
     }));
+    const noProjectCount = boAgg.project.get('No purchase project')||0;
+    const noProjectPct = Math.round(noProjectCount/ptot*100);
+    const projectInsight = `Qualifier le projet dès le formulaire permettrait de mieux orienter ${this.fmt(noProjectCount)} leads actuellement sans projet déclaré (${noProjectPct} % du volume).`;
+
+    // appareil (reel : device mobile/desktop/tablet) -- jamais d'indice de
+    // conversion ni d'etape de decrochage, absents du back-office (ce
+    // seraient des donnees GA4, pas des donnees de leads).
+    const deviceLabelFr=n=>({mobile:'Mobile',desktop:'Desktop',tablet:'Tablette'}[String(n).toLowerCase()]||titleCase(n));
+    const deviceColors={mobile:'#7c63ee',desktop:'#3fae7a',tablet:'#e8a33d'};
+    const deviceRowsSorted = Array.from(boAgg.device.entries()).sort((a,b)=>b[1]-a[1]);
+    const devicePerf = deviceRowsSorted.map(([name,c])=>({
+      name:deviceLabelFr(name), value:this.fmt(c), pct:Math.round(c/(devTotal||1)*100)+' % du volume',
+      bar:`display:block;width:${(c/(devTotal||1)*100).toFixed(1)}%;height:100%;border-radius:5px;background:${deviceColors[String(name).toLowerCase()]||'#c8c8ce'}`
+    }));
+    const deviceInsight = deviceRowsSorted.length
+      ? `${deviceLabelFr(deviceRowsSorted[0][0])} représente ${Math.round(deviceRowsSorted[0][1]/(devTotal||1)*100)} % du volume de leads back-office (${this.fmt(deviceRowsSorted[0][1])} leads), le premier appareil du portefeuille sur la période.`
+      : 'Aucune donnée d’appareil disponible sur la période.';
 
     // ---------- header : marque + calendrier ----------
     // périmètre : une seule liste cherchable
@@ -2072,8 +2159,8 @@ class Component extends DCLogic {
       ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
-      tbLeads:this.fmt(tbLeadsV), tbKpis, tbSpark, tbProjectDonut,
-      brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, devicePerf,
+      tbLeads:this.fmt(tbLeadsV), tbLeadsDelta, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
       scKpis, scChart, scTrendRangeLabel, scPages, scQueries, allQueries, pageInsightText,
