@@ -1574,7 +1574,7 @@ class Component extends DCLogic {
       name, toggle:()=>set({hidden:Object.assign({},st.hidden,{[name]:!st.hidden[name]})}),
       style:`display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;${st.hidden[name]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:'+CHAN_COLORS[i%CHAN_COLORS.length]+'1a'}`
     }));
-    const MW=900,MH=300,ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
+    const MW=900,MH=210,ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
     const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }))*1.2;
     const mx2=i=>ML+(joursCanal.length>1?i/(joursCanal.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
     [0,.3,.6,.9].forEach((frac,i)=>{
@@ -1779,7 +1779,7 @@ class Component extends DCLogic {
       ? `${moisNoms[parseInt(trendMonthsKeys[0].slice(5,7),10)-1]} ${trendMonthsKeys[0].slice(2,4)} → ${moisNoms[parseInt(trendMonthsKeys[trendMonthsKeys.length-1].slice(5,7),10)-1]} ${trendMonthsKeys[trendMonthsKeys.length-1].slice(2,4)} · survolez la courbe`
       : 'Aucune donnée mensuelle disponible';
 
-    const GW=1000,GH=300,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
+    const GW=1000,GH=210,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
     // +20% de marge au-dessus du maximum reel : sans ca, le point le plus
     // haut touche le bord du graphe et une variation normale a l'air d'un
     // pic spectaculaire.
@@ -1978,7 +1978,7 @@ class Component extends DCLogic {
       const n=dates.length;
       if (n>=2) {
         const mob=dates.map(dt=>psRaw.historique[dt].mobile??0), desk=dates.map(dt=>psRaw.historique[dt].desktop??0);
-        const PW=520,PH=240,PL=44,PR=14,PT=16,PB=34,ppw=PW-PL-PR,pph=PH-PT-PB;
+        const PW=520,PH=190,PL=44,PR=14,PT=16,PB=34,ppw=PW-PL-PR,pph=PH-PT-PB;
         const px=i=>PL+(i/(n-1))*ppw, py=v=>PT+pph-(v/100)*pph, pk=[];
         [0,50,100].forEach((v,i)=>{
           pk.push(h('line',{key:'g'+i,x1:PL,y1:py(v),x2:PL+ppw,y2:py(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
