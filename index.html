@@ -1136,7 +1136,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
   </div>
 
   <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
-  <div style="{{ chatPanelStyle }}">
+  <div style="{{ chatPanelOuterStyle }}">
+  <div style="{{ chatPanelInnerStyle }}">
 
     <div style="flex:none;padding:16px 18px;background:linear-gradient(150deg,#1b1636,#33215a);color:#fff">
       <div style="display:flex;align-items:center;gap:12px">
@@ -1211,6 +1212,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </span>
       </div>
     </div>
+  </div>
   </div>
   </sc-if>
 </div>
@@ -2454,7 +2456,13 @@ class Component extends DCLogic {
         if (st.chatOpen) { set({chatClosing:true}); setTimeout(()=>this.setState({chatOpen:false,chatClosing:false}), 200); }
         else { set({chatOpen:true, chatClosing:false}); }
       },
-      chatPanelStyle:`position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;z-index:60;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e6e6ea;box-shadow:-24px 0 60px rgba(20,16,40,.18);animation:${st.chatClosing?'chatSlideOut .2s ease forwards':'chatSlideIn .25s cubic-bezier(.16,1,.3,1)'}`,
+      // position:fixed reste sur un conteneur STATIQUE, jamais anime -- un
+      // transform/animation directement sur un element position:fixed cree
+      // un nouveau contexte de positionnement dans certains navigateurs
+      // (Safari notamment) et peut faire "sauter" tout le reste de la mise
+      // en page. Le glissement/fondu vit uniquement sur l'enfant interne.
+      chatPanelOuterStyle:`position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;z-index:60`,
+      chatPanelInnerStyle:`height:100%;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e6e6ea;box-shadow:-24px 0 60px rgba(20,16,40,.18);animation:${st.chatClosing?'chatSlideOut .2s ease forwards':'chatSlideIn .25s cubic-bezier(.16,1,.3,1)'}`,
       chatFabStyle:`position:fixed;right:24px;bottom:24px;z-index:55;display:${st.chatOpen?'none':'flex'};align-items:center;gap:10px;height:52px;padding:0 20px;border-radius:26px;cursor:pointer;background:linear-gradient(150deg,#1b1636,#3a2160);box-shadow:0 14px 34px rgba(43,25,90,.35);transition:transform .15s`,
       convs, messages, suggestions,
       thinking:!!st.thinking, thinkingLabel:'Agents analytics · business · parc en cours d’analyse…',
