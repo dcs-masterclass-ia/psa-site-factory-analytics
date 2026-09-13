@@ -574,8 +574,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
-            <div style="font-size:18px;font-weight:600;color:#121214">Pages</div>
-            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Search Console rapproché de GA4 par URL</div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:8px">
+              <div>
+                <div style="font-size:18px;font-weight:600;color:#121214">Pages</div>
+                <div style="font-size:13.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
+              </div>
+              <span onClick="{{ openPages }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ pageCount }} pages</span>
+            </div>
             <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
@@ -697,6 +702,37 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
       </sc-if>
 
+      <sc-if value="{{ pagesModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
+        <div style="width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:22px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:18px;font-weight:600;color:#121214">Toutes les pages</div>
+              <div style="font-size:13.5px;color:#9a9fa6">{{ pageCount }} pages · {{ rangeLabel }}</div>
+            </div>
+            <span onClick="{{ closePages }}" style="width:36px;height:36px;flex:none;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b4b4f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </span>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
+            <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:12px 4px;font-size:13.5px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
+            </div>
+            <sc-for list="{{ allPages }}" as="r" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
+                <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.clicks }}</span>
+                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
+                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
+                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
+                <span style="{{ r.bounceStyle }}">{{ r.bounce }}</span>
+                <span style="{{ r.convStyle }}">{{ r.conv }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
 
       <sc-if value="{{ isPS }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:34px">
@@ -1799,29 +1835,31 @@ class Component extends DCLogic {
     // tracking par requete cote GA4, jamais invente.
     const pagesAgg = this.aggregatePages(debut, fin);
     const SEUIL_SESSIONS_FIABLE = 100;
-    const scPages = Array.from(pagesAgg.entries())
+    const mkPageRow = ([path,v]) => {
+      const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
+      const bounce = fiable ? v.rebondSum/v.sessions : null;
+      const conv = fiable ? v.conversions/v.sessions*100 : null;
+      return {
+        name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
+        ctr:v.impressions?dec(v.clics/v.impressions*100,2)+' %':'—',
+        pos:v.impressions?dec(v.posSum/v.impressions,1):'—',
+        bounce:bounce!=null?dec(bounce,1)+' %':'—',
+        bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
+        conv:conv!=null?dec(conv,2)+' %':'—',
+        convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214')
+      };
+    };
+    const pagesSorted = Array.from(pagesAgg.entries())
       .filter(([,v]) => v.clics>0 || v.sessions>0)
       .sort((a,b) => b[1].clics-a[1].clics)
-      .slice(0,20)
-      .map(([path,v]) => {
-        const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
-        const bounce = fiable ? v.rebondSum/v.sessions : null;
-        const conv = fiable ? v.conversions/v.sessions*100 : null;
-        return {
-          name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
-          ctr:v.impressions?dec(v.clics/v.impressions*100,2)+' %':'—',
-          pos:v.impressions?dec(v.posSum/v.impressions,1):'—',
-          bounce:bounce!=null?dec(bounce,1)+' %':'—',
-          bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
-          conv:conv!=null?dec(conv,2)+' %':'—',
-          convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214')
-        };
-      });
-    const pireePage = scPages.map(r=>({r, v:pagesAgg.get(r.name)}))
+      .slice(0,20);
+    const allPages = pagesSorted.map(mkPageRow);
+    const scPages = allPages.slice(0,6);
+    const pireePage = pagesSorted.map(([path,v])=>({path,v}))
       .filter(x=>x.v.sessions>=SEUIL_SESSIONS_FIABLE)
       .sort((a,b)=>(b.v.rebondSum/b.v.sessions)-(a.v.rebondSum/a.v.sessions))[0];
     const pageInsightText = pireePage
-      ? `${pireePage.r.name} capte ${pireePage.r.clicks} clics mais rebondit à ${dec(pireePage.v.rebondSum/pireePage.v.sessions,1)} % pour ${dec(pireePage.v.conversions/pireePage.v.sessions*100,2)} % de conversion : la page la plus fuyante parmi celles au trafic suffisant sur la période.`
+      ? `${pireePage.path} capte ${this.fmt(pireePage.v.clics)} clics mais rebondit à ${dec(pireePage.v.rebondSum/pireePage.v.sessions,1)} % pour ${dec(pireePage.v.conversions/pireePage.v.sessions*100,2)} % de conversion : la page la plus fuyante parmi celles au trafic suffisant sur la période.`
       : 'Aucune page avec assez de trafic (≥ 100 sessions) pour identifier une fuite fiable sur la période.';
 
     // comparateur — appel API en direct (api/gsc-compare.js, deja en prod) :
@@ -2267,9 +2305,11 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scTrendRangeLabel, scPages, scQueries, allQueries, pageInsightText,
-      queryCount:allQueries.length,
+      scKpis, scChart, scTrendRangeLabel, scPages, allPages, scQueries, allQueries, pageInsightText,
+      queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:()=>set({queriesModal:true}), closeQueries:()=>set({queriesModal:false}),
+      openPages:()=>set({pagesModal:true}), closePages:()=>set({pagesModal:false}),
+      pagesModal:!!st.pagesModal,
       queriesModal:!!st.queriesModal,
       dimPages:()=>set({cmpDim:'pages',apiState:'idle'}), dimQueries:()=>set({cmpDim:'queries',apiState:'idle'}),
       dimPagesStyle:this.tabStyle(st.cmpDim!=='queries'), dimQueriesStyle:this.tabStyle(st.cmpDim==='queries'),
