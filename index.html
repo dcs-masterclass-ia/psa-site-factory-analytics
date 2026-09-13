@@ -1579,8 +1579,8 @@ class Component extends DCLogic {
     const mx2=i=>ML+(joursCanal.length>1?i/(joursCanal.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
     [0,.3,.6,.9].forEach((frac,i)=>{
       const v=Math.round(maxCanalVal*frac);
-      mk.push(h('line',{key:'g'+i,x1:ML,y1:my(v),x2:ML+mpw,y2:my(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
-      mk.push(h('text',{key:'t'+i,x:ML-12,y:my(v)+6,textAnchor:'end',fontSize:16,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
+      mk.push(h('line',{key:'g'+i,x1:ML,y1:my(v),x2:ML+mpw,y2:my(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
+      mk.push(h('text',{key:'t'+i,x:ML-12,y:my(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
     majeurs.forEach((name,ci)=>{
       if (st.hidden[name]) return;
@@ -1588,10 +1588,10 @@ class Component extends DCLogic {
       if (vals.length<2) return;
       let d=`M${mx2(0)},${my(vals[0])}`;
       for (let i=0;i<vals.length-1;i++){ const x0=mx2(i),x1=mx2(i+1),c=(x0+x1)/2; d+=` C${c},${my(vals[i])} ${c},${my(vals[i+1])} ${x1},${my(vals[i+1])}`; }
-      mk.push(h('path',{key:name,d,fill:'none',stroke:CHAN_COLORS[ci%CHAN_COLORS.length],strokeWidth:3.4,strokeLinecap:'round'}));
+      mk.push(h('path',{key:name,d,fill:'none',stroke:CHAN_COLORS[ci%CHAN_COLORS.length],strokeWidth:2.2,strokeLinecap:'round'}));
     });
     const step8=Math.max(1,Math.floor(joursCanal.length/8));
-    joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-10,textAnchor:'middle',fontSize:15,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
+    joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
     const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,width:'100%',style:{display:'block',height:'auto'}},mk);
 
     // avant / apres V2 : reel (agg.v2Steps), sites is_v2_split uniquement
@@ -1795,25 +1795,25 @@ class Component extends DCLogic {
     const gk=[];
     [0,.33,.66,1].forEach((frac,i)=>{
       const v=Math.round(maxC*frac);
-      gk.push(h('line',{key:'g'+i,x1:GL,y1:gyC(v),x2:GL+gpw,y2:gyC(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
-      gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+6,textAnchor:'end',fontSize:15,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
+      gk.push(h('line',{key:'g'+i,x1:GL,y1:gyC(v),x2:GL+gpw,y2:gyC(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
+      gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
-    [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+6,fontSize:14,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
+    [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+4,fontSize:10,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
     let areaD='M'+gx(0)+','+gyI(impr[0]);
     for(let i=1;i<gDays;i++) areaD+=' L'+gx(i)+','+gyI(impr[i]);
     gk.push(h('path',{key:'area',d:areaD+' L'+gx(gDays-1)+','+(GT+gph)+' L'+gx(0)+','+(GT+gph)+' Z',fill:'#d7e4fb'}));
     let cD='M'+gx(0)+','+gyC(clicks[0]);
     for(let i=0;i<gDays-1;i++){const c=(gx(i)+gx(i+1))/2;cD+=' C'+c+','+gyC(clicks[i])+' '+c+','+gyC(clicks[i+1])+' '+gx(i+1)+','+gyC(clicks[i+1]);}
-    gk.push(h('path',{key:'clicks',d:cD,fill:'none',stroke:'#3b76e8',strokeWidth:3.2,strokeLinecap:'round'}));
+    gk.push(h('path',{key:'clicks',d:cD,fill:'none',stroke:'#3b76e8',strokeWidth:2,strokeLinecap:'round'}));
     let pD='M'+gx(0)+','+gyP(pos[0]);
     for(let i=1;i<gDays;i++) pD+=' L'+gx(i)+','+gyP(pos[i]);
-    gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:2.6,strokeDasharray:'8 7',strokeLinecap:'round'}));
-    labels.forEach((l,i)=>gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-10,textAnchor:'middle',fontSize:14,fill:'#9a9fa6',fontFamily:F},l)));
+    gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:1.6,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    labels.forEach((l,i)=>gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-8,textAnchor:'middle',fontSize:10,fill:'#9a9fa6',fontFamily:F},l)));
     const hov=st.scHover;
     if(hov!=null && hov<gDays){
-      gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1.5}));
-      gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:6,fill:'#3b76e8',stroke:'#fff',strokeWidth:2.5}));
-      gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:6,fill:'#e08a33',stroke:'#fff',strokeWidth:2.5}));
+      gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1}));
+      gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:3.5,fill:'#3b76e8',stroke:'#fff',strokeWidth:1.5}));
+      gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:3.5,fill:'#e08a33',stroke:'#fff',strokeWidth:1.5}));
       const tw=168,th=76,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
       gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx+','+GT+')'},[
         h('rect',{key:'r',width:tw,height:th,rx:10,fill:'#141414'}),
@@ -1981,15 +1981,15 @@ class Component extends DCLogic {
         const PW=520,PH=190,PL=44,PR=14,PT=16,PB=34,ppw=PW-PL-PR,pph=PH-PT-PB;
         const px=i=>PL+(i/(n-1))*ppw, py=v=>PT+pph-(v/100)*pph, pk=[];
         [0,50,100].forEach((v,i)=>{
-          pk.push(h('line',{key:'g'+i,x1:PL,y1:py(v),x2:PL+ppw,y2:py(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
-          pk.push(h('text',{key:'t'+i,x:PL-10,y:py(v)+6,textAnchor:'end',fontSize:14,fill:'#9a9fa6',fontFamily:F},v));
+          pk.push(h('line',{key:'g'+i,x1:PL,y1:py(v),x2:PL+ppw,y2:py(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
+          pk.push(h('text',{key:'t'+i,x:PL-10,y:py(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},v));
         });
         [[mob,'#7c63ee'],[desk,'#3fae7a']].forEach((s,si)=>{
           let d2=`M${px(0)},${py(s[0][0])}`;
           for(let i=0;i<n-1;i++){const x0=px(i),x1=px(i+1),c=(x0+x1)/2;d2+=` C${c},${py(s[0][i])} ${c},${py(s[0][i+1])} ${x1},${py(s[0][i+1])}`;}
-          pk.push(h('path',{key:'p'+si,d:d2,fill:'none',stroke:s[1],strokeWidth:3,strokeLinecap:'round'}));
+          pk.push(h('path',{key:'p'+si,d:d2,fill:'none',stroke:s[1],strokeWidth:2.2,strokeLinecap:'round'}));
         });
-        dates.forEach((dt,i)=>pk.push(h('text',{key:'x'+i,x:px(i),y:PH-10,textAnchor:'middle',fontSize:13,fill:'#9a9fa6',fontFamily:F},fmtFrLocal(dt))));
+        dates.forEach((dt,i)=>pk.push(h('text',{key:'x'+i,x:px(i),y:PH-8,textAnchor:'middle',fontSize:9.5,fill:'#9a9fa6',fontFamily:F},fmtFrLocal(dt))));
         psHistory=h('svg',{viewBox:`0 0 ${PW} ${PH}`,width:'100%',style:{display:'block',height:'auto'}},pk);
         psHistorySubtitle = psSite+' · '+n+' derniers relevés réels';
       }
