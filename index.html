@@ -326,7 +326,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ff8f88" stroke-width="2.1" stroke-linecap="round"><path d="M12 4.5 21.5 19.5H3z"/><path d="M12 10v4M12 17h.01"/></svg>
                     <span style="font-size:11.5px;font-weight:600;letter-spacing:.07em;color:#ff9b94">POINT DE VIGILANCE</span>
                   </div>
-                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">Fuite dominante de <span style="font-weight:600;color:#ff9b94">−57,5 %</span> entre « Page d'accueil » et « Version » — le sélecteur mobile dépasse 3 écrans de scroll.</div>
+                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">{{ kamiaVigilance }}</div>
                 </div>
 
                 <div style="flex:1;min-height:0;border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10)">
@@ -334,7 +334,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffc98f" stroke-width="2.1" stroke-linecap="round"><path d="M4 17 10 9.5l4 4L20 6"/><path d="M15 6h5v5"/></svg>
                     <span style="font-size:11.5px;font-weight:600;letter-spacing:.07em;color:#ffc98f">RUPTURE DÉTECTÉE</span>
                   </div>
-                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">Leads de la semaine <span style="font-weight:600;color:#ff9b94">−31 % sous l'attendu</span> (742 vs 1 076 ± 118), concentrée sur Paid Social.</div>
+                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">{{ kamiaRupture }}</div>
                 </div>
 
                 <div style="flex:1;min-height:0;border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10)">
@@ -342,7 +342,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8fe6bb" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.6 1.6"/></svg>
                     <span style="font-size:11.5px;font-weight:600;letter-spacing:.07em;color:#8fe6bb">OPPORTUNITÉ</span>
                   </div>
-                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">Paid Search × Desktop convertit à <span style="font-weight:600;color:#8fe6bb">2,41 %</span>, soit 1,9× la moyenne du site — réallouer 10 % du budget Paid Social vaudrait ≈ 95 leads/mois.</div>
+                  <div style="font-size:14.5px;line-height:1.5;color:#f3f0ff">{{ kamiaOpportunite }}</div>
                 </div>
               </div>
 
@@ -404,7 +404,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div>
                 <div style="font-size:18px;font-weight:600;color:#121214">Sessions par canal</div>
-                <div style="font-size:13.5px;color:#9a9fa6">12 derniers mois · cliquez une légende pour isoler</div>
+                <div style="font-size:13.5px;color:#9a9fa6">{{ trendRangeLabel }}</div>
               </div>
               <span style="flex:1"></span>
               <sc-for list="{{ channelToggles }}" as="t" hint-placeholder-count="4">
@@ -1495,8 +1495,75 @@ class Component extends DCLogic {
       return { name, pct:pct+' %', bar:`width:${pct}%;height:100%;border-radius:4px;background:#b6a5f8` };
     });
 
-    const tabDefs=[['sources','Sources'],['trend','Tendance 12 mois'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']];
+    const tabDefs=[['sources','Sources'],['trend','Tendance'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']];
     const tabs=tabDefs.map(t=>({name:t[1],pick:()=>set({tab:t[0]}),style:this.tabStyle(st.tab===t[0])}));
+    // libelle honnete : le graphe trace la vraie periode selectionnee dans
+    // le calendrier, jamais fixe a "12 mois" quelle que soit la selection.
+    // fmtFr n'est defini que plus bas dans cette fonction (const, TDZ) --
+    // formatage local identique pour eviter la ReferenceError.
+    const fmtFrLocal=iso=>iso? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
+    const trendRangeLabel=`${rangeDays} j (${fmtFrLocal(debut)}→${fmtFrLocal(fin)}) · cliquez une légende pour isoler`;
+
+    // ---------- KamIA : 3 encarts, chacun recalcule sur les vraies donnees
+    // deja chargees (agg/raw pour le tunnel, historique quotidien des leads
+    // pour la rupture, convCanalDevice pour le meilleur canal x device) --
+    // jamais de cause inventee (ex: "selecteur mobile"), jamais de
+    // projection budgetaire fabriquee : uniquement des faits mesures, avec
+    // repli honnete si le volume est insuffisant pour un signal fiable.
+    let kamiaVigilance='Tunnel indisponible sur la période sélectionnée.';
+    if (agg.funnelSteps && agg.funnelSteps.length > 1) {
+      let pire=null;
+      for (let i=1;i<agg.funnelSteps.length;i++){
+        const avant=agg.funnelSteps[i-1].users, apres=agg.funnelSteps[i].users;
+        if (!avant) continue;
+        const chute=(apres-avant)/avant*100;
+        if (!pire || chute<pire.chute) pire={chute,de:agg.funnelSteps[i-1].step,vers:agg.funnelSteps[i].step};
+      }
+      kamiaVigilance = pire && pire.chute<0
+        ? `Fuite dominante de ${dec(pire.chute,1)} % entre « ${pire.de} » et « ${pire.vers} ».`
+        : 'Aucune fuite marquée détectée sur le tunnel actuel.';
+    }
+
+    const leadsParJour={};
+    for (const s of st.sites) {
+      const d=this.data && this.data[s];
+      if (!d) continue;
+      for (const mois of Object.keys(d.leads||{})) {
+        if (mois==='total') continue;
+        const arr=(d.leads[mois] && d.leads[mois].daily) || [];
+        arr.forEach((v,i)=>{ const jour=mois+'-'+String(i+1).padStart(2,'0'); leadsParJour[jour]=(leadsParJour[jour]||0)+(v||0); });
+      }
+    }
+    const sommeJours=jrs=>jrs.reduce((a,j)=>a+(leadsParJour[j]||0),0);
+    const semaineActuelle=sommeJours(isoRange(this.decale(todayIso,-6),todayIso));
+    const semainesPrec=[];
+    for (let w=1; w<=8; w++){
+      semainesPrec.push(sommeJours(isoRange(this.decale(todayIso,-6-7*w),this.decale(todayIso,-7*w))));
+    }
+    const moyenneSem=semainesPrec.reduce((a,b)=>a+b,0)/semainesPrec.length;
+    const ecartType=Math.sqrt(semainesPrec.reduce((a,b)=>a+(b-moyenneSem)*(b-moyenneSem),0)/semainesPrec.length);
+    const zSemaine=ecartType ? (semaineActuelle-moyenneSem)/ecartType : 0;
+    let kamiaRupture;
+    if (moyenneSem < 20) {
+      kamiaRupture = 'Historique de leads trop réduit pour un signal de rupture fiable.';
+    } else if (Math.abs(zSemaine) >= 1.5) {
+      const ecartPct = moyenneSem ? Math.abs((semaineActuelle-moyenneSem)/moyenneSem*100) : 0;
+      kamiaRupture = `Leads de la semaine ${semaineActuelle<moyenneSem?'−':'+'}${dec(ecartPct,0)} % vs l'attendu (${this.fmt(semaineActuelle)} vs ${this.fmt(moyenneSem)} ± ${this.fmt(ecartType)}).`;
+    } else {
+      kamiaRupture = `Leads de la semaine dans la fourchette habituelle (${this.fmt(semaineActuelle)} vs ${this.fmt(moyenneSem)} ± ${this.fmt(ecartType)} attendu).`;
+    }
+
+    const combosConv=Array.from(agg.convCanalDevice.values()).filter(r=>r.sessions>=30);
+    let kamiaOpportunite='Pas assez de volume par canal × device pour une comparaison fiable.';
+    if (combosConv.length) {
+      const totalSessions=combosConv.reduce((a,r)=>a+r.sessions,0);
+      const totalConv=combosConv.reduce((a,r)=>a+r.conversions,0);
+      const moyenneConv=totalSessions? totalConv/totalSessions*100 : 0;
+      const meilleur=combosConv.map(r=>({...r,taux:r.sessions?r.conversions/r.sessions*100:0})).sort((a,b)=>b.taux-a.taux)[0];
+      if (meilleur && moyenneConv>0) {
+        kamiaOpportunite = `${meilleur.canal} × ${meilleur.device} convertit à ${dec(meilleur.taux,2)} %, soit ${dec(meilleur.taux/moyenneConv,1)}× la moyenne du site (${dec(moyenneConv,2)} %).`;
+      }
+    }
 
     // ---------- Search Console ----------
     const scClicksV=12480*f, scImprV=366200*f;
@@ -1891,7 +1958,8 @@ class Component extends DCLogic {
       kpis, kpiRate:dec(rate,2)+' %', rateSpark, kpiRateDelta,
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, channelToggles, multiChart, v2, matrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, channelToggles, multiChart, trendRangeLabel, v2, matrix, seasonChart, browsers, tabs,
+      kamiaVigilance, kamiaRupture, kamiaOpportunite,
       isSources:st.tab==='sources', isTrend:st.tab==='trend', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };
