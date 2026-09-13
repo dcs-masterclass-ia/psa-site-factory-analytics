@@ -572,6 +572,18 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.pos }}</span>
               </div>
             </sc-for>
+            <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
+              <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
+                <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
+                <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
+                <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
+                <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
+              </span>
+              <span style="min-width:0">
+                <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · OPPORTUNITÉ</span>
+                <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ queryInsight }}</span>
+              </span>
+            </div>
           </div>
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
@@ -1879,6 +1891,17 @@ class Component extends DCLogic {
     const queriesSorted=Array.from(searchAgg.queries.values()).sort((a,b)=>b.clics-a.clics);
     const scQueries=queriesSorted.slice(0,6).map(mkRow);
     const allQueries=queriesSorted.map(mkRow);
+    // insight reel : requete a fort volume d'impressions mais faible CTR
+    // (opportunite de retravailler titre/meta) -- seuil de volume pour
+    // eviter le bruit d'une requete anecdotique a 2 impressions et 0 clic.
+    const SEUIL_IMPR_FIABLE=500;
+    const requetesAvecVolume=queriesSorted.filter(q=>q.impressions>=SEUIL_IMPR_FIABLE);
+    const pireRequete=requetesAvecVolume.length
+      ? requetesAvecVolume.map(q=>({...q,ctrPct:q.impressions?q.clics/q.impressions*100:0})).sort((a,b)=>a.ctrPct-b.ctrPct)[0]
+      : null;
+    const queryInsight=pireRequete
+      ? `« ${pireRequete.name} » cumule ${this.fmt(pireRequete.impressions)} impressions pour seulement ${dec(pireRequete.ctrPct,2)} % de CTR : la requête la moins cliquée parmi celles à volume suffisant, à retravailler en priorité (titre, meta description).`
+      : 'Pas assez de requêtes à volume suffisant pour identifier une opportunité fiable sur la période.';
 
     // pages : rapprochement reel GA4 x Search Console par URL (searchMonth
     // stocke desormais aussi .pages en URL complete, rebondMonth .pages en
@@ -2359,7 +2382,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scTrendRangeLabel, scPages, allPages, scQueries, allQueries, pageInsightText,
+      scKpis, scChart, scTrendRangeLabel, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:()=>set({queriesModal:true}), closeQueries:()=>set({queriesModal:false}),
       openPages:()=>set({pagesModal:true}), closePages:()=>set({pagesModal:false}),
