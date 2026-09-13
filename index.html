@@ -266,9 +266,9 @@ input[type=date]{color-scheme:light}
        KamIA animee (orbSpin/orbHue/orbSpinRev, cf CSS) et vrais logos
        produits Google (TAB_ICON_SVG) conserves a la demande explicite,
        jamais les icones dessinees a la main de la maquette source. -->
-  <div style="display:flex;gap:22px;align-items:flex-start">
+  <div style="display:flex;gap:0;align-items:stretch">
 
-  <nav style="position:sticky;top:20px;flex:none;width:68px;background:#fff;border-radius:26px;box-shadow:0 4px 24px rgba(17,17,26,.06);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:8px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
+  <nav style="position:sticky;top:0;align-self:flex-start;flex:none;width:84px;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards">
     <span style="font-size:9px;font-weight:600;letter-spacing:.08em;color:#b3b7bd;flex:none;margin-bottom:2px">DATA</span>
     <sc-for list="{{ sideNavItems }}" as="n" hint-placeholder-count="6">
       <button onClick="{{ n.pick }}" title="{{ n.title }}" style="{{ n.style }}" style-hover="background:var(--soft)">
@@ -296,13 +296,18 @@ input[type=date]{color-scheme:light}
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:20px">
 
-  <header style="display:flex;align-items:center;gap:16px;position:relative;z-index:40;background:#fff;border-radius:26px;padding:14px 18px 14px 22px;box-shadow:0 4px 24px rgba(17,17,26,.06);animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards;flex-wrap:wrap">
+  <header style="display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:40;background:#fff;border-bottom:1px solid #ececee;padding:16px 30px;animation:riseIn .6s cubic-bezier(.2,.7,.3,1) backwards;flex-wrap:wrap">
     <div style="display:flex;align-items:center;flex:none">
-      <!-- vrai logo Converge (comme l'ancien front), pas une icone generique
-           + texte : logo-converge-noir.webp est un canvas 1536x1024 tres
-           majoritairement vide, recadre sur le mot-symbole reellement visible. -->
-      <div style="width:158px;height:33px;overflow:hidden;position:relative">
-        <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir.webp" alt="Converge" style="position:absolute;top:-99.5px;left:-110.5px;width:369.8px;height:246.4px;max-width:none">
+      <!-- vrai logo Converge (comme l'ancien front), pas une icone generique --
+           nouvel asset (13/09/2026) : uniquement le pictogramme (pas de mot-
+           symbole dans l'image), canvas 1536x1024 tres majoritairement vide,
+           recadre sur l'icone reellement visible + "Converge" en texte reel
+           a cote (Poppins, meme police que le reste). -->
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:28px;height:28px;overflow:hidden;position:relative;flex:none">
+          <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir+-+copie.png" alt="Converge" style="position:absolute;top:-81.2px;left:-90.4px;width:307.2px;height:204.8px;max-width:none">
+        </div>
+        <span style="font-size:19px;font-weight:600;letter-spacing:-.02em;color:#121214">Converge</span>
       </div>
     </div>
 
