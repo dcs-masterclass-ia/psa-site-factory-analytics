@@ -76,6 +76,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 @keyframes orbSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
 @keyframes orbBreath{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 @keyframes orbHue{0%,100%{filter:blur(2px) hue-rotate(0deg)}50%{filter:blur(2px) hue-rotate(35deg)}}
+@keyframes tabFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes chatSlideIn{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes chatSlideOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(28px)}}
+@keyframes modalBackdropIn{from{opacity:0}to{opacity:1}}
+@keyframes modalBackdropOut{from{opacity:1}to{opacity:0}}
+@keyframes modalPanelIn{from{opacity:0;transform:scale(.97) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes modalPanelOut{from{opacity:1;transform:scale(1) translateY(0)}to{opacity:0;transform:scale(.97) translateY(6px)}}
 </style>
 </helmet>
 <div style="display:flex;width:100%;height:100vh;background:#f4f4f6;overflow:hidden">
@@ -224,7 +231,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div style="flex:1;min-height:0;overflow-y:auto;padding:20px 24px 30px;display:flex;flex-direction:column;gap:24px">
 
       <sc-if value="{{ isGA }}" hint-placeholder-val="{{ true }}">
-      <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
       <div>
         <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
@@ -383,7 +390,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
 
           <sc-if value="{{ isSources }}" hint-placeholder-val="{{ true }}">
-          <div>
+          <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Sources d'acquisition</div>
@@ -413,7 +420,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isTrend }}" hint-placeholder-val="{{ false }}">
-          <div>
+          <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Sessions par canal</div>
@@ -429,7 +436,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
-          <div>
+          <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Parcours avant / après V2</div>
@@ -454,7 +461,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
-          <div>
+          <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device</div>
@@ -478,7 +485,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isAudience }}" hint-placeholder-val="{{ false }}">
-          <div>
+          <div style="animation:tabFadeIn .22s ease">
             <div style="font-size:16px;font-weight:600;color:#121214">Audience &amp; saisonnalité</div>
             <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Jour de semaine, navigateurs et type de visiteur</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:start">
@@ -513,7 +520,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ isSC }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
@@ -692,8 +699,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ queriesModal }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
-        <div style="width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+      <div style="{{ queriesBackdropStyle }}">
+        <div style="{{ queriesPanelStyle }}">
           <div style="flex:none;display:flex;align-items:center;gap:11px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
             <div style="flex:1;min-width:0">
               <div style="font-size:16px;font-weight:600;color:#121214">Toutes les requêtes</div>
@@ -722,8 +729,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ pagesModal }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
-        <div style="width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+      <div style="{{ pagesBackdropStyle }}">
+        <div style="{{ pagesPanelStyle }}">
           <div style="flex:none;display:flex;align-items:center;gap:11px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
             <div style="flex:1;min-width:0">
               <div style="font-size:16px;font-weight:600;color:#121214">Toutes les pages</div>
@@ -754,8 +761,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ channelsModal }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
-        <div style="width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+      <div style="{{ channelsBackdropStyle }}">
+        <div style="{{ channelsPanelStyle }}">
           <div style="flex:none;display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
             <div style="flex:1;min-width:0">
               <div style="font-size:18px;font-weight:600;color:#121214">Tous les canaux</div>
@@ -786,8 +793,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ matrixModal }}" hint-placeholder-val="{{ false }}">
-      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
-        <div style="width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+      <div style="{{ matrixBackdropStyle }}">
+        <div style="{{ matrixPanelStyle }}">
           <div style="flex:none;display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
             <div style="flex:1;min-width:0">
               <div style="font-size:18px;font-weight:600;color:#121214">Tous les canaux × device</div>
@@ -815,7 +822,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ isPS }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
@@ -914,7 +921,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <sc-if value="{{ isTB }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:24px">
+      <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
@@ -1129,7 +1136,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
   </div>
 
   <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
-  <div style="position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;z-index:60;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e6e6ea;box-shadow:-24px 0 60px rgba(20,16,40,.18)">
+  <div style="{{ chatPanelStyle }}">
 
     <div style="flex:none;padding:16px 18px;background:linear-gradient(150deg,#1b1636,#33215a);color:#fff">
       <div style="display:flex;align-items:center;gap:12px">
@@ -1528,6 +1535,18 @@ class Component extends DCLogic {
 
   renderVals(){
     const h=React.createElement,F='Poppins',st=this.state,set=o=>this.setState(o),f=this.f();
+    // ouverture/fermeture animees (modales "voir plus", panneau KamIA) :
+    // garde le sc-if monte pendant la sortie (isClosing) pour laisser jouer
+    // l'animation CSS avant de demonter reellement, ~180ms plus tard.
+    const modalCtl = key => ({
+      isOpen: !!st[key], isClosing: !!st[key+'Closing'],
+      openIt: ()=>set({[key]:true, [key+'Closing']:false}),
+      closeIt: ()=>{ set({[key+'Closing']:true}); setTimeout(()=>this.setState({[key]:false,[key+'Closing']:false}), 180); }
+    });
+    const modalStyles = (ctl, panelBase) => ({
+      backdrop:`position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px;animation:${ctl.isClosing?'modalBackdropOut .18s ease forwards':'modalBackdropIn .18s ease'}`,
+      panel:`${panelBase};animation:${ctl.isClosing?'modalPanelOut .18s ease forwards':'modalPanelIn .2s cubic-bezier(.16,1,.3,1)'}`
+    });
     const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Tableau',gcp:'Google Cloud'};
     const srcStyle=a=>`width:38px;height:38px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;${a?'background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8':'background:transparent'}`;
 
@@ -2424,8 +2443,18 @@ class Component extends DCLogic {
     };
     const suggestions=['Compare au parc','Génère le graphe des canaux','Que faire cette semaine ?'].map(t=>({text:t,pick:()=>pushMsg(t)}));
 
+    const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    const channelsCtl=modalCtl('channelsModal'), channelsStyles=modalStyles(channelsCtl,'width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    const matrixCtl=modalCtl('matrixModal'), matrixStyles=modalStyles(matrixCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+
     return {
-      chatOpen:!!st.chatOpen, toggleChat:()=>set({chatOpen:!st.chatOpen}),
+      chatOpen:!!st.chatOpen,
+      toggleChat:()=>{
+        if (st.chatOpen) { set({chatClosing:true}); setTimeout(()=>this.setState({chatOpen:false,chatClosing:false}), 200); }
+        else { set({chatOpen:true, chatClosing:false}); }
+      },
+      chatPanelStyle:`position:fixed;top:0;right:0;bottom:0;width:420px;max-width:92vw;z-index:60;display:flex;flex-direction:column;background:#fff;border-left:1px solid #e6e6ea;box-shadow:-24px 0 60px rgba(20,16,40,.18);animation:${st.chatClosing?'chatSlideOut .2s ease forwards':'chatSlideIn .25s cubic-bezier(.16,1,.3,1)'}`,
       chatFabStyle:`position:fixed;right:24px;bottom:24px;z-index:55;display:${st.chatOpen?'none':'flex'};align-items:center;gap:10px;height:52px;padding:0 20px;border-radius:26px;cursor:pointer;background:linear-gradient(150deg,#1b1636,#3a2160);box-shadow:0 14px 34px rgba(43,25,90,.35);transition:transform .15s`,
       convs, messages, suggestions,
       thinking:!!st.thinking, thinkingLabel:'Agents analytics · business · parc en cours d’analyse…',
@@ -2461,10 +2490,10 @@ class Component extends DCLogic {
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
       scKpis, scChart, scTrendRangeLabel, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
       queryCount:allQueries.length, pageCount:allPages.length,
-      openQueries:()=>set({queriesModal:true}), closeQueries:()=>set({queriesModal:false}),
-      openPages:()=>set({pagesModal:true}), closePages:()=>set({pagesModal:false}),
-      pagesModal:!!st.pagesModal,
-      queriesModal:!!st.queriesModal,
+      openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,
+      queriesBackdropStyle:queriesStyles.backdrop, queriesPanelStyle:queriesStyles.panel,
+      openPages:pagesCtl.openIt, closePages:pagesCtl.closeIt, pagesModal:pagesCtl.isOpen,
+      pagesBackdropStyle:pagesStyles.backdrop, pagesPanelStyle:pagesStyles.panel,
       dimPages:()=>set({cmpDim:'pages',apiState:'idle'}), dimQueries:()=>set({cmpDim:'queries',apiState:'idle'}),
       dimPagesStyle:this.tabStyle(st.cmpDim!=='queries'), dimQueriesStyle:this.tabStyle(st.cmpDim==='queries'),
       cmpDimLabel:st.cmpDim==='queries'?'Requête':'Page',
@@ -2491,11 +2520,11 @@ class Component extends DCLogic {
       compPctLabel, compMedianLabel, abandonLabel,
       steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
       matrixCount:allMatrix.length,
-      openMatrix:()=>set({matrixModal:true}), closeMatrix:()=>set({matrixModal:false}),
-      matrixModal:!!st.matrixModal,
+      openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
+      matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,
       channelCount:allChannels.length,
-      openChannels:()=>set({channelsModal:true}), closeChannels:()=>set({channelsModal:false}),
-      channelsModal:!!st.channelsModal,
+      openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
+      channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite,
       isSources:st.tab==='sources', isTrend:st.tab==='trend', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
