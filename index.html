@@ -198,6 +198,18 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
             </div>
+            <sc-if value="{{ cmpIsCustom }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px;margin-top:8px;padding-left:24px">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:11.5px;color:#9a9fa6;margin-bottom:4px">Début</div>
+                <input type="date" value="{{ cmpCustomStart }}" onInput="{{ onCmpCustomStart }}" style="width:100%;box-sizing:border-box;height:36px;padding:0 10px;border:1px solid #ececee;border-radius:10px;font-family:Poppins,sans-serif;font-size:13px;color:#121214;background:#fff" />
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:11.5px;color:#9a9fa6;margin-bottom:4px">Fin</div>
+                <input type="date" value="{{ cmpCustomEnd }}" onInput="{{ onCmpCustomEnd }}" style="width:100%;box-sizing:border-box;height:36px;padding:0 10px;border:1px solid #ececee;border-radius:10px;font-family:Poppins,sans-serif;font-size:13px;color:#121214;background:#fff" />
+              </div>
+            </div>
+            </sc-if>
           </div>
         </div>
         </sc-if>
@@ -1076,6 +1088,7 @@ class Component extends DCLogic {
   state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'sources', hidden:{},
             scTab:'pages', cmpDim:'pages', apiState:'idle',
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
+            cmpCustomStart:null, cmpCustomEnd:null,
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
             sites: [], compareMode: 'previous', booted: false };
 
@@ -1365,8 +1378,10 @@ class Component extends DCLogic {
     const rangeDays = Math.round((new Date(fin+'T00:00:00Z')-new Date(debut+'T00:00:00Z'))/86400000)+1;
     const agg = this.aggregate(debut, fin);
     const cmpMode = st.cmpMode||'previous';
+    const cmpCustomOk = st.cmpCustomStart && st.cmpCustomEnd;
     const cmpRange = cmpMode==='none' ? null
       : cmpMode==='year' ? { debut:this.decale(debut,-365), fin:this.decale(fin,-365) }
+      : cmpMode==='custom' ? (cmpCustomOk ? { debut: st.cmpCustomStart<st.cmpCustomEnd?st.cmpCustomStart:st.cmpCustomEnd, fin: st.cmpCustomStart<st.cmpCustomEnd?st.cmpCustomEnd:st.cmpCustomStart } : null)
       : { debut:this.decale(debut,-rangeDays), fin:this.decale(fin,-rangeDays) };
     const cmp = cmpRange ? this.aggregate(cmpRange.debut, cmpRange.fin) : null;
 
@@ -2100,12 +2115,16 @@ class Component extends DCLogic {
       none:'—',
       previous: cmpRange ? fmtFr(cmpRange.debut)+' → '+fmtFr(cmpRange.fin) : '—',
       year: cmpMode==='year' && cmpRange ? fmtFr(cmpRange.debut)+' → '+fmtFr(cmpRange.fin) : '—',
+      custom: cmpMode==='custom' ? (cmpRange ? fmtFr(cmpRange.debut)+' → '+fmtFr(cmpRange.fin) : 'Choisissez deux dates') : '—',
     };
-    const compareModes=[['none','Aucune comparaison'],['previous','Période précédente'],['year','Année précédente']].map(c=>({
+    const compareModes=[['none','Aucune comparaison'],['previous','Période précédente'],['year','Année précédente'],['custom','Date personnalisée']].map(c=>({
       name:c[1], pick:()=>set({cmpMode:c[0]}),
       style:`display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;font-size:13.5px;cursor:pointer;color:#2f2f33;${cmpMode===c[0]?'background:#f7f6fe;font-weight:600':''}`,
       radio:`width:14px;height:14px;border-radius:8px;flex:none;box-sizing:border-box;border:${cmpMode===c[0]?'4.5px solid #7c63ee':'1.5px solid #d2d4d8'}`
     }));
+    const cmpIsCustom = cmpMode==='custom';
+    const cmpCustomStart = st.cmpCustomStart || '';
+    const cmpCustomEnd = st.cmpCustomEnd || '';
 
     // ---------- KamIA chat ----------
     const convs0=this.convStore();
@@ -2164,6 +2183,9 @@ class Component extends DCLogic {
       send:()=>{ if((this.state.draft||'').trim()) pushMsg(this.state.draft.trim()); },
       newConv:()=>{ const id='c'+(convs0.length+1); convs0.unshift({id,title:'Nouvelle analyse',msgs:[{role:'agent',agent:'analytics',time:'maintenant',text:'Connectée à GA4, Search Console, PageSpeed et Tableau sur '+scopeLabel+'. Que veux-tu analyser ?'}]}); set({convId:id}); },
       weekDays, calDays, presets, compareModes, calMonthLabel, prevMonth, nextMonth,
+      cmpIsCustom, cmpCustomStart, cmpCustomEnd,
+      onCmpCustomStart:e=>set({cmpCustomStart:e.target.value}),
+      onCmpCustomEnd:e=>set({cmpCustomEnd:e.target.value}),
       compareRangeLabel:cmpLabels[cmpMode],
       scopeItems, scopeQuery:st.scopeQuery||'',
       onScopeSearch:e=>set({scopeQuery:e.target.value}),
@@ -2171,7 +2193,7 @@ class Component extends DCLogic {
       toggleBrand:()=>set({brandOpen:!st.brandOpen,calOpen:false}),
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
-      dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1'}[cmpMode]}`,
+      dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
       isGA:st.source==='ga', isSC:st.source==='sc', isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
       psVitals, psSites, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
       psSiteLabel, psReleveLabel, psMethodLabel, psFieldBadge,
@@ -2201,7 +2223,7 @@ class Component extends DCLogic {
       runStyle:`display:flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${running?'background:#eaeaee;color:#9a9fa6':'background:#141414;color:#fff'}`,
       apiStatus:st.apiState==='done'?`Réponse API · ${cmpRows.length} ligne${cmpRows.length>1?'s':''} · ${this._gscCompareMs||0} ms`:st.apiState==='loading'?'searchanalytics.query en cours…':st.apiState==='error'?'Échec de l’appel':'Aucun appel lancé — la donnée stockée est mensuelle',
       cmpReady:st.apiState==='done', cmpRows,
-      rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1'}[cmpMode]}`,
+      rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`,
       sourceName:srcNames[st.source],
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Tableau — leads back-office',gcp:'GCP — leads back-office'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Tableau',gcp:'GCP'}[st.source],
