@@ -1814,13 +1814,13 @@ class Component extends DCLogic {
       gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1.5}));
       gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:6,fill:'#3b76e8',stroke:'#fff',strokeWidth:2.5}));
       gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:6,fill:'#e08a33',stroke:'#fff',strokeWidth:2.5}));
-      const tw=250,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
+      const tw=168,th=76,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
       gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx+','+GT+')'},[
-        h('rect',{key:'r',width:tw,height:104,rx:14,fill:'#141414'}),
-        h('text',{key:'d',x:16,y:26,fontSize:15,fill:'#b9bcc2',fontFamily:F},labels[hov]),
-        h('text',{key:'c',x:16,y:50,fontSize:15,fill:'#8fb6ff',fontFamily:F},'Clics  '+this.fmt(clicks[hov])),
-        h('text',{key:'i',x:16,y:71,fontSize:15,fill:'#cfd9ff',fontFamily:F},'Impressions  '+this.fmt(impr[hov])),
-        h('text',{key:'p',x:16,y:92,fontSize:15,fill:'#ffc98f',fontFamily:F},'Position  '+dec(pos[hov],1))
+        h('rect',{key:'r',width:tw,height:th,rx:10,fill:'#141414'}),
+        h('text',{key:'d',x:12,y:18,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},labels[hov]),
+        h('text',{key:'c',x:12,y:36,fontSize:12.5,fill:'#8fb6ff',fontFamily:F},'Clics '+this.fmt(clicks[hov])),
+        h('text',{key:'i',x:12,y:52,fontSize:12.5,fill:'#cfd9ff',fontFamily:F},'Impr. '+this.fmt(impr[hov])),
+        h('text',{key:'p',x:12,y:68,fontSize:12.5,fill:'#ffc98f',fontFamily:F},'Position '+dec(pos[hov],1))
       ]));
     }
     for(let i=0;i<gDays;i++){
