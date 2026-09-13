@@ -1401,7 +1401,13 @@ class Component extends DCLogic {
 
   spark(vals,color,w){
     const h=React.createElement,W=w||240,H=48;
-    const mx=Math.max.apply(null,vals),mn=Math.min.apply(null,vals);
+    // marge proportionnelle (25% de l'ecart reel) pour eviter qu'une
+    // variation modeste ne soit etiree a toute la hauteur du graphe --
+    // sans cette marge, un ecart reel de quelques % a l'air aussi
+    // spectaculaire qu'un ecart de 50%.
+    const mx0=Math.max.apply(null,vals),mn0=Math.min.apply(null,vals);
+    const pad=(mx0-mn0)*0.25 || Math.abs(mx0)*0.1 || 1;
+    const mx=mx0+pad, mn=mn0-pad;
     const x=i=>i/(vals.length-1)*W, y=v=>H-4-((v-mn)/((mx-mn)||1))*(H-10);
     let d=`M${x(0)},${y(vals[0])}`;
     for(let i=0;i<vals.length-1;i++){const x0=x(i),x1=x(i+1),c=(x0+x1)/2;d+=` C${c},${y(vals[i])} ${c},${y(vals[i+1])} ${x1},${y(vals[i+1])}`;}
@@ -1569,7 +1575,7 @@ class Component extends DCLogic {
       style:`display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;${st.hidden[name]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:'+CHAN_COLORS[i%CHAN_COLORS.length]+'1a'}`
     }));
     const MW=900,MH=300,ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
-    const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }));
+    const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }))*1.2;
     const mx2=i=>ML+(joursCanal.length>1?i/(joursCanal.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
     [0,.3,.6,.9].forEach((frac,i)=>{
       const v=Math.round(maxCanalVal*frac);
@@ -1774,7 +1780,10 @@ class Component extends DCLogic {
       : 'Aucune donnée mensuelle disponible';
 
     const GW=1000,GH=300,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
-    const maxC=Math.max(1,...clicks), maxI=Math.max(1,...impr);
+    // +20% de marge au-dessus du maximum reel : sans ca, le point le plus
+    // haut touche le bord du graphe et une variation normale a l'air d'un
+    // pic spectaculaire.
+    const maxC=Math.max(1,...clicks)*1.2, maxI=Math.max(1,...impr)*1.2;
     const posValsReal=pos.filter(v=>v>0);
     const posMinR=posValsReal.length?Math.min(...posValsReal):0, posMaxR=posValsReal.length?Math.max(...posValsReal):1;
     const posPad=Math.max(1,(posMaxR-posMinR)*0.2);
