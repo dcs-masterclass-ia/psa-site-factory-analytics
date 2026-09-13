@@ -1399,8 +1399,8 @@ class Component extends DCLogic {
   chipStyle(a){ return `display:flex;align-items:center;justify-content:center;height:34px;padding:0 15px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
   tabStyle(a){ return `display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
 
-  spark(vals,color,w){
-    const h=React.createElement,W=w||240,H=48;
+  spark(vals,color,w,hgt){
+    const h=React.createElement,W=w||240,H=hgt||48;
     // marge proportionnelle (25% de l'ecart reel) pour eviter qu'une
     // variation modeste ne soit etiree a toute la hauteur du graphe --
     // sans cette marge, un ecart reel de quelques % a l'air aussi
@@ -1413,7 +1413,7 @@ class Component extends DCLogic {
     for(let i=0;i<vals.length-1;i++){const x0=x(i),x1=x(i+1),c=(x0+x1)/2;d+=` C${c},${y(vals[i])} ${c},${y(vals[i+1])} ${x1},${y(vals[i+1])}`;}
     return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},[
       h('path',{key:'a',d:`${d} L${W},${H} L0,${H} Z`,fill:color+'1a'}),
-      h('path',{key:'b',d,fill:'none',stroke:color,strokeWidth:2.4,strokeLinecap:'round'})
+      h('path',{key:'b',d,fill:'none',stroke:color,strokeWidth:1.8,strokeLinecap:'round'})
     ]);
   }
 
@@ -1496,7 +1496,7 @@ class Component extends DCLogic {
     const trafficBuckets = toBuckets(agg.trafficDaily, dates, 7);
     const repriseBuckets = toBuckets(agg.repriseDaily, dates, 7);
     const leadsBuckets = toBuckets(agg.leadsDaily, dates, 7);
-    const safeSpark = (vals, color) => vals.every(v=>v===vals[0]) ? this.spark(vals.map((v,i)=>v+i*0.0001),color,140) : this.spark(vals,color,140);
+    const safeSpark = (vals, color, w, hgt) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt); };
 
     const kpis=[
       {label:'Sessions site parent',value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
@@ -1505,7 +1505,12 @@ class Component extends DCLogic {
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = trafficBuckets.map((_,i)=> repriseBuckets[i] ? leadsBuckets[i]/repriseBuckets[i]*100 : 0);
-    const rateSpark=safeSpark(rateBuckets.length?rateBuckets:[0,0,0,0,0,0,0],'#7c63ee');
+    // la carte "hero" est ~4x plus large que les mini-cartes KPI (140) mais
+    // safeSpark() utilisait la meme largeur de viewBox pour les deux :
+    // au meme conteneur reel, la courbe s'affichait ~4x plus epaisse ici
+    // que sur les mini-cartes -- passer une largeur/hauteur proportionnelles
+    // a la vraie carte donne un trait de la meme finesse partout.
+    const rateSpark=safeSpark(rateBuckets.length?rateBuckets:[0,0,0,0,0,0,0],'#7c63ee',600,110);
     const kpiRateDelta = deltaBadge(rate, cmpRate, ' pt');
 
     // classement reel sur le taux de conversion, parmi tout le parc --
