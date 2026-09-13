@@ -693,15 +693,15 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Site sélectionné</span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
-            <span style="font-size:13px;color:#9a9fa6">Dernier relevé : 09/09/26 · 06:12</span>
+            <span style="font-size:13px;color:#9a9fa6">{{ psReleveLabel }}</span>
           </div>
           <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center">
             <div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
-                <span style="font-size:22px;font-weight:600;color:#121214">opel.pt</span>
-                <span style="font-size:12.5px;font-weight:600;color:#2b8f62;background:#eaf7ef;border-radius:9px;padding:4px 10px;white-space:nowrap">Terrain réel</span>
+                <span style="font-size:22px;font-weight:600;color:#121214">{{ psSiteLabel }}</span>
+                <span style="{{ psFieldBadge.style }}">{{ psFieldBadge.text }}</span>
               </div>
-              <div style="font-size:14px;color:#9a9fa6;margin-bottom:20px">CrUX · 28 jours glissants</div>
+              <div style="font-size:14px;color:#9a9fa6;margin-bottom:20px">{{ psMethodLabel }}</div>
               <div style="display:flex;gap:28px;flex-wrap:wrap">
                 <div style="text-align:center;min-width:110px">
                   <div>{{ psMobileRing }}</div>
@@ -733,7 +733,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="background:#fff;border:1px solid #efeff1;border-radius:18px;padding:20px 22px;margin-top:12px">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px">
               <span style="font-size:15.5px;font-weight:600;color:#121214">Ticket Jira généré</span>
-              <span style="font-size:13px;color:#9a9fa6">PERF-2026-091 · prêt à coller</span>
+              <span style="font-size:13px;color:#9a9fa6">Texte prêt à coller · rien n'est créé dans Jira</span>
             </div>
             <pre style="margin:0;padding:16px 18px;border-radius:14px;background:#f7f7f9;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.6;color:#2f2f33;white-space:pre-wrap">{{ ticketText }}</pre>
           </div>
@@ -742,7 +742,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Parc — 82 sites</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Parc — {{ nbSitesReal }} sites</span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start">
@@ -763,7 +763,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:24px 26px">
               <div style="font-size:18px;font-weight:600;color:#121214">Historique des relevés</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">opel.pt · 8 derniers relevés hebdomadaires</div>
+              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">{{ psHistorySubtitle }}</div>
               <div>{{ psHistory }}</div>
               <div style="display:flex;align-items:center;gap:18px;margin-top:8px">
                 <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#9a9fa6;white-space:nowrap"><span style="width:16px;height:3px;border-radius:2px;background:#7c63ee"></span>Mobile</span>
@@ -1755,44 +1755,123 @@ class Component extends DCLogic {
     const dayDiff=(()=>{const a=new Date(cmpStart),b=new Date(cmpEnd);return Math.max(1,Math.round((b-a)/86400000)+1);})();
     const prevEnd=this.decale(cmpStart,-1), prevStart=this.decale(prevEnd,-(dayDiff-1));
 
-    // ---------- PageSpeed ----------
+    // ---------- PageSpeed (reel : pagespeed = {mobile,desktop,historique,
+    // releve}, cf. data/<site>.json -- un score Lighthouse est intrinsequement
+    // par site, jamais agrege sur plusieurs sites cote client) ----------
     const ring=(score,color)=>{
       const R=46,C=2*Math.PI*R;
       return h('svg',{viewBox:'0 0 120 120',width:'100%',style:{display:'block',height:'auto',maxWidth:'120px',margin:'0 auto'}},[
         h('circle',{key:'a',cx:60,cy:60,r:R,fill:'none',stroke:'#f0f0f2',strokeWidth:12}),
         h('circle',{key:'b',cx:60,cy:60,r:R,fill:'none',stroke:color,strokeWidth:12,strokeLinecap:'round',
-          strokeDasharray:`${C*score/100} ${C}`,transform:'rotate(-90 60 60)'}),
-        h('text',{key:'c',x:60,y:70,textAnchor:'middle',fontSize:32,fontWeight:600,fill:'#121214',fontFamily:F},score)
+          strokeDasharray:`${C*(score||0)/100} ${C}`,transform:'rotate(-90 60 60)'}),
+        h('text',{key:'c',x:60,y:70,textAnchor:'middle',fontSize:32,fontWeight:600,fill:'#121214',fontFamily:F},score==null?'—':score)
       ]);
     };
-    const psVitals=[
-      {name:'LCP',value:'3,4 s',bar:'width:58%;height:100%;border-radius:4px;background:#e8a33d'},
-      {name:'INP',value:'186 ms',bar:'width:34%;height:100%;border-radius:4px;background:#3fae7a'},
-      {name:'CLS',value:'0,21',bar:'width:72%;height:100%;border-radius:4px;background:#e8544a'},
-      {name:'TTFB',value:'0,9 s',bar:'width:41%;height:100%;border-radius:4px;background:#3fae7a'}
-    ];
     const scoreStyle=v=>`font-size:15px;font-weight:600;text-align:center;border-radius:9px;padding:5px 0;color:${v>=90?'#2b8f62':v>=50?'#9a6413':'#a33c39'};background:${v>=90?'#eaf7ef':v>=50?'#fdf0dd':'#fce9e8'}`;
-    const psSites=[['opel.pt',42,78,+6],['peugeot.fr',61,88,+2],['citroen.es',38,71,-4],['renault.it',74,91,+9],['fiat.pt',55,83,0],['dacia.fr',68,90,+3],['toyota.be',49,76,-2]]
-      .map(s=>({name:s[0],mobile:s[1],desktop:s[2],mStyle:scoreStyle(s[1]),dStyle:scoreStyle(s[2]),
-        trend:(s[3]>0?'+':'')+s[3]+' pts',
-        trendStyle:`font-size:14.5px;text-align:right;white-space:nowrap;color:${s[3]>0?'#1f9254':s[3]<0?'#a33c39':'#9a9fa6'}`}));
-    const PW=520,PH=240,PL=44,PR=14,PT=16,PB=34,ppw=PW-PL-PR,pph=PH-PT-PB;
-    const mob=[28,31,30,34,33,38,40,42], desk=[64,66,65,70,72,74,77,78];
-    const px=i=>PL+(i/7)*ppw, py=v=>PT+pph-(v/100)*pph, pk=[];
-    [0,50,100].forEach((v,i)=>{
-      pk.push(h('line',{key:'g'+i,x1:PL,y1:py(v),x2:PL+ppw,y2:py(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
-      pk.push(h('text',{key:'t'+i,x:PL-10,y:py(v)+6,textAnchor:'end',fontSize:14,fill:'#9a9fa6',fontFamily:F},v));
-    });
-    [[mob,'#7c63ee'],[desk,'#3fae7a']].forEach((s,si)=>{
-      let d=`M${px(0)},${py(s[0][0])}`;
-      for(let i=0;i<7;i++){const x0=px(i),x1=px(i+1),c=(x0+x1)/2;d+=` C${c},${py(s[0][i])} ${c},${py(s[0][i+1])} ${x1},${py(s[0][i+1])}`;}
-      pk.push(h('path',{key:'p'+si,d,fill:'none',stroke:s[1],strokeWidth:3,strokeLinecap:'round'}));
-    });
-    ['S31','S32','S33','S34','S35','S36','S37','S38'].forEach((l,i)=>{
-      pk.push(h('text',{key:'x'+i,x:px(i),y:PH-10,textAnchor:'middle',fontSize:13,fill:'#9a9fa6',fontFamily:F},l));
-    });
-    const psHistory=h('svg',{viewBox:`0 0 ${PW} ${PH}`,width:'100%',style:{display:'block',height:'auto'}},pk);
-    const ticketText='[PERF] opel.pt — score mobile 42/100 (Lighthouse 09/09/26)\n\nContexte\n- Score mobile : 42 (−6 pts vs S31) · desktop : 78\n- Terrain réel CrUX (28 j) : LCP 3,4 s · INP 186 ms · CLS 0,21 · TTFB 0,9 s\n- Page mesurée : https://opel.pt/estimation-gratuite\n\nProblèmes identifiés\n1. LCP > 2,5 s — image hero non compressée (1,4 Mo, format JPEG)\n2. CLS 0,21 — bandeau consentement inséré sans réservation de hauteur\n3. 380 ko de JS tiers bloquant le rendu (tag manager + chat)\n\nAttendu\n- LCP < 2,5 s, CLS < 0,1 sur mobile\n- Score Lighthouse mobile ≥ 60\n\nPriorité : Haute · Composant : Front estimation · Sprint cible : S39';
+    const vitalColor=(v,goodMax,poorMin)=>v<=goodMax?'#3fae7a':v<poorMin?'#e8a33d':'#e8544a';
+    const psScoreColorSafe=v=>v>=90?'#2b8f62':v>=50?'#e8a33d':'#e8544a';
+    const vitalBar=(v,max)=>Math.max(4,Math.min(100,v/max*100));
+
+    const psSite = st.sites.length===1 ? st.sites[0] : null;
+    const psRaw = psSite && this.data[psSite] && this.data[psSite].pagespeed;
+    const psAvailable = !!(psRaw && psRaw.mobile && psRaw.desktop);
+    const psSiteLabel = psSite || 'Aucun site sélectionné';
+
+    let psMobileRing=ring(null,'#d9d9de'), psDesktopRing=ring(null,'#d9d9de'), psVitals=[];
+    let psReleveLabel = psSite ? 'Sélectionnez un site unique pour voir son détail.' : 'Sélectionnez un site pour voir son détail PageSpeed.';
+    let psMethodLabel = '—';
+    let psFieldBadge = {text:'—',style:'font-size:12.5px;font-weight:600;color:#9a9fa6;background:#f2f2f4;border-radius:9px;padding:4px 10px;white-space:nowrap'};
+    if (psAvailable) {
+      const m=psRaw.mobile, d=psRaw.desktop;
+      psMobileRing = ring(m.score, psScoreColorSafe(m.score));
+      psDesktopRing = ring(d.score, psScoreColorSafe(d.score));
+      psVitals=[
+        {name:'LCP',value:dec(m.lcp/1000,1)+' s',bar:`width:${vitalBar(m.lcp,6000)}%;height:100%;border-radius:4px;background:${vitalColor(m.lcp,2500,4000)}`},
+        {name:'CLS',value:dec(m.cls,2),bar:`width:${vitalBar(m.cls*1000,500)}%;height:100%;border-radius:4px;background:${vitalColor(m.cls,0.1,0.25)}`},
+        {name:'TBT',value:this.fmt(m.tbt)+' ms',bar:`width:${vitalBar(m.tbt,1000)}%;height:100%;border-radius:4px;background:${vitalColor(m.tbt,200,600)}`},
+        {name:'FCP',value:dec(m.fcp/1000,1)+' s',bar:`width:${vitalBar(m.fcp,4000)}%;height:100%;border-radius:4px;background:${vitalColor(m.fcp,1800,3000)}`}
+      ];
+      psReleveLabel = 'Dernier relevé : '+(psRaw.releve?fmtFrLocal(psRaw.releve):'—');
+      const terrainOk = m.terrain && m.terrain.lcp!=null;
+      psMethodLabel = terrainOk ? 'CrUX · terrain réel' : 'Lighthouse · laboratoire uniquement';
+      psFieldBadge = terrainOk
+        ? {text:'Terrain réel',style:'font-size:12.5px;font-weight:600;color:#2b8f62;background:#eaf7ef;border-radius:9px;padding:4px 10px;white-space:nowrap'}
+        : {text:'Laboratoire',style:'font-size:12.5px;font-weight:600;color:#6d727a;background:#f2f2f4;border-radius:9px;padding:4px 10px;white-space:nowrap'};
+    }
+
+    // parc : score courant + tendance reelle (vs le releve le plus proche
+    // d'il y a 30 jours dans l'historique de CE site) pour chaque vrai site.
+    const psSites=(this._allSites||[]).map(n=>{
+      const ps=this.data[n] && this.data[n].pagespeed;
+      if (!ps || !ps.mobile || !ps.desktop) return null;
+      let trend=null;
+      if (ps.historique) {
+        const dates=Object.keys(ps.historique).sort();
+        const releve=ps.releve||dates[dates.length-1];
+        const cutoff=this.decale(releve,-30);
+        const anciennes=dates.filter(dt=>dt<=cutoff);
+        if (anciennes.length) { const ancien=ps.historique[anciennes[anciennes.length-1]].mobile; if (ancien!=null) trend=ps.mobile.score-ancien; }
+      }
+      return {
+        name:n, mobile:ps.mobile.score, desktop:ps.desktop.score,
+        mStyle:scoreStyle(ps.mobile.score), dStyle:scoreStyle(ps.desktop.score),
+        trend: trend==null?'—':(trend>0?'+':'')+trend+' pts',
+        trendStyle: trend==null?'font-size:14.5px;text-align:right;white-space:nowrap;color:#9a9fa6':`font-size:14.5px;text-align:right;white-space:nowrap;color:${trend>0?'#1f9254':trend<0?'#a33c39':'#9a9fa6'}`,
+        _sort:ps.mobile.score
+      };
+    }).filter(Boolean).sort((a,b)=>a._sort-b._sort);
+
+    // historique reel du site selectionne (8 derniers relevés reels, dates
+    // reelles -- jamais des semaines fictives).
+    let psHistory=null, psHistorySubtitle = psSite ? psSite+' · historique indisponible' : 'Sélectionnez un site pour voir son historique.';
+    if (psAvailable && psRaw.historique) {
+      const dates=Object.keys(psRaw.historique).sort().slice(-8);
+      const n=dates.length;
+      if (n>=2) {
+        const mob=dates.map(dt=>psRaw.historique[dt].mobile??0), desk=dates.map(dt=>psRaw.historique[dt].desktop??0);
+        const PW=520,PH=240,PL=44,PR=14,PT=16,PB=34,ppw=PW-PL-PR,pph=PH-PT-PB;
+        const px=i=>PL+(i/(n-1))*ppw, py=v=>PT+pph-(v/100)*pph, pk=[];
+        [0,50,100].forEach((v,i)=>{
+          pk.push(h('line',{key:'g'+i,x1:PL,y1:py(v),x2:PL+ppw,y2:py(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
+          pk.push(h('text',{key:'t'+i,x:PL-10,y:py(v)+6,textAnchor:'end',fontSize:14,fill:'#9a9fa6',fontFamily:F},v));
+        });
+        [[mob,'#7c63ee'],[desk,'#3fae7a']].forEach((s,si)=>{
+          let d2=`M${px(0)},${py(s[0][0])}`;
+          for(let i=0;i<n-1;i++){const x0=px(i),x1=px(i+1),c=(x0+x1)/2;d2+=` C${c},${py(s[0][i])} ${c},${py(s[0][i+1])} ${x1},${py(s[0][i+1])}`;}
+          pk.push(h('path',{key:'p'+si,d:d2,fill:'none',stroke:s[1],strokeWidth:3,strokeLinecap:'round'}));
+        });
+        dates.forEach((dt,i)=>pk.push(h('text',{key:'x'+i,x:px(i),y:PH-10,textAnchor:'middle',fontSize:13,fill:'#9a9fa6',fontFamily:F},fmtFrLocal(dt))));
+        psHistory=h('svg',{viewBox:`0 0 ${PW} ${PH}`,width:'100%',style:{display:'block',height:'auto'}},pk);
+        psHistorySubtitle = psSite+' · '+n+' derniers relevés réels';
+      }
+    }
+
+    // ticket Jira : appel reel a /api/perf-ticket (deja en prod), redige a
+    // partir des vraies mesures pagespeed de ce site -- jamais de texte
+    // fabrique cote client.
+    const ticketState = st.ticketState||'idle';
+    const ticketResult = this._ticketResult;
+    const makeTicket = async () => {
+      if (st.ticket) { set({ticket:false}); return; }
+      if (!psSite) return;
+      if (ticketResult && (ticketState==='done'||ticketState==='error')) { set({ticket:true}); return; }
+      set({ticket:true, ticketState:'loading'});
+      try {
+        const r=await fetch('/api/perf-ticket',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({site:psSite})});
+        const json=await r.json();
+        if (!r.ok || json.error) { this._ticketResult={error:(json&&json.error)||('Erreur HTTP '+r.status)}; this.setState({ticketState:'error'}); return; }
+        this._ticketResult = json.empty ? {empty:true} : {title:json.title, body:json.body};
+        this.setState({ticketState:'done'});
+      } catch(e) {
+        this._ticketResult={error:String(e && e.message || e)};
+        this.setState({ticketState:'error'});
+      }
+    };
+    let ticketText='';
+    if (ticketState==='loading') ticketText='Génération du ticket en cours…';
+    else if (ticketState==='error') ticketText='Échec : '+((ticketResult&&ticketResult.error)||'erreur inconnue');
+    else if (ticketResult && ticketResult.empty) ticketText='Aucune opportunité d’optimisation mesurée pour ce site — pas de ticket à générer.';
+    else if (ticketResult && ticketResult.title) ticketText=ticketResult.title+'\n\n'+ticketResult.body;
 
     // ---------- Tableau / GCP ----------
     const tbLeadsV=3348*f;
@@ -1986,10 +2065,12 @@ class Component extends DCLogic {
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1'}[cmpMode]}`,
       isGA:st.source==='ga', isSC:st.source==='sc', isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
-      psVitals, psSites, psHistory, psMobileRing:ring(42,'#e8a33d'), psDesktopRing:ring(78,'#3fae7a'),
-      makeTicket:()=>set({ticket:!st.ticket}), ticketOpen:!!st.ticket,
-      ticketLabel:st.ticket?'Masquer le ticket':'Générer un ticket Jira',
-      ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
+      psVitals, psSites, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
+      psSiteLabel, psReleveLabel, psMethodLabel, psFieldBadge,
+      nbSitesReal: allSitesReal.length,
+      makeTicket, ticketOpen:!!st.ticket,
+      ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
+      ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
       tbLeads:this.fmt(tbLeadsV), tbKpis, tbSpark, tbProjectDonut,
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, devicePerf,
