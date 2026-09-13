@@ -283,18 +283,6 @@ input[type=date]{color-scheme:light}
         </sc-if>
       </button>
     </sc-for>
-    <span style="width:28px;height:1px;background:#f2f2f4;flex:none;margin:4px 0"></span>
-    <button onClick="{{ kamiaTab.pick }}" title="KamIA" style="{{ kamiaSideStyle }}" style-hover="background:#f4f4f6">
-      <span style="width:30px;height:30px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 6px 14px -6px rgba(109,92,246,.55)">
-        <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(2px)"></span>
-        <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1.8px);mix-blend-mode:screen"></span>
-        <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-        <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 8px rgba(12,17,32,.65)"></span>
-      </span>
-      <sc-if value="{{ kamiaTab.hasBadge }}" hint-placeholder-val="{{ false }}">
-        <span style="{{ kamiaTab.badgeStyle }}">{{ kamiaTab.badgeText }}</span>
-      </sc-if>
-    </button>
     <span style="flex:1"></span>
     <button onClick="{{ logout }}" title="{{ userEmail }} — cliquer pour se déconnecter" style="width:42px;height:42px;border-radius:21px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14.5px;font-weight:600;font-family:inherit;cursor:pointer;transition:filter .2s ease;flex:none" style-hover="filter:brightness(1.08)">{{ userInitials }}</button>
   </nav>
@@ -814,148 +802,33 @@ input[type=date]{color-scheme:light}
       </sc-if>
 
       <!-- Completion -->
-      <sc-if value="{{ isGa4DetailCompletion }}" hint-placeholder-val="{{ false }}">
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:center">
-        <div>
-          <div style="display:flex;align-items:flex-start;gap:14px"><div style="flex:1;font-size:18px;font-weight:600;color:#121214">Taux de complétion</div><div style="display:flex;align-items:baseline;gap:3px"><span ref="{{ compRef }}" style="font-size:32px;font-weight:600;letter-spacing:-.03em;line-height:1;color:#121214">0,0</span><span style="font-size:15px;color:#9a9fa6">%</span></div></div>
-          <div style="display:flex;align-items:center;justify-content:center;padding:8px 0">
-            <svg viewBox="0 0 200 124" style="width:100%;max-width:220px;height:auto">
-              <path d="M20 106a80 80 0 0 1 160 0" fill="none" stroke="#f2f3f5" stroke-width="17" stroke-linecap="round"></path>
-              <path ref="{{ gaugeArcRef }}" fill="none" stroke="#0d9c6c" stroke-width="17" stroke-linecap="round" style="animation:drawLine 1.2s cubic-bezier(.3,.8,.3,1) .3s forwards"></path>
-              <circle ref="{{ gaugeDotRef }}" r="7.5" fill="#fff" stroke="#12b981" stroke-width="3"></circle>
-            </svg>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div style="background:#f6f7f9;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9a9fa6">Leads GA4 / sessions reprise</div><div style="font-size:22px;font-weight:600;letter-spacing:-.5px;color:#121214">{{ convText }}</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:12.5px;color:#9a9fa6">Part vers la reprise</div><div style="font-size:22px;font-weight:600;letter-spacing:-.5px;color:#121214">{{ partText }}</div></div>
-        </div>
-      </div>
-      </sc-if>
-
-      <!-- Benchmark -->
-      <sc-if value="{{ isGa4DetailBenchmark }}" hint-placeholder-val="{{ false }}">
-      <div>
-        <div style="font-size:18px;font-weight:600;color:#121214">Benchmark du parc</div>
-        <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Taux de conversion du parcours, sur la période affichée</div>
-        <sc-if value="{{ hasConvRankLabel }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-          <div style="background:#f6f7f9;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:8px">
-            <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Tout le parc</div>
-            <div style="font-size:24px;font-weight:700;letter-spacing:-.6px;color:#121214">{{ convRankLabel }}</div>
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a9fa6;margin-top:4px"><span>{{ convMedianLabel }}</span><span style="font-weight:600;color:#4b5563">{{ convBestLabel }}</span></div>
-          </div>
-          <sc-if value="{{ hasBrandRank }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#f6f7f9;border-radius:18px;padding:20px 22px;display:flex;flex-direction:column;gap:8px">
-            <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Même marque</div>
-            <div style="font-size:24px;font-weight:700;letter-spacing:-.6px;color:#121214">{{ brandRankLabel }}</div>
-            <div style="display:flex;justify-content:space-between;font-size:12.5px;color:#9a9fa6;margin-top:4px"><span>{{ brandMedianLabel }}</span><span style="font-weight:600;color:#4b5563">{{ brandBestLabel }}</span></div>
-          </div>
-          </sc-if>
-        </div>
-        </sc-if>
-      </div>
-      </sc-if>
-
-      <!-- Volume vs conversion (12 mois) -->
-      <sc-if value="{{ isGa4DetailVolConv }}" hint-placeholder-val="{{ false }}">
-      <sc-if value="{{ hasVolConvChart }}" hint-placeholder-val="{{ false }}">
-      <div>
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-          <div><div style="font-size:18px;font-weight:600;color:#121214">Volume vs conversion tradein</div><div style="font-size:13px;color:#9a9fa6;margin-top:2px">Sessions reprise mensuelles et taux de conversion sur les 12 derniers mois</div></div>
-          <div style="flex:1"></div>
-          <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6d727a"><span style="width:12px;height:12px;border-radius:4px;background:#eaecf1"></span>Sessions</div>
-          <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6d727a"><span style="width:18px;height:3px;border-radius:2px;background:var(--pos)"></span>Conversion</div>
-        </div>
-        <div style="display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap">
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Sessions cumulées</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ volConvTotal }}</div><div style="font-size:12px;color:#9a9fa6">12 mois</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Conversion moyenne</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ volConvAvgConv }} %</div><div style="font-size:12px;color:#9a9fa6">pondérée sur la période</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Dernier mois</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:var(--pos)">{{ volConvLastLabel }}</div><div style="font-size:12px;color:#9a9fa6">{{ volConvLastMonthLabel }}</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Évolution</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:var(--pos)">{{ volConvProgress }} pts</div><div style="font-size:12px;color:#9a9fa6">sur 12 mois</div></div>
-        </div>
-        <div ref="{{ volConvChart.hoverRef }}" style="position:relative;cursor:crosshair">
-        <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block;overflow:visible">
-          <sc-for list="{{ volConvChart.gridLines }}" as="g" hint-placeholder-count="4">
-            <line ref="{{ g.lineRef }}" x1="52" x2="1224" stroke="#f2f3f5"></line>
-            <text ref="{{ g.sessLabelRef }}" x="44" text-anchor="end" font-family="Poppins,sans-serif" font-size="12.5" fill="#b6bac1"></text>
-            <text ref="{{ g.convLabelRef }}" x="1234" text-anchor="start" font-family="Poppins,sans-serif" font-size="12.5" fill="#8fd9bd"></text>
-          </sc-for>
-          <line x1="52" y1="252" x2="1224" y2="252" stroke="#e6e8ee"></line>
-          <sc-if value="{{ volConvChart.hasV2Marker }}" hint-placeholder-val="{{ false }}">
-          <line ref="{{ volConvChart.v2Ref }}" y1="14" y2="252" stroke="#c9ccd2" stroke-width="1.6" stroke-dasharray="5 6"></line>
-          </sc-if>
-          <sc-for list="{{ volConvChart.bars }}" as="bar" hint-placeholder-count="12">
-            <rect ref="{{ bar.ref }}" rx="8" fill="{{ bar.barFill }}"></rect>
-            <text ref="{{ bar.labelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12.5" font-weight="600" fill="#9a9fa6"></text>
-            <text ref="{{ bar.monthLabelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="13" fill="#9a9fa6"></text>
-          </sc-for>
-          <path ref="{{ volConvChart.lineRef }}" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-          <sc-for list="{{ volConvChart.points }}" as="pt" hint-placeholder-count="12">
-            <circle ref="{{ pt.dotRef }}" r="4" fill="#fff" stroke="var(--pos)" stroke-width="2.4"></circle>
-            <text ref="{{ pt.labelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12.5" font-weight="600" fill="var(--pos)"></text>
-          </sc-for>
-        </svg>
-        </div>
-      </div>
-      </sc-if>
-      </sc-if>
-
-      <!-- Rebond (12 mois) -->
-      <sc-if value="{{ isGa4DetailRebond }}" hint-placeholder-val="{{ false }}">
-      <sc-if value="{{ hasRebondChart }}" hint-placeholder-val="{{ false }}">
-      <div>
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
-          <div><div style="font-size:18px;font-weight:600;color:#121214">Taux de rebond</div><div style="font-size:13px;color:#9a9fa6;margin-top:2px">Outil de reprise — sessions mensuelles et taux de rebond sur les 12 derniers mois</div></div>
-          <div style="flex:1"></div>
-          <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6d727a"><span style="width:12px;height:12px;border-radius:4px;background:#eaecf1"></span>Sessions</div>
-          <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:#6d727a"><span style="width:18px;height:3px;border-radius:2px;background:var(--pos)"></span>Rebond</div>
-        </div>
-        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px">
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Moyenne</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ rebondAvg }} %</div><div style="font-size:12px;color:#9a9fa6">sur 12 mois</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Dernier mois</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ rebondLastLabel }}</div><div style="font-size:12px;color:#9a9fa6">{{ rebondLastMonthLabel }}</div></div>
-          <div style="background:#f6f7f9;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Évolution</div><div style="font-size:22px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ rebondProgress }} pts</div><div style="font-size:12px;color:#9a9fa6">sur 12 mois</div></div>
-          <sc-if value="{{ hasRebondWorstPage }}" hint-placeholder-val="{{ false }}">
-          <div style="background:var(--neg-bg);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Page la plus fuyante</div><div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--neg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rebondWorstPage.taux }}</div><div style="font-size:11.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ rebondWorstPage.page }}">{{ rebondWorstPage.page }}</div></div>
-          </sc-if>
-          <sc-if value="{{ hasRebondBestPage }}" hint-placeholder-val="{{ false }}">
-          <div style="background:var(--pos-bg);border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px"><div style="font-size:12.5px;color:#9a9fa6">Page la plus engageante</div><div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:var(--pos);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rebondBestPage.taux }}</div><div style="font-size:11.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ rebondBestPage.page }}">{{ rebondBestPage.page }}</div></div>
-          </sc-if>
-        </div>
-        <div ref="{{ rebondChart.hoverRef }}" style="position:relative;cursor:crosshair">
-        <svg viewBox="0 0 1280 310" style="width:100%;height:auto;display:block;overflow:visible">
-          <sc-for list="{{ rebondChart.gridLines }}" as="g" hint-placeholder-count="4">
-            <line ref="{{ g.lineRef }}" x1="52" x2="1224" stroke="#f2f3f5"></line>
-            <text ref="{{ g.sessLabelRef }}" x="44" text-anchor="end" font-family="Poppins,sans-serif" font-size="12.5" fill="#b6bac1"></text>
-            <text ref="{{ g.convLabelRef }}" x="1234" text-anchor="start" font-family="Poppins,sans-serif" font-size="12.5" fill="#8fd9bd"></text>
-          </sc-for>
-          <line x1="52" y1="252" x2="1224" y2="252" stroke="#e6e8ee"></line>
-          <sc-if value="{{ rebondChart.hasV2Marker }}" hint-placeholder-val="{{ false }}">
-          <line ref="{{ rebondChart.v2Ref }}" y1="14" y2="252" stroke="#c9ccd2" stroke-width="1.6" stroke-dasharray="5 6"></line>
-          </sc-if>
-          <sc-for list="{{ rebondChart.bars }}" as="bar" hint-placeholder-count="12">
-            <rect ref="{{ bar.ref }}" rx="8" fill="{{ bar.barFill }}"></rect>
-            <text ref="{{ bar.labelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12.5" font-weight="600" fill="#9a9fa6"></text>
-            <text ref="{{ bar.monthLabelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="13" fill="#9a9fa6"></text>
-          </sc-for>
-          <path ref="{{ rebondChart.lineRef }}" fill="none" stroke="var(--pos)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
-          <sc-for list="{{ rebondChart.points }}" as="pt" hint-placeholder-count="12">
-            <circle ref="{{ pt.dotRef }}" r="4" fill="#fff" stroke="var(--pos)" stroke-width="2.4"></circle>
-            <text ref="{{ pt.labelRef }}" text-anchor="middle" font-family="Poppins,sans-serif" font-size="12.5" font-weight="600" fill="var(--pos)"></text>
-          </sc-for>
-        </svg>
-        </div>
-      </div>
-      </sc-if>
-      </sc-if>
 
       <!-- Audience -->
       <sc-if value="{{ isGa4DetailAudience }}" hint-placeholder-val="{{ false }}">
       <div>
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-          <div style="font-size:18px;font-weight:600;color:#121214">Audience &amp; environnement</div>
+          <div style="font-size:18px;font-weight:600;color:#121214">Audience &amp; saisonnalité</div>
           <div style="flex:1"></div>
           <span style="background:#f5f5f7;color:#4b5563;font-size:12.5px;font-weight:500;border-radius:100px;padding:6px 14px">{{ audienceTotalLabel }}</span>
         </div>
+
+        <sc-if value="{{ hasSeasonality }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:20px">
+          <div style="font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9a9fa6;margin-bottom:8px">Saisonnalité — jour de la semaine</div>
+          <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.3fr;gap:8px;padding:0 4px 6px;font-size:10.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">
+            <div>Jour</div><div style="text-align:right">Sess. reprise</div><div style="text-align:right">Leads</div><div style="text-align:right">vs moyenne</div>
+          </div>
+          <sc-for list="{{ seasonalityRows }}" as="r" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.3fr;gap:8px;padding:9px 4px;border-top:1px solid #f2f2f4;align-items:center">
+              <div style="font-size:13px;font-weight:600;color:#121214">{{ r.jour }}</div>
+              <div style="font-size:13px;font-weight:600;color:#121214;text-align:right;font-variant-numeric:tabular-nums">{{ r.sessionsAvg }}</div>
+              <div style="font-size:13px;color:#6d727a;text-align:right;font-variant-numeric:tabular-nums">{{ r.leadsAvg }}</div>
+              <div style="text-align:right"><sc-if value="{{ r.hasIndex }}" hint-placeholder-val="{{ false }}"><span style="{{ r.indexStyle }}">{{ r.indexText }}</span></sc-if></div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px">
           <div style="display:flex;flex-direction:column;gap:16px;background:#f6f7f9;border-radius:18px;padding:20px">
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
@@ -1026,44 +899,6 @@ input[type=date]{color-scheme:light}
       </sc-if>
 
       <!-- Saisonnalite + Rupture -->
-      <sc-if value="{{ isGa4DetailSaisonnalite }}" hint-placeholder-val="{{ false }}">
-      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start">
-        <sc-if value="{{ hasSeasonality }}" hint-placeholder-val="{{ false }}">
-        <div>
-          <div style="font-size:18px;font-weight:600;color:#121214">Saisonnalité — jour de la semaine</div>
-          <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:12px">Sessions reprise et leads moyens par jour</div>
-          <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.3fr;gap:8px;padding:0 4px 6px;font-size:10.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">
-            <div>Jour</div><div style="text-align:right">Sess. reprise</div><div style="text-align:right">Leads</div><div style="text-align:right">vs moyenne</div>
-          </div>
-          <sc-for list="{{ seasonalityRows }}" as="r" hint-placeholder-count="7">
-            <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.3fr;gap:8px;padding:9px 4px;border-top:1px solid #f2f2f4;align-items:center">
-              <div style="font-size:13px;font-weight:600;color:#121214">{{ r.jour }}</div>
-              <div style="font-size:13px;font-weight:600;color:#121214;text-align:right;font-variant-numeric:tabular-nums">{{ r.sessionsAvg }}</div>
-              <div style="font-size:13px;color:#6d727a;text-align:right;font-variant-numeric:tabular-nums">{{ r.leadsAvg }}</div>
-              <div style="text-align:right"><sc-if value="{{ r.hasIndex }}" hint-placeholder-val="{{ false }}"><span style="{{ r.indexStyle }}">{{ r.indexText }}</span></sc-if></div>
-            </div>
-          </sc-for>
-        </div>
-        </sc-if>
-
-        <sc-if value="{{ hasRuptureModule }}" hint-placeholder-val="{{ false }}">
-        <div>
-          <div style="font-size:18px;font-weight:600;color:#121214">Rupture de tendance</div>
-          <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:12px">Dernière semaine vs moyenne des 8 précédentes</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <sc-for list="{{ ruptureCards }}" as="rc" hint-placeholder-count="2">
-              <div style="background:#f6f7f9;border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:8px">
-                <div style="font-size:12px;font-weight:600;color:#9a9fa6">{{ rc.label }}</div>
-                <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:20px;font-weight:700;letter-spacing:-.4px;color:#121214;font-variant-numeric:tabular-nums">{{ rc.valeur }}</span><span style="font-size:11.5px;color:#9a9fa6">{{ rc.reference }}</span></div>
-                <span style="{{ rc.statutStyle }}">{{ rc.statutText }}</span>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-        </sc-if>
-      </div>
-      </sc-if>
-
     </div>
   </div>
 
@@ -1268,85 +1103,6 @@ input[type=date]{color-scheme:light}
   </div>
   </sc-if>
 
-
-  <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
-  <div style="margin-top:24px">
-    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison V2</span>
-      <span style="flex:1;height:1px;background:#e8e8ec"></span>
-    </div>
-    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;box-sizing:border-box;display:flex;flex-direction:column">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-        <div>
-          <div style="font-size:20px;font-weight:600;color:#121214;letter-spacing:-.4px">Rapport hebdomadaire V2</div>
-          <div style="margin-top:6px;font-size:14.5px;font-weight:500;color:#9a9fa6">Chaque site comparé à sa propre référence V1 (avant sa bascule), semaine par semaine depuis son passage à la V2 · {{ scopeLabel }}</div>
-        </div>
-        <button onClick="{{ v2ExportCsv }}" style="display:flex;align-items:center;gap:11px;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:46px;color:#ffffff;font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;transition:transform .18s ease,filter .18s ease" style-hover="transform:translateY(-2px);filter:brightness(1.08)">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 19h16"></path></svg>Exporter en CSV
-        </button>
-      </div>
-
-      <sc-if value="{{ hasV2Rows }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:8px">
-      <sc-for list="{{ v2Groups }}" as="g" hint-placeholder-count="3">
-        <div style="margin-top:30px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <span style="font-size:15px;font-weight:800;color:#121214;white-space:nowrap">{{ g.label }}</span>
-            <span style="height:1px;flex:1;background:#f2f2f4"></span>
-            <span style="font-size:12.5px;font-weight:700;color:#9a9fa6">{{ g.count }}</span>
-          </div>
-          <div style="margin-top:18px;display:grid;grid-template-columns:repeat(4,1fr);gap:20px">
-        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
-          <button onClick="{{ r.openModal }}" style="{{ r.wrapStyle }};width:100%;text-align:left;font-family:inherit;border:none;cursor:pointer;background:#f7f7f9;border-radius:24px;padding:26px 26px 24px;display:flex;flex-direction:column;gap:18px;transition:transform .22s cubic-bezier(.2,.8,.3,1),background .22s ease" style-hover="transform:translateY(-4px);background:var(--hover)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-              <div style="min-width:0">
-                <div style="font-size:18px;font-weight:800;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.site }}</div>
-                <div style="font-size:12.5px;font-weight:600;color:#9a9fa6;margin-top:3px">{{ r.weeksLabel }}</div>
-              </div>
-              <span style="{{ r.badgeStyle }}">{{ r.badgeText }}</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 10px">
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
-                <div style="font-size:21px;font-weight:800;color:#121214;margin-top:4px;font-variant-numeric:tabular-nums">{{ r.leadsParJour }}</div>
-              </div>
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
-                <div style="font-size:21px;font-weight:800;color:#121214;margin-top:4px;font-variant-numeric:tabular-nums">{{ r.sessionsReprise }}</div>
-              </div>
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Conversion</div>
-                <div style="font-size:21px;font-weight:800;color:#121214;margin-top:4px;font-variant-numeric:tabular-nums">{{ r.conversion }}</div>
-                <div style="{{ r.badgeDeltaStyle }};margin-top:2px">{{ r.badgeDeltaText }}</div>
-              </div>
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em">Mobile</div>
-                <div style="font-size:21px;font-weight:800;color:#121214;margin-top:4px;font-variant-numeric:tabular-nums">{{ r.mobilePct }}</div>
-                <div style="{{ r.mobileDeltaStyle }};margin-top:2px">{{ r.mobileDeltaText }}</div>
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:700;color:#2f2f33;padding-top:14px;border-top:1px solid #f2f2f4">
-              <span style="{{ r.badgeStyle2 }}">{{ r.conversionLabel }}</span>
-              <span style="display:flex;align-items:center;gap:5px;color:#9a9fa6;font-weight:600">
-                Voir l'analyse
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
-              </span>
-            </div>
-          </button>
-        </sc-for>
-          </div>
-        </div>
-      </sc-for>
-      </div>
-      </sc-if>
-      <sc-if value="{{ noV2Rows }}" hint-placeholder-val="{{ true }}">
-        <div style="padding:60px 20px;text-align:center">
-          <div style="font-size:15px;font-weight:500;color:#9a9fa6">Aucune donnée V2 disponible pour ce périmètre — sélectionne un ou plusieurs sites déjà basculés en V2.</div>
-        </div>
-      </sc-if>
-    </div>
-  </div>
-  </sc-if>
 
   <sc-if value="{{ isPerf }}" hint-placeholder-val="{{ false }}">
   <div style="margin-top:24px">
@@ -1599,78 +1355,6 @@ input[type=date]{color-scheme:light}
   </div>
   </sc-if>
 
-  <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
-  <div style="margin-top:24px;display:flex;flex-direction:column;gap:22px">
-    <div>
-      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-        <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Sélection</span>
-        <span style="flex:1;height:1px;background:#e8e8ec"></span>
-      </div>
-    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:20px">
-      <div style="display:flex;align-items:center;gap:14px">
-        <div><div style="font-size:20px;font-weight:600;letter-spacing:-.6px;color:#121214">Comparer des sites</div><div style="font-size:13.5px;color:#9aa0aa;margin-top:4px">{{ compareSitesCount }} site(s) sélectionné(s) · {{ periodPillLabel }}</div></div>
-        <div style="flex:1"></div>
-        <button onClick="{{ compareClear }}" style="border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#2f2f33;background:#f7f7f9;height:36px;padding:0 16px;border-radius:100px">Vider la sélection</button>
-      </div>
-
-      <div>
-        <div style="font-size:12.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Ajouter par groupe</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <sc-for list="{{ compareGroupChips }}" as="g" hint-placeholder-count="8">
-            <button onClick="{{ g.add }}" style="border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#2f2f33;background:#f7f7f9;height:34px;padding:0 15px;border-radius:100px;transition:background .18s ease" style-hover="background:var(--hover)">{{ g.label }}</button>
-          </sc-for>
-        </div>
-      </div>
-
-      <div>
-        <div style="font-size:12.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.03em;margin-bottom:10px">Sites individuels</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-height:260px;overflow-y:auto;padding:4px;border:1px solid #f2f2f4;border-radius:16px">
-          <sc-for list="{{ compareSiteToggleRows }}" as="r" hint-placeholder-count="24">
-            <button onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;background:transparent;padding:7px 9px;border-radius:10px;text-align:left;font-size:12.5px;color:#2f2f33;transition:background .15s ease" style-hover="background:#f7f7f9">
-              <span style="{{ r.box }}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
-              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-            </button>
-          </sc-for>
-        </div>
-      </div>
-    </div>
-    </div>
-
-    <div>
-      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-        <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison</span>
-        <span style="flex:1;height:1px;background:#e8e8ec"></span>
-      </div>
-    <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">{{ compareMetricLabel }}</div>
-        <div style="flex:1"></div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          <sc-for list="{{ compareMetrics }}" as="m" hint-placeholder-count="5">
-            <button onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.label }}</button>
-          </sc-for>
-        </div>
-      </div>
-
-      <sc-if value="{{ hasCompareRows }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="8">
-          <div style="{{ r.rowStyle }};display:grid;grid-template-columns:200px 1fr 90px;align-items:center;gap:14px">
-            <div style="font-size:13.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.flag }} {{ r.site }}</div>
-            <div style="height:20px;background:#f7f7f9;border-radius:8px;overflow:hidden"><div style="{{ r.barStyle }}"></div></div>
-            <div style="font-size:13.5px;font-weight:700;color:#121214;text-align:right;font-variant-numeric:tabular-nums">{{ r.valueText }}</div>
-          </div>
-        </sc-for>
-      </div>
-      </sc-if>
-      <sc-if value="{{ noCompareRows }}" hint-placeholder-val="{{ true }}">
-        <div style="padding:50px 20px;text-align:center;font-size:14.5px;font-weight:500;color:#9a9fa6">{{ compareEmptyLabel }}</div>
-      </sc-if>
-    </div>
-    </div>
-  </div>
-  </sc-if>
-
   <!-- Onglet "Tableau" (10/08/2026) : toute la donnee sourcee back-office
        (leads_extract.py), retiree de l'onglet GA4 pour ne jamais melanger
        les deux sources sur le meme ecran -- demande explicite le
@@ -1685,468 +1369,58 @@ input[type=date]{color-scheme:light}
       <span style="flex:1;height:1px;background:#e8e8ec"></span>
       <span style="font-size:13px;color:#9a9fa6">Extraction back-office · {{ periodPillLabel }}</span>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1.32fr;gap:22px">
 
-      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .06s both">
-        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">Leads par projet d'achat</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">{{ totalProjAllLabel }} leads</div></div>
-        <div style="display:grid;grid-template-columns:1.3fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:12px;flex:1;min-height:0">
-          <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
-          <div style="grid-row:span 3;background:linear-gradient(160deg,#fff1f0,#ffe4e2);border-radius:24px;padding:24px;display:flex;flex-direction:column;justify-content:space-between;gap:16px">
-            <div style="display:flex;align-items:center;gap:11px">
-              <span style="width:34px;height:34px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center">
-                <sc-if value="{{ projectHero.isNew }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4485c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path></svg></sc-if>
-                <sc-if value="{{ projectHero.isUsed }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b5ae0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></sc-if>
-                <sc-if value="{{ projectHero.isUnknown }}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9aa0aa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg></sc-if>
-              </span>
-              <span style="font-size:14.5px;font-weight:600;color:{{ projectHero.style.sub }}">{{ projectHero.name }}</span>
-            </div>
-            <div>
-              <div style="font-size:44px;font-weight:600;letter-spacing:-2px;line-height:1;color:{{ projectHero.style.text }}">{{ projectHero.pct }}</div>
-              <div style="font-size:15px;font-weight:600;color:{{ projectHero.style.sub }};margin-top:6px">{{ projectHero.value }} leads</div>
-            </div>
-          </div>
-          </sc-if>
-          <sc-for list="{{ projectRest }}" as="p" hint-placeholder-count="3">
-            <div style="{{ p.row }};background:#f6f7f9;border-radius:20px;padding:18px 20px;align-items:center">
-              <div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:600;color:{{ p.style.sub }}">{{ p.name }}</div><div style="font-size:12.5px;color:{{ p.style.light }}">{{ p.value }} leads</div></div>
-              <div style="font-size:26px;font-weight:600;letter-spacing:-1px;color:{{ p.style.text }}">{{ p.pct }}</div>
-            </div>
-          </sc-for>
-        </div>
-        <sc-if value="{{ hasProjectHero }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;gap:6px;height:10px">
-          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
-            <div style="{{ p.segment }}"></div>
-          </sc-for>
-        </div>
-        </sc-if>
-      </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:stretch">
 
-      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:24px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .12s both">
-        <div style="display:flex;align-items:baseline;gap:12px"><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">Marques reprises</div><div style="flex:1"></div><div style="font-size:13px;color:#9aa0aa">part des véhicules estimés</div></div>
-        <sc-if value="{{ hasBrandBars }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:flex-end;gap:16px">
-          <sc-for list="{{ brandBars }}" as="b" hint-placeholder-count="4">
-            <div style="{{ b.colWrap }}">
-              <div style="font-size:15px;font-weight:600;color:#121214">{{ b.pctLabel }}</div>
-              <div style="{{ b.bar }}"></div>
-              <div style="font-size:12px;color:#4b5563;text-align:center;max-width:100%">{{ b.name }}</div>
-            </div>
-          </sc-for>
-          <sc-if value="{{ hasBrandOther }}" hint-placeholder-val="{{ false }}">
-            <div style="{{ brandOtherBar.colWrap }}">
-              <div style="font-size:15px;font-weight:600;color:#9aa0aa">{{ brandOtherBar.pctLabel }}</div>
-              <div style="{{ brandOtherBar.bar }}"></div>
-              <div style="font-size:12px;color:#9aa0aa;white-space:nowrap">Autres marques</div>
-            </div>
-          </sc-if>
+      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;justify-content:space-between;min-width:0">
+        <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Leads back-office</div>
+        <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+          <span ref="{{ kpiLeadsRef }}" style="font-size:52px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">0</span>
+          <span style="{{ kpiLeadsDelta.style }};margin-bottom:8px">{{ kpiLeadsDelta.text }}</span>
         </div>
-        </sc-if>
-        <div style="display:flex;gap:14px;margin-top:auto">
-          <div style="flex:1;background:#fff8ec;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
-            <div style="width:56px;height:56px;border-radius:50%;background:{{ ownBrandRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#fff8ec;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#b45309">{{ ownBrandSharePct }}</div></div>
-            <div><div style="font-size:13.5px;font-weight:600;color:#7a4a02">Marque du site</div><div style="font-size:12.5px;color:#b08a3c;line-height:1.4">Reprises de la marque du site</div></div>
-          </div>
-          <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;align-items:center;gap:14px">
-            <div style="width:56px;height:56px;border-radius:50%;background:{{ conquestRing }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:40px;height:40px;border-radius:50%;background:#f6f7f9;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#4b5563">{{ conquestShareLabel }}</div></div>
-            <div><div style="font-size:13.5px;font-weight:600;color:#3f4653">Conquête</div><div style="font-size:12.5px;color:#9aa0aa;line-height:1.4">reprises hors marque du site</div></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- "Leads GCP" : bloc commun regroupant l'ancienne carte "Leads BO"
-         (KPI + tendance mensuelle) et "Répartition des leads" (donut +
-         appareil), fusionnes et renommes le 11/08/2026 sur demande. -->
-    <div style="display:flex;align-items:baseline;gap:12px;margin-top:26px;margin-bottom:14px">
-      <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyse du portefeuille</span>
-      <span style="flex:1;height:1px;background:#e8e8ec"></span>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr;gap:22px">
-      <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:26px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .24s both">
-        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#5fe0a4,#12b981);box-shadow:0 10px 22px -8px rgba(18,185,129,.55);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.6" stroke="#fff" stroke-width="1.9"></circle><path d="M10 3.4v6.6h6.6" stroke="#fff" stroke-width="1.9"></path></svg></div>
-          <div style="font-size:17px;font-weight:600;letter-spacing:-.4px;color:#121214" title="Leads back-office (extraction reelle), pas un evenement GA4">Leads GCP</div>
-          <div style="flex:1"></div>
-          <div style="display:flex;align-items:baseline;gap:8px"><span ref="{{ kpiLeadsRef }}" style="font-size:30px;font-weight:600;letter-spacing:-1.1px;color:#121214">0</span><span style="{{ kpiLeadsDelta.style }}">{{ kpiLeadsDelta.text }}</span><span style="font-size:12.5px;color:#9aa0aa">{{ periodPillLabel }}</span></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:32px;align-items:center">
-          <div style="display:flex;align-items:center;gap:24px">
-            <div style="width:138px;height:138px;border-radius:50%;background:{{ donutGradient }};display:flex;align-items:center;justify-content:center;flex:none"><div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><div style="font-size:21px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ donutTotalLabel }}</div><div style="font-size:11.5px;color:#9aa0aa">leads</div></div></div>
-            <div style="display:flex;flex-direction:column;gap:14px;flex:1;min-width:0">
-              <sc-for list="{{ donutRows }}" as="d" hint-placeholder-count="4">
-                <div style="{{ d.row }}"><span style="{{ d.dot }}"></span><span style="flex:1;min-width:0;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.name }}</span><span style="font-weight:500;color:#121214">{{ d.pct }}</span></div>
-              </sc-for>
-            </div>
-          </div>
-          <sc-if value="{{ hasKpiDeviceRows }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;gap:14px">
-            <sc-for list="{{ kpiDeviceRows }}" as="d" hint-placeholder-count="2">
-              <div style="flex:1;background:#f6f7f9;border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:5px"><div style="font-size:12.5px;color:#9aa0aa">{{ d.name }}</div><div style="font-size:23px;font-weight:600;letter-spacing:-.6px;color:#121214">{{ d.pct }}</div></div>
-            </sc-for>
-          </div>
-          </sc-if>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;background:#f7f7f9;border-radius:22px;padding:20px 22px">
-          <div style="display:flex;align-items:flex-end;gap:4px;height:56px">
+        <sc-if value="{{ hasLeadsBars }}" hint-placeholder-val="{{ false }}">
+        <div style="margin:18px 0 4px">
+          <div style="display:flex;align-items:flex-end;gap:4px;height:44px">
             <sc-for list="{{ leadsBars }}" as="b" hint-placeholder-count="9">
               <div style="{{ b.style }}"></div>
             </sc-for>
           </div>
-          <div style="display:flex;justify-content:space-between;font-size:11.5px;color:#b6bac1"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11.5px;color:#9a9fa6"><span>{{ leadsAxisLeft }}</span><span style="{{ leadsAxisMidStyle }}">{{ leadsAxisMid }}</span><span>{{ leadsAxisRight }}</span></div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <sc-for list="{{ donutChips }}" as="c" hint-placeholder-count="4">
-            <div onClick="{{ c.pick }}" role="button" tabindex="0" style="{{ c.chip }}">{{ c.label }}</div>
-          </sc-for>
+        </sc-if>
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#6d727a;flex-wrap:wrap;margin-top:8px">
+          <span>{{ tbSiteCount }} sites · {{ tbBrandCount }} marques</span>
+          <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
+          <span>écart GA4 / BO : {{ ecartGa4BoPct }}</span>
         </div>
       </div>
-    </div>
 
-    <!-- "Leads par pays" (demande du 11/08/2026) : repartition mensuelle
-         reelle des leads back-office, tous sites/marques confondus,
-         toujours a l'echelle du parc entier (independant du site choisi
-         en en-tete -- voir paysByPaysMois dans render()). -->
-    <div style="margin-top:22px;background:#fff;border:1px solid #efeff1;border-radius:22px;padding:26px 28px;display:flex;flex-direction:column;gap:22px;animation:riseIn .7s cubic-bezier(.2,.7,.3,1) .3s both">
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#7d99ff,#3b5ae0);box-shadow:0 10px 22px -8px rgba(59,90,224,.45);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 18s6-5.7 6-10.5A6 6 0 0 0 4 7.5C4 12.3 10 18 10 18Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"></path><circle cx="10" cy="7.4" r="2.2" stroke="#fff" stroke-width="1.7"></circle></svg></div>
-        <div><div style="font-size:19px;font-weight:600;letter-spacing:-.5px;color:#121214">Leads par pays</div><div style="font-size:13px;color:#9a9fa6;margin-top:2px">Extraction back-office, tous sites et toutes marques confondus{{ paysCurrentMonthNote }}</div></div>
-        <div style="flex:1"></div>
-        <div style="text-align:right"><div style="font-size:22px;font-weight:600;letter-spacing:-.7px;color:#121214">{{ paysGrandTotal }}</div><div style="font-size:11.5px;color:#9aa0aa">leads au total</div></div>
-      </div>
-      <sc-if value="{{ hasPaysRows }}" hint-placeholder-val="{{ false }}">
-      <div style="overflow-x:auto">
-        <div style="display:flex;flex-direction:column;min-width:fit-content">
-          <div style="display:flex;align-items:center;padding:0 0 10px;border-bottom:1px solid #f2f2f4">
-            <div style="width:176px;flex:none;font-size:11.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.04em">Pays / année</div>
-            <sc-for list="{{ paysMonthHeaderLabels }}" as="m" hint-placeholder-count="12">
-              <div style="{{ m.style }}">{{ m.label }}</div>
-            </sc-for>
-            <div style="width:92px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.04em">Total</div>
-            <div style="width:90px;flex:none;text-align:right;font-size:11.5px;font-weight:700;color:#9a9fa6;text-transform:uppercase;letter-spacing:.04em">Évolution</div>
+      <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px;min-width:0;overflow:hidden">
+          <div style="flex:1 1 auto;min-width:132px">
+            <div style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Leads validés BO</div>
+            <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap"><span ref="{{ kpiLeadsRef }}">0</span></div>
           </div>
-          <sc-for list="{{ paysCompareRows }}" as="r" hint-placeholder-count="9">
-            <div style="padding:10px 0;border-bottom:1px solid #f7f7f9">
-              <div style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#121214;padding:0 4px 4px"><span>{{ r.flag }}</span><span>{{ r.label }}</span></div>
-              <sc-for list="{{ r.years }}" as="y" hint-placeholder-count="2">
-                <div style="{{ y.rowStyle }}">
-                  <div style="width:176px;flex:none;font-size:12px;font-weight:600;color:#9a9fa6;padding-left:4px">{{ y.year }}</div>
-                  <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
-                    <div style="{{ c.style }}">{{ c.value }}</div>
-                  </sc-for>
-                  <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:#121214">{{ y.totalLabel }}</div>
-                  <div style="width:90px;flex:none"></div>
-                </div>
-              </sc-for>
-              <sc-if value="{{ r.hasDelta }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex;justify-content:flex-end;padding:2px 4px 0"><span style="{{ r.delta.style }}">{{ r.delta.text }} vs année précédente</span></div>
-              </sc-if>
-            </div>
-          </sc-for>
-          <div style="padding-top:14px">
-            <div style="font-size:13.5px;font-weight:700;color:#121214;padding:0 4px 4px">Total général</div>
-            <sc-for list="{{ paysGrandRows }}" as="y" hint-placeholder-count="2">
-              <div style="{{ y.rowStyle }}">
-                <div style="width:176px;flex:none;font-size:12px;font-weight:600;color:#9a9fa6;padding-left:4px">{{ y.year }}</div>
-                <sc-for list="{{ y.cells }}" as="c" hint-placeholder-count="12">
-                  <div style="{{ c.style }}">{{ c.value }}</div>
-                </sc-for>
-                <div style="width:92px;flex:none;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;color:#121214">{{ y.totalLabel }}</div>
-                <div style="width:90px;flex:none"></div>
-              </div>
-            </sc-for>
-            <sc-if value="{{ paysGrandHasDelta }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;justify-content:flex-end;padding:2px 4px 0"><span style="{{ paysGrandDelta.style }}">{{ paysGrandDelta.text }} vs année précédente</span></div>
-            </sc-if>
+          <span style="{{ kpiLeadsDelta.style }};white-space:nowrap">{{ kpiLeadsDelta.text }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px;min-width:0;overflow:hidden">
+          <div style="flex:1 1 auto;min-width:132px">
+            <div style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Reprises correspondant a la marque du site (marqueDeSite)">Marque du site</div>
+            <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ ownBrandSharePct }}</div>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:18px;padding:16px 18px;display:flex;align-items:center;gap:14px;min-width:0;overflow:hidden">
+          <div style="flex:1 1 auto;min-width:132px">
+            <div style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mobile</div>
+            <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ tbMobilePct }}</div>
           </div>
         </div>
       </div>
-      </sc-if>
     </div>
 
   </div>
   </sc-if>
 
-  <sc-if value="{{ isAssistant }}" hint-placeholder-val="{{ false }}">
-  <div style="margin-top:24px">
-    <!-- restructuration du 10/08/2026 (pas juste un habillage) : l'ancienne
-         mise en page a deux colonnes fixes (chat 70% + panneau "Constats
-         automatiques" 30%, toujours visible meme sans rien a signaler)
-         devient une conversation plein largeur, avec les constats deplaces
-         dans un tiroir a la demande (cloche + pastille dans l'en-tete) --
-         voir kamiaAlertsOpen/toggleKamiaAlerts. L'etat vide n'est plus une
-         grille de cartes mais un vrai ecran d'accueil centre, la saisie
-         restant ancree en bas une fois la conversation commencee. -->
-    <div class="hermes-shell" style="background:#fff;border:1px solid #efeff1;border-radius:22px;box-sizing:border-box;display:flex;flex-direction:column;height:720px;position:relative;overflow:hidden">
-
-      <div style="display:flex;align-items:center;gap:14px;padding:22px 28px;border-bottom:1px solid var(--line);flex-wrap:wrap">
-        <!-- meme identite orbe animee que le widget KamIA de l'onglet GA4
-             (ligne ~780), pas le logo Hermes orange. -->
-        <div style="width:44px;height:44px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 10px 22px -8px rgba(109,92,246,.55)">
-          <div style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(3px)"></div>
-          <div style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(2.5px);mix-blend-mode:screen"></div>
-          <div style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></div>
-          <div style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 12px rgba(12,17,32,.65)"></div>
-        </div>
-        <div style="flex:1;min-width:200px">
-          <div style="display:flex;align-items:center;gap:8px"><span style="font-size:19px;font-weight:800;color:var(--text);letter-spacing:-.3px">KamIA</span><span style="font-size:12.5px;font-weight:600;color:var(--muted)">· {{ kamiaStatusLabel }}</span></div>
-          <div style="margin-top:2px;font-size:13px;font-weight:500;color:var(--muted)">Interroge les agents Analytics, Business, UX et Dashboard, puis synthétise une réponse argumentée.</div>
-        </div>
-
-        <!-- cloche "Constats automatiques" : remplace le panneau fixe de 30%
-             de l'ecran par un tiroir a la demande, pastille = total reel
-             (watchConstatsTotal, jamais filtre). -->
-        <button onClick="{{ toggleKamiaAlerts }}" title="Constats automatiques" style="position:relative;display:flex;align-items:center;justify-content:center;border:none;background:var(--soft);color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <sc-if value="{{ watchConstatsTotal }}" hint-placeholder-val="{{ false }}">
-            <span style="position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:var(--neg);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1">{{ watchConstatsTotal }}</span>
-          </sc-if>
-        </button>
-
-        <button onClick="{{ newChatConversation }}" title="Nouvelle conversation" style="display:flex;align-items:center;justify-content:center;border:none;background:var(--soft);color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
-        </button>
-        <button onClick="{{ toggleChatConvPicker }}" title="Conversations enregistrées" style="display:flex;align-items:center;justify-content:center;border:none;background:var(--soft);color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-        </button>
-
-        <div style="position:relative;flex:none">
-          <button onClick="{{ toggleChatScopePicker }}" style="display:flex;align-items:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;height:38px;padding:0 16px;border-radius:999px;cursor:pointer;white-space:nowrap" style-hover="background:var(--hover)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>{{ chatScopeLabel }}
-          </button>
-          <sc-if value="{{ chatScopeOpen }}" hint-placeholder-val="{{ false }}">
-            <div style="position:fixed;inset:0;z-index:59;cursor:default" onClick="{{ toggleChatScopePicker }}"></div>
-            <div style="position:absolute;right:0;top:46px;width:360px;background:var(--pop);border-radius:18px;padding:16px 18px;box-shadow:0 30px 70px -20px var(--shadow);animation:dropIn .2s ease both;z-index:61">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-                <div style="font-size:14px;font-weight:700;color:var(--text)">Périmètre de la conversation</div>
-                <button onClick="{{ clearChatScope }}" style="border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:12.5px;font-weight:600;height:30px;padding:0 12px;border-radius:999px;cursor:pointer">Tous les sites</button>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:8px;max-height:220px;overflow-y:auto">
-                <sc-for list="{{ chatScopeSites }}" as="s" hint-placeholder-count="8">
-                  <button onClick="{{ s.toggle }}" style="{{ s.style }}">{{ s.name }}</button>
-                </sc-for>
-              </div>
-            </div>
-          </sc-if>
-        </div>
-      </div>
-
-      <div id="kamiaChatScroll" style="flex:1;padding:26px 30px;display:flex;flex-direction:column;gap:18px;overflow-y:auto">
-        <sc-if value="{{ noChatMessages }}" hint-placeholder-val="{{ true }}">
-          <!-- ecran d'accueil centre (comme un vrai assistant, pas une
-               grille de widgets BI) : la question se pose ici, les
-               constats deja reels servent de suggestions cliquables. -->
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:22px;padding:20px;max-width:680px;margin:0 auto">
-            <div style="width:64px;height:64px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 16px 34px -12px rgba(109,92,246,.55)">
-              <div style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(4px)"></div>
-              <div style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(3.5px);mix-blend-mode:screen"></div>
-              <div style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></div>
-              <div style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 16px rgba(12,17,32,.65)"></div>
-            </div>
-            <div>
-              <div style="font-size:23px;font-weight:800;color:var(--text);letter-spacing:-.5px">Comment puis-je t'aider sur {{ currentSiteLabel }} ?</div>
-              <div style="margin-top:8px;font-size:14px;font-weight:500;color:var(--muted);line-height:1.5">{{ kamiaHeadline }}</div>
-            </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center">
-              <sc-for list="{{ quickAnalysisCards }}" as="c" hint-placeholder-count="4">
-                <button onClick="{{ c.pick }}" style="{{ c.style }}" style-hover="filter:brightness(.97)">{{ c.label }}</button>
-              </sc-for>
-            </div>
-          </div>
-        </sc-if>
-
-        <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="2">
-          <div style="{{ m.rowStyle }}">
-            <sc-if value="{{ m.isAssistantMsg }}" hint-placeholder-val="{{ false }}">
-              <span style="width:28px;height:28px;border-radius:50%;flex:none;background:radial-gradient(circle at 32% 28%,#8ee7ff,#5b7cff 42%,#7c3aed 78%,#0c1120 100%);box-shadow:0 4px 10px -4px rgba(109,92,246,.55)"></span>
-            </sc-if>
-            <div style="{{ m.bubbleStyle }}">
-              <sc-if value="{{ m.hasAttachments }}" hint-placeholder-val="{{ false }}">
-                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-                  <sc-for list="{{ m.attachmentNames }}" as="fn" hint-placeholder-count="1">
-                    <span style="font-size:11.5px;font-weight:700;background:rgba(255,255,255,.18);border-radius:999px;padding:4px 10px;display:flex;align-items:center;gap:5px">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>{{ fn }}
-                    </span>
-                  </sc-for>
-                </div>
-              </sc-if>
-              <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ true }}">
-                <div style="white-space:pre-wrap;font-size:15px;font-weight:500;line-height:1.55">{{ m.text }}</div>
-              </sc-if>
-              <sc-if value="{{ m.isAssistantMsg }}" hint-placeholder-val="{{ false }}">
-                <div class="hermes-md" ref="{{ m.mdRef }}" style="font-size:15px;font-weight:500;line-height:1.6"></div>
-              </sc-if>
-              <sc-if value="{{ m.hasCharts }}" hint-placeholder-val="{{ false }}">
-                <sc-for list="{{ m.charts }}" as="ch" hint-placeholder-count="1">
-                  <div style="margin-top:12px;background:var(--card);border-radius:14px;padding:14px 16px;box-sizing:border-box">
-                    <div style="font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:8px">{{ ch.title }}</div>
-                    <sc-if value="{{ ch.isLine }}" hint-placeholder-val="{{ true }}">
-                      <svg width="100%" height="90" viewBox="0 0 560 130" preserveAspectRatio="none" style="display:block;overflow:visible">
-                        <sc-for list="{{ ch.paths }}" as="p" hint-placeholder-count="1">
-                          <path d="{{ p.d }}" fill="none" stroke="{{ p.color }}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
-                        </sc-for>
-                      </svg>
-                      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-weight:600;color:var(--muted2)">
-                        <sc-for list="{{ ch.axis }}" as="al" hint-placeholder-count="3"><span>{{ al }}</span></sc-for>
-                      </div>
-                      <sc-if value="{{ ch.hasLegend }}" hint-placeholder-val="{{ false }}">
-                        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-                          <sc-for list="{{ ch.legend }}" as="lg" hint-placeholder-count="2">
-                            <span style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted)"><span style="width:7px;height:7px;border-radius:50%;background:{{ lg.color }};display:inline-block"></span>{{ lg.name }}</span>
-                          </sc-for>
-                        </div>
-                      </sc-if>
-                    </sc-if>
-                    <sc-if value="{{ ch.isBar }}" hint-placeholder-val="{{ false }}">
-                      <div style="display:flex;align-items:flex-end;gap:6px;height:90px">
-                        <sc-for list="{{ ch.bars }}" as="b" hint-placeholder-count="4">
-                          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;min-width:0">
-                            <span style="font-size:10px;font-weight:700;color:var(--text);white-space:nowrap">{{ b.value }}</span>
-                            <div style="{{ b.barStyle }}"></div>
-                            <span style="font-size:9.5px;font-weight:600;color:var(--muted2);white-space:nowrap">{{ b.label }}</span>
-                          </div>
-                        </sc-for>
-                      </div>
-                    </sc-if>
-                  </div>
-                </sc-for>
-              </sc-if>
-              <sc-if value="{{ m.hasAgents }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px">
-                  <sc-for list="{{ m.agentBadges }}" as="ag" hint-placeholder-count="2">
-                    <span style="font-size:11.5px;font-weight:700;color:var(--muted);background:var(--soft2);border-radius:999px;padding:4px 10px">{{ ag }}</span>
-                  </sc-for>
-                </div>
-              </sc-if>
-            </div>
-          </div>
-        </sc-for>
-        <sc-if value="{{ chatBusy }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;font-weight:600">
-            <span style="width:20px;height:20px;border-radius:50%;flex:none;background:radial-gradient(circle at 32% 28%,#8ee7ff,#5b7cff 42%,#7c3aed 78%,#0c1120 100%);animation:orbBreath 1.1s ease-in-out infinite"></span>Les agents analysent…
-          </div>
-        </sc-if>
-      </div>
-
-      <div style="padding:18px 30px 24px;border-top:1px solid var(--line)">
-        <sc-if value="{{ hasChatAttachments }}" hint-placeholder-val="{{ false }}">
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-            <sc-for list="{{ chatAttachmentChips }}" as="a" hint-placeholder-count="1">
-              <span style="display:flex;align-items:center;gap:8px;background:var(--soft);border-radius:999px;padding:6px 8px 6px 14px;font-size:12.5px;font-weight:600;color:var(--text)">
-                {{ a.name }}<span style="color:var(--muted2);font-weight:500">{{ a.sizeLabel }}</span>
-                <button onClick="{{ a.remove }}" style="width:20px;height:20px;border-radius:50%;border:none;background:var(--hover);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-                </button>
-              </span>
-            </sc-for>
-          </div>
-        </sc-if>
-
-        <form onSubmit="{{ sendChatMessage }}" style="display:flex;gap:10px;align-items:center">
-          <input ref="{{ chatFileInputRef }}" type="file" accept="image/*,application/pdf" multiple onChange="{{ attachFiles }}" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;white-space:nowrap;border:0;opacity:0;pointer-events:none">
-          <button type="button" onClick="{{ openChatFilePicker }}" title="Joindre un fichier" style="display:flex;align-items:center;justify-content:center;border:none;background:var(--soft);color:var(--text);width:44px;height:44px;border-radius:50%;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-          </button>
-          <input type="text" value="{{ chatInput }}" onChange="{{ setChatInput }}" placeholder="Pose ta question…" disabled="{{ chatBusy }}" style="flex:1;background:var(--soft);border:none;border-radius:16px;padding:0 18px;height:52px;font-family:inherit;font-size:15px;font-weight:500;color:var(--text);outline:none;min-width:0">
-          <button type="submit" disabled="{{ chatBusy }}" style="display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:50%;background:#F5411E;border:none;color:#fff;cursor:pointer;flex:none;opacity:{{ chatSendOpacity }}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 14 0M13 5l7 7-7 7"></path></svg>
-          </button>
-        </form>
-        <div style="text-align:center;margin-top:12px;font-size:12px;font-weight:500;color:var(--muted2)">Les réponses doivent être vérifiées avant toute communication client.</div>
-      </div>
-
-      <!-- tiroir "Constats automatiques" : n'occupe l'ecran que sur demande
-           (cloche de l'en-tete), au lieu d'un panneau fixe de 30% toujours
-           present meme quand rien ne sort de l'ordinaire. position:relative
-           sur .hermes-shell (ci-dessus) + overflow:hidden fait de la carte
-           entiere le cadre du tiroir, comme un panneau lateral d'app. -->
-      <sc-if value="{{ kamiaAlertsOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute;inset:0;z-index:50;background:rgba(12,14,20,.32);cursor:default" onClick="{{ toggleKamiaAlerts }}"></div>
-        <div style="position:absolute;top:0;right:0;bottom:0;width:380px;max-width:88%;background:var(--pop);box-shadow:-24px 0 50px -20px var(--shadow);z-index:51;display:flex;flex-direction:column;animation:drawerIn .22s cubic-bezier(.2,.8,.3,1.05) both">
-          <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line)">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(140deg,#a8b6ff,#6d5cf6 55%,#c084fc);display:flex;align-items:center;justify-content:center;flex:none">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-              </div>
-              <div style="flex:1"><div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Constats automatiques</div><div style="margin-top:2px;font-size:12.5px;font-weight:500;color:var(--muted)">KamIA analyse chaque site tous les jours et signale ici ce qui sort de l'ordinaire.</div></div>
-              <button onClick="{{ toggleKamiaAlerts }}" title="Fermer" style="width:30px;height:30px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-              </button>
-            </div>
-            <sc-if value="{{ watchLastUpdate }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:10px;font-size:11.5px;font-weight:600;color:var(--muted2)">Dernière veille : {{ watchLastUpdate }}</div>
-            </sc-if>
-            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">
-              <sc-for list="{{ watchFilterChips }}" as="f" hint-placeholder-count="3">
-                <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
-              </sc-for>
-            </div>
-          </div>
-          <div style="flex:1;padding:16px;display:flex;flex-direction:column;gap:10px;overflow-y:auto">
-            <sc-if value="{{ noWatchConstats }}" hint-placeholder-val="{{ true }}">
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 14px;color:var(--muted)">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                <div style="font-size:13.5px;font-weight:600">Rien à signaler pour l'instant</div>
-              </div>
-            </sc-if>
-            <sc-for list="{{ watchConstats }}" as="c" hint-placeholder-count="2">
-              <button onClick="{{ c.open }}" style="{{ c.cardStyle }}" style-hover="background:var(--hover)">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                  <span style="font-size:13.5px;font-weight:800;color:var(--text)">{{ c.site }}</span>
-                  <span style="{{ c.badgeStyle }}">{{ c.badgeText }}</span>
-                </div>
-                <div style="font-size:12.5px;font-weight:500;color:var(--muted);line-height:1.45;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ c.synthese }}</div>
-                <div style="font-size:11px;font-weight:600;color:var(--muted2)">{{ c.genereLe }}</div>
-              </button>
-            </sc-for>
-          </div>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ chatConvOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute;inset:0;z-index:50;background:rgba(12,14,20,.32);cursor:default" onClick="{{ toggleChatConvPicker }}"></div>
-        <div style="position:absolute;top:0;left:0;bottom:0;width:340px;max-width:88%;background:var(--pop);box-shadow:24px 0 50px -20px var(--shadow);z-index:51;display:flex;flex-direction:column;animation:drawerIn .22s cubic-bezier(.2,.8,.3,1.05) both">
-          <div style="padding:22px 22px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px">
-            <div style="flex:1">
-              <div style="font-size:15.5px;font-weight:800;color:var(--text);letter-spacing:-.2px">Conversations</div>
-              <div style="margin-top:2px;font-size:12.5px;font-weight:500;color:var(--muted)">Historique de {{ userEmail }}, synchronisé sur ton compte.</div>
-              <sc-if value="{{ chatConvSyncLabel }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-top:4px;font-size:11px;font-weight:600;color:var(--muted2)">{{ chatConvSyncLabel }}</div>
-              </sc-if>
-            </div>
-            <button onClick="{{ toggleChatConvPicker }}" title="Fermer" style="width:30px;height:30px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="background:var(--hover)">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-            </button>
-          </div>
-          <div style="padding:14px 16px 0">
-            <button onClick="{{ newChatConversation }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border:none;background:var(--soft);color:var(--text);font-family:inherit;font-size:13.5px;font-weight:700;height:40px;border-radius:12px;cursor:pointer" style-hover="background:var(--hover)">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Nouvelle conversation
-            </button>
-          </div>
-          <div style="flex:1;padding:14px 16px;display:flex;flex-direction:column;gap:8px;overflow-y:auto">
-            <sc-if value="{{ noChatConvList }}" hint-placeholder-val="{{ true }}">
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:6px;padding:20px 14px;color:var(--muted)">
-                <div style="font-size:13.5px;font-weight:600">Aucune conversation enregistrée</div>
-              </div>
-            </sc-if>
-            <sc-for list="{{ chatConvList }}" as="c" hint-placeholder-count="2">
-              <div style="display:flex;align-items:stretch;gap:6px">
-                <button onClick="{{ c.open }}" style="{{ c.cardStyle }}" style-hover="background:var(--hover)">
-                  <span style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.title }}</span>
-                  <span style="font-size:11px;font-weight:600;color:var(--muted2)">{{ c.when }}</span>
-                </button>
-                <button onClick="{{ c.remove }}" title="Supprimer" style="width:34px;flex:none;border:none;background:var(--soft);color:var(--muted2);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:var(--hover)">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
-                </button>
-              </div>
-            </sc-for>
-          </div>
-        </div>
-      </sc-if>
-    </div>
-  </div>
-  </sc-if>
 
   </div>
   </div>
@@ -2160,195 +1434,6 @@ input[type=date]{color-scheme:light}
        des que la page defile. Signale par l'utilisateur le 08/08/2026 sur
        la modale de constat, mais touchait deja v2Modal de la meme facon,
        juste jamais remarque avant une liste assez longue pour defiler. -->
-  <sc-if value="{{ hasV2Modal }}" hint-placeholder-val="{{ false }}">
-  <div style="{{ v2Modal.wrapStyle }}">
-  <div style="{{ v2Modal.backdropStyle }}" onClick="{{ v2Modal.close }}"></div>
-  <div style="{{ v2Modal.panelStyle }}">
-    <button onClick="{{ v2Modal.close }}" title="Fermer" style="position:absolute;top:26px;right:26px;width:38px;height:38px;border-radius:50%;border:none;background:var(--soft);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s ease,transform .2s ease" style-hover="background:var(--hover);transform:rotate(90deg)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
-    </button>
-
-    <button onClick="{{ v2Modal.exportPdf }}" title="Synthèse V2 prête à envoyer au client" style="position:absolute;top:26px;right:76px;display:flex;align-items:center;gap:9px;background:#F5411E;border:none;border-radius:999px;padding:0 18px;height:38px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:transform .18s ease,filter .18s ease" style-hover="transform:translateY(-2px);filter:brightness(1.08)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M4 19h16"></path></svg>Synthèse PDF client
-    </button>
-
-    <!-- letter-spacing explicite (imperceptible) plutot que "normal" herite
-         par defaut : contournement d'un bug connu de html2canvas qui avale
-         les espaces entre mots des que le texte n'a pas de letter-spacing
-         explicite ("Sessions et leads" -> "Sessionsetleads"), constate le
-         20/08/2026 sur l'export PDF (exportV2Pdf). Cascade a tous les
-         descendants qui n'ecrasent pas eux-memes cette valeur (les libelles
-         KPI le font deja, restent inchanges). -->
-    <div ref="{{ v2Modal.captureRef }}" style="letter-spacing:.01px">
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding-right:110px">
-      <div>
-        <div style="font-size:27px;font-weight:800;color:var(--text);letter-spacing:-.3px">{{ v2Modal.site }}</div>
-        <div style="margin-top:5px;font-size:14px;font-weight:600;color:var(--muted)">{{ v2Modal.weeksLabel }}</div>
-        <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap">
-          <span style="font-size:12.5px;font-weight:600;color:#3b5ae0;background:#eef1fd;border-radius:100px;padding:3px 11px">{{ v2Modal.analysedRangeLabel }}</span>
-          <span style="font-size:12.5px;font-weight:600;color:var(--text2);background:var(--soft);border-radius:100px;padding:3px 11px">{{ v2Modal.comparedRangeLabel }}</span>
-        </div>
-      </div>
-      <span style="{{ v2Modal.badgeStyle }}">{{ v2Modal.badgeText }}</span>
-    </div>
-
-    <sc-if value="{{ v2Modal.hasPeriodOptions }}" hint-placeholder-val="{{ false }}">
-    <div style="margin-top:18px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:8px">Période analysée</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <sc-for list="{{ v2Modal.periodOptions }}" as="po" hint-placeholder-count="4">
-          <button onClick="{{ po.pick }}" style="{{ po.style }}">{{ po.label }}</button>
-        </sc-for>
-        <span style="font-size:12px;font-weight:600;color:var(--muted2)">ou</span>
-        <input type="date" value="{{ v2Modal.customDebut }}" onChange="{{ v2Modal.setCustomDebut }}" style="border:1px solid var(--line);background:var(--card);border-radius:100px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">
-        <span style="font-size:12px;color:var(--muted2)">→</span>
-        <input type="date" value="{{ v2Modal.customFin }}" onChange="{{ v2Modal.setCustomFin }}" style="border:1px solid var(--line);background:var(--card);border-radius:100px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:600;color:var(--text);cursor:pointer">
-        <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
-        <button onClick="{{ v2Modal.clearCustom }}" style="border:none;background:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:700;color:#F5411E;padding:5px 4px">Effacer</button>
-        </sc-if>
-      </div>
-      <sc-if value="{{ v2Modal.customActive }}" hint-placeholder-val="{{ false }}">
-      <div style="margin-top:8px;font-size:11.5px;font-weight:600;color:var(--muted2)">Période personnalisée : le détail du parcours (funnel) reste indisponible, réservé aux semaines précalculées.</div>
-      </sc-if>
-    </div>
-    </sc-if>
-
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:28px">
-      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Leads / j</div>
-        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.leadsParJour }}</div>
-      </div>
-      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Sess. reprise</div>
-        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.sessionsReprise }}</div>
-      </div>
-      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Conversion</div>
-        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.conversion }}</div>
-        <div style="{{ v2Modal.badgeDeltaStyle }};margin-top:3px">{{ v2Modal.badgeDeltaText }}</div>
-      </div>
-      <div style="background:var(--soft);border-radius:16px;padding:16px 18px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.03em">Mobile</div>
-        <div style="font-size:23px;font-weight:800;color:var(--text);margin-top:5px;font-variant-numeric:tabular-nums">{{ v2Modal.mobilePct }}</div>
-        <div style="{{ v2Modal.mobileDeltaStyle }};margin-top:3px">{{ v2Modal.mobileDeltaText }}</div>
-      </div>
-    </div>
-
-    <sc-if value="{{ v2Modal.hasCharts }}" hint-placeholder-val="{{ false }}">
-    <div style="font-size:15px;font-weight:800;color:var(--text);margin:32px 0 16px">Sessions et leads — V1 vs V2</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
-      <div style="background:var(--soft);border-radius:18px;padding:20px 22px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div style="font-size:13px;font-weight:700;color:var(--text2)">Sessions site parent / jour</div>
-          <span style="{{ v2Modal.chartSessions.deltaStyle }}">{{ v2Modal.chartSessions.deltaText }}</span>
-        </div>
-        <div ref="{{ v2Modal.chartSessions.hoverRef }}" style="position:relative;height:130px;margin-top:16px;cursor:crosshair">
-          <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
-            <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
-            <path ref="{{ v2Modal.chartSessions.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
-            <path ref="{{ v2Modal.chartSessions.ref }}" fill="none" stroke="#4ADE80" stroke-width="2.8" stroke-linecap="round"></path>
-          </svg>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px;font-weight:700">
-          <span style="color:var(--muted)">V1 : {{ v2Modal.chartSessions.v1ValText }}</span>
-          <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartSessions.v2ValText }}</span>
-        </div>
-      </div>
-      <div style="background:var(--soft);border-radius:18px;padding:20px 22px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <div style="font-size:13px;font-weight:700;color:var(--text2)">Leads / jour</div>
-          <span style="{{ v2Modal.chartLeads.deltaStyle }}">{{ v2Modal.chartLeads.deltaText }}</span>
-        </div>
-        <div ref="{{ v2Modal.chartLeads.hoverRef }}" style="position:relative;height:130px;margin-top:16px;cursor:crosshair">
-          <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
-            <g stroke="var(--grid)" stroke-width="1"><path d="M0 32.5 H460"></path><path d="M0 65 H460"></path><path d="M0 97.5 H460"></path></g>
-            <path ref="{{ v2Modal.chartLeads.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
-            <path ref="{{ v2Modal.chartLeads.ref }}" fill="none" stroke="#F5411E" stroke-width="2.8" stroke-linecap="round"></path>
-          </svg>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12.5px;font-weight:700">
-          <span style="color:var(--muted)">V1 : {{ v2Modal.chartLeads.v1ValText }}</span>
-          <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartLeads.v2ValText }}</span>
-        </div>
-      </div>
-    </div>
-    </sc-if>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:32px">
-      <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
-        <div style="font-size:14px;font-weight:800;color:var(--text)">Funnel — {{ v2Modal.periodeLabel }} vs V1</div>
-        <sc-if value="{{ v2Modal.hasFunnelCompact }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:20px;display:flex;flex-direction:column;gap:16px">
-          <sc-for list="{{ v2Modal.funnelCompact }}" as="fs" hint-placeholder-count="6">
-            <div>
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px">
-                <span style="font-size:12.5px;font-weight:700;color:var(--text2)">{{ fs.name }}</span>
-                <span style="display:flex;align-items:center;gap:9px">
-                  <span style="font-size:13.5px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ fs.v2Text }}</span>
-                  <span style="{{ fs.deltaStyle }}">{{ fs.deltaText }}</span>
-                </span>
-              </div>
-              <div style="position:relative;height:8px;background:var(--card);border-radius:4px">
-                <div style="{{ fs.barStyle }}"></div>
-                <div style="{{ fs.markerStyle }}"></div>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <div style="display:flex;align-items:center;gap:7px;margin-top:18px;font-size:11.5px;font-weight:600;color:var(--muted)">
-          <span style="width:10px;height:2px;background:var(--text2);display:inline-block;border-radius:1px"></span>
-          Repère : niveau V1
-        </div>
-        <sc-if value="{{ v2Modal.hasFunnelCoverageNote }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:14px;font-size:11.5px;font-weight:600;color:var(--muted2)">{{ v2Modal.funnelCoverageNote }}</div>
-        </sc-if>
-        </sc-if>
-        <sc-if value="{{ v2Modal.showFunnelUnavailable }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:20px;font-size:12.5px;font-weight:600;color:var(--muted2)">Indisponible sur cette période : aucune semaine précalculée par le pipeline ne la couvre entièrement (nécessite une requête GA4 dédiée).</div>
-        </sc-if>
-      </div>
-
-      <div style="background:var(--soft);border-radius:18px;padding:22px 24px">
-        <div style="font-size:14px;font-weight:800;color:var(--text)">Répartition par appareil</div>
-        <div style="display:flex;align-items:baseline;gap:10px;margin-top:20px">
-          <span style="font-size:32px;font-weight:800;color:var(--text);font-variant-numeric:tabular-nums">{{ v2Modal.deviceMobilePct }}</span>
-          <span style="{{ v2Modal.mobileDeltaStyle }}">{{ v2Modal.mobileDeltaText }}</span>
-        </div>
-        <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:3px">part mobile, {{ v2Modal.periodeLabel }}</div>
-        <div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:18px">
-          <div style="{{ v2Modal.deviceMobileBarStyle }}"></div>
-          <div style="{{ v2Modal.deviceDesktopBarStyle }}"></div>
-          <div style="{{ v2Modal.deviceAutresBarStyle }}"></div>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;font-weight:600;color:var(--text2)">
-          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#4A9BF5;display:inline-block"></span>Mobile {{ v2Modal.deviceMobilePct }}</span>
-          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:#7B7BF0;display:inline-block"></span>Desktop {{ v2Modal.deviceDesktopPct }}</span>
-          <sc-if value="{{ v2Modal.hasAutres }}" hint-placeholder-val="{{ false }}">
-          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:2px;background:var(--muted2);display:inline-block"></span>Autres {{ v2Modal.deviceAutresPct }}</span>
-          </sc-if>
-        </div>
-
-        <sc-if value="{{ v2Modal.hasChartMobile }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--line)">
-          <div style="font-size:12px;font-weight:700;color:var(--text2)">Évolution de la part mobile</div>
-          <div ref="{{ v2Modal.chartMobile.hoverRef }}" style="position:relative;height:80px;margin-top:10px;cursor:crosshair">
-            <svg width="100%" height="100%" viewBox="0 0 460 130" preserveAspectRatio="none" style="position:absolute;inset:0">
-              <path ref="{{ v2Modal.chartMobile.v1Ref }}" fill="none" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="5 4" style="animation:fadeIn .5s ease .3s both"></path>
-              <path ref="{{ v2Modal.chartMobile.ref }}" fill="none" stroke="#4A9BF5" stroke-width="2.4" stroke-linecap="round"></path>
-            </svg>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;font-weight:700">
-            <span style="color:var(--muted)">V1 : {{ v2Modal.chartMobile.v1ValText }}</span>
-            <span style="color:var(--text)">Dernière semaine : {{ v2Modal.chartMobile.v2ValText }}</span>
-          </div>
-        </div>
-        </sc-if>
-      </div>
-    </div>
-    </div>
-  </div>
-  </div>
-  </sc-if>
 
   <sc-if value="{{ hasQueriesModal }}" hint-placeholder-val="{{ false }}">
   <div style="{{ queriesModal.wrapStyle }}">
@@ -2557,43 +1642,7 @@ const agregeLeadsParDevice = (leadsParMois, debutIso, finIso) => {
   return out;
 };
 
-// serie de N sommes hebdomadaires (lundi-dimanche, blocs de 7 jours non
-// chevauchants) se terminant a finIso, la plus ancienne en premier -- sert
-// de base a detecteRupture() (module "Rupture de tendance", onglet GA4).
-// agregateFn(debutIso, finIso) doit deja exister (agregeJours/agregeLeads
-// ci-dessus) : jamais une nouvelle logique d'agregation ici.
-const serieHebdo = (agregateFn, finIso, nSemaines) => {
-  const fin = new Date(finIso);
-  const out = [];
-  for (let w = nSemaines - 1; w >= 0; w--) {
-    const finSem = new Date(fin); finSem.setUTCDate(finSem.getUTCDate() - w * 7);
-    const debutSem = new Date(finSem); debutSem.setUTCDate(debutSem.getUTCDate() - 6);
-    out.push(agregateFn(debutSem.toISOString().slice(0, 10), finSem.toISOString().slice(0, 10)));
-  }
-  return out;
-};
-
-// module "Rupture de tendance" (onglet GA4) : la derniere semaine glissante
-// comparee a la moyenne/ecart-type des 8 semaines precedentes (z-score) --
-// meme esprit de garde-fou de volume que pipeline/watch.py (VOLUME_MIN,
-// SEUIL_ECART_PCT), reproduit ici cote client plutot que partage, ce module
-// vivant entierement dans le navigateur (pas de nouvel appel serveur).
-const RUPTURE_VOLUME_MIN = 20;
-const RUPTURE_Z_SEUIL = 2;
-function detecteRupture(semaines) {
-  if (semaines.length < 5) return null; // pas assez d'historique (derniere + au moins 4 de reference)
-  const derniere = semaines[semaines.length - 1];
-  const reference = semaines.slice(0, -1);
-  const moyenne = reference.reduce((s, v) => s + v, 0) / reference.length;
-  const variance = reference.reduce((s, v) => s + (v - moyenne) ** 2, 0) / reference.length;
-  const ecartType = Math.sqrt(variance);
-  const volumeOk = Math.max(derniere, moyenne) >= RUPTURE_VOLUME_MIN;
-  const z = ecartType > 0 ? (derniere - moyenne) / ecartType : (derniere === moyenne ? 0 : null);
-  const significatif = volumeOk && z != null && Math.abs(z) >= RUPTURE_Z_SEUIL;
-  return { derniere, moyenne, ecartType, z, significatif, volumeOk };
-}
-
-const MONTHS = ["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const MONTHS =["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
 // dates completes "YYYY-MM-DD" partout (plus de "MM-DD" + annee supposee) :
 // une fenetre de 16 mois fait forcement revenir le meme "MM-DD" deux fois
 // (ex. aout 2025 ET aout 2026), ce qu'un "MM-DD" seul ne peut pas distinguer
@@ -2827,86 +1876,6 @@ function buildV2Chart(siteRaw, valueFn, unite) {
    analysee, une seule courbe continue (pas de reference V1 en pointilles
    comme buildV2Chart, il n'y a pas de "reference" ici) avec un repere
    vertical separant les deux moities. */
-/* graphe combine "Volume vs conversion tradein" (Vue d'ensemble, maquette
-   KamIA du 08/08/2026) : barres = sessions reprise mensuelles (echelle de
-   gauche), ligne = taux de conversion mensuel (echelle de droite, propre
-   a chaque serie pour rester lisible quelle que soit l'amplitude relative
-   des deux). Repere V2 optionnel (trait pointille) si le site a bascule. */
-function buildVolumeConvChart(rows, v2Idx) {
-  const W = 1280, H = 310, top = 14, base = 252, axisR = 1224;
-  const n = rows.length;
-  if (!n) return null;
-  const colW = (axisR - 52) / n;
-  const maxSess = Math.max(1, ...rows.map(r => r.sessions));
-  const maxConv = Math.max(.01, ...rows.map(r => r.conv)) * 1.15;
-  // geometrie posee via ref/setAnimatedAttrs (pas {{ }} direct sur des
-  // attributs numeriques SVG : deja observe non fiable sur ce moteur de
-  // template pour d/x1/x2, cf. buildWatchChart/sparkline plus haut) --
-  // seuls les libelles texte passent par {{ }} normalement.
-  // geometrie des deux series calculee d'abord, ensemble, pour pouvoir
-  // detecter les collisions entre le libelle "sessions" (au-dessus de la
-  // barre) et le libelle "conversion" (au-dessus du point) quand la courbe
-  // passe pres du sommet d'une barre haute — sinon les deux textes se
-  // chevauchent (constate a l'ecran sur plusieurs mois).
-  const geom = rows.map((r, i) => {
-    const h = (r.sessions / maxSess) * (base - top);
-    const x = 52 + i * colW + colW * 0.18;
-    const w = colW * 0.64;
-    const barTopY = base - h;
-    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
-    const barLabelY = barTopY - 10;
-    const naturalPointLabelY = cy - 14;
-    const pointLabelY = Math.abs(naturalPointLabelY - barLabelY) < 26 ? barLabelY - 22 : naturalPointLabelY;
-    return { h, x, w, barTopY, cx, cy, barLabelY, pointLabelY };
-  });
-  const bars = rows.map((r, i) => {
-    const { h, x, w, barTopY, barLabelY } = geom[i];
-    return {
-      barFill: (v2Idx >= 0 && i > v2Idx) ? "#dde4ff" : "var(--soft3)",
-      ref: el => setAnimatedAttrs(el, { x: x.toFixed(1), y: barTopY.toFixed(1), width: w.toFixed(1), height: h.toFixed(1) }),
-      // {{ }} ne s'interpole pas dans le contenu d'un <text> SVG (deja
-      // rencontre pour perfRing/sparklines) : position ET texte poses ici,
-      // imperativement, comme partout ailleurs dans le fichier pour ce cas.
-      labelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", barLabelY.toFixed(1)); el.textContent = fmt(r.sessions); },
-      monthLabelRef: el => { if (!el) return; el.setAttribute("x", (x + w / 2).toFixed(1)); el.setAttribute("y", (base + 26).toFixed(1)); el.textContent = r.label; },
-    };
-  });
-  const points = rows.map((r, i) => {
-    const { cx, cy, pointLabelY } = geom[i];
-    return {
-      dotRef: el => setAnimatedAttrs(el, { cx: cx.toFixed(1), cy: cy.toFixed(1) }),
-      labelRef: el => { if (!el) return; el.setAttribute("x", cx.toFixed(1)); el.setAttribute("y", pointLabelY.toFixed(1)); el.textContent = dec(r.conv, 2) + " %"; },
-    };
-  });
-  const linePath = points.length ? rows.map((r, i) => {
-    const cx = 52 + i * colW + colW / 2, cy = base - (r.conv / maxConv) * (base - top);
-    return (i === 0 ? "M" : "L") + cx.toFixed(1) + "," + cy.toFixed(1);
-  }).join(" ") : "";
-  const lineRef = el => revealPath(el, linePath, 200, 900);
-  const v2X = v2Idx >= 0 && v2Idx < n - 1 ? (52 + (v2Idx + 1) * colW) : null;
-  const v2Ref = v2X == null ? null : el => setAnimatedAttrs(el, { x1: v2X.toFixed(1), x2: v2X.toFixed(1) });
-  // 4 reperes horizontaux, avec l'echelle sessions (gauche) et l'echelle
-  // conversion (droite) — valeurs reelles calculees a partir de maxSess/
-  // maxConv, pas des paliers "ronds" figes comme dans la maquette statique.
-  const gridLines = [0, 1, 2, 3].map(k => {
-    const y = base - (k / 3) * (base - top);
-    return {
-      lineRef: el => setAnimatedAttrs(el, { y1: y.toFixed(1), y2: y.toFixed(1) }),
-      sessLabelRef: el => { if (!el) return; el.setAttribute("y", (y + 4).toFixed(1)); el.textContent = fmt(Math.round(maxSess * k / 3)); },
-      convLabelRef: el => { if (!el) return; el.setAttribute("y", (y + 4).toFixed(1)); el.textContent = dec(maxConv / 1.15 * k / 3, 0) + " %"; },
-    };
-  });
-  // survol : mois + sessions reprise + taux de conversion -- demande du
-  // 10/08/2026 ("survoler les barres devrait afficher le volume").
-  const hoverRef = el => wireHoverTooltip(el, rows.map(r => ({
-    label: r.label,
-    lines: [
-      { name: "Sessions reprise", value: fmt(r.sessions), color: "var(--muted2)" },
-      { name: "Conversion", value: dec(r.conv, 2) + " %", color: "var(--pos)" },
-    ],
-  })));
-  return { bars, points, lineRef, v2Ref, hasV2Marker: v2X != null, gridLines, w: W, h: H, hoverRef };
-}
 function watchTrendValues(siteData, periodeRecente) {
   if (!siteData || !siteData.daily || !periodeRecente) return null;
   const [debutRecent, finRecent] = String(periodeRecente).split("..");
@@ -3191,7 +2160,16 @@ class Component extends DCLogic {
   /* ---------------------------- assistant multi-agent "Hermès" (Agent KAM) ---------------------------- */
   setChatInput(e) { this.setState({ chatInput: e.target.value }); }
   pickQuickQuestion(text) { this.setState({ chatInput: text }, () => this.sendChatMessage()); }
-  goToChatWith(text) { this.setState({ tab: "assistant" }, () => this.pickQuickQuestion(text)); }
+  // l'onglet KamIA plein ecran a ete retire du menu le 13/09/2026 (absent
+  // de la maquette de reference, qui ne montre KamIA qu'en bulle de chat
+  // flottante) -- ces boutons "poser la question" ouvrent donc desormais le
+  // vrai panneau flottant reel qui existe deja (Hermes β, hermes-agui.js,
+  // monte hors de cet arbre DSL) plutot que de basculer vers un onglet qui
+  // n'a plus de contenu.
+  goToChatWith(text) {
+    const fab = Array.from(document.querySelectorAll("body > button")).find(b => b.textContent === "Hermes β");
+    if (fab) fab.click();
+  }
   /* ---- historique des conversations KamIA -----------------------------------
    * Source de verite : /api/kamia-conversations (fichier par profil dans le
    * repo de donnees prive). localStorage sert de cache d'affichage (peinture
@@ -3784,7 +2762,6 @@ class Component extends DCLogic {
     const v = this._vals;
     for (const k of v.ga4Kpis || []) this.up(k.__el, k.__to, k.__fmt);
     for (const k of v.gscKpis || []) this.up(k.__el, k.__to, k.__fmt);
-    this.up(this._compEl, v.__compTo || 0, x => dec(x, 1));
     this.up(this._dailyAvgEl, v.__dailyAvgTo || 0, x => fmt(x));
   }
 
@@ -4513,8 +3490,7 @@ class Component extends DCLogic {
         chatConvList: [], hasChatConvList: false, noChatConvList: true, chatConvSyncLabel: "",
         chatAttachmentChips: [], hasChatAttachments: false, attachFiles: () => {},
         chatFileInputRef: () => {}, openChatFilePicker: () => {},
-        kamiaTab: { pick: () => {}, ref: () => {}, iconRef: () => {}, hasBadge: false, badgeText: "", badgeStyle: "", style: "flex:1;justify-content:center;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px" },
-        navGroups: [], sideNavItems: [], kamiaSideStyle: "",
+        sideNavItems: [],
         tabBarRef: () => {}, tabIndicatorRef: () => {},
         periods: [], marketChips: [], familyChips: [], brandRows: [],
         gscKpiClics: { card: "", value: "0", sparkColor: "", sparkRef: () => {}, deltaStyle: "", delta: "", note: "", ref: () => {} },
@@ -4552,13 +3528,12 @@ class Component extends DCLogic {
         kpiTrafficRef: () => {}, kpiTrafficDelta: { style: "", text: "" }, parentBars: [], hasParentBars: false,
         kpiRepriseRef: () => {}, kpiRepriseDelta: { style: "", text: "" }, repriseSparkRef: () => {}, repriseFillRef: () => {},
         kpiLeadsRef: () => {}, kpiLeadsDelta: { style: "", text: "" },
+        tbSiteCount: 0, tbBrandCount: 0, ecartGa4BoPct: "—", tbMobilePct: "—",
         leadsBars: [], hasLeadsBars: false, leadsAxisLeft: "", leadsAxisMid: "", leadsAxisMidStyle: "", leadsAxisRight: "",
         kpiLeadsGa4Ref: () => {}, kpiLeadsGa4Delta: { style: "", text: "" }, leadsGa4Bars: [], hasLeadsGa4Bars: false,
         kpiConvRef: () => {}, kpiConvDelta: { style: "", text: "" },
         convRankLabel: "", hasConvRankLabel: false, convMedianLabel: "", convBestLabel: "", convRankDeltaText: "", hasConvRankDelta: false, convRankDeltaStyle: "",
-        hasBrandRank: false, brandRankLabel: "", brandMedianLabel: "", brandBestLabel: "",
         seasonalityRows: [], hasSeasonality: false,
-        ruptureCards: [], hasRuptureModule: false,
         convFillPctStyle: "", hasConvMedianMarker: false, convMedianMarkerStyle: "",
         kpiDeviceRows: [], hasKpiDeviceRows: false, v2DateLabel: "",
         exportMenuOpen: false, toggleExportMenu: () => {}, closeExportMenu: () => {},
@@ -4582,17 +3557,10 @@ class Component extends DCLogic {
         toggleGa4Canaux: () => {}, toggleGa4Avance: () => {}, ga4CanauxOpen: true, ga4AvanceOpen: false,
         ga4CanauxChevronStyle: "", ga4AvanceChevronStyle: "",
         ga4DetailTab: "sources", ga4DetailTabs: [],
-        isGa4DetailSources: true, isGa4DetailCanaux: false, isGa4DetailDevice: false,
-        isGa4DetailCompletion: false, isGa4DetailBenchmark: false, isGa4DetailVolConv: false,
-        isGa4DetailRebond: false, isGa4DetailAudience: false, isGa4DetailSaisonnalite: false,
+        isGa4DetailSources: true, isGa4DetailCanaux: false, isGa4DetailDevice: false, isGa4DetailAudience: false,
         periodPickerTopLabel: "", periodRangeLabel: "", periodPickerCombinedLabel: "",
         sitePickerPillStyle: "", periodPickerPillStyle: "",
         pageTitleLabel: "", pageSubtitleLabel: "",
-        volConvChart: null, hasVolConvChart: false, volConvTotal: "0", volConvAvgConv: "0,00",
-        volConvLast: null, volConvProgress: "0,00", volConvLastLabel: "—", volConvLastMonthLabel: "",
-        rebondChart: null, hasRebondChart: false, rebondAvg: "0,00", rebondProgress: "0,00",
-        rebondLastLabel: "—", rebondLastMonthLabel: "", hasRebondWorstPage: false, rebondWorstPage: null,
-        hasRebondBestPage: false, rebondBestPage: null,
         refresh: () => {}, refreshLabel: st.refreshLabel, refreshBusy: st.refreshBusy,
         refreshBtnStyle: "position:relative;overflow:hidden;display:flex;align-items:center;background:#F5411E;border:none;border-radius:999px;padding:0 22px;height:50px;color:#ffffff;font-family:inherit;font-size:15.5px;font-weight:700;cursor:pointer;opacity:.6;transition:transform .18s ease,filter .18s ease;box-shadow:0 10px 28px -10px rgba(245,65,30,.9)",
         refreshBtnHover: "", refreshIconStyle: "", refreshTitle: "Chargement…", refreshProgressStyle: "",
@@ -4805,6 +3773,16 @@ class Component extends DCLogic {
     const cmpConvPct = cmp && cmp.reprise ? cmpGa4LeadsProxy / cmp.reprise * 100 : null;
     const leadsPerDay = agg.leads / days, cmpLeadsPerDay = cmp ? cmp.leads / days : null;
     const trafficPerDay = agg.traffic, cmpTraffic = cmp ? cmp.traffic : null;
+    // ecart honnete entre le proxy GA4 (evenement tradein_request) et le vrai
+    // total back-office (agg.leads) -- deux chiffres deja reels calcules
+    // ci-dessus, jamais une nouvelle donnee inventee.
+    const ecartGa4BoPct = agg.leads ? dec(Math.abs(ga4LeadsProxy - agg.leads) / agg.leads * 100, 1) + " %" : "—";
+    const tbBrandCount = new Set(ALL.map(marqueDeSite)).size;
+    const tbMobileRow = [...agg.device.entries()].reduce((acc, [k, v]) => {
+      const kl = String(k).toLowerCase();
+      if (kl.includes("mobile")) acc.mobile += v; acc.total += v; return acc;
+    }, { mobile: 0, total: 0 });
+    const tbMobilePct = tbMobileRow.total ? dec(tbMobileRow.mobile / tbMobileRow.total * 100, 0) + " %" : "—";
 
     const leadsDailySeries = Object.keys(agg.leadsDaily).sort().map(k => agg.leadsDaily[k]);
     const parentDailySeries = Object.keys(agg.trafficDaily).sort().map(k => agg.trafficDaily[k].parent);
@@ -4816,7 +3794,6 @@ class Component extends DCLogic {
     // Cout non negligeable (64 agregations) : seulement quand l'onglet Vue
     // d'ensemble est actif, pas a chaque rendu des autres onglets.
     let convRankLabel = "", convMedianLabel = "", convMedianVal = null, convBestVal = null, convRankDeltaText = "", convRankDeltaStyle = "", rang = 0;
-    let brandRankLabel = "", brandMedianLabel = "", brandBestLabel = "", brandTotal = 0, hasBrandRank = false;
     if (st.tab === "ga4") {
       const rankSites = (debut2, fin2, perimetre) => {
         const arr = (perimetre || ALL).map(n => {
@@ -4849,29 +3826,6 @@ class Component extends DCLogic {
         }
       }
 
-      // meme classement, restreint aux sites de la meme marque -- "8e sur
-      // 82" seul peut induire en erreur (le parc melange des marques de
-      // taille tres differente) ; "3e sur 9 sites Opel" est la comparaison
-      // qu'un KAM en charge d'une marque lit reellement. Reutilise
-      // rankSites() tel quel, juste applique a un perimetre filtre.
-      if (currentSite) {
-        const marqueActuelle = marqueDeSite(currentSite);
-        const memeMarque = ALL.filter(n => marqueDeSite(n) === marqueActuelle);
-        if (memeMarque.length > 1) {
-          const tauxMarque = rankSites(range.debut, range.fin, memeMarque);
-          const rangMarque = tauxMarque.findIndex(x => x.site === currentSite) + 1;
-          if (rangMarque > 0) {
-            hasBrandRank = true;
-            brandTotal = tauxMarque.length;
-            brandRankLabel = rangMarque + "e sur " + brandTotal + " sites " + marqueActuelle;
-            const mid = Math.floor(tauxMarque.length / 2);
-            const medianMarque = tauxMarque.length % 2
-              ? tauxMarque[mid].taux : (tauxMarque[mid - 1].taux + tauxMarque[mid].taux) / 2;
-            brandMedianLabel = "médiane " + marqueActuelle + " " + dec(medianMarque, 2) + " %";
-            brandBestLabel = "meilleur " + marqueActuelle + " " + dec(tauxMarque[0].taux, 2) + " %";
-          }
-        }
-      }
     }
 
     const rawSite = this.data[currentSite];
@@ -4913,56 +3867,6 @@ class Component extends DCLogic {
         };
       });
       hasSeasonality = sessJoursTotal >= 14; // au moins deux semaines completes pour que la moyenne par jour ait un sens
-    }
-
-    // ---- module "Rupture de tendance" : derniere semaine glissante vs
-    // moyenne/ecart-type des 8 semaines precedentes (z-score), sur
-    // l'historique complet du site (rawSite.daily/leads, independant de la
-    // periode choisie dans l'interface -- ce module lit l'etat recent du
-    // site, pas la fenetre d'ecran actuelle). detecteRupture()/serieHebdo()
-    // definis en haut de fichier, reutilisent agregeJours/agregeLeads deja
-    // ecrites pour la periode personnalisee de la modale V2.
-    let ruptureSessions = null, ruptureLeads = null, hasRuptureModule = false;
-    if (st.tab === "ga4" && currentSite && rawSite) {
-      const dailyRaw = rawSite.daily || {};
-      const joursIso = dailyRaw.d || [];
-      if (joursIso.length >= 35) { // ~5 semaines minimum pour que detecteRupture() ait de quoi travailler
-        const finIso = joursIso[joursIso.length - 1];
-        const semainesSessions = serieHebdo((d, f) => agregeJours(joursIso, dailyRaw.rep, d, f), finIso, 9);
-        const semainesLeads = serieHebdo((d, f) => agregeLeads(rawSite.leads, d, f), finIso, 9);
-        ruptureSessions = detecteRupture(semainesSessions);
-        ruptureLeads = detecteRupture(semainesLeads);
-        hasRuptureModule = !!(ruptureSessions || ruptureLeads);
-      }
-    }
-    const ruptureCards = [];
-    if (ruptureSessions) {
-      const r = ruptureSessions;
-      ruptureCards.push({
-        label: "Sessions reprise, dernière semaine",
-        valeur: fmt(r.derniere),
-        reference: "moyenne 8 sem. : " + fmt(Math.round(r.moyenne)),
-        statutText: !r.volumeOk ? "Volume trop faible pour conclure"
-          : r.significatif ? (r.z >= 0 ? "Au-dessus de la fourchette habituelle" : "En dessous de la fourchette habituelle")
-          : "Dans la fourchette habituelle",
-        statutStyle: "font-size:12px;font-weight:700;border-radius:100px;padding:5px 12px;display:inline-block;color:" +
-          (!r.volumeOk ? "var(--muted)" : r.significatif ? (r.z >= 0 ? "#0d9c6c" : "var(--neg)") : "var(--muted)") + ";background:" +
-          (!r.volumeOk ? "var(--soft)" : r.significatif ? (r.z >= 0 ? "var(--pos-bg)" : "var(--neg-bg)") : "var(--soft)"),
-      });
-    }
-    if (ruptureLeads) {
-      const r = ruptureLeads;
-      ruptureCards.push({
-        label: "Leads, dernière semaine",
-        valeur: fmt(r.derniere),
-        reference: "moyenne 8 sem. : " + fmt(Math.round(r.moyenne)),
-        statutText: !r.volumeOk ? "Volume trop faible pour conclure"
-          : r.significatif ? (r.z >= 0 ? "Au-dessus de la fourchette habituelle" : "En dessous de la fourchette habituelle")
-          : "Dans la fourchette habituelle",
-        statutStyle: "font-size:12px;font-weight:700;border-radius:100px;padding:5px 12px;display:inline-block;color:" +
-          (!r.volumeOk ? "var(--muted)" : r.significatif ? (r.z >= 0 ? "#0d9c6c" : "var(--neg)") : "var(--muted)") + ";background:" +
-          (!r.volumeOk ? "var(--soft)" : r.significatif ? (r.z >= 0 ? "var(--pos-bg)" : "var(--neg-bg)") : "var(--soft)"),
-      });
     }
 
     // ---- 4 cartes KPI "Vue d'ensemble" : la maquette donne un visuel
@@ -5093,50 +3997,6 @@ class Component extends DCLogic {
       const leadsTot = ((rawSite.leads || {})[m] || {}).total || 0;
       return { mois: m, label: moisAnneeLabel(m), sessions: sess, conv: sess ? leadsTot / sess * 100 : 0 };
     });
-    const v2MonthIdx = (rawSite && rawSite.v2_date) ? last12Months.indexOf(rawSite.v2_date.slice(0, 7)) : -1;
-    const volConvChart = buildVolumeConvChart(volConvRows, v2MonthIdx);
-    const hasVolConvChart = !!volConvChart && volConvChart.bars.length > 1;
-    const volConvTotal = fmt(volConvRows.reduce((s, r) => s + r.sessions, 0));
-    const volConvAvgConv = dec(volConvRows.length ? volConvRows.reduce((s, r) => s + r.conv, 0) / volConvRows.length : 0, 2);
-    const volConvLast = volConvRows.length ? volConvRows[volConvRows.length - 1] : null;
-    const volConvFirst = volConvRows.length ? volConvRows[0] : null;
-    const volConvProgress = (volConvLast && volConvFirst) ? dec(volConvLast.conv - volConvFirst.conv, 2) : "0,00";
-
-    // Taux de rebond (nouveau, 10/08/2026) : meme composant que Volume vs
-    // conversion tradein juste au-dessus (barres = sessions, courbe = %),
-    // juste reoriente sur rebondMonth. Meme perimetre 12 mois glissants,
-    // independant de la periode choisie en en-tete.
-    const rebondRows = last12Months.map(m => {
-      const rb = (rawSite.rebondMonth || {})[m];
-      return { mois: m, label: moisAnneeLabel(m), sessions: rb ? rb.sessions : 0, conv: rb ? rb.taux : 0 };
-    });
-    const rebondChart = buildVolumeConvChart(rebondRows, v2MonthIdx);
-    const hasRebondChart = !!rebondChart && rebondChart.bars.length > 1;
-    // moyenne/evolution : seulement les mois avec une vraie donnee rattrapee
-    // (rebondMonth est un champ tout nouveau, la plupart des sites n'ont
-    // encore que les 1-2 derniers mois) -- un mois sans donnee doit etre
-    // ignore, pas compte comme "0% de rebond" (ferait chuter artificiellement
-    // la moyenne, constate a l'ecran avant ce correctif : 3,77% affiche
-    // alors que les deux seuls mois reels etaient a ~22%).
-    const rebondRowsReelles = rebondRows.filter(r => !!(rawSite.rebondMonth || {})[r.mois]);
-    const rebondAvg = dec(rebondRowsReelles.length ? rebondRowsReelles.reduce((s, r) => s + r.conv, 0) / rebondRowsReelles.length : 0, 2);
-    const rebondLast = rebondRowsReelles.length ? rebondRowsReelles[rebondRowsReelles.length - 1] : null;
-    const rebondFirst = rebondRowsReelles.length ? rebondRowsReelles[0] : null;
-    const rebondProgress = (rebondLast && rebondFirst && rebondLast !== rebondFirst) ? dec(rebondLast.conv - rebondFirst.conv, 2) : "0,00";
-    // meilleure/pire page (dernier mois avec des pages) : reperes rapides
-    // sans devoir lire tout le graphe -- seuil de 100 sessions pour eviter
-    // qu'une page anecdotique (2 sessions, 1 rebond = 50%) ne remonte.
-    const rebondPagesLatest = (() => {
-      for (let i = rebondRows.length - 1; i >= 0; i--) {
-        const rb = (rawSite.rebondMonth || {})[rebondRows[i].mois];
-        if (rb && rb.pages && rb.pages.length) return rb.pages;
-      }
-      return [];
-    })();
-    const rebondPagesRanked = rebondPagesLatest.filter(p => p.sessions >= 100).slice().sort((a, b) => b.tauxRebond - a.tauxRebond);
-    const rebondWorstPage = rebondPagesRanked.length ? rebondPagesRanked[0] : null;
-    const rebondBestPage = rebondPagesRanked.length ? rebondPagesRanked[rebondPagesRanked.length - 1] : null;
-
     // canal : top 4 + Autres, courbes lissees a partir des vraies donnees
     const joursCanal = Object.keys(agg.canal).sort();
     const totalParCanal = {};
@@ -6085,20 +4945,6 @@ class Component extends DCLogic {
     } : null;
     const hasV2Modal = !!v2Modal;
 
-    // jauge "Taux de completion" : arc simple (comme la maquette), sans le
-    // repere "objectif" fictif (aucune cible configuree nulle part -> on
-    // laisse l'arc parler seul plutot que d'inventer un chiffre a cote).
-    const compPct = agg.funnelSteps && agg.funnelSteps.length ? (agg.funnelSteps[agg.funnelSteps.length-1].users / (agg.funnelSteps[0].users || 1) * 100) : 0;
-    const gaugeFrac = Math.max(0, Math.min(1, compPct / 100));
-    // demi-cercle centre (100,106) rayon 80, de 180deg (point 20,106) a 0deg
-    // (point 180,106) en passant par le sommet (90deg) -- theta decroit avec
-    // la fraction d'avancement, comme le trace SVG relatif de la maquette.
-    const gaugeTheta = Math.PI * (1 - gaugeFrac);
-    const gaugeEndX = 100 + 80 * Math.cos(gaugeTheta);
-    const gaugeEndY = 106 - 80 * Math.sin(gaugeTheta);
-    const gaugeArcRef = el => setAnimatedAttrs(el, { d: "M20 106a80 80 0 0 1 " + (gaugeEndX - 20).toFixed(1) + " " + (gaugeEndY - 106).toFixed(1) });
-    const gaugeDotRef = el => setAnimatedAttrs(el, { cx: gaugeEndX.toFixed(1), cy: gaugeEndY.toFixed(1) });
-
     // leads par projet d'achat : 4 categories semantiques fixes (comme la
     // maquette), pas une palette generique qui tourne — VN/VO/VD sont des
     // codes reels de notre pipeline, tout le reste (y compris "sans projet
@@ -6416,7 +5262,6 @@ class Component extends DCLogic {
     const gscTopInsight = agg.insightsRech[0];
     const gscHeadlineInsight = gscTopInsight ? gscTopInsight.titre + " — " + gscTopInsight.detail : "Pas assez de tendance confirmée sur la période pour un insight fiable.";
 
-    this._compEl = el => { this.__compEl = el; if (el) this.up(el, compPct, x => dec(x,1)); };
     this._dailyAvgEl = el => { this.__dailyAvgEl = el; if (el) this.up(el, dailyAvg, x => fmt(x)); };
 
     const chatMessages = st.chatMessages.map(m => {
@@ -6757,12 +5602,6 @@ class Component extends DCLogic {
       tableau: '<img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="17" height="17" style="display:block;object-fit:contain">',
       compare: '<svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M4 3v11a2 2 0 0 0 2 2h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M7 12l3-3 2.5 2.5L17 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     };
-    const TAB_BADGE_STYLE = {
-      pos: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--pos-bg);color:var(--pos)",
-      neg: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--neg-bg);color:var(--neg)",
-      warn: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:var(--warn-bg);color:var(--warn)",
-      accent: "font-size:11px;font-weight:800;letter-spacing:.01em;border-radius:999px;padding:3px 8px;white-space:nowrap;background:rgba(139,92,246,.14);color:#8b5cf6",
-    };
     // mega-menu (10/08/2026, demande explicite : "passer la barre en mega
     // menu, avec un onglet Google [Analytics/Search Console/PageSpeed] et
     // un onglet Analyse [Comparer/Comparaison V2]") -- la barre du haut
@@ -6774,6 +5613,12 @@ class Component extends DCLogic {
     // explicite : separer les leads back-office, ici, des leads GA4 restes
     // sur l'onglet Analytics). Meme icone (deja celle de Tableau Software,
     // coincidence gardee), desormais actif.
+    // Groupe unique "DATA" (comme la maquette source) : ces 4 destinations
+    // sont les seules qui existent dans le fichier de reference -- Comparer,
+    // Comparaison V2 (plein ecran) et KamIA (plein ecran) ont ete retires
+    // du menu le 13/09/2026 (la maquette n'a que GA4/Search Console/
+    // PageSpeed/Tableau comme pages, KamIA n'y est qu'une bulle de chat
+    // flottante -- deja fournie par le panneau "Hermes β", hermes-agui.js).
     const NAV_GROUP_DEFS = [
       {
         key: "google", label: "Google",
@@ -6782,13 +5627,6 @@ class Component extends DCLogic {
           { key: "gsc", label: "Search Console", desc: "Clics, impressions et position" },
           { key: "performance", label: "PageSpeed", desc: "Performance et vitesse de chargement", hasBadge: pagespeedMobileScore != null, badgeText: pagespeedMobileScore != null ? String(Math.round(pagespeedMobileScore)) : "", badgeLevel: pagespeedMobileScore == null ? "warn" : pagespeedMobileScore >= 90 ? "pos" : pagespeedMobileScore >= 50 ? "warn" : "neg" },
           { key: "tableau", label: "Tableau", desc: "Leads back-office, toutes marques" },
-        ],
-      },
-      {
-        key: "analyse", label: "Analyse",
-        items: [
-          { key: "compare", label: "Comparer", desc: "Plusieurs sites entre eux" },
-          { key: "v2", label: "Comparaison V2", desc: "Avant / après la bascule V2", hasBadge: hasV2, badgeText: hasV2 ? (v2DeltaPts >= 0 ? "+" : "") + dec(v2DeltaPts, 1) + " pts" : "", badgeLevel: v2DeltaPts >= 0 ? "pos" : "neg" },
         ],
       },
     ];
@@ -6810,78 +5648,6 @@ class Component extends DCLogic {
           (it.disabled ? "cursor:not-allowed;opacity:.45;background:transparent" : "cursor:pointer;" + (on ? "background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8" : "background:transparent")),
       };
     });
-    const kamiaSideStyle = "position:relative;width:44px;height:44px;border-radius:14px;border:none;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;" +
-      (st.navActiveTab === "assistant" ? "background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8" : "background:transparent");
-
-    // nav = pill grise pleine largeur, items a largeur egale (flex:1) et
-    // contenu centre. Le fond blanc + ombre de l'item actif n'est PAS pose
-    // par item (ca ferait un fondu de couleur) : c'est un seul element
-    // (tabIndicatorRef) qui GLISSE d'un item a l'autre -- chaque item ne
-    // porte plus que la couleur de son texte/icone, position:relative
-    // z-index:1 pour rester lisible par-dessus le pill qui glisse dessous.
-    const navItemStyle = on => "position:relative;z-index:1;display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;flex:1;justify-content:center;transition:color .25s ease;font-weight:" + (on ? "600" : "500") +
-      ";color:" + (on ? "#14161a" : "#6b7280");
-    // variante groupe de mega-menu : le bouton visible n'est plus lui-meme
-    // l'enfant flex direct de <nav> (un wrapper position:relative s'insere
-    // pour ancrer le panneau deroulant) -- position/z-index passent donc
-    // sur ce wrapper (voir wrapStyle plus bas), measure via tabRef() doit
-    // cibler CE wrapper pour que offsetLeft/offsetWidth restent relatifs a
-    // <nav>, pas au wrapper lui-meme.
-    const navGroupBtnStyle = on => "display:flex;align-items:center;gap:6px;width:100%;padding:9px 14px;border-radius:100px;font-size:13.5px;cursor:pointer;white-space:nowrap;justify-content:center;transition:color .25s ease;font-weight:" + (on ? "600" : "500") +
-      ";color:" + (on ? "#14161a" : "#6b7280") + ";border:none;background:transparent;font-family:inherit";
-    const navGroups = NAV_GROUP_DEFS.map(g => {
-      const on = g.items.some(it => !it.disabled && it.key === st.navActiveTab);
-      const open = st.navMenuOpen === g.key;
-      return {
-        key: g.key, label: g.label, open,
-        toggle: () => this.toggleNavMenu(g.key),
-        closeMenu: () => this.setState({ navMenuOpen: null }),
-        wrapRef: el => this.tabRef(el, g.key),
-        wrapStyle: "position:relative;flex:1;z-index:" + (open ? 63 : 1),
-        style: navGroupBtnStyle(on),
-        chevronStyle: "flex:none;transition:transform .2s ease;transform:rotate(" + (open ? "180deg" : "0deg") + ")",
-        items: g.items.map(it => {
-          const itOn = !it.disabled && st.navActiveTab === it.key;
-          return {
-            label: it.label, desc: it.desc, disabled: !!it.disabled,
-            pick: it.disabled ? (() => {}) : (() => this.switchTab(it.key)),
-            iconRef: el => { if (el) el.innerHTML = TAB_ICON_SVG[it.key]; },
-            hasBadge: !!it.hasBadge, badgeText: it.badgeText || "",
-            badgeStyle: TAB_BADGE_STYLE[it.badgeLevel] || "",
-            cardStyle: "width:186px;padding:14px;border-radius:16px;display:flex;flex-direction:column;gap:10px;transition:background .15s ease;font-family:inherit;text-align:left;border:none;" +
-              (it.disabled ? "cursor:not-allowed;opacity:.55;background:transparent"
-                : "cursor:pointer;background:" + (itOn ? "var(--soft2)" : "transparent")),
-          };
-        }),
-      };
-    });
-    const kamiaOn = st.navActiveTab === "assistant";
-    const kamiaTab = {
-      pick: () => this.switchTab("assistant"),
-      ref: el => this.tabRef(el, "assistant"),
-      // KamIA garde son propre logo (comme dans l'ancien front) plutot que
-      // l'icone generique -- meme orbe anime que le hero du chat (voir
-      // ~ligne 763, memes keyframes orbSpin/orbSpinRev/orbBreath/orbHue),
-      // juste redimensionne pour la barre de menu. Remplace le logo statique
-      // Hermes noir/blanc (HERMES_LOGO_CROP) le 12/08/2026, demande du meme
-      // jour ("le meme [orbe], anime dans le menu").
-      iconRef: el => {
-        if (!el) return;
-        el.innerHTML =
-          '<span style="position:relative;width:20px;height:20px;border-radius:50%;flex:none;display:inline-block;box-shadow:0 3px 8px -3px rgba(109,92,246,.55)">' +
-            '<span style="position:absolute;inset:-45%;border-radius:50%;opacity:.55;filter:blur(2px);background:radial-gradient(circle,rgba(124,58,237,.45),rgba(124,58,237,0) 70%);animation:orbBreath 4.5s ease-in-out infinite"></span>' +
-            '<span style="position:absolute;inset:0;border-radius:50%;overflow:hidden">' +
-              '<span style="position:absolute;inset:-20%;background:conic-gradient(from 0deg,#6d5cf6,#8ee7ff,#c084fc,#f472b6,#6d5cf6);animation:orbSpin 8s linear infinite,orbHue 10s ease-in-out infinite"></span>' +
-              '<span style="position:absolute;inset:0;background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.95),rgba(255,255,255,0) 55%)"></span>' +
-              '<span style="position:absolute;inset:0;background:radial-gradient(circle at 68% 78%,rgba(12,17,32,.35),rgba(12,17,32,0) 60%)"></span>' +
-            '</span>' +
-          '</span>';
-      },
-      hasBadge: watchConstatsCurrentSite > 0, badgeText: String(watchConstatsCurrentSite),
-      badgeStyle: TAB_BADGE_STYLE.accent,
-      style: navItemStyle(kamiaOn),
-    };
-
     // ---- rapport client (export CSV/PDF/PPT, onglet GA4) --------------
     // Source unique reutilisee par les trois formats d'export : memes
     // valeurs deja calculees et affichees a l'ecran plus haut dans cette
@@ -7022,7 +5788,7 @@ class Component extends DCLogic {
       : "Aucune donnée " + compareMetricLabel.toLowerCase() + " pour cette période sur les sites sélectionnés.";
 
     return {
-      navGroups, sideNavItems, kamiaSideStyle, kamiaTab, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
+      sideNavItems, periods, marketChips, familyChips, brandRows, channels, channelPaths, channelAxisLabels,
       convCanalRows, hasConvCanalRows, convDeviceLabels,
       canalBestLabel, hasCanalBestLabel, canalWorstLabel, hasCanalWorstLabel,
       compareMetrics, compareMetricLabel, compareGroupChips, compareSiteToggleRows, compareClear,
@@ -7127,40 +5893,27 @@ class Component extends DCLogic {
       // au lieu de cartes empilees separement.
       ga4DetailTab: st.ga4DetailTab,
       ga4DetailTabs: [
-        { key: "sources", label: "Sources" },
-        { key: "canaux", label: "Canaux" },
-        { key: "device", label: "Canal × device" },
-        { key: "completion", label: "Complétion" },
-        { key: "benchmark", label: "Benchmark" },
-        { key: "volconv", label: "Volume/conversion" },
-        { key: "rebond", label: "Rebond" },
-        { key: "audience", label: "Audience" },
-        { key: "saisonnalite", label: "Saisonnalité & rupture" },
+        { key: "sources", label: "Sources", pick: () => this.setState({ ga4DetailTab: "sources" }) },
+        { key: "canaux", label: "Canaux", pick: () => this.setState({ ga4DetailTab: "canaux" }) },
+        // "Avant/après V2" ne bascule pas de panneau -- le vrai module (avec
+        // vraies donnees agg.v2Steps) vit deja au-dessus, dans la carte
+        // "Parcours d'estimation" (#funnelAnchor) ; ce pill se contente d'y
+        // faire defiler, comme la maquette source ("Avant/après V2") sans
+        // dupliquer un contenu deja reel ailleurs sur la page.
+        { key: "v2", label: "Avant / après V2", pick: () => document.getElementById("funnelAnchor")?.scrollIntoView({ behavior: "smooth" }) },
+        { key: "device", label: "Canal × device", pick: () => this.setState({ ga4DetailTab: "device" }) },
+        { key: "audience", label: "Audience & saisonnalité", pick: () => this.setState({ ga4DetailTab: "audience" }) },
       ].map(t => ({
-        key: t.key, label: t.label,
-        pick: () => this.setState({ ga4DetailTab: t.key }),
+        key: t.key, label: t.label, pick: t.pick,
         style: "display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:13.5px;cursor:pointer;white-space:nowrap;border:none;font-family:inherit;" +
           (st.ga4DetailTab === t.key ? "background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)" : "background:transparent;color:#6d727a;font-weight:500"),
       })),
       isGa4DetailSources: st.ga4DetailTab === "sources",
       isGa4DetailCanaux: st.ga4DetailTab === "canaux",
       isGa4DetailDevice: st.ga4DetailTab === "device",
-      isGa4DetailCompletion: st.ga4DetailTab === "completion",
-      isGa4DetailBenchmark: st.ga4DetailTab === "benchmark",
-      isGa4DetailVolConv: st.ga4DetailTab === "volconv",
-      isGa4DetailRebond: st.ga4DetailTab === "rebond",
       isGa4DetailAudience: st.ga4DetailTab === "audience",
-      isGa4DetailSaisonnalite: st.ga4DetailTab === "saisonnalite",
       ga4CanauxChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.ga4CanauxOpen ? "180deg" : "0deg") + ")",
       ga4AvanceChevronStyle: "transition:transform .2s ease;transform:rotate(" + (st.ga4AvanceOpen ? "180deg" : "0deg") + ")",
-      volConvChart, hasVolConvChart, volConvTotal, volConvAvgConv, volConvLast, volConvProgress,
-      volConvLastLabel: volConvLast ? dec(volConvLast.conv, 2) + " %" : "—",
-      volConvLastMonthLabel: volConvLast ? volConvLast.label : "",
-      rebondChart, hasRebondChart, rebondAvg, rebondProgress,
-      rebondLastLabel: rebondLast ? dec(rebondLast.conv, 2) + " %" : "—",
-      rebondLastMonthLabel: rebondLast ? rebondLast.label : "",
-      hasRebondWorstPage: !!rebondWorstPage, rebondWorstPage: rebondWorstPage ? { page: rebondWorstPage.page, taux: dec(rebondWorstPage.tauxRebond, 1) + " %", sessions: fmt(rebondWorstPage.sessions) } : null,
-      hasRebondBestPage: !!rebondBestPage, rebondBestPage: rebondBestPage ? { page: rebondBestPage.page, taux: dec(rebondBestPage.tauxRebond, 1) + " %", sessions: fmt(rebondBestPage.sessions) } : null,
       hasGa4Insights: ga4Insights.length > 0, noGa4Insights: ga4Insights.length === 0,
       ga4Insights,
       hasGsc, noGsc: !hasGsc,
@@ -7199,20 +5952,17 @@ class Component extends DCLogic {
       kpiRepriseRef: el => { if (el) this.up(el, agg.reprise, fmt); }, kpiRepriseDelta: deltaBadge(agg.reprise, cmp && cmp.reprise, ""),
       repriseSparkRef, repriseFillRef,
       kpiLeadsRef: el => { if (el) this.up(el, agg.leads, fmt); }, kpiLeadsDelta: deltaBadge(agg.leads, cmp && cmp.leads, ""),
+      tbSiteCount: ALL.length, tbBrandCount, ecartGa4BoPct, tbMobilePct,
       leadsBars, hasLeadsBars: leadsBars.length > 0, leadsAxisLeft, leadsAxisMid, leadsAxisMidStyle, leadsAxisRight,
       kpiLeadsGa4Ref: el => { if (el) this.up(el, ga4LeadsProxy, fmt); }, kpiLeadsGa4Delta: deltaBadge(ga4LeadsProxy, cmp ? cmpGa4LeadsProxy : null, ""),
       leadsGa4Bars, hasLeadsGa4Bars: leadsGa4Bars.length > 0,
       kpiConvRef: el => { if (el) this.up(el, convPct, x => dec(x, 2) + " %"); }, kpiConvDelta: deltaBadge(convPct, cmpConvPct, "pts"),
       convRankLabel, hasConvRankLabel: !!convRankLabel, convMedianLabel, convBestLabel, convRankDeltaText, hasConvRankDelta: !!convRankDeltaText, convRankDeltaStyle,
-      hasBrandRank, brandRankLabel, brandMedianLabel, brandBestLabel,
       seasonalityRows, hasSeasonality,
-      ruptureCards, hasRuptureModule,
       convFillPctStyle: "position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:" + convFillPct + "%;background:linear-gradient(90deg,#c8a2ff,#8b5cf6);transition:width 1s cubic-bezier(.3,.8,.3,1)",
       hasConvMedianMarker: convMedianPct != null, convMedianMarkerStyle: "position:absolute;top:-5px;left:" + (convMedianPct || 0) + "%;width:3px;height:22px;border-radius:2px;background:#9aa0aa",
       kpiDeviceRows, hasKpiDeviceRows: kpiDeviceRows.length > 0,
-      compRef: this._compEl, dailyAvgRef: this._dailyAvgEl,
-      gaugeArcRef, gaugeDotRef,
-      convText: dec(convPct, 2) + " %", partText: dec(agg.traffic ? agg.reprise/agg.traffic*100 : 0, 1) + " %",
+      dailyAvgRef: this._dailyAvgEl,
       hasV2, noV2, v2SubLabel, v2BadgeStyle, v2BadgeText, v2DateLabel,
       exportMenuOpen: st.exportMenuOpen,
       toggleExportMenu: () => this.setState(s => ({ exportMenuOpen: !s.exportMenuOpen })),

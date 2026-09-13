@@ -17,13 +17,15 @@ test.beforeEach(async ({ context }) => {
 // verifier des couleurs CSS d'implementation (le curseur actif est un
 // element a part qui glisse sous les items, voir navItemStyle/
 // tabIndicatorRef dans index.html).
+// Comparer/Comparaison V2/KamIA ont ete retires du menu le 13/09/2026 --
+// absents de la maquette de reference (qui ne montre que GA4/Search
+// Console/PageSpeed/Tableau comme pages ; KamIA n'y est qu'une bulle de
+// chat flottante, deja couverte par le panneau "Hermes β" independant).
 const NAV_TABS = {
   "GA4": "L'essentiel",
   "Search Console": "Clics, impressions & position",
-  "Comparaison V2": "Rapport hebdomadaire V2",
   "PageSpeed": "Performance des sites de reprise",
   "Tableau": "Leads back-office",
-  "KamIA": "Comment puis-je t'aider",
 };
 // nav laterale a icones (refonte 09/09/2026, maquette "Analytics GA4 v2") :
 // remplace le mega-menu deroulant -- chaque destination est directement un
@@ -31,7 +33,7 @@ const NAV_TABS = {
 // besoin d'ouvrir un groupe avant de cliquer un onglet.
 const NAV_TITLE = {
   "GA4": "Analytics", "Search Console": "Search Console", "PageSpeed": "PageSpeed",
-  "Tableau": "Tableau", "Comparaison V2": "Comparaison V2", "KamIA": "KamIA",
+  "Tableau": "Tableau",
 };
 async function ouvrirOnglet(page, tab) {
   await page.locator(`nav button[title="${NAV_TITLE[tab]}"]`).first().click();
@@ -49,7 +51,7 @@ test.describe("chargement de l'application", () => {
     await expect(page.locator('img[alt="Converge"]').first()).toBeVisible();
     // nav laterale a icones : chaque destination est un bouton title="..."
     // directement visible et cliquable, plus de groupe a ouvrir avant.
-    for (const title of ["Analytics", "Search Console", "PageSpeed", "Tableau", "KamIA"]) {
+    for (const title of ["Analytics", "Search Console", "PageSpeed", "Tableau"]) {
       await expect(page.locator(`nav button[title="${title}"]`).first()).toBeVisible();
     }
 
@@ -111,10 +113,6 @@ test.describe("navigation entre onglets", () => {
       page.on("pageerror", (err) => pageErrors.push(err.message));
 
       await page.goto("/", { waitUntil: "networkidle" });
-      // mega-menu (10/08/2026) : un onglet groupe (GA4/Search Console/
-      // PageSpeed/Comparaison V2) n'est plus visible/cliquable directement
-      // dans la barre, il faut d'abord ouvrir son groupe -- voir
-      // ouvrirOnglet(). KamIA reste un item direct, inchange.
       await ouvrirOnglet(page, tab);
       // vue "tous les sites" par defaut : l'agregation sur 64 sites est
       // plus lourde qu'un site seul, attendre le vrai contenu plutot
