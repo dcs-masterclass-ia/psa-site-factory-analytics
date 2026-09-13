@@ -526,7 +526,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px">
               <div>
                 <div style="font-size:18px;font-weight:600;color:#121214">Clics, impressions &amp; position</div>
-                <div style="font-size:13.5px;color:#9a9fa6">Survolez la courbe pour lire les trois séries</div>
+                <div style="font-size:13.5px;color:#9a9fa6">{{ scTrendRangeLabel }}</div>
               </div>
               <span style="flex:1"></span>
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:16px;height:3px;border-radius:2px;background:#3b76e8"></span>Clics</span>
@@ -563,7 +563,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
             <div style="font-size:18px;font-weight:600;color:#121214">Pages</div>
-            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Search Console rapproché de GA4 par URL</div>
+            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Rapprochement GA4 par URL — non disponible depuis les données mensuelles stockées</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
@@ -578,7 +578,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
-            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond et conversion proviennent de GA4, rapprochés par URL. « — » signale un trafic insuffisant (&lt; 100 sessions) pour une valeur fiable.</div>
+            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Aucune ligne : ce rapprochement page × GA4 n'existe pas dans les données mensuelles stockées côté pipeline.</div>
             <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
               <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                 <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
@@ -1238,6 +1238,44 @@ class Component extends DCLogic {
     return arr;
   }
 
+  /* dernier jour ISO du mois "AAAA-MM" (Date.UTC(y,m,0) = jour 0 du mois
+     suivant = dernier jour du mois courant). */
+  finDuMois(mois) {
+    const [y,m] = mois.split('-').map(Number);
+    return new Date(Date.UTC(y, m, 0)).toISOString().slice(0,10);
+  }
+  /* searchMonth (reel, mensuel, GSC) : la donnee stockee n'a pas de
+     resolution jour -- un mois est retenu des qu'il chevauche
+     [debutIso,finIso], jamais interpole au jour. */
+  aggregateSearch(debutIso, finIso) {
+    const out = { clics:0, impressions:0, posSum:0, queries:new Map(), monthly:{} };
+    for (const s of this.state.sites) {
+      const d = this.data && this.data[s];
+      if (!d || !d.searchMonth) continue;
+      for (const mois of Object.keys(d.searchMonth)) {
+        if (mois === 'total') continue;
+        // pas de this.finDuMois() ici : aggregateSearch est aussi appelee
+        // via .call({state,data}, ...) (cf. mediane parc plus bas), un
+        // objet nu sans les methodes de l'instance reelle.
+        const [anMois,moisNum] = mois.split('-').map(Number);
+        const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
+        if (finMois < debutIso || debutMois > finIso) continue;
+        const sm = d.searchMonth[mois];
+        out.clics += sm.clics||0; out.impressions += sm.impressions||0;
+        out.posSum += (sm.position||0) * (sm.impressions||0);
+        const cur = out.monthly[mois] || { clics:0, impressions:0, posSum:0 };
+        cur.clics += sm.clics||0; cur.impressions += sm.impressions||0; cur.posSum += (sm.position||0)*(sm.impressions||0);
+        out.monthly[mois] = cur;
+        for (const q of (sm.queries||[])) {
+          const qcur = out.queries.get(q.requete) || { name:q.requete, clics:0, impressions:0, posSum:0 };
+          qcur.clics += q.clics||0; qcur.impressions += q.impressions||0; qcur.posSum += (q.position||0)*(q.impressions||0);
+          out.queries.set(q.requete, qcur);
+        }
+      }
+    }
+    return out;
+  }
+
   fmt(n){ return Math.round(n).toLocaleString('fr-FR').replace(/ |,/g,' '); }
   span(){ return Math.abs(this.state.to-this.state.from)+1; }
   scopeSites(){
@@ -1565,36 +1603,81 @@ class Component extends DCLogic {
       }
     }
 
-    // ---------- Search Console ----------
-    const scClicksV=12480*f, scImprV=366200*f;
+    // ---------- Search Console (reel : searchMonth, mensuel -- jamais de
+    // resolution jour interpolee, cf. api/gsc-compare.js) ----------
+    const searchAgg = this.aggregateSearch(debut, fin);
+    const searchCmp = cmpRange ? this.aggregateSearch(cmpRange.debut, cmpRange.fin) : null;
+    const scCtr = searchAgg.impressions ? searchAgg.clics/searchAgg.impressions*100 : 0;
+    const scPos = searchAgg.impressions ? searchAgg.posSum/searchAgg.impressions : null;
+    const scCtrCmp = searchCmp && searchCmp.impressions ? searchCmp.clics/searchCmp.impressions*100 : null;
+    const scPosCmp = searchCmp && searchCmp.impressions ? searchCmp.posSum/searchCmp.impressions : null;
+    const posDeltaBadge = (now, prev) => {
+      if (prev == null || now == null) return { style:'font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;color:#9a9fa6;background:#f2f2f4', text:'—' };
+      const gain = prev-now, up = gain >= 0;
+      return { style: badge('', up), text: (up?'↑ ':'↓ ')+dec(Math.abs(gain),1) };
+    };
+    let scCtrMedianLabel = 'médiane parc indisponible';
+    if (this._allSites && this._allSites.length) {
+      const ctrParc = this._allSites.map(n => {
+        const a = this.aggregateSearch.call({ state:{sites:[n]}, data:this.data }, debut, fin);
+        return a.impressions ? a.clics/a.impressions*100 : null;
+      }).filter(x => x != null).sort((a,b)=>a-b);
+      if (ctrParc.length) {
+        const mid = Math.floor(ctrParc.length/2);
+        const med = ctrParc.length%2 ? ctrParc[mid] : (ctrParc[mid-1]+ctrParc[mid])/2;
+        scCtrMedianLabel = 'médiane parc '+dec(med,2)+' %';
+      }
+    }
+    const monthsSelKeys = Object.keys(searchAgg.monthly).sort();
+    const padTo2 = arr => arr.length>=2 ? arr : (arr.length===1 ? [arr[0],arr[0]] : [0,0]);
     const scKpis=[
-      {label:'Clics',value:this.fmt(scClicksV),delta:'↑ 9,2 %',deltaStyle:badge('',true),
-       spark:this.spark([9.1,9.8,10.2,10.9,11.4,11.9,12.5],'#3b76e8',200),note:'moy. '+this.fmt(scClicksV/this.span())+' / jour'},
-      {label:'Impressions',value:this.fmt(scImprV),delta:'↑ 12,4 %',deltaStyle:badge('',true),
-       spark:this.spark([280,292,301,318,330,344,366],'#7c63ee',200),note:'moy. '+this.fmt(scImprV/this.span())+' / jour'},
-      {label:'CTR',value:'3,41 %',delta:'↓ 0,18 pt',deltaStyle:badge('',false),
-       spark:this.spark([3.8,3.7,3.66,3.6,3.52,3.46,3.41],'#d78b35',200),note:'médiane parc 2,96 %'},
-      {label:'Position moyenne',value:'12,4',delta:'↑ 1,3',deltaStyle:badge('',true),
-       spark:this.spark([15.1,14.6,14.2,13.8,13.2,12.8,12.4],'#3fae7a',200),note:'gagne 1,3 place sur la période'}
+      {label:'Clics',value:this.fmt(searchAgg.clics),...deltaBadgeAsKpi(deltaBadge(searchAgg.clics, searchCmp&&searchCmp.clics)),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].clics)),'#3b76e8'),note:'moy. '+this.fmt(searchAgg.clics/rangeDays)+' / jour'},
+      {label:'Impressions',value:this.fmt(searchAgg.impressions),...deltaBadgeAsKpi(deltaBadge(searchAgg.impressions, searchCmp&&searchCmp.impressions)),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].impressions)),'#7c63ee'),note:'moy. '+this.fmt(searchAgg.impressions/rangeDays)+' / jour'},
+      {label:'CTR',value:dec(scCtr,2)+' %',...deltaBadgeAsKpi(deltaBadge(scCtr, scCtrCmp, ' pt')),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.clics/mm.impressions*100:0;})),'#d78b35'),note:scCtrMedianLabel},
+      {label:'Position moyenne',value: scPos!=null? dec(scPos,1) : '—',...deltaBadgeAsKpi(posDeltaBadge(scPos, scPosCmp)),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.posSum/mm.impressions:0;})),'#3fae7a'),
+       note:(scPos!=null && scPosCmp!=null) ? ((scPosCmp-scPos>=0?'gagne ':'perd ')+dec(Math.abs(scPosCmp-scPos),1)+' place sur la période') : 'comparaison indisponible'}
     ];
 
-    // graphe combiné clics / impressions / position (hover)
-    const GW=1000,GH=300,GL=58,GR=54,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
-    const gDays=12;
-    const clicks=[380,412,396,441,468,452,489,512,496,530,552,518];
-    const impr=[10200,10900,10400,11600,12300,11900,12800,13400,13000,13900,14400,13600];
-    const pos=[15.1,14.8,14.9,14.2,13.8,14.0,13.4,12.9,13.1,12.6,12.2,12.4];
-    const maxC=600,maxI=16000,posMin=10,posMax=16;
-    const gx=i=>GL+(i/(gDays-1))*gpw;
+    // graphe combiné clics / impressions / position -- vraies donnees
+    // mensuelles, sur les 12 derniers mois reels disponibles (independant
+    // du calendrier d'en-tete : la resolution GSC stockee est mensuelle,
+    // "12 derniers mois" est donc la vraie granularite de tendance, pas
+    // un choix arbitraire).
+    const searchTrend = this.aggregateSearch(this.decale(todayIso,-370), todayIso);
+    const trendMonthsKeys = Object.keys(searchTrend.monthly).sort().slice(-12);
+    const monthsForChart = trendMonthsKeys.length>=2 ? trendMonthsKeys : (trendMonthsKeys.length===1 ? [trendMonthsKeys[0],trendMonthsKeys[0]] : [null,null]);
+    const mval=(m,f2)=> m && searchTrend.monthly[m] ? f2(searchTrend.monthly[m]) : 0;
+    const clicks=monthsForChart.map(m=>mval(m,x=>x.clics));
+    const impr=monthsForChart.map(m=>mval(m,x=>x.impressions));
+    const pos=monthsForChart.map(m=>mval(m,x=>x.impressions?x.posSum/x.impressions:0));
+    const moisNoms=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const labels=monthsForChart.map(m=> m ? (moisNoms[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)) : '—');
+    const gDays=monthsForChart.length;
+    const scTrendRangeLabel = trendMonthsKeys.length
+      ? `${moisNoms[parseInt(trendMonthsKeys[0].slice(5,7),10)-1]} ${trendMonthsKeys[0].slice(2,4)} → ${moisNoms[parseInt(trendMonthsKeys[trendMonthsKeys.length-1].slice(5,7),10)-1]} ${trendMonthsKeys[trendMonthsKeys.length-1].slice(2,4)} · survolez la courbe`
+      : 'Aucune donnée mensuelle disponible';
+
+    const GW=1000,GH=300,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
+    const maxC=Math.max(1,...clicks), maxI=Math.max(1,...impr);
+    const posValsReal=pos.filter(v=>v>0);
+    const posMinR=posValsReal.length?Math.min(...posValsReal):0, posMaxR=posValsReal.length?Math.max(...posValsReal):1;
+    const posPad=Math.max(1,(posMaxR-posMinR)*0.2);
+    const posMin=Math.max(0,posMinR-posPad), posMax=posMaxR+posPad;
+    const gx=i=>GL+(gDays>1?i/(gDays-1):0)*gpw;
     const gyC=v=>GT+gph-(v/maxC)*gph;
     const gyI=v=>GT+gph-(v/maxI)*gph;
-    const gyP=v=>GT+((v-posMin)/(posMax-posMin))*gph;
+    const gyP=v=>GT+((v-posMin)/((posMax-posMin)||1))*gph;
     const gk=[];
-    [0,200,400,600].forEach((v,i)=>{
+    [0,.33,.66,1].forEach((frac,i)=>{
+      const v=Math.round(maxC*frac);
       gk.push(h('line',{key:'g'+i,x1:GL,y1:gyC(v),x2:GL+gpw,y2:gyC(v),stroke:'#f0f0f2',strokeWidth:1.5,strokeDasharray:'6 8'}));
-      gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+6,textAnchor:'end',fontSize:15,fill:'#9a9fa6',fontFamily:F},v));
+      gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+6,textAnchor:'end',fontSize:15,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
-    [10,13,16].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+12,y:gyP(v)+6,fontSize:15,fill:'#d78b35',fontFamily:F},'pos '+v)));
+    [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+6,fontSize:14,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
     let areaD='M'+gx(0)+','+gyI(impr[0]);
     for(let i=1;i<gDays;i++) areaD+=' L'+gx(i)+','+gyI(impr[i]);
     gk.push(h('path',{key:'area',d:areaD+' L'+gx(gDays-1)+','+(GT+gph)+' L'+gx(0)+','+(GT+gph)+' Z',fill:'#d7e4fb'}));
@@ -1604,10 +1687,9 @@ class Component extends DCLogic {
     let pD='M'+gx(0)+','+gyP(pos[0]);
     for(let i=1;i<gDays;i++) pD+=' L'+gx(i)+','+gyP(pos[i]);
     gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:2.6,strokeDasharray:'8 7',strokeLinecap:'round'}));
-    const labels=['1/09','4/09','7/09','10/09','13/09','16/09','19/09','22/09','25/09','27/09','29/09','30/09'];
     labels.forEach((l,i)=>gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-10,textAnchor:'middle',fontSize:14,fill:'#9a9fa6',fontFamily:F},l)));
     const hov=st.scHover;
-    if(hov!=null){
+    if(hov!=null && hov<gDays){
       gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1.5}));
       gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:6,fill:'#3b76e8',stroke:'#fff',strokeWidth:2.5}));
       gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:6,fill:'#e08a33',stroke:'#fff',strokeWidth:2.5}));
@@ -1617,78 +1699,61 @@ class Component extends DCLogic {
         h('text',{key:'d',x:16,y:26,fontSize:15,fill:'#b9bcc2',fontFamily:F},labels[hov]),
         h('text',{key:'c',x:16,y:50,fontSize:15,fill:'#8fb6ff',fontFamily:F},'Clics  '+this.fmt(clicks[hov])),
         h('text',{key:'i',x:16,y:71,fontSize:15,fill:'#cfd9ff',fontFamily:F},'Impressions  '+this.fmt(impr[hov])),
-        h('text',{key:'p',x:16,y:92,fontSize:15,fill:'#ffc98f',fontFamily:F},'Position  '+pos[hov].toFixed(1).replace('.',','))
+        h('text',{key:'p',x:16,y:92,fontSize:15,fill:'#ffc98f',fontFamily:F},'Position  '+dec(pos[hov],1))
       ]));
     }
     for(let i=0;i<gDays;i++){
-      gk.push(h('rect',{key:'hit'+i,x:gx(i)-gpw/(gDays-1)/2,y:GT,width:gpw/(gDays-1),height:gph,fill:'transparent',
+      gk.push(h('rect',{key:'hit'+i,x:gx(i)-(gDays>1?gpw/(gDays-1)/2:gpw/2),y:GT,width:gDays>1?gpw/(gDays-1):gpw,height:gph,fill:'transparent',
         onMouseEnter:()=>set({scHover:i}),onMouseLeave:()=>set({scHover:null}),style:{cursor:'crosshair'}}));
     }
     const scChart=h('svg',{viewBox:'0 0 '+GW+' '+GH,width:'100%',style:{display:'block',height:'auto'}},gk);
 
-    // requêtes
-    const queriesRaw=[
-      ['reprise voiture opel',2310,42800,4.8],['cote argus opel corsa',1760,38600,6.1],
-      ['estimation voiture gratuite',1420,51200,9.4],['vendre sa voiture portugal',1080,33700,12.8],
-      ['opel astra occasion prix',870,29400,14.6],['simulateur reprise auto',640,21500,16.2],
-      ['prix reprise opel mokka',512,19800,17.4],['racheter ma voiture',486,24100,21.3],
-      ['valeur argus gratuite',430,18700,19.8],['opel corsa occasion',388,26400,24.1],
-      ['estimation reprise concession',321,12900,15.7],['combien vaut ma voiture',298,17400,26.5],
-      ['reprise auto sans achat',264,9800,18.2],['cote vehicule occasion pt',241,11200,22.9]
-    ];
-    const mkRow=r=>({name:r[0],clicks:this.fmt(r[1]*f),impressions:this.fmt(r[2]*f),
-      ctr:(r[1]/r[2]*100).toFixed(2).replace('.',',')+' %',pos:r[3].toFixed(1).replace('.',',')});
-    const scQueries=queriesRaw.slice(0,6).map(mkRow);
-    const allQueries=queriesRaw.map(mkRow);
+    // requêtes reelles (searchMonth[mois].queries), agregees sur la
+    // periode d'en-tete selectionnee et sur les sites du perimetre.
+    const mkRow=r=>({name:r.name,clicks:this.fmt(r.clics),impressions:this.fmt(r.impressions),
+      ctr:r.impressions?dec(r.clics/r.impressions*100,2)+' %':'—',pos:r.impressions?dec(r.posSum/r.impressions,1):'—'});
+    const queriesSorted=Array.from(searchAgg.queries.values()).sort((a,b)=>b.clics-a.clics);
+    const scQueries=queriesSorted.slice(0,6).map(mkRow);
+    const allQueries=queriesSorted.map(mkRow);
 
-    // pages + rapprochement GA4
-    const pagesRaw=[
-      ['/estimation-gratuite',4120,96400,6.2,21.3,5.14,true],
-      ['/cote-vehicule',2980,88100,8.4,38.6,2.41,true],
-      ['/reprise/simulateur',1840,61300,11.7,74.8,1.12,true],
-      ['/blog/prix-occasion',1420,54800,15.2,68.2,0.34,true],
-      ['/vehicules-occasion',1130,41900,18.6,52.4,0.88,true],
-      ['/agences/porto',180,7400,26.4,0,0,false]
-    ];
-    const scPages=pagesRaw.map(r=>({
-      name:r[0],clicks:this.fmt(r[1]*f),impressions:this.fmt(r[2]*f),
-      ctr:(r[1]/r[2]*100).toFixed(2).replace('.',',')+' %',pos:r[3].toFixed(1).replace('.',','),
-      bounce:r[6]?r[4].toFixed(1).replace('.',',')+' %':'—',
-      bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(!r[6]?'#c2c5cb':r[4]>65?'#a33c39':r[4]<35?'#2b8f62':'#2f2f33'),
-      conv:r[6]?r[5].toFixed(2).replace('.',',')+' %':'—',
-      convStyle:'font-size:14px;font-weight:'+(r[6]?600:400)+';text-align:right;white-space:nowrap;color:'+(!r[6]?'#c2c5cb':r[5]>=2?'#2b8f62':'#121214')
+    // pages : aucun rapprochement page x GA4 (rebond/conversion par URL)
+    // n'existe dans les donnees mensuelles stockees -- jamais invente ici,
+    // la seule vraie source par page est l'appel API en direct plus bas.
+    const scPages=[];
+    const pageInsightText='Le rapprochement page × GA4 (rebond, conversion) n’existe pas dans les données Search Console mensuelles stockées. Utilisez la comparaison en direct ci-dessous (dimension « Pages ») pour un classement réel par URL.';
+
+    // comparateur — appel API en direct (api/gsc-compare.js, deja en prod) :
+    // une propriete GSC = un site precis, jamais une agregation
+    // multi-sites fabriquee cote client.
+    const cmpEnd=st.cmpEnd||todayIso, cmpStart=st.cmpStart||this.decale(todayIso,-29);
+    const cmpSingleSite = st.sites.length===1 ? st.sites[0] : null;
+    const cmpResult=this._gscCompareResult;
+    const cmpRows=((cmpResult && cmpResult.lignes) || []).map(r=>({
+      name:r.cle, a:this.fmt(r.clics), impressions:this.fmt(r.impressions),
+      ctr:r.impressions?dec(r.clics/r.impressions*100,2)+' %':'—', pos:dec(r.position,1),
+      posStyle:'font-size:14.5px;text-align:right;white-space:nowrap;color:#2f2f33',
+      delta:r.clicsDeltaPct!=null?(r.clicsDeltaPct>=0?'+':'')+Math.round(r.clicsDeltaPct)+' %':'—',
+      deltaStyle:'font-size:14.5px;font-weight:600;text-align:right;white-space:nowrap;color:'+(r.clicsDeltaPct>0?'#1f9254':r.clicsDeltaPct<0?'#a33c39':'#9a9fa6')
     }));
-    const pageInsightText='/reprise/simulateur capte 1 840 clics mais rebondit à 74,8 % pour 1,12 % de conversion : c’est la page la plus coûteuse en trafic gaspillé (≈ 1 376 sessions perdues sur la période).';
-
-    // comparateur — appel API en direct
-    const cmpStart=st.cmpStart||'2026-08-01', cmpEnd=st.cmpEnd||'2026-08-31';
-    const cmpBase = (st.cmpDim==='queries')
-      ? [['reprise voiture opel',2310,1980,42800,4.8],['cote argus opel corsa',1760,1840,38600,6.1],
-         ['estimation voiture gratuite',1420,1180,51200,9.4],['vendre sa voiture portugal',1080,1140,33700,12.8],
-         ['opel astra occasion prix',870,760,29400,14.6],['simulateur reprise auto',640,690,21500,16.2]]
-      : [['/estimation-gratuite',4120,3680,96400,6.2],['/cote-vehicule',2980,3140,88100,8.4],
-         ['/reprise/simulateur',1840,1420,61300,11.7],['/blog/prix-occasion',1420,1510,54800,15.2],
-         ['/vehicules-occasion',1130,980,41900,18.6],['/ (accueil)',990,1020,23700,9.1]];
-    const cmpRows=cmpBase.map(r=>{
-      const d=Math.round((r[1]-r[2])/r[2]*100);
-      return {name:r[0],a:this.fmt(r[1]),impressions:this.fmt(r[3]),
-        ctr:(r[1]/r[3]*100).toFixed(2).replace('.',',')+' %',
-        pos:r[4].toFixed(1).replace('.',','),
-        posStyle:'font-size:14.5px;text-align:right;white-space:nowrap;color:#2f2f33',
-        delta:(d>0?'+':'')+d+' %',
-        deltaStyle:'font-size:14.5px;font-weight:600;text-align:right;white-space:nowrap;color:'+(d>0?'#1f9254':d<0?'#a33c39':'#9a9fa6')};
-    });
     const running=st.apiState==='loading';
-    const runApi=()=>{
+    const runApi=async ()=>{
+      if (!cmpSingleSite) { this._gscCompareError='Sélectionnez un site précis (pas « Marché entier ») pour lancer une comparaison Search Console en direct.'; this.setState({apiState:'error'}); return; }
       set({apiState:'loading'});
-      setTimeout(()=>{
-        const fail=(this.state.cmpStart||'2026-08-01')>(this.state.cmpEnd||'2026-08-31');
-        this.setState({apiState:fail?'error':'done'});
-      },900);
+      const t0=Date.now();
+      try {
+        const r=await fetch('/api/gsc-compare',{method:'POST',headers:{'content-type':'application/json'},
+          body:JSON.stringify({site:cmpSingleSite,debut:this.state.cmpStart||cmpStart,fin:this.state.cmpEnd||cmpEnd,dimension:this.state.cmpDim==='queries'?'query':'page'})});
+        const json=await r.json();
+        if (!r.ok || json.error) { this._gscCompareError=(json && json.error)||('Erreur HTTP '+r.status); this.setState({apiState:'error'}); return; }
+        this._gscCompareResult=json; this._gscCompareMs=Date.now()-t0;
+        this.setState({apiState:'done'});
+      } catch(e) {
+        this._gscCompareError=String(e && e.message || e);
+        this.setState({apiState:'error'});
+      }
     };
     const dayDiff=(()=>{const a=new Date(cmpStart),b=new Date(cmpEnd);return Math.max(1,Math.round((b-a)/86400000)+1);})();
-    const prevStart=new Date(new Date(cmpStart)-dayDiff*86400000).toISOString().slice(0,10);
-    const prevEnd=new Date(new Date(cmpStart)-86400000).toISOString().slice(0,10);
+    const prevEnd=this.decale(cmpStart,-1), prevStart=this.decale(prevEnd,-(dayDiff-1));
 
     // ---------- PageSpeed ----------
     const ring=(score,color)=>{
@@ -1930,7 +1995,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, devicePerf,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scPages, scQueries, allQueries, pageInsightText,
+      scKpis, scChart, scTrendRangeLabel, scPages, scQueries, allQueries, pageInsightText,
       queryCount:allQueries.length,
       openQueries:()=>set({queriesModal:true}), closeQueries:()=>set({queriesModal:false}),
       queriesModal:!!st.queriesModal,
@@ -1942,10 +2007,10 @@ class Component extends DCLogic {
       onCmpEnd:e=>set({cmpEnd:e.target.value,apiState:'idle'}),
       cmpPeriodsLabel:'Période analysée '+cmpStart+' → '+cmpEnd+' ('+dayDiff+' j) · comparée à '+prevStart+' → '+prevEnd,
       cmpError:st.apiState==='error',
-      cmpErrorText:'searchanalytics.query a renvoyé 400 : la date de début est postérieure à la date de fin. Corrigez les dates et relancez.',
+      cmpErrorText:this._gscCompareError||'Erreur inconnue.',
       runApi, runLabel:running?'Appel en cours…':'Comparer',
       runStyle:`display:flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${running?'background:#eaeaee;color:#9a9fa6':'background:#141414;color:#fff'}`,
-      apiStatus:st.apiState==='done'?'Réponse API · 6 lignes · 420 ms':st.apiState==='loading'?'searchanalytics.query en cours…':st.apiState==='error'?'Échec de l’appel':'Aucun appel lancé — la donnée stockée est mensuelle',
+      apiStatus:st.apiState==='done'?`Réponse API · ${cmpRows.length} ligne${cmpRows.length>1?'s':''} · ${this._gscCompareMs||0} ms`:st.apiState==='loading'?'searchanalytics.query en cours…':st.apiState==='error'?'Échec de l’appel':'Aucun appel lancé — la donnée stockée est mensuelle',
       cmpReady:st.apiState==='done', cmpRows,
       rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1'}[cmpMode]}`,
       sourceName:srcNames[st.source],
