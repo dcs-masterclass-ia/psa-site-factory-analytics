@@ -384,13 +384,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <sc-if value="{{ isSources }}" hint-placeholder-val="{{ true }}">
           <div>
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Sources d'acquisition</div>
-                <div style="font-size:13.5px;color:#9a9fa6">Sessions, leads et part du trafic · cliquez un en-tête pour trier</div>
+                <div style="font-size:13.5px;color:#9a9fa6">Top 6 par sessions · cliquez un en-tête pour trier</div>
               </div>
-              <span style="font-size:13.5px;color:#6d727a">Paid Search est le premier canal (44 % des sessions)</span>
+              <span onClick="{{ openChannels }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ channelCount }} canaux</span>
             </div>
+            <div style="font-size:13.5px;color:#6d727a;margin-bottom:14px">{{ topChannelInsight }}</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
               <span onClick="{{ sortByName }}" style="cursor:pointer">Canal</span>
               <span onClick="{{ sortBySessions }}" style="text-align:right;cursor:pointer">Sessions</span>
@@ -727,6 +728,38 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
                 <span style="{{ r.bounceStyle }}">{{ r.bounce }}</span>
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ channelsModal }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px">
+        <div style="width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #f0f0f2">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:18px;font-weight:600;color:#121214">Tous les canaux</div>
+              <div style="font-size:13.5px;color:#9a9fa6">{{ channelCount }} canaux · {{ rangeLabel }}</div>
+            </div>
+            <span onClick="{{ closeChannels }}" style="width:36px;height:36px;flex:none;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b4b4f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </span>
+          </div>
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>Canal</span><span style="text-align:right">Sessions</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span>
+            </div>
+            <sc-for list="{{ allChannels }}" as="ch" hint-placeholder-count="12">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4">
+                <div style="min-width:0">
+                  <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
+                  <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ ch.bar }}"></div></div>
+                </div>
+                <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.sessions }}</span>
+                <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.leads }}</span>
+                <span style="font-size:15px;font-weight:500;color:#121214;text-align:right">{{ ch.share }}</span>
               </div>
             </sc-for>
           </div>
@@ -1569,10 +1602,15 @@ class Component extends DCLogic {
     const tot = Object.values(totalParCanal).reduce((a,b)=>a+b,0) || 1;
     const mxs = Math.max(1, ...tousCanaux.map(c=>totalParCanal[c]));
     const sorters={name:(a,b)=>a.name.localeCompare(b.name),sessions:(a,b)=>b.s-a.s,leads:(a,b)=>b.l-a.l};
-    const channels=tousCanaux.map(c=>({name:c,s:totalParCanal[c]})).sort((a,b)=>sorters[st.sort]({name:a.name,s:a.s,l:a.s},{name:b.name,s:b.s,l:b.s})).map(c=>({
+    const mkChannelRow=c=>({
       name:c.name, sessions:this.fmt(c.s), leads:'—', share:Math.round(c.s/tot*100)+' %',
       bar:`width:${(c.s/mxs*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8`
-    }));
+    });
+    const allChannels=tousCanaux.map(c=>({name:c,s:totalParCanal[c]})).sort((a,b)=>sorters[st.sort]({name:a.name,s:a.s,l:a.s},{name:b.name,s:b.s,l:b.s})).map(mkChannelRow);
+    const channels=allChannels.slice(0,6);
+    const topChannelInsight = tousCanaux.length
+      ? `${tousCanaux[0]} est le premier canal (${Math.round(totalParCanal[tousCanaux[0]]/tot*100)} % des sessions)`
+      : 'Aucune donnée de canal disponible sur la période.';
     const CHAN_COLORS=['#7c63ee','#3fae7a','#d78b35','#e8544a','#3b76e8'];
     const majeurs = tousCanaux.slice(0,4);
     const channelToggles=majeurs.map((name,i)=>({
@@ -1631,23 +1669,23 @@ class Component extends DCLogic {
     const sessByDow=Array(7).fill(0), ldsByDow=Array(7).fill(0), cntByDow=Array(7).fill(0);
     dates.forEach(iso=>{ const dow=(new Date(iso).getUTCDay()+6)%7; sessByDow[dow]+=agg.repriseDaily[iso]||0; ldsByDow[dow]+=agg.leadsDaily[iso]||0; cntByDow[dow]++; });
     const sess = sessByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0), lds = ldsByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0);
-    const SW=760,SH=300,SL=56,SR=20,STp=16,SB=40,spw=SW-SL-SR,sph=SH-STp-SB;
+    const SW=760,SH=210,SL=48,SR=20,STp=14,SB=30,spw=SW-SL-SR,sph=SH-STp-SB;
     const maxSess = Math.max(1,...sess);
     const sstep=spw/7, sk=[];
     [0,.33,.66,1].forEach((frac,i)=>{
       const v=maxSess*frac, yy=STp+sph-(v/maxSess)*sph;
-      sk.push(h('line',{key:'g'+i,x1:SL,y1:yy,x2:SL+spw,y2:yy,stroke:'#f0f0f2',strokeWidth:1.5}));
-      sk.push(h('text',{key:'t'+i,x:SL-12,y:yy+6,textAnchor:'end',fontSize:15,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
+      sk.push(h('line',{key:'g'+i,x1:SL,y1:yy,x2:SL+spw,y2:yy,stroke:'#f0f0f2',strokeWidth:1}));
+      sk.push(h('text',{key:'t'+i,x:SL-10,y:yy+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
     sess.forEach((v,i)=>{
       const bh=(v/maxSess)*sph;
-      sk.push(h('rect',{key:'b'+i,x:SL+i*sstep+sstep/2-24,y:STp+sph-bh,width:48,height:bh,rx:9,fill:i>4?'#e2dcfc':'#b6a5f8'}));
-      sk.push(h('text',{key:'x'+i,x:SL+i*sstep+sstep/2,y:SH-12,textAnchor:'middle',fontSize:16,fill:'#8a8f98',fontFamily:F},JOURS[i]));
+      sk.push(h('rect',{key:'b'+i,x:SL+i*sstep+sstep/2-20,y:STp+sph-bh,width:40,height:bh,rx:6,fill:i>4?'#e2dcfc':'#b6a5f8'}));
+      sk.push(h('text',{key:'x'+i,x:SL+i*sstep+sstep/2,y:SH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},JOURS[i]));
     });
     const maxLds=Math.max(1,...lds);
     let sd=`M${SL+sstep/2},${STp+sph-(lds[0]/maxLds)*sph}`;
     lds.forEach((v,i)=>{if(i)sd+=` L${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`;});
-    sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:3.2,strokeLinecap:'round',strokeLinejoin:'round'}));
+    sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
     const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,width:'100%',style:{display:'block',height:'auto'}},sk);
 
     const browserTotal = [...agg.browser.values()].reduce((a,v)=>a+v.sessions,0) || 1;
@@ -1755,13 +1793,13 @@ class Component extends DCLogic {
     const padTo2 = arr => arr.length>=2 ? arr : (arr.length===1 ? [arr[0],arr[0]] : [0,0]);
     const scKpis=[
       {label:'Clics',value:this.fmt(searchAgg.clics),...deltaBadgeAsKpi(deltaBadge(searchAgg.clics, searchCmp&&searchCmp.clics)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].clics)),'#3b76e8'),note:'moy. '+this.fmt(searchAgg.clics/rangeDays)+' / jour'},
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].clics)),'#3b76e8',300,70),note:'moy. '+this.fmt(searchAgg.clics/rangeDays)+' / jour'},
       {label:'Impressions',value:this.fmt(searchAgg.impressions),...deltaBadgeAsKpi(deltaBadge(searchAgg.impressions, searchCmp&&searchCmp.impressions)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].impressions)),'#7c63ee'),note:'moy. '+this.fmt(searchAgg.impressions/rangeDays)+' / jour'},
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].impressions)),'#7c63ee',300,70),note:'moy. '+this.fmt(searchAgg.impressions/rangeDays)+' / jour'},
       {label:'CTR',value:dec(scCtr,2)+' %',...deltaBadgeAsKpi(deltaBadge(scCtr, scCtrCmp, ' pt')),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.clics/mm.impressions*100:0;})),'#d78b35'),note:scCtrMedianLabel},
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.clics/mm.impressions*100:0;})),'#d78b35',300,70),note:scCtrMedianLabel},
       {label:'Position moyenne',value: scPos!=null? dec(scPos,1) : '—',...deltaBadgeAsKpi(posDeltaBadge(scPos, scPosCmp)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.posSum/mm.impressions:0;})),'#3fae7a'),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.posSum/mm.impressions:0;})),'#3fae7a',300,70),
        note:(scPos!=null && scPosCmp!=null) ? ((scPosCmp-scPos>=0?'gagne ':'perd ')+dec(Math.abs(scPosCmp-scPos),1)+' place sur la période') : 'comparaison indisponible'}
     ];
 
@@ -2070,7 +2108,9 @@ class Component extends DCLogic {
       {label:'Part avec immatriculation',value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(entryPct, entryPctCmp, ' pt'))},
       {label:'Part mobile',value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(mobilePct, mobilePctCmp, ' pt'))}
     ];
-    const tbSpark = safeSpark(leadsBuckets.length?leadsBuckets:[0,0,0,0,0,0,0],'#7c63ee');
+    // meme carte "hero" large que le taux de conversion GA4 -- meme
+    // correctif de largeur/hauteur de viewBox (cf. rateSpark).
+    const tbSpark = safeSpark(leadsBuckets.length?leadsBuckets:[0,0,0,0,0,0,0],'#7c63ee',600,110);
     const nbSitesTb = st.sites.length;
     const nbMarquesTb = new Set(st.sites.map(marqueDeSiteTb)).size;
     const perimetreTbLabel = nbSitesTb+' site'+(nbSitesTb>1?'s':'')+' · '+nbMarquesTb+' marque'+(nbMarquesTb>1?'s':'');
@@ -2349,7 +2389,10 @@ class Component extends DCLogic {
       kpis, kpiRate:dec(rate,2)+' %', rateSpark, kpiRateDelta,
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, channelToggles, multiChart, trendRangeLabel, v2, matrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, trendRangeLabel, v2, matrix, seasonChart, browsers, tabs,
+      channelCount:allChannels.length,
+      openChannels:()=>set({channelsModal:true}), closeChannels:()=>set({channelsModal:false}),
+      channelsModal:!!st.channelsModal,
       kamiaVigilance, kamiaRupture, kamiaOpportunite,
       isSources:st.tab==='sources', isTrend:st.tab==='trend', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
