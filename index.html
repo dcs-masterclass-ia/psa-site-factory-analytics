@@ -870,13 +870,23 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Parc — {{ nbSitesReal }} sites</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Marché</span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:15px;align-items:start">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
               <div style="font-size:16px;font-weight:600;color:#121214">Grille des sites</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:12px">Scores Lighthouse et tendance sur 30 jours</div>
+              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:12px">{{ psGridSubtitle }}</div>
+              <sc-if value="{{ psMarcheHasData }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:12px;padding:10px 12px;border-radius:12px;background:#f7f6fe">
+                <span style="font-size:13px;color:#4f43a6;font-weight:600;white-space:nowrap">{{ psMarcheLabel }}</span>
+                <span style="font-size:13px;color:#6d727a;white-space:nowrap">Mobile <b style="color:#121214">{{ psMarcheMobile }}</b></span>
+                <span style="font-size:13px;color:#6d727a;white-space:nowrap">Desktop <b style="color:#121214">{{ psMarcheDesktop }}</b></span>
+              </div>
+              </sc-if>
+              <sc-if value="{{ !psMarcheHasData }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:13px;color:#9a9fa6;margin-bottom:12px">{{ psMarcheLabel }}</div>
+              </sc-if>
               <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 92px 92px 110px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
                 <span>Site</span><span style="text-align:center">Mobile</span><span style="text-align:center">Desktop</span><span style="text-align:right">Tendance</span>
               </div>
@@ -2052,9 +2062,18 @@ class Component extends DCLogic {
         : {text:'Laboratoire',style:'font-size:12.5px;font-weight:600;color:#6d727a;background:#f2f2f4;border-radius:9px;padding:4px 10px;white-space:nowrap'};
     }
 
-    // parc : score courant + tendance reelle (vs le releve le plus proche
-    // d'il y a 30 jours dans l'historique de CE site) pour chaque vrai site.
-    const psSites=(this._allSites||[]).map(n=>{
+    // marche = pays du site selectionne (dernier mot du nom de site, meme
+    // convention que marqueDeSite/paysDeSite dans le bloc en-tete plus bas
+    // -- redefini localement pour eviter une dependance a une declaration
+    // plus loin dans le fichier, cf. le meme choix deja fait ailleurs).
+    const paysDeSitePs = n => n.split(' ').slice(-1)[0];
+    const marcheSite = psSite ? paysDeSitePs(psSite) : null;
+    const sitesDuMarche = marcheSite ? (this._allSites||[]).filter(n=>paysDeSitePs(n)===marcheSite) : [];
+
+    // grille : score courant + tendance reelle (vs le releve le plus proche
+    // d'il y a 30 jours dans l'historique de CE site), uniquement pour les
+    // sites du meme marche que le site selectionne -- jamais le parc entier.
+    const psSites=sitesDuMarche.map(n=>{
       const ps=this.data[n] && this.data[n].pagespeed;
       if (!ps || !ps.mobile || !ps.desktop) return null;
       let trend=null;
@@ -2073,6 +2092,24 @@ class Component extends DCLogic {
         _sort:ps.mobile.score
       };
     }).filter(Boolean).sort((a,b)=>a._sort-b._sort);
+    const psGridSubtitle = psSite
+      ? `Scores Lighthouse et tendance sur 30 jours · marché ${marcheSite}`
+      : 'Sélectionnez un site pour voir les sites de son marché.';
+
+    // moyenne reelle du marche (mobile/desktop), sur les memes sites que la
+    // grille -- jamais une moyenne sur tout le parc.
+    let psMarcheMoyenne = null;
+    if (psSites.length) {
+      const sum = psSites.reduce((a,s)=>({mobile:a.mobile+s.mobile, desktop:a.desktop+s.desktop}), {mobile:0,desktop:0});
+      psMarcheMoyenne = {
+        mobile: Math.round(sum.mobile/psSites.length),
+        desktop: Math.round(sum.desktop/psSites.length),
+        n: psSites.length
+      };
+    }
+    const psMarcheLabel = psSite
+      ? (psMarcheMoyenne ? `Moyenne du marché ${marcheSite} (${psMarcheMoyenne.n} sites)` : `Aucune donnée PageSpeed pour le marché ${marcheSite}`)
+      : 'Sélectionnez un site pour voir la moyenne de son marché.';
 
     // historique reel du site selectionne (8 derniers relevés reels, dates
     // reelles -- jamais des semaines fictives).
@@ -2409,7 +2446,9 @@ class Component extends DCLogic {
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
       isGA:st.source==='ga', isSC:st.source==='sc', isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
-      psVitals, psSites, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
+      psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
+      psMarcheLabel, psMarcheMobile: psMarcheMoyenne?psMarcheMoyenne.mobile:null, psMarcheDesktop: psMarcheMoyenne?psMarcheMoyenne.desktop:null,
+      psMarcheHasData: !!psMarcheMoyenne,
       psSiteLabel, psReleveLabel, psMethodLabel, psFieldBadge,
       nbSitesReal: allSitesReal.length,
       makeTicket, ticketOpen:!!st.ticket,
