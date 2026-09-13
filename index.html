@@ -575,7 +575,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:22px;padding:22px 24px">
             <div style="font-size:18px;font-weight:600;color:#121214">Pages</div>
-            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Rapprochement GA4 par URL — non disponible depuis les données mensuelles stockées</div>
+            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">Search Console rapproché de GA4 par URL</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
@@ -590,7 +590,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
-            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Aucune ligne : ce rapprochement page × GA4 n'existe pas dans les données mensuelles stockées côté pipeline.</div>
+            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond et conversion proviennent de GA4, rapprochés par URL. « — » signale un trafic insuffisant (&lt; 100 sessions) pour une valeur fiable.</div>
             <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
               <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                 <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
@@ -1286,6 +1286,41 @@ class Component extends DCLogic {
     return out;
   }
 
+  /* rapprochement page x GA4 (reel, existe bien dans les donnees stockees
+     -- searchMonth[mois].pages, en URL complete, et rebondMonth[mois].pages,
+     en pagePath GA4) : jamais recoupe au niveau requete/URL exacte (pas de
+     tracking par-requete cote GA4), seulement au niveau de la page. */
+  aggregatePages(debutIso, finIso) {
+    const pages = new Map();
+    const cur = path => { const c = pages.get(path) || { clics:0, impressions:0, posSum:0, sessions:0, rebondSum:0, conversions:0 }; pages.set(path, c); return c; };
+    for (const s of this.state.sites) {
+      const d = this.data && this.data[s];
+      if (!d) continue;
+      for (const mois of Object.keys(d.searchMonth || {})) {
+        if (mois === 'total') continue;
+        const [anMois,moisNum] = mois.split('-').map(Number);
+        const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
+        if (finMois < debutIso || debutMois > finIso) continue;
+        for (const p of ((d.searchMonth[mois]||{}).pages || [])) {
+          let path; try { path = new URL(p.page).pathname || '/'; } catch(e) { path = p.page; }
+          const c = cur(path);
+          c.clics += p.clics||0; c.impressions += p.impressions||0; c.posSum += (p.position||0)*(p.impressions||0);
+        }
+      }
+      for (const mois of Object.keys(d.rebondMonth || {})) {
+        if (mois === 'total') continue;
+        const [anMois,moisNum] = mois.split('-').map(Number);
+        const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
+        if (finMois < debutIso || debutMois > finIso) continue;
+        for (const p of ((d.rebondMonth[mois]||{}).pages || [])) {
+          const c = cur(p.page);
+          c.sessions += p.sessions||0; c.rebondSum += (p.tauxRebond||0)*(p.sessions||0); c.conversions += p.conversions||0;
+        }
+      }
+    }
+    return pages;
+  }
+
   /* leads back-office (leads[mois].{brand,project,device,entry}, reel --
      cf. pipeline/leads_extract.py) : jamais this.<methode> ici, appelee
      aussi via .call({state,data}, ...) pour les vues par pays/parc. */
@@ -1757,11 +1792,37 @@ class Component extends DCLogic {
     const scQueries=queriesSorted.slice(0,6).map(mkRow);
     const allQueries=queriesSorted.map(mkRow);
 
-    // pages : aucun rapprochement page x GA4 (rebond/conversion par URL)
-    // n'existe dans les donnees mensuelles stockees -- jamais invente ici,
-    // la seule vraie source par page est l'appel API en direct plus bas.
-    const scPages=[];
-    const pageInsightText='Le rapprochement page × GA4 (rebond, conversion) n’existe pas dans les données Search Console mensuelles stockées. Utilisez la comparaison en direct ci-dessous (dimension « Pages ») pour un classement réel par URL.';
+    // pages : rapprochement reel GA4 x Search Console par URL (searchMonth
+    // stocke desormais aussi .pages en URL complete, rebondMonth .pages en
+    // pagePath GA4 -- retrouve le 14/09/2026, non exploite jusqu'ici cote
+    // dashboard). Recoupement seulement au niveau de la page : pas de
+    // tracking par requete cote GA4, jamais invente.
+    const pagesAgg = this.aggregatePages(debut, fin);
+    const SEUIL_SESSIONS_FIABLE = 100;
+    const scPages = Array.from(pagesAgg.entries())
+      .filter(([,v]) => v.clics>0 || v.sessions>0)
+      .sort((a,b) => b[1].clics-a[1].clics)
+      .slice(0,20)
+      .map(([path,v]) => {
+        const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
+        const bounce = fiable ? v.rebondSum/v.sessions : null;
+        const conv = fiable ? v.conversions/v.sessions*100 : null;
+        return {
+          name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
+          ctr:v.impressions?dec(v.clics/v.impressions*100,2)+' %':'—',
+          pos:v.impressions?dec(v.posSum/v.impressions,1):'—',
+          bounce:bounce!=null?dec(bounce,1)+' %':'—',
+          bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
+          conv:conv!=null?dec(conv,2)+' %':'—',
+          convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214')
+        };
+      });
+    const pireePage = scPages.map(r=>({r, v:pagesAgg.get(r.name)}))
+      .filter(x=>x.v.sessions>=SEUIL_SESSIONS_FIABLE)
+      .sort((a,b)=>(b.v.rebondSum/b.v.sessions)-(a.v.rebondSum/a.v.sessions))[0];
+    const pageInsightText = pireePage
+      ? `${pireePage.r.name} capte ${pireePage.r.clicks} clics mais rebondit à ${dec(pireePage.v.rebondSum/pireePage.v.sessions,1)} % pour ${dec(pireePage.v.conversions/pireePage.v.sessions*100,2)} % de conversion : la page la plus fuyante parmi celles au trafic suffisant sur la période.`
+      : 'Aucune page avec assez de trafic (≥ 100 sessions) pour identifier une fuite fiable sur la période.';
 
     // comparateur — appel API en direct (api/gsc-compare.js, deja en prod) :
     // une propriete GSC = un site precis, jamais une agregation
