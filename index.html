@@ -116,7 +116,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
 
     <span style="flex:1"></span>
-    <div style="width:36px;height:36px;flex:none;border-radius:18px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14.5px;font-weight:600">MF</div>
+    <div style="width:36px;height:36px;flex:none;border-radius:18px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14.5px;font-weight:600" title="{{ userEmail }}">{{ userInitials }}</div>
   </div>
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column">
@@ -127,7 +127,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="font-size:13px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rangeLabel }}</div>
       </div>
 
-      <div style="position:relative">
+      <div style="position:relative" data-popover="scope">
         <div data-testid="scope-picker-toggle" onClick="{{ toggleBrand }}" style="{{ brandBtn }}">
           <span style="width:9px;height:9px;border-radius:5px;background:#7c63ee;flex:none"></span>
           {{ brandLabel }}
@@ -139,22 +139,35 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
             <input data-testid="scope-search-input" type="text" value="{{ scopeQuery }}" onInput="{{ onScopeSearch }}" placeholder="Marque, pays ou site…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214" />
           </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 10px 8px">
+            <span style="font-size:12px;color:#9a9fa6">{{ nbSitesSelectionnes }} / {{ nbSitesTotal }} sites</span>
+            <span style="display:flex;gap:10px">
+              <span onClick="{{ scopeSelectAll }}" style="font-size:12px;font-weight:600;color:#7c63ee;cursor:pointer">Tout</span>
+              <span onClick="{{ scopeSelectNone }}" style="font-size:12px;font-weight:600;color:#9a9fa6;cursor:pointer">Aucun</span>
+            </span>
+          </div>
           <div style="max-height:320px;overflow-y:auto">
-            <sc-for list="{{ scopeItems }}" as="s" hint-placeholder-count="8">
-              <div data-testid="scope-item" onClick="{{ s.pick }}" style="{{ s.style }}" style-hover="background:#f7f6fe">
-                <span style="{{ s.icon }}">{{ s.initial }}</span>
-                <span style="flex:1;min-width:0">
-                  <span style="display:block;font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
-                  <span style="display:block;font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.sub }}</span>
-                </span>
+            <sc-for list="{{ scopeGroups }}" as="g" hint-placeholder-count="6">
+              <div data-testid="scope-group" onClick="{{ g.pick }}" style="{{ g.rowStyle }}" style-hover="background:#f7f6fe">
+                <span style="{{ g.checkStyle }}">{{ g.checkMark }}</span>
+                <span style="flex:1;min-width:0;font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.label }}</span>
               </div>
+              <sc-for list="{{ g.sites }}" as="s" hint-placeholder-count="6">
+                <div data-testid="scope-item" onClick="{{ s.pick }}" style="{{ s.rowStyle }}" style-hover="background:#f7f6fe">
+                  <span style="{{ s.checkStyle }}">{{ s.checkMark }}</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
+                    <span style="display:block;font-size:12px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.sub }}</span>
+                  </span>
+                </div>
+              </sc-for>
             </sc-for>
           </div>
         </div>
         </sc-if>
       </div>
 
-      <div style="position:relative">
+      <div style="position:relative" data-popover="cal">
         <div data-testid="period-picker-toggle" onClick="{{ toggleCal }}" style="{{ calBtn }}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6d727a" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
           {{ dateLabel }}
@@ -1221,12 +1234,23 @@ class Component extends DCLogic {
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
             cmpCustomStart:null, cmpCustomEnd:null,
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
-            sites: [], compareMode: 'previous', booted: false };
+            sites: [], booted: false };
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   componentDidMount() {
     this.wireLogin();
     this.boot();
+    // ferme le selecteur de dates et le picker de sites au clic en dehors
+    // de leur fenetre (avant : seul un re-clic sur le bouton, ou choisir
+    // une valeur, les fermait -- pas un clic ailleurs sur la page).
+    this._onOutsideClick = e => {
+      if (e.target.closest && e.target.closest('[data-popover]')) return;
+      if (this.state.calOpen || this.state.brandOpen) this.setState({ calOpen:false, brandOpen:false });
+    };
+    document.addEventListener('mousedown', this._onOutsideClick);
+  }
+  componentWillUnmount() {
+    if (this._onOutsideClick) document.removeEventListener('mousedown', this._onOutsideClick);
   }
   lireEmailCookie() {
     const m = document.cookie.split("; ").find(c => c.startsWith("psf_user_email="));
@@ -1484,13 +1508,6 @@ class Component extends DCLogic {
     if (!a || !b) return 30;
     return Math.round((new Date(b+'T00:00:00Z')-new Date(a+'T00:00:00Z'))/86400000)+1;
   }
-  scopeSites(){
-    const s=this.state.scopeSel||'Marché entier';
-    const counts={'Marché entier':82,'France':28,'Portugal':17,'Espagne':21,'Italie':16,
-      'Opel':9,'Peugeot':14,'Citroën':11,'Renault':12,'Fiat':8,'Dacia':7,'Toyota':6};
-    return counts[s]||1;
-  }
-  f(){ return (this.span()/30)*(this.scopeSites()/82); }
   chipStyle(a){ return `display:flex;align-items:center;justify-content:center;height:34px;padding:0 15px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
   tabStyle(a){ return `display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
 
@@ -1532,7 +1549,11 @@ class Component extends DCLogic {
   }
 
   renderVals(){
-    const h=React.createElement,F='Poppins',st=this.state,set=o=>this.setState(o),f=this.f();
+    const h=React.createElement,F='Poppins',st=this.state,set=o=>this.setState(o);
+    // initiales reelles du compte connecte (badge en bas de la sidebar) --
+    // avant, "MF" etait fige en dur quel que soit qui etait connecte.
+    const userEmail = this._userEmail || '';
+    const userInitials = (userEmail.split('@')[0].split(/[._-]/).filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join('')) || '?';
     // ouverture/fermeture animees (modales "voir plus", panneau KamIA) :
     // garde le sc-if monte pendant la sortie (isClosing) pour laisser jouer
     // l'animation CSS avant de demonter reellement, ~180ms plus tard.
@@ -2319,30 +2340,80 @@ class Component extends DCLogic {
       : 'Aucune donnée d’appareil disponible sur la période.';
 
     // ---------- header : marque + calendrier ----------
-    // périmètre : une seule liste cherchable
-    // vrai perimetre : "Marché entier" (tous les vrais sites, agrege) ou un
-    // vrai site precis -- plus de facette marque/marche isolee pour cette
-    // premiere passe "vraies donnees" (simplification assumee, cf rapport).
+    // périmètre : arbre à cases à cocher groupé par marché (23/09/2026) --
+    // cocher un marché coche/décoche tous ses sites d'un coup ; plusieurs
+    // sites (ou marchés) cochés à la fois consolident leurs données en une
+    // seule vue, exactement comme aggregate() le fait déjà sur st.sites.
     const marqueDeSite = n => n.split(' ').slice(0,-1).join(' ');
     const paysDeSite = n => n.split(' ').slice(-1)[0];
     const allSitesReal = this._allSites || [];
     const nbMarques = new Set(allSitesReal.map(marqueDeSite)).size;
     const nbPays = new Set(allSitesReal.map(paysDeSite)).size;
-    const all=[{name:'Marché entier',sub:allSitesReal.length+' sites · '+nbMarques+' marques · '+nbPays+' pays',kind:'all'}];
-    allSitesReal.forEach(n=>all.push({name:n,sub:marqueDeSite(n)+' · '+paysDeSite(n),kind:'site'}));
+    const sitesParPaysScope = {};
+    allSitesReal.forEach(n=>{ const p=paysDeSite(n); (sitesParPaysScope[p]=sitesParPaysScope[p]||[]).push(n); });
+    const paysNomsScope = Object.keys(sitesParPaysScope).sort();
+    const selectedSet = new Set(st.sites||[]);
     const q=(st.scopeQuery||'').trim().toLowerCase();
     const norm=s=>s.toLowerCase().replace(/[·.]/g,' ');
     const words=q.split(/\s+/).filter(Boolean);
-    const filtered=all.filter(i=>words.every(w=>norm(i.name+' '+i.sub).includes(w)));
-    const scopeSel = st.sites.length>1 ? 'Marché entier' : (st.sites[0]||'Marché entier');
-    const iconBg={all:'#141414',market:'#3fae7a',brand:'#7c63ee',site:'#e8a33d'};
-    const scopeItems=filtered.slice(0,40).map(i=>({
-      name:i.name, sub:i.sub, initial:i.name.charAt(0).toUpperCase(),
-      icon:`width:30px;height:30px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;background:${iconBg[i.kind]}`,
-      style:`display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:12px;cursor:pointer;${scopeSel===i.name?'background:#f7f6fe':''}`,
-      pick:()=>set({sites: i.kind==='all' ? allSitesReal.slice() : [i.name], brandOpen:false, scopeQuery:''})
-    }));
-    const scopeLabel=scopeSel;
+    const matches=(name,sub)=>!words.length || words.every(w=>norm(name+' '+sub).includes(w));
+    const checkStyle=stateName=>`width:17px;height:17px;flex:none;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:1.5px solid ${stateName==='unchecked'?'#d5d5db':'#7c63ee'};background:${stateName==='checked'?'#7c63ee':stateName==='partial'?'#b6a5f8':'#fff'}`;
+    const checkMark=stateName=>stateName==='checked'?'✓':stateName==='partial'?'–':'';
+    const rowStyle=`display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:12px;cursor:pointer`;
+    const toggleSite=n=>()=>{ const s=new Set(st.sites); s.has(n)?s.delete(n):s.add(n); set({sites:[...s]}); };
+    const togglePays=pays=>()=>{
+      const sitesP=sitesParPaysScope[pays]||[];
+      const allChecked=sitesP.every(n=>selectedSet.has(n));
+      const s=new Set(st.sites);
+      sitesP.forEach(n=>allChecked?s.delete(n):s.add(n));
+      set({sites:[...s]});
+    };
+    const scopeGroups = paysNomsScope
+      .map(pays=>{
+        const sitesP = sitesParPaysScope[pays];
+        const sitesVisibles = sitesP.filter(n=>matches(n, marqueDeSite(n)+' '+pays));
+        return { pays, sitesP, sitesVisibles };
+      })
+      .filter(g => !words.length || g.sitesVisibles.length>0 || norm(g.pays).includes(q))
+      .map(g=>{
+        const sitesToShow = words.length ? g.sitesVisibles : g.sitesP;
+        const nbChecked = g.sitesP.filter(n=>selectedSet.has(n)).length;
+        const groupState = nbChecked===0?'unchecked':nbChecked===g.sitesP.length?'checked':'partial';
+        return {
+          pays:g.pays, label:`${g.pays} — ${g.sitesP.length} site(s)`,
+          rowStyle:`${rowStyle};font-weight:600`,
+          checkStyle:checkStyle(groupState), checkMark:checkMark(groupState),
+          pick:togglePays(g.pays),
+          sites: sitesToShow.map(n=>{
+            const checked = selectedSet.has(n);
+            return {
+              name:n, sub:marqueDeSite(n)+' · '+g.pays,
+              rowStyle:`${rowStyle};padding-left:26px`,
+              checkStyle:checkStyle(checked?'checked':'unchecked'), checkMark:checkMark(checked?'checked':'unchecked'),
+              pick:toggleSite(n)
+            };
+          })
+        };
+      });
+    // libellé du bouton : "Marché entier" si tout est coché, le nom du site
+    // si un seul, les marchés entiers cochés (s'ils forment exactement la
+    // sélection), sinon un simple décompte -- jamais une valeur trompeuse.
+    const allSelectedScope = allSitesReal.length>0 && st.sites.length===allSitesReal.length;
+    let scopeLabel;
+    if (allSelectedScope) scopeLabel='Marché entier';
+    else if (st.sites.length===0) scopeLabel='Aucun site';
+    else if (st.sites.length===1) scopeLabel=st.sites[0];
+    else {
+      const paysEntiersCoches = paysNomsScope.filter(p=>sitesParPaysScope[p].length>0 && sitesParPaysScope[p].every(n=>selectedSet.has(n)));
+      const nbSitesDansPaysCoches = paysEntiersCoches.reduce((a,p)=>a+sitesParPaysScope[p].length,0);
+      if (paysEntiersCoches.length>0 && nbSitesDansPaysCoches===st.sites.length) {
+        scopeLabel = paysEntiersCoches.length===1 ? paysEntiersCoches[0] : `${paysEntiersCoches.length} marchés (${st.sites.length} sites)`;
+      } else {
+        scopeLabel = `${st.sites.length} sites sélectionnés`;
+      }
+    }
+    const scopeSelectAll = ()=>set({sites:allSitesReal.slice()});
+    const scopeSelectNone = ()=>set({sites:[]});
     const ctrl=open=>`display:flex;align-items:center;gap:9px;height:34px;padding:0 14px;border:1px solid ${open?'#b6a5f8':'#ececee'};border-radius:12px;font-size:14.5px;color:#121214;cursor:pointer;white-space:nowrap;background:${open?'#f7f6fe':'#fff'}`;
     const weekDays=['L','M','M','J','V','S','D'].map((l,i)=>({l,key:i}));
     // vraie grille mensuelle navigable (corrige le calendrier bloque du
@@ -2471,7 +2542,9 @@ class Component extends DCLogic {
       onCmpCustomStart:e=>set({cmpCustomStart:e.target.value}),
       onCmpCustomEnd:e=>set({cmpCustomEnd:e.target.value}),
       compareRangeLabel:cmpLabels[cmpMode],
-      scopeItems, scopeQuery:st.scopeQuery||'',
+      scopeGroups, scopeSelectAll, scopeSelectNone, nbSitesSelectionnes:st.sites.length, nbSitesTotal:allSitesReal.length,
+      scopeQuery:st.scopeQuery||'',
+      userInitials, userEmail,
       onScopeSearch:e=>set({scopeQuery:e.target.value}),
       brandLabel:scopeLabel, brandOpen:st.brandOpen, brandBtn:ctrl(st.brandOpen),
       toggleBrand:()=>set({brandOpen:!st.brandOpen,calOpen:false}),

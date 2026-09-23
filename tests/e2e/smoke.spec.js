@@ -66,13 +66,17 @@ test.describe("selecteur de perimetre", () => {
     await page.goto("/", { waitUntil: "networkidle" });
     await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
 
+    // le picker est maintenant un arbre a cases a cocher (multi-selection) :
+    // "choisir un site precis" = tout decocher puis cocher seulement celui-la.
     await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.getByText("Aucun", { exact: true }).click();
     await page.locator('[data-testid="scope-search-input"]').fill("OPEL FR");
     await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
     await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("OPEL FR");
 
-    await page.locator('[data-testid="scope-picker-toggle"]').click();
-    await page.locator('[data-testid="scope-item"]').filter({ hasText: "Marché entier" }).first().click();
+    // le panneau reste ouvert apres avoir coche une case (multi-selection) --
+    // pas besoin de le rouvrir.
+    await page.getByText("Tout", { exact: true }).click();
     await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier");
   });
 
