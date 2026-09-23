@@ -142,6 +142,21 @@ SITE_EXTRACT = {
     "STELLANTIS &YOU IT":  [(115, 2014)],
     "STELLANTIS &YOU PL":  [(139, 2026)],
     "STELLANTIS &YOU PT":  [(116, 2026)],
+
+    # Fiat Pro et Leapmotor, identifies le 23/09/2026 en interrogeant l'API
+    # d'extraction elle-meme (colonnes PRODUCT_BRAND / COUNTRY / SITE NAME du
+    # CSV, meme methode que le reste de ce dictionnaire) -- aucun Site() GA4
+    # en face dans pipeline/sites.py pour l'instant, donc ces sites
+    # n'alimentent que le pipeline leads (leads_watch.py), pas encore le
+    # rapport hebdo/mensuel base sur data/*.json.
+    "FIAT PRO BE": [(140, 2026), (142, 2026)],
+    "FIAT PRO LU": [(141, 2026)],
+    "FIAT PRO FR": [(144, 2026)],
+    "FIAT PRO ES": [(158, 2026)],
+    "FIAT PRO PT": [(164, 2026)],
+
+    "LEAPMOTOR BE": [(247, 2026), (250, 2026)],
+    "LEAPMOTOR LU": [(249, 2026)],
 }
 
 # colonnes du CSV effectivement exploitees -- jamais les colonnes PII
