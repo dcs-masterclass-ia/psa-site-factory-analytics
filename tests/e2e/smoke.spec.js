@@ -154,3 +154,38 @@ test.describe("mode comparaison", () => {
     expect(pageErrors, `erreurs JS en mode comparaison : ${pageErrors.join(" | ")}`).toEqual([]);
   });
 });
+
+test.describe("pivot pages -> requêtes", () => {
+  test("cliquer une page ouvre le panneau (échec réseau géré sans crash)", async ({ page }) => {
+    const pageErrors = [];
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
+
+    // un seul site precis : le pivot exige une propriete GSC unique.
+    await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.getByText("Aucun", { exact: true }).click();
+    await page.locator('[data-testid="scope-search-input"]').fill("OPEL FR");
+    await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
+
+    await ouvrirOnglet(page, "Search Console");
+    await expect(page.locator("text=Clics, impressions & position")).toBeVisible({ timeout: 10_000 });
+
+    // clique le nom de la premiere ligne du tableau Pages (pas de testid dedie
+    // sur les lignes -- on cible le lien bleu cliquable directement).
+    const lienPage = page.locator("text=Search Console rapproché de GA4 par URL")
+      .locator("xpath=ancestor::div[contains(@style,'border-radius:16px')][1]")
+      .locator("div[style*='cursor:pointer']")
+      .first();
+    if (await lienPage.count()) {
+      await lienPage.click();
+      await expect(page.locator("text=Requêtes de la page")).toBeVisible({ timeout: 5_000 });
+      // en local (pas de fonctions Vercel), l'appel echoue proprement --
+      // le panneau doit afficher soit le chargement soit une erreur geree,
+      // jamais un crash JS.
+      await page.waitForTimeout(1500);
+    }
+    expect(pageErrors, `erreurs JS sur le pivot pages->requêtes : ${pageErrors.join(" | ")}`).toEqual([]);
+  });
+});

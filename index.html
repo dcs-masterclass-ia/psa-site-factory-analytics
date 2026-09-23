@@ -607,6 +607,39 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
+        <sc-if value="{{ pageQueriesOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
+            <div style="min-width:0">
+              <div style="font-size:16px;font-weight:600;color:#121214">Requêtes de la page</div>
+              <div style="font-size:13.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageQueriesPath }}</div>
+            </div>
+            <span onClick="{{ fermerRequetesPage }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Toutes les pages</span>
+          </div>
+          <sc-if value="{{ pageQueriesLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px 4px;text-align:center;font-size:14px;color:#9a9fa6">Chargement des requêtes en direct depuis Search Console…</div>
+          </sc-if>
+          <sc-if value="{{ pageQueriesError }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px;border-radius:12px;background:#fdecec;color:#a33c39;font-size:13.5px">{{ pageQueriesError }}</div>
+          </sc-if>
+          <sc-if value="{{ pageQueriesRows }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
+            <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
+          </div>
+          <sc-for list="{{ pageQueriesRows }}" as="r" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+              <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+              <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+              <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+              <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+              <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;font-weight:500;color:#121214"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
+            </div>
+          </sc-for>
+          </sc-if>
+          <div style="font-size:12px;color:#c2c5cb;margin-top:12px;font-style:italic">Appel en direct à l'API Search Console (pas de donnée page × requête déjà stockée) — limité à 50 requêtes.</div>
+        </div>
+        </sc-if>
+
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:15px;align-items:start">
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
@@ -661,12 +694,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
               <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
             </div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
-              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
+              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
             <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
-                <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+                <span onClick="{{ r.pick }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Voir les requêtes de cette page">{{ r.name }}</span>
+                <span>{{ r.sparkClicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
@@ -795,12 +829,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </span>
           </div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
-            <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:12px 4px;font-size:13.5px;color:#9a9fa6;position:sticky;top:0;background:#fff">
-              <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:12px 4px;font-size:13.5px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
             <sc-for list="{{ allPages }}" as="r" hint-placeholder-count="12">
-              <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
-                <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
+                <span onClick="{{ r.pick }}" style="font-size:14.5px;color:#3b76e8;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Voir les requêtes de cette page">{{ r.name }}</span>
+                <span>{{ r.sparkClicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
@@ -1302,7 +1337,7 @@ class Component extends DCLogic {
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
             cmpCustomStart:null, cmpCustomEnd:null,
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
-            sites: [], booted: false, compareOpen: false };
+            sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   componentDidMount() {
@@ -1515,7 +1550,7 @@ class Component extends DCLogic {
      tracking par-requete cote GA4), seulement au niveau de la page. */
   aggregatePages(debutIso, finIso) {
     const pages = new Map();
-    const cur = path => { const c = pages.get(path) || { clics:0, impressions:0, posSum:0, sessions:0, rebondSum:0, conversions:0 }; pages.set(path, c); return c; };
+    const cur = path => { const c = pages.get(path) || { clics:0, impressions:0, posSum:0, sessions:0, rebondSum:0, conversions:0, pageUrl:null, monthly:{} }; pages.set(path, c); return c; };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d) continue;
@@ -1528,6 +1563,10 @@ class Component extends DCLogic {
           let path; try { path = new URL(p.page).pathname || '/'; } catch(e) { path = p.page; }
           const c = cur(path);
           c.clics += p.clics||0; c.impressions += p.impressions||0; c.posSum += (p.position||0)*(p.impressions||0);
+          if (!c.pageUrl) c.pageUrl = p.page;
+          const cm = c.monthly[mois] || { clics:0, impressions:0 };
+          cm.clics += p.clics||0; cm.impressions += p.impressions||0;
+          c.monthly[mois] = cm;
         }
       }
       for (const mois of Object.keys(d.rebondMonth || {})) {
@@ -2210,13 +2249,61 @@ class Component extends DCLogic {
     const pImprAsc=pagesSorted.map(([,v])=>v.impressions).sort((a,b)=>a-b);
     const pClicsP25=percentile(pClicsAsc,25), pClicsP50=percentile(pClicsAsc,50);
     const pImprP25=percentile(pImprAsc,25), pImprP50=percentile(pImprAsc,50);
+    // pivot "requetes de cette page" (23/09/2026) : pas de donnees
+    // page x requete deja stockees (searchMonth garde les deux separement)
+    // -- appel live a l'API Search Console, meme pattern que runApi()/
+    // gsc-compare.js plus bas, reserve a un seul site precis (une page
+    // n'a de sens que rattachee a une propriete GSC precise).
+    const chargerRequetesPage = async (pageUrl, path) => {
+      const siteUnique = this.state.sites.length===1 ? this.state.sites[0] : null;
+      if (!siteUnique) { this._pageQueriesError='Sélectionnez un site précis (pas plusieurs marchés) pour explorer les requêtes d\'une page.'; this._pageQueriesPath=path; this.setState({pageQueriesState:'error'}); return; }
+      this._pageQueriesPath=path; this._pageQueriesResult=null;
+      this.setState({pageQueriesState:'loading'});
+      try {
+        const r=await fetch('/api/gsc-page-queries',{method:'POST',headers:{'content-type':'application/json'},
+          body:JSON.stringify({site:siteUnique,page:pageUrl,debut,fin})});
+        const json=await r.json();
+        if (!r.ok || json.error) { this._pageQueriesError=(json&&json.error)||('Erreur HTTP '+r.status); this.setState({pageQueriesState:'error'}); return; }
+        this._pageQueriesResult=json;
+        this.setState({pageQueriesState:'done'});
+      } catch(e) {
+        this._pageQueriesError=String(e&&e.message||e);
+        this.setState({pageQueriesState:'error'});
+      }
+    };
+    const fermerRequetesPage=()=>{ this._pageQueriesResult=null; this._pageQueriesPath=null; this.setState({pageQueriesState:'idle'}); };
+    const pageQueriesState = st.pageQueriesState||'idle';
+    const pageQueriesOpen = pageQueriesState!=='idle';
+    const pageQueriesLoading = pageQueriesState==='loading';
+    const pageQueriesError = pageQueriesState==='error' ? this._pageQueriesError : null;
+    const pageQueriesPath = this._pageQueriesPath||'';
+    let pageQueriesRows=[];
+    if (pageQueriesState==='done' && this._pageQueriesResult) {
+      const lignes=(this._pageQueriesResult.lignes||[]).slice(0,30);
+      const rqClicsAsc=lignes.map(l=>l.clics).sort((a,b)=>a-b), rqImprAsc=lignes.map(l=>l.impressions).sort((a,b)=>a-b);
+      const rqClicsP25=percentile(rqClicsAsc,25), rqClicsP50=percentile(rqClicsAsc,50);
+      const rqImprP25=percentile(rqImprAsc,25), rqImprP50=percentile(rqImprAsc,50);
+      pageQueriesRows = lignes.map(l=>({
+        name:l.cle, clicks:this.fmt(l.clics), impressions:this.fmt(l.impressions),
+        ctr:dec(l.ctr,2)+' %', pos:dec(l.position,1),
+        clicksDot:dotStyle(indicVolume(l.clics,rqClicsP25,rqClicsP50)),
+        imprDot:dotStyle(indicVolume(l.impressions,rqImprP25,rqImprP50)),
+        ctrDot:dotStyle(indicCtr(l.ctr,l.position)),
+        posDot:dotStyle(indicPos(l.position)),
+      }));
+    }
+
     const mkPageRow = ([path,v]) => {
       const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
       const bounce = fiable ? v.rebondSum/v.sessions : null;
       const conv = fiable ? v.conversions/v.sessions*100 : null;
       const ctrPct = v.impressions?v.clics/v.impressions*100:null, posVal = v.impressions?v.posSum/v.impressions:null;
+      // mini-sparkline clics/mois (granularite mensuelle uniquement,
+      // l'historique par page n'existe pas au jour dans searchMonth).
+      const moisTries = Object.keys(v.monthly).sort();
+      const sparkClicks = moisTries.length>=2 ? safeSpark(moisTries.map(m=>v.monthly[m].clics),'#3b76e8',64,22) : null;
       return {
-        name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
+        name:path, pageUrl:v.pageUrl, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
         ctr:ctrPct!=null?dec(ctrPct,2)+' %':'—',
         pos:posVal!=null?dec(posVal,1):'—',
         bounce:bounce!=null?dec(bounce,1)+' %':'—',
@@ -2228,6 +2315,8 @@ class Component extends DCLogic {
         ctrDot:dotStyle(indicCtr(ctrPct,posVal)),
         posDot:dotStyle(indicPos(posVal)),
         bounceDot:dotStyle(indicBounce(bounce)),
+        sparkClicks,
+        pick:()=>{ if (v.pageUrl) this.chargerRequetesPage(v.pageUrl, path); },
       };
     };
     const allPages = pagesSorted.map(mkPageRow);
@@ -2786,6 +2875,7 @@ class Component extends DCLogic {
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
       scKpis, scChart, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
+      pageQueriesOpen, pageQueriesLoading, pageQueriesError, pageQueriesPath, pageQueriesRows, fermerRequetesPage,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,
       queriesBackdropStyle:queriesStyles.backdrop, queriesPanelStyle:queriesStyles.panel,
