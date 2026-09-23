@@ -126,3 +126,31 @@ test.describe("selecteur de periode", () => {
     expect(rangeLabelApres).not.toEqual(rangeLabelAvant);
   });
 });
+
+test.describe("mode comparaison", () => {
+  test("comparer 2 sites affiche une colonne par site, sans erreur JS", async ({ page }) => {
+    const pageErrors = [];
+    page.on("pageerror", (err) => pageErrors.push(err.message));
+
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
+
+    // le bouton "Comparer" n'existe pas tant que 2-4 sites ne sont pas cochés.
+    await expect(page.locator('[data-testid="compare-toggle"]')).toHaveCount(0);
+
+    await page.locator('[data-testid="scope-picker-toggle"]').click();
+    await page.getByText("Aucun", { exact: true }).click();
+    await page.locator('[data-testid="scope-search-input"]').fill("OPEL FR");
+    await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
+    await page.locator('[data-testid="scope-search-input"]').fill("PEUGEOT FR");
+    await page.locator('[data-testid="scope-item"]').filter({ hasText: "PEUGEOT FR" }).first().click();
+
+    await expect(page.locator('[data-testid="compare-toggle"]')).toBeVisible();
+    await page.locator('[data-testid="compare-toggle"]').click();
+
+    await expect(page.locator("text=Comparaison GA4")).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator("text=OPEL FR").first()).toBeVisible();
+    await expect(page.locator("text=PEUGEOT FR").first()).toBeVisible();
+    expect(pageErrors, `erreurs JS en mode comparaison : ${pageErrors.join(" | ")}`).toEqual([]);
+  });
+});

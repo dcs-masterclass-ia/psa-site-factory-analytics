@@ -167,6 +167,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
       </div>
 
+      <sc-if value="{{ compareEligible }}" hint-placeholder-val="{{ false }}">
+      <div data-testid="compare-toggle" onClick="{{ toggleCompare }}" style="{{ compareBtnStyle }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v18M16 3v18M3 8h5M3 16h5M16 8h5M16 16h5"/></svg>
+        Comparer
+      </div>
+      </sc-if>
+
       <div style="position:relative" data-popover="cal">
         <div data-testid="period-picker-toggle" onClick="{{ toggleCal }}" style="{{ calBtn }}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6d727a" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
@@ -528,6 +535,29 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
       </sc-if>
 
+      <sc-if value="{{ isGACompare }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px;overflow-x:auto">
+          <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:16px">Comparaison GA4</div>
+          <div style="{{ compareGridStyle }}">
+            <div></div>
+            <sc-for list="{{ compareGaColumns }}" as="c" hint-placeholder-count="4">
+              <div style="{{ compareHeadStyle }}">
+                <div style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.site }}</div>
+                <div style="font-size:12px;color:#9a9fa6">{{ c.sub }}</div>
+              </div>
+            </sc-for>
+            <sc-for list="{{ compareGaRows }}" as="r" hint-placeholder-count="6">
+              <div style="{{ compareLabelStyle }}">{{ r.label }}</div>
+              <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+                <div style="{{ cell.style }}">{{ cell.value }}</div>
+              </sc-for>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isSC }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
@@ -824,6 +854,29 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
                 <div style="{{ row.d3 }}"><span style="font-size:15px;font-weight:600">{{ row.v3 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g3 }}</span></div>
               </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSCCompare }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px;overflow-x:auto">
+          <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:16px">Comparaison Search Console</div>
+          <div style="{{ compareGridStyle }}">
+            <div></div>
+            <sc-for list="{{ compareScColumns }}" as="c" hint-placeholder-count="4">
+              <div style="{{ compareHeadStyle }}">
+                <div style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.site }}</div>
+                <div style="font-size:12px;color:#9a9fa6">{{ c.sub }}</div>
+              </div>
+            </sc-for>
+            <sc-for list="{{ compareScRows }}" as="r" hint-placeholder-count="4">
+              <div style="{{ compareLabelStyle }}">{{ r.label }}</div>
+              <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
+                <div style="{{ cell.style }}">{{ cell.value }}</div>
+              </sc-for>
             </sc-for>
           </div>
         </div>
@@ -1234,7 +1287,7 @@ class Component extends DCLogic {
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
             cmpCustomStart:null, cmpCustomEnd:null,
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
-            sites: [], booted: false };
+            sites: [], booted: false, compareOpen: false };
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   componentDidMount() {
@@ -1581,6 +1634,66 @@ class Component extends DCLogic {
     const selFrom = st.from || this.decale(todayIso,-29), selTo = st.to || todayIso;
     const debut = selFrom<selTo?selFrom:selTo, fin = selFrom<selTo?selTo:selFrom;
     const rangeDays = Math.round((new Date(fin+'T00:00:00Z')-new Date(debut+'T00:00:00Z'))/86400000)+1;
+
+    // ---------- mode comparaison (jusqu'a 4 sites cote a cote, 23/09/2026) ----------
+    // Bouton explicite plutot qu'automatique (decision validee) : cocher
+    // plusieurs sites reste consolide par defaut (aggregate() somme deja
+    // dessus, inchange) -- "Comparer" bascule sur une vue par colonnes, une
+    // par site, sans jamais melanger les deux logiques.
+    const compareNomCourt = n => n.split(' ').slice(0,-1).join(' ');
+    const comparePaysCourt = n => n.split(' ').slice(-1)[0];
+    const compareEligible = st.sites.length>=2 && st.sites.length<=4;
+    const compareActive = compareEligible && st.compareOpen;
+    const compareBtnStyle = `display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;${compareActive?'background:#7c63ee;color:#fff':'background:#fff;border:1px solid #ececee;color:#121214'}`;
+    const toggleCompare = ()=>set({compareOpen:!st.compareOpen});
+    const compareCellStyle = missing=>`padding:10px 12px;border-bottom:1px solid #f2f2f4;display:flex;align-items:center;font-size:14.5px;font-weight:600;white-space:nowrap;color:${missing?'#c2c5cb':'#121214'};font-style:${missing?'italic':'normal'}`;
+    const compareLabelStyle = `padding:10px 12px;font-size:13.5px;color:#6d727a;border-bottom:1px solid #f2f2f4;display:flex;align-items:center;white-space:nowrap`;
+    const compareHeadStyle = `padding:0 12px 14px;border-bottom:2px solid #ececee`;
+
+    let compareGaColumns=[], compareGaRows=[], compareScColumns=[], compareScRows=[], compareGridStyle='';
+    if (compareActive) {
+      compareGridStyle = `display:grid;grid-template-columns:180px repeat(${st.sites.length},minmax(160px,1fr));min-width:${180+st.sites.length*170}px`;
+      // ----- GA4 : sessions, reprise, taux de conversion, puis chaque etape du tunnel -----
+      const gaPerSite = st.sites.map(n => ({ site:n, a: this.aggregate.call({state:{sites:[n]},data:this.data}, debut, fin) }));
+      compareGaColumns = gaPerSite.map(({site})=>({ site, sub:compareNomCourt(site)+' · '+comparePaysCourt(site) }));
+      const stepNames = [];
+      gaPerSite.forEach(({a})=>{ (a.funnelSteps||[]).forEach(s=>{ if (!stepNames.includes(s.step)) stepNames.push(s.step); }); });
+      compareGaRows = [
+        { label:'Sessions totales', cells: gaPerSite.map(({a})=>({ value:this.fmt(a.traffic+a.reprise), missing:false })) },
+        { label:'Sessions reprise', cells: gaPerSite.map(({a})=>({ value:this.fmt(a.reprise), missing:false })) },
+        { label:'Taux de conversion', cells: gaPerSite.map(({a})=>{
+            if (!a.funnelSteps || !a.funnelSteps.length) return { value:'Pas de donnée', missing:true };
+            const last = a.funnelSteps[a.funnelSteps.length-1].users;
+            return { value: (a.reprise ? dec(last/a.reprise*100,1) : '0') + ' %', missing:false };
+          }) },
+        ...stepNames.map(nom => ({
+          label: nom,
+          cells: gaPerSite.map(({a})=>{
+            const s = (a.funnelSteps||[]).find(x=>x.step===nom);
+            return s ? { value:this.fmt(s.users), missing:false } : { value:'Pas de donnée', missing:true };
+          })
+        }))
+      ];
+      // ----- Search Console : clics, impressions, CTR, position -----
+      const scPerSite = st.sites.map(n => {
+        const d = this.data && this.data[n];
+        const connecte = !!(d && d.searchMonth);
+        const a = connecte ? this.aggregateSearch.call({state:{sites:[n]},data:this.data}, debut, fin) : null;
+        return { site:n, a, connecte };
+      });
+      compareScColumns = scPerSite.map(({site})=>({ site, sub:compareNomCourt(site)+' · '+comparePaysCourt(site) }));
+      const scCell = (fn) => scPerSite.map(({a,connecte})=> !connecte || !a || !a.impressions ? { value:'Pas de donnée', missing:true } : { value:fn(a), missing:false });
+      compareScRows = [
+        { label:'Clics', cells: scCell(a=>this.fmt(a.clics)) },
+        { label:'Impressions', cells: scCell(a=>this.fmt(a.impressions)) },
+        { label:'CTR', cells: scCell(a=>dec(a.impressions?a.clics/a.impressions*100:0,2)+' %') },
+        { label:'Position moyenne', cells: scCell(a=>dec(a.impressions?a.posSum/a.impressions:0,1)) },
+      ];
+      // style resolu une fois par cellule (le template n'evalue pas de
+      // ternaire, seulement des chemins de propriete).
+      [...compareGaRows, ...compareScRows].forEach(r=>{ r.cells.forEach(c=>{ c.style = compareCellStyle(c.missing); }); });
+    }
+
     const agg = this.aggregate(debut, fin);
     const cmpMode = st.cmpMode||'previous';
     const cmpCustomOk = st.cmpCustomStart && st.cmpCustomEnd;
@@ -2551,7 +2664,11 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga', isSC:st.source==='sc', isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
+      isGACompare:st.source==='ga'&&compareActive, isSCCompare:st.source==='sc'&&compareActive,
+      compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
+      compareGaColumns, compareGaRows, compareScColumns, compareScRows, compareGridStyle,
+      compareHeadStyle, compareLabelStyle,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
       psMarcheLabel, psMarcheMobile: psMarcheMoyenne?psMarcheMoyenne.mobile:null, psMarcheDesktop: psMarcheMoyenne?psMarcheMoyenne.desktop:null,
       psMarcheHasData: !!psMarcheMoyenne,
