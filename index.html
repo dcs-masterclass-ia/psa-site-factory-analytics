@@ -596,9 +596,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span style="flex:1"></span>
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:16px;height:3px;border-radius:2px;background:#3b76e8"></span>Clics</span>
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:12px;height:12px;border-radius:4px;background:#d7e4fb"></span>Impressions</span>
+              <sc-if value="{{ scPosDispo }}" hint-placeholder-val="{{ true }}">
               <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:16px;height:0;border-top:3px dashed #e08a33"></span>Position</span>
+              </sc-if>
             </div>
             <div>{{ scChart }}</div>
+            <sc-if value="{{ scPosIndispo }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12px;color:#c2c5cb;margin-top:6px;font-style:italic">Position moyenne disponible uniquement en vue mensuelle (période &gt; 60 jours) — pas de donnée quotidienne stockée.</div>
+            </sc-if>
           </div>
         </div>
 
@@ -612,16 +617,21 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
               <span onClick="{{ openQueries }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ queryCount }} requêtes</span>
             </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:0 4px 6px;font-size:11.5px;color:#9a9fa6">
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            </div>
             <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
               <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
             </div>
             <sc-for list="{{ scQueries }}" as="r" hint-placeholder-count="6">
               <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
                 <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.clicks }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
-                <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.pos }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;font-weight:500;color:#121214"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
               </div>
             </sc-for>
             <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
@@ -646,17 +656,22 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
               <span onClick="{{ openPages }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ pageCount }} pages</span>
             </div>
+            <div style="display:flex;align-items:center;gap:14px;padding:0 4px 6px;font-size:11.5px;color:#9a9fa6">
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
+              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            </div>
             <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Conv. GA4</span>
             </div>
             <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
               <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
                 <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                <span style="font-size:14px;color:#2f2f33;text-align:right">{{ r.clicks }}</span>
-                <span style="font-size:14px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
-                <span style="font-size:14px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
-                <span style="font-size:14px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
-                <span style="{{ r.bounceStyle }}">{{ r.bounce }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
+                <span style="{{ r.bounceStyle }}"><span style="{{ r.bounceDot }}"></span>{{ r.bounce }}</span>
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
@@ -756,10 +771,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-for list="{{ allQueries }}" as="r" hint-placeholder-count="12">
               <div style="display:grid;grid-template-columns:minmax(0,2fr) 80px 104px 76px 88px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
                 <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.clicks }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
-                <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.pos }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;font-weight:500;color:#121214"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
               </div>
             </sc-for>
           </div>
@@ -786,11 +801,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-for list="{{ allPages }}" as="r" hint-placeholder-count="12">
               <div style="display:grid;grid-template-columns:minmax(0,1.8fr) 66px 92px 66px 76px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
                 <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.clicks }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
-                <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
-                <span style="{{ r.bounceStyle }}">{{ r.bounce }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
+                <span style="{{ r.bounceStyle }}"><span style="{{ r.bounceDot }}"></span>{{ r.bounce }}</span>
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
@@ -1564,7 +1579,7 @@ class Component extends DCLogic {
   chipStyle(a){ return `display:flex;align-items:center;justify-content:center;height:34px;padding:0 15px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
   tabStyle(a){ return `display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap;${a?'background:#fff;color:#121214;font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.1)':'color:#6d727a'}`; }
 
-  spark(vals,color,w,hgt){
+  spark(vals,color,w,hgt,invert){
     const h=React.createElement,W=w||240,H=hgt||48;
     // marge proportionnelle (25% de l'ecart reel) pour eviter qu'une
     // variation modeste ne soit etiree a toute la hauteur du graphe --
@@ -1573,7 +1588,10 @@ class Component extends DCLogic {
     const mx0=Math.max.apply(null,vals),mn0=Math.min.apply(null,vals);
     const pad=(mx0-mn0)*0.25 || Math.abs(mx0)*0.1 || 1;
     const mx=mx0+pad, mn=mn0-pad;
-    const x=i=>i/(vals.length-1)*W, y=v=>H-4-((v-mn)/((mx-mn)||1))*(H-10);
+    // invert=true : une valeur plus petite est "meilleure" et doit monter
+    // (ex. position Search Console, 1 en haut) -- sans ca, un chiffre plus
+    // grand dessine toujours plus haut, faux pour ce type de metrique.
+    const x=i=>i/(vals.length-1)*W, y=v=>{ const t=(v-mn)/((mx-mn)||1); return H-4-(invert?1-t:t)*(H-10); };
     let d=`M${x(0)},${y(vals[0])}`;
     for(let i=0;i<vals.length-1;i++){const x0=x(i),x1=x(i+1),c=(x0+x1)/2;d+=` C${c},${y(vals[i])} ${c},${y(vals[i+1])} ${x1},${y(vals[i+1])}`;}
     return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},[
@@ -1737,7 +1755,7 @@ class Component extends DCLogic {
     const trafficBuckets = toBuckets(agg.trafficDaily, dates, 7);
     const repriseBuckets = toBuckets(agg.repriseDaily, dates, 7);
     const leadsBuckets = toBuckets(agg.leadsDaily, dates, 7);
-    const safeSpark = (vals, color, w, hgt) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt); };
+    const safeSpark = (vals, color, w, hgt, invert) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt, invert); };
 
     const kpis=[
       {label:'Sessions site parent',value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
@@ -2010,28 +2028,57 @@ class Component extends DCLogic {
       {label:'CTR',value:dec(scCtr,2)+' %',...deltaBadgeAsKpi(deltaBadge(scCtr, scCtrCmp, ' pt')),
        spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.clics/mm.impressions*100:0;})),'#d78b35',300,70),note:scCtrMedianLabel},
       {label:'Position moyenne',value: scPos!=null? dec(scPos,1) : '—',...deltaBadgeAsKpi(posDeltaBadge(scPos, scPosCmp)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.posSum/mm.impressions:0;})),'#3fae7a',300,70),
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.posSum/mm.impressions:0;})),'#3fae7a',300,70,true),
        note:(scPos!=null && scPosCmp!=null) ? ((scPosCmp-scPos>=0?'gagne ':'perd ')+dec(Math.abs(scPosCmp-scPos),1)+' place sur la période') : 'comparaison indisponible'}
     ];
 
-    // graphe combiné clics / impressions / position -- vraies donnees
-    // mensuelles, sur les 12 derniers mois reels disponibles (independant
-    // du calendrier d'en-tete : la resolution GSC stockee est mensuelle,
-    // "12 derniers mois" est donc la vraie granularite de tendance, pas
-    // un choix arbitraire).
-    const searchTrend = this.aggregateSearch(this.decale(todayIso,-370), todayIso);
-    const trendMonthsKeys = Object.keys(searchTrend.monthly).sort().slice(-12);
-    const monthsForChart = trendMonthsKeys.length>=2 ? trendMonthsKeys : (trendMonthsKeys.length===1 ? [trendMonthsKeys[0],trendMonthsKeys[0]] : [null,null]);
-    const mval=(m,f2)=> m && searchTrend.monthly[m] ? f2(searchTrend.monthly[m]) : 0;
-    const clicks=monthsForChart.map(m=>mval(m,x=>x.clics));
-    const impr=monthsForChart.map(m=>mval(m,x=>x.impressions));
-    const pos=monthsForChart.map(m=>mval(m,x=>x.impressions?x.posSum/x.impressions:0));
+    // graphe combiné clics / impressions / position (23/09/2026) : respecte
+    // desormais la periode choisie dans le selecteur de dates plutot qu'une
+    // fenetre fixe de 12 mois. Les clics/impressions quotidiens existent
+    // deja (daily.sc/daily.si) donc une periode courte (<=60j) bascule en
+    // vraie granularite journaliere ; la position n'est stockee qu'au mois,
+    // donc au-dela de 60j (ou si la periode ne permet pas de granularite
+    // quotidienne utile) on garde l'agregation mensuelle deja en place,
+    // et sous ce seuil la ligne position est honnetement masquee (note
+    // dans le markup) plutot qu'un point quotidien invente.
     const moisNoms=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-    const labels=monthsForChart.map(m=> m ? (moisNoms[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)) : '—');
-    const gDays=monthsForChart.length;
-    const scTrendRangeLabel = trendMonthsKeys.length
-      ? `${moisNoms[parseInt(trendMonthsKeys[0].slice(5,7),10)-1]} ${trendMonthsKeys[0].slice(2,4)} → ${moisNoms[parseInt(trendMonthsKeys[trendMonthsKeys.length-1].slice(5,7),10)-1]} ${trendMonthsKeys[trendMonthsKeys.length-1].slice(2,4)} · survolez la courbe`
-      : 'Aucune donnée mensuelle disponible';
+    let clicks, impr, pos, labels, gDays, scTrendRangeLabel, scPosDispo;
+    if (rangeDays<=60) {
+      const jours=[];
+      for (let t=new Date(debut+'T00:00:00Z').getTime(), tf=new Date(fin+'T00:00:00Z').getTime(); t<=tf; t+=86400000) jours.push(new Date(t).toISOString().slice(0,10));
+      const clicsParJour={}, imprParJour={};
+      for (const s of st.sites) {
+        const d = this.data && this.data[s];
+        if (!d || !d.daily) continue;
+        d.daily.d.forEach((jour,i)=>{
+          if (jour<debut || jour>fin) return;
+          if (d.daily.sc[i]!=null) clicsParJour[jour]=(clicsParJour[jour]||0)+d.daily.sc[i];
+          if (d.daily.si[i]!=null) imprParJour[jour]=(imprParJour[jour]||0)+d.daily.si[i];
+        });
+      }
+      clicks = jours.map(j=>clicsParJour[j]||0);
+      impr = jours.map(j=>imprParJour[j]||0);
+      pos = jours.map(()=>0);
+      scPosDispo = false;
+      labels = jours.map(j=>j.slice(8,10)+' '+moisNoms[parseInt(j.slice(5,7),10)-1]);
+      gDays = jours.length;
+      scTrendRangeLabel = `${jours[0].slice(8,10)}/${jours[0].slice(5,7)} → ${jours[jours.length-1].slice(8,10)}/${jours[jours.length-1].slice(5,7)} · survolez la courbe`;
+    } else {
+      const searchTrend = this.aggregateSearch(this.decale(todayIso,-370), todayIso);
+      const trendMonthsKeys = Object.keys(searchTrend.monthly).sort().slice(-12);
+      const monthsForChart = trendMonthsKeys.length>=2 ? trendMonthsKeys : (trendMonthsKeys.length===1 ? [trendMonthsKeys[0],trendMonthsKeys[0]] : [null,null]);
+      const mval=(m,f2)=> m && searchTrend.monthly[m] ? f2(searchTrend.monthly[m]) : 0;
+      clicks=monthsForChart.map(m=>mval(m,x=>x.clics));
+      impr=monthsForChart.map(m=>mval(m,x=>x.impressions));
+      pos=monthsForChart.map(m=>mval(m,x=>x.impressions?x.posSum/x.impressions:0));
+      scPosDispo = true;
+      labels=monthsForChart.map(m=> m ? (moisNoms[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)) : '—');
+      gDays=monthsForChart.length;
+      scTrendRangeLabel = trendMonthsKeys.length
+        ? `${moisNoms[parseInt(trendMonthsKeys[0].slice(5,7),10)-1]} ${trendMonthsKeys[0].slice(2,4)} → ${moisNoms[parseInt(trendMonthsKeys[trendMonthsKeys.length-1].slice(5,7),10)-1]} ${trendMonthsKeys[trendMonthsKeys.length-1].slice(2,4)} · survolez la courbe`
+        : 'Aucune donnée mensuelle disponible';
+    }
+    const scPosIndispo = !scPosDispo;
 
     const GW=1000,GH=210,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
     // +20% de marge au-dessus du maximum reel : sans ca, le point le plus
@@ -2052,30 +2099,36 @@ class Component extends DCLogic {
       gk.push(h('line',{key:'g'+i,x1:GL,y1:gyC(v),x2:GL+gpw,y2:gyC(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
       gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
-    [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+4,fontSize:10,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
+    if (scPosDispo) [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+4,fontSize:10,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
     let areaD='M'+gx(0)+','+gyI(impr[0]);
     for(let i=1;i<gDays;i++) areaD+=' L'+gx(i)+','+gyI(impr[i]);
     gk.push(h('path',{key:'area',d:areaD+' L'+gx(gDays-1)+','+(GT+gph)+' L'+gx(0)+','+(GT+gph)+' Z',fill:'#d7e4fb'}));
     let cD='M'+gx(0)+','+gyC(clicks[0]);
     for(let i=0;i<gDays-1;i++){const c=(gx(i)+gx(i+1))/2;cD+=' C'+c+','+gyC(clicks[i])+' '+c+','+gyC(clicks[i+1])+' '+gx(i+1)+','+gyC(clicks[i+1]);}
     gk.push(h('path',{key:'clicks',d:cD,fill:'none',stroke:'#3b76e8',strokeWidth:2,strokeLinecap:'round'}));
-    let pD='M'+gx(0)+','+gyP(pos[0]);
-    for(let i=1;i<gDays;i++) pD+=' L'+gx(i)+','+gyP(pos[i]);
-    gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:1.6,strokeDasharray:'6 5',strokeLinecap:'round'}));
-    labels.forEach((l,i)=>gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-8,textAnchor:'middle',fontSize:10,fill:'#9a9fa6',fontFamily:F},l)));
+    if (scPosDispo) {
+      let pD='M'+gx(0)+','+gyP(pos[0]);
+      for(let i=1;i<gDays;i++) pD+=' L'+gx(i)+','+gyP(pos[i]);
+      gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:1.6,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    }
+    // au-dela de ~15 points (vue quotidienne), n'affiche qu'un label sur N
+    // pour eviter que l'axe X ne devienne illisible.
+    const labelStep=Math.max(1,Math.ceil(gDays/15));
+    labels.forEach((l,i)=>{ if (i%labelStep===0 || i===gDays-1) gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-8,textAnchor:'middle',fontSize:10,fill:'#9a9fa6',fontFamily:F},l)); });
     const hov=st.scHover;
     if(hov!=null && hov<gDays){
       gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1}));
       gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:3.5,fill:'#3b76e8',stroke:'#fff',strokeWidth:1.5}));
-      gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:3.5,fill:'#e08a33',stroke:'#fff',strokeWidth:1.5}));
-      const tw=168,th=76,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
-      gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx+','+GT+')'},[
+      if (scPosDispo) gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:3.5,fill:'#e08a33',stroke:'#fff',strokeWidth:1.5}));
+      const tw=168,th=scPosDispo?76:56,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
+      const tipLines=[
         h('rect',{key:'r',width:tw,height:th,rx:10,fill:'#141414'}),
         h('text',{key:'d',x:12,y:18,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},labels[hov]),
         h('text',{key:'c',x:12,y:36,fontSize:12.5,fill:'#8fb6ff',fontFamily:F},'Clics '+this.fmt(clicks[hov])),
         h('text',{key:'i',x:12,y:52,fontSize:12.5,fill:'#cfd9ff',fontFamily:F},'Impr. '+this.fmt(impr[hov])),
-        h('text',{key:'p',x:12,y:68,fontSize:12.5,fill:'#ffc98f',fontFamily:F},'Position '+dec(pos[hov],1))
-      ]));
+      ];
+      if (scPosDispo) tipLines.push(h('text',{key:'p',x:12,y:68,fontSize:12.5,fill:'#ffc98f',fontFamily:F},'Position '+dec(pos[hov],1)));
+      gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx+','+GT+')'},tipLines));
     }
     for(let i=0;i<gDays;i++){
       gk.push(h('rect',{key:'hit'+i,x:gx(i)-(gDays>1?gpw/(gDays-1)/2:gpw/2),y:GT,width:gDays>1?gpw/(gDays-1):gpw,height:gph,fill:'transparent',
@@ -2085,9 +2138,49 @@ class Component extends DCLogic {
 
     // requêtes reelles (searchMonth[mois].queries), agregees sur la
     // periode d'en-tete selectionnee et sur les sites du perimetre.
-    const mkRow=r=>({name:r.name,clicks:this.fmt(r.clics),impressions:this.fmt(r.impressions),
-      ctr:r.impressions?dec(r.clics/r.impressions*100,2)+' %':'—',pos:r.impressions?dec(r.posSum/r.impressions,1):'—'});
+
+    // ---- indicateurs colores (percentiles), 23/09/2026 ----
+    // Clics/Impressions : compares aux autres lignes du meme tableau, sur
+    // le meme perimetre filtre (marche/periode) -- jamais un seuil fixe,
+    // qui n'aurait aucun sens entre un petit et un gros marche.
+    const IND_OK='#2b8f62', IND_MID='#e8a33d', IND_BAD='#a33c39', IND_NA='#c2c5cb';
+    const percentile=(sortedAsc,p)=>{
+      if (!sortedAsc.length) return null;
+      const idx=(p/100)*(sortedAsc.length-1), lo=Math.floor(idx), hi=Math.ceil(idx);
+      return lo===hi ? sortedAsc[lo] : sortedAsc[lo]+(sortedAsc[hi]-sortedAsc[lo])*(idx-lo);
+    };
+    const indicVolume=(v,p25,p50)=> v==null?IND_NA : v>=p50?IND_OK : v>=p25?IND_MID : IND_BAD;
+    const indicPos=p=> p==null?IND_NA : p<=3?IND_OK : p<=10?IND_MID : IND_BAD;
+    const indicBounce=b=> b==null?IND_NA : b<40?IND_OK : b<=60?IND_MID : IND_BAD;
+    // benchmark CTR attendu par position -- repere SEO usuel (pas une
+    // donnee GSC reelle : GSC ne fournit pas de "CTR attendu"), documente
+    // ici comme tel plutot que presente comme un chiffre mesure.
+    const CTR_BENCHMARK=[{max:1,ctr:28},{max:2,ctr:15},{max:3,ctr:11},{max:5,ctr:7},{max:10,ctr:3},{max:20,ctr:1.5},{max:Infinity,ctr:.5}];
+    const ctrAttendu=pos=> pos==null?null:(CTR_BENCHMARK.find(b=>pos<=b.max)||{}).ctr;
+    const indicCtr=(ctrPct,pos)=>{
+      const attendu=ctrAttendu(pos);
+      if (ctrPct==null || !attendu) return IND_NA;
+      const ratio=ctrPct/attendu*100;
+      return ratio>=100?IND_OK : ratio>=75?IND_MID : IND_BAD;
+    };
+    const dotStyle=color=>`width:7px;height:7px;border-radius:4px;flex:none;display:inline-block;background:${color}`;
+
     const queriesSorted=Array.from(searchAgg.queries.values()).sort((a,b)=>b.clics-a.clics);
+    const qClicsAsc=queriesSorted.map(q=>q.clics).sort((a,b)=>a-b);
+    const qImprAsc=queriesSorted.map(q=>q.impressions).sort((a,b)=>a-b);
+    const qClicsP25=percentile(qClicsAsc,25), qClicsP50=percentile(qClicsAsc,50);
+    const qImprP25=percentile(qImprAsc,25), qImprP50=percentile(qImprAsc,50);
+    const mkRow=r=>{
+      const ctrPct=r.impressions?r.clics/r.impressions*100:null, posVal=r.impressions?r.posSum/r.impressions:null;
+      return {
+        name:r.name,clicks:this.fmt(r.clics),impressions:this.fmt(r.impressions),
+        ctr:ctrPct!=null?dec(ctrPct,2)+' %':'—',pos:posVal!=null?dec(posVal,1):'—',
+        clicksDot:dotStyle(indicVolume(r.clics,qClicsP25,qClicsP50)),
+        imprDot:dotStyle(indicVolume(r.impressions,qImprP25,qImprP50)),
+        ctrDot:dotStyle(indicCtr(ctrPct,posVal)),
+        posDot:dotStyle(indicPos(posVal)),
+      };
+    };
     const scQueries=queriesSorted.slice(0,6).map(mkRow);
     const allQueries=queriesSorted.map(mkRow);
     // insight reel : requete a fort volume d'impressions mais faible CTR
@@ -2109,24 +2202,34 @@ class Component extends DCLogic {
     // tracking par requete cote GA4, jamais invente.
     const pagesAgg = this.aggregatePages(debut, fin);
     const SEUIL_SESSIONS_FIABLE = 100;
-    const mkPageRow = ([path,v]) => {
-      const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
-      const bounce = fiable ? v.rebondSum/v.sessions : null;
-      const conv = fiable ? v.conversions/v.sessions*100 : null;
-      return {
-        name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
-        ctr:v.impressions?dec(v.clics/v.impressions*100,2)+' %':'—',
-        pos:v.impressions?dec(v.posSum/v.impressions,1):'—',
-        bounce:bounce!=null?dec(bounce,1)+' %':'—',
-        bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
-        conv:conv!=null?dec(conv,2)+' %':'—',
-        convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214')
-      };
-    };
     const pagesSorted = Array.from(pagesAgg.entries())
       .filter(([,v]) => v.clics>0 || v.sessions>0)
       .sort((a,b) => b[1].clics-a[1].clics)
       .slice(0,20);
+    const pClicsAsc=pagesSorted.map(([,v])=>v.clics).sort((a,b)=>a-b);
+    const pImprAsc=pagesSorted.map(([,v])=>v.impressions).sort((a,b)=>a-b);
+    const pClicsP25=percentile(pClicsAsc,25), pClicsP50=percentile(pClicsAsc,50);
+    const pImprP25=percentile(pImprAsc,25), pImprP50=percentile(pImprAsc,50);
+    const mkPageRow = ([path,v]) => {
+      const fiable = v.sessions >= SEUIL_SESSIONS_FIABLE;
+      const bounce = fiable ? v.rebondSum/v.sessions : null;
+      const conv = fiable ? v.conversions/v.sessions*100 : null;
+      const ctrPct = v.impressions?v.clics/v.impressions*100:null, posVal = v.impressions?v.posSum/v.impressions:null;
+      return {
+        name:path, clicks:this.fmt(v.clics), impressions:this.fmt(v.impressions),
+        ctr:ctrPct!=null?dec(ctrPct,2)+' %':'—',
+        pos:posVal!=null?dec(posVal,1):'—',
+        bounce:bounce!=null?dec(bounce,1)+' %':'—',
+        bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
+        conv:conv!=null?dec(conv,2)+' %':'—',
+        convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214'),
+        clicksDot:dotStyle(indicVolume(v.clics,pClicsP25,pClicsP50)),
+        imprDot:dotStyle(indicVolume(v.impressions,pImprP25,pImprP50)),
+        ctrDot:dotStyle(indicCtr(ctrPct,posVal)),
+        posDot:dotStyle(indicPos(posVal)),
+        bounceDot:dotStyle(indicBounce(bounce)),
+      };
+    };
     const allPages = pagesSorted.map(mkPageRow);
     const scPages = allPages.slice(0,6);
     const pireePage = pagesSorted.map(([path,v])=>({path,v}))
@@ -2682,7 +2785,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scTrendRangeLabel, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
+      scKpis, scChart, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,
       queriesBackdropStyle:queriesStyles.backdrop, queriesPanelStyle:queriesStyles.panel,

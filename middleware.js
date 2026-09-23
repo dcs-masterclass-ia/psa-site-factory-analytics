@@ -10,7 +10,7 @@
  */
 
 export const config = {
-  matcher: ["/data/:path*", "/api/agent", "/api/refresh", "/api/perf-ticket", "/api/kamia-conversations"],
+  matcher: ["/data/:path*", "/api/agent", "/api/refresh", "/api/perf-ticket", "/api/kamia-conversations", "/api/gsc-compare"],
 };
 
 function parseCookies(header) {

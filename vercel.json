@@ -12,6 +12,8 @@
     }
   ],
   "functions": {
-    "api/agent.js": { "includeFiles": "data/**", "maxDuration": 300 }
+    "api/agent.js": { "includeFiles": "data/**", "maxDuration": 300 },
+    "api/gsc-compare.js": { "includeFiles": "data/**" },
+    "api/perf-ticket.js": { "includeFiles": "data/**" }
   }
 }

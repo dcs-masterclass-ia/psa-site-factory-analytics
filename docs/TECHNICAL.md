@@ -187,12 +187,15 @@ les fonctions `api/*.js` en runtime Node (`crypto` natif) :
    bloquerait rien, n'importe qui pourrait appeler `/data/*.json`
    directement. Le matcher actuel :
    `["/data/:path*", "/api/agent", "/api/refresh", "/api/perf-ticket",
-   "/api/kamia-conversations"]`.
-   **Point d'attention** : `api/gsc-compare.js` fait sa propre vérification
-   de session en interne (défense en profondeur, même pattern que les
-   autres) mais n'est **pas** dans ce matcher — à ajouter si une faille de
-   contournement y est un jour identifiée. Tout nouvel endpoint sensible
-   doit être ajouté au tableau `matcher`.
+   "/api/kamia-conversations", "/api/gsc-compare"]` (23/09/2026 :
+   `gsc-compare` ajouté au matcher, et `gsc-compare.js`/`perf-ticket.js`
+   ajoutés à `vercel.json` `functions.*.includeFiles` — `loadSiteRaw()` lit
+   `data/*.json` via `fs`, sans `includeFiles` le bundle serverless de ces
+   deux fonctions ne contenait pas `data/`, cause probable du "Appel API
+   échoué - Non authentifié" sur la comparaison de périodes Search
+   Console). Tout nouvel endpoint sensible doit être ajouté au tableau
+   `matcher`, et tout endpoint lisant `data/*.json` via `loadSite`/
+   `loadSiteRaw` doit être ajouté à `functions.*.includeFiles`.
 
 ### 3.5 `api/_lib/store.js` — magasin clé/JSON sur le repo data
 
