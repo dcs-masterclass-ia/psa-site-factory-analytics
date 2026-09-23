@@ -89,7 +89,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 </helmet>
 <div style="display:flex;width:100%;height:100vh;background:#f4f4f6;overflow:hidden">
 
-  <div style="width:84px;flex:none;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;overflow-y:auto">
+  <div data-chrome="rail" style="width:84px;flex:none;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:12px;overflow-y:auto">
     <div style="width:32px;height:32px;overflow:hidden;position:relative;flex:none;margin-bottom:4px">
       <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir+-+copie.png" alt="Converge" style="position:absolute;top:-86.6px;left:-96.4px;width:327.7px;height:218.5px;max-width:none">
     </div>
@@ -121,7 +121,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column">
 
-    <div style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #ececee;flex-wrap:wrap">
+    <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #ececee;flex-wrap:wrap">
       <div style="flex:1 1 150px;min-width:0">
         <div style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
         <div style="font-size:13px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rangeLabel }}</div>
@@ -245,6 +245,17 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
 
     <div style="flex:1;min-height:0;overflow-y:auto;padding:20px 24px 30px;display:flex;flex-direction:column;gap:24px">
+
+      <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ compareGridStyle }}">
+        <sc-for list="{{ compareFrames }}" as="f" hint-placeholder-count="2">
+          <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+            <div style="font-size:14.5px;font-weight:600;color:#121214;padding:0 4px">{{ f.site }}</div>
+            <iframe src="{{ f.src }}" title="{{ f.site }}" style="width:100%;height:calc(100vh - 150px);border:1px solid #ececee;border-radius:14px;background:#f4f4f6"></iframe>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
 
       <sc-if value="{{ isGA }}" hint-placeholder-val="{{ true }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
@@ -535,30 +546,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
       </sc-if>
 
-      <sc-if value="{{ isGACompare }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px;overflow-x:auto">
-          <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:16px">Comparaison GA4</div>
-          <div style="{{ compareGridStyle }}">
-            <div></div>
-            <sc-for list="{{ compareGaColumns }}" as="c" hint-placeholder-count="4">
-              <div style="{{ compareHeadStyle }}">
-                <div style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.site }}</div>
-                <div style="font-size:12px;color:#9a9fa6">{{ c.sub }}</div>
-              </div>
-            </sc-for>
-            <sc-for list="{{ compareGaRows }}" as="r" hint-placeholder-count="6">
-              <div style="{{ compareLabelStyle }}">{{ r.label }}</div>
-              <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
-                <div style="{{ cell.style }}">{{ cell.value }}</div>
-              </sc-for>
-            </sc-for>
-          </div>
-        </div>
-      </div>
-      </sc-if>
-
-      <sc-if value="{{ isSC }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ isSC }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
         <div>
@@ -910,30 +898,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
       </sc-if>
 
-      <sc-if value="{{ isSCCompare }}" hint-placeholder-val="{{ false }}">
-      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px;overflow-x:auto">
-          <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:16px">Comparaison Search Console</div>
-          <div style="{{ compareGridStyle }}">
-            <div></div>
-            <sc-for list="{{ compareScColumns }}" as="c" hint-placeholder-count="4">
-              <div style="{{ compareHeadStyle }}">
-                <div style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.site }}</div>
-                <div style="font-size:12px;color:#9a9fa6">{{ c.sub }}</div>
-              </div>
-            </sc-for>
-            <sc-for list="{{ compareScRows }}" as="r" hint-placeholder-count="4">
-              <div style="{{ compareLabelStyle }}">{{ r.label }}</div>
-              <sc-for list="{{ r.cells }}" as="cell" hint-placeholder-count="4">
-                <div style="{{ cell.style }}">{{ cell.value }}</div>
-              </sc-for>
-            </sc-for>
-          </div>
-        </div>
-      </div>
-      </sc-if>
-
-      <sc-if value="{{ isPS }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ isPS }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
         <div>
@@ -1236,7 +1201,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
   </div>
 
-  <div onClick="{{ toggleChat }}" style="{{ chatFabStyle }}" style-hover="transform:scale(1.04)">
+  <div data-chrome="chat" onClick="{{ toggleChat }}" style="{{ chatFabStyle }}" style-hover="transform:scale(1.04)">
     <span style="width:26px;height:26px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
       <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
       <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
@@ -1248,7 +1213,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
   </div>
 
   <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
-  <div style="{{ chatPanelOuterStyle }}">
+  <div data-chrome="chat" style="{{ chatPanelOuterStyle }}">
   <div style="{{ chatPanelInnerStyle }}">
 
     <div style="flex:none;padding:16px 18px;background:linear-gradient(150deg,#1b1636,#33215a);color:#fff">
@@ -1343,6 +1308,11 @@ class Component extends DCLogic {
   componentDidMount() {
     this.wireLogin();
     this.boot();
+    if (new URLSearchParams(location.search).get('embed') === '1') {
+      const st = document.createElement('style');
+      st.textContent = '[data-chrome]{display:none!important}';
+      document.head.appendChild(st);
+    }
     // ferme le selecteur de dates et le picker de sites au clic en dehors
     // de leur fenetre (avant : seul un re-clic sur le bouton, ou choisir
     // une valeur, les fermait -- pas un clic ailleurs sur la page).
@@ -1415,7 +1385,18 @@ class Component extends DCLogic {
         try { loaded[s] = await (await fetch("/data/" + slug(s) + ".json")).json(); } catch (e) {}
       }));
       this.data = loaded;
-      this.setState({ sites: this._allSites.slice(), booted: true });
+      // mode embarque (colonne du mode "Comparer") : un seul site, meme
+      // source/periode que la vue parente, sans rail ni en-tete.
+      const qp = new URLSearchParams(location.search);
+      const initial = { sites: this._allSites.slice(), booted: true };
+      if (qp.get('embed') === '1') {
+        const voulus = (qp.get('sites') || '').split('|').filter(n => this._allSites.includes(n));
+        if (voulus.length) initial.sites = voulus;
+        if (['ga','sc','ps','tb','gcp'].includes(qp.get('source'))) initial.source = qp.get('source');
+        if (qp.get('from') && qp.get('to')) { initial.from = qp.get('from'); initial.to = qp.get('to'); }
+        if (['none','previous','year'].includes(qp.get('cmp'))) initial.cmpMode = qp.get('cmp');
+      }
+      this.setState(initial);
     } catch (e) {
       this.data = {};
       this.setState({ booted: true, error: "Chargement des données impossible." });
@@ -1692,64 +1673,21 @@ class Component extends DCLogic {
     const debut = selFrom<selTo?selFrom:selTo, fin = selFrom<selTo?selTo:selFrom;
     const rangeDays = Math.round((new Date(fin+'T00:00:00Z')-new Date(debut+'T00:00:00Z'))/86400000)+1;
 
-    // ---------- mode comparaison (jusqu'a 4 sites cote a cote, 23/09/2026) ----------
-    // Bouton explicite plutot qu'automatique (decision validee) : cocher
-    // plusieurs sites reste consolide par defaut (aggregate() somme deja
-    // dessus, inchange) -- "Comparer" bascule sur une vue par colonnes, une
-    // par site, sans jamais melanger les deux logiques.
-    const compareNomCourt = n => n.split(' ').slice(0,-1).join(' ');
-    const comparePaysCourt = n => n.split(' ').slice(-1)[0];
+    // ---------- mode comparaison (jusqu'a 4 sites cote a cote) ----------
+    // Bouton explicite : cocher plusieurs sites reste consolide par defaut.
+    // "Comparer" affiche la vue EXISTANTE (memes modules et graphiques de
+    // l'onglet courant) une fois par site, cote a cote : chaque colonne est
+    // une instance embarquee de ce meme dashboard, restreinte a un site
+    // (?embed=1&sites=...), avec la meme periode et la meme source.
     const compareEligible = st.sites.length>=2 && st.sites.length<=4;
     const compareActive = compareEligible && st.compareOpen;
     const compareBtnStyle = `display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;${compareActive?'background:#7c63ee;color:#fff':'background:#fff;border:1px solid #ececee;color:#121214'}`;
     const toggleCompare = ()=>set({compareOpen:!st.compareOpen});
-    const compareCellStyle = missing=>`padding:10px 12px;border-bottom:1px solid #f2f2f4;display:flex;align-items:center;font-size:14.5px;font-weight:600;white-space:nowrap;color:${missing?'#c2c5cb':'#121214'};font-style:${missing?'italic':'normal'}`;
-    const compareLabelStyle = `padding:10px 12px;font-size:13.5px;color:#6d727a;border-bottom:1px solid #f2f2f4;display:flex;align-items:center;white-space:nowrap`;
-    const compareHeadStyle = `padding:0 12px 14px;border-bottom:2px solid #ececee`;
-
-    let compareGaColumns=[], compareGaRows=[], compareScColumns=[], compareScRows=[], compareGridStyle='';
-    if (compareActive) {
-      compareGridStyle = `display:grid;grid-template-columns:180px repeat(${st.sites.length},minmax(160px,1fr));min-width:${180+st.sites.length*170}px`;
-      // ----- GA4 : sessions, reprise, taux de conversion, puis chaque etape du tunnel -----
-      const gaPerSite = st.sites.map(n => ({ site:n, a: this.aggregate.call({state:{sites:[n]},data:this.data}, debut, fin) }));
-      compareGaColumns = gaPerSite.map(({site})=>({ site, sub:compareNomCourt(site)+' · '+comparePaysCourt(site) }));
-      const stepNames = [];
-      gaPerSite.forEach(({a})=>{ (a.funnelSteps||[]).forEach(s=>{ if (!stepNames.includes(s.step)) stepNames.push(s.step); }); });
-      compareGaRows = [
-        { label:'Sessions totales', cells: gaPerSite.map(({a})=>({ value:this.fmt(a.traffic+a.reprise), missing:false })) },
-        { label:'Sessions reprise', cells: gaPerSite.map(({a})=>({ value:this.fmt(a.reprise), missing:false })) },
-        { label:'Taux de conversion', cells: gaPerSite.map(({a})=>{
-            if (!a.funnelSteps || !a.funnelSteps.length) return { value:'Pas de donnée', missing:true };
-            const last = a.funnelSteps[a.funnelSteps.length-1].users;
-            return { value: (a.reprise ? dec(last/a.reprise*100,1) : '0') + ' %', missing:false };
-          }) },
-        ...stepNames.map(nom => ({
-          label: nom,
-          cells: gaPerSite.map(({a})=>{
-            const s = (a.funnelSteps||[]).find(x=>x.step===nom);
-            return s ? { value:this.fmt(s.users), missing:false } : { value:'Pas de donnée', missing:true };
-          })
-        }))
-      ];
-      // ----- Search Console : clics, impressions, CTR, position -----
-      const scPerSite = st.sites.map(n => {
-        const d = this.data && this.data[n];
-        const connecte = !!(d && d.searchMonth);
-        const a = connecte ? this.aggregateSearch.call({state:{sites:[n]},data:this.data}, debut, fin) : null;
-        return { site:n, a, connecte };
-      });
-      compareScColumns = scPerSite.map(({site})=>({ site, sub:compareNomCourt(site)+' · '+comparePaysCourt(site) }));
-      const scCell = (fn) => scPerSite.map(({a,connecte})=> !connecte || !a || !a.impressions ? { value:'Pas de donnée', missing:true } : { value:fn(a), missing:false });
-      compareScRows = [
-        { label:'Clics', cells: scCell(a=>this.fmt(a.clics)) },
-        { label:'Impressions', cells: scCell(a=>this.fmt(a.impressions)) },
-        { label:'CTR', cells: scCell(a=>dec(a.impressions?a.clics/a.impressions*100:0,2)+' %') },
-        { label:'Position moyenne', cells: scCell(a=>dec(a.impressions?a.posSum/a.impressions:0,1)) },
-      ];
-      // style resolu une fois par cellule (le template n'evalue pas de
-      // ternaire, seulement des chemins de propriete).
-      [...compareGaRows, ...compareScRows].forEach(r=>{ r.cells.forEach(c=>{ c.style = compareCellStyle(c.missing); }); });
-    }
+    const compareFrames = compareActive ? st.sites.map(n=>{
+      const q = new URLSearchParams({ embed:'1', sites:n, source:st.source||'ga', from:debut, to:fin, cmp:st.cmpMode||'previous' });
+      return { site:n, src:'/?'+q.toString() };
+    }) : [];
+    const compareGridStyle = `display:grid;grid-template-columns:repeat(${Math.max(1,compareFrames.length)},minmax(0,1fr));gap:14px;align-items:start`;
 
     const agg = this.aggregate(debut, fin);
     const cmpMode = st.cmpMode||'previous';
@@ -2856,11 +2794,9 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps', isTB:st.source==='tb'||st.source==='gcp',
-      isGACompare:st.source==='ga'&&compareActive, isSCCompare:st.source==='sc'&&compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
-      compareGaColumns, compareGaRows, compareScColumns, compareScRows, compareGridStyle,
-      compareHeadStyle, compareLabelStyle,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
       psMarcheLabel, psMarcheMobile: psMarcheMoyenne?psMarcheMoyenne.mobile:null, psMarcheDesktop: psMarcheMoyenne?psMarcheMoyenne.desktop:null,
       psMarcheHasData: !!psMarcheMoyenne,

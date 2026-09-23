@@ -148,9 +148,13 @@ test.describe("mode comparaison", () => {
     await expect(page.locator('[data-testid="compare-toggle"]')).toBeVisible();
     await page.locator('[data-testid="compare-toggle"]').click();
 
-    await expect(page.locator("text=Comparaison GA4")).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator("text=OPEL FR").first()).toBeVisible();
-    await expect(page.locator("text=PEUGEOT FR").first()).toBeVisible();
+    // une colonne par site = la vue existante embarquee (memes modules/graphs),
+    // pas un tableau a part.
+    await expect(page.locator("iframe")).toHaveCount(2, { timeout: 10_000 });
+    for (const i of [0, 1]) {
+      const frame = page.frameLocator("iframe").nth(i);
+      await expect(frame.locator("text=Taux de conversion").first()).toBeVisible({ timeout: 20_000 });
+    }
     expect(pageErrors, `erreurs JS en mode comparaison : ${pageErrors.join(" | ")}`).toEqual([]);
   });
 });
