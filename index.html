@@ -1687,7 +1687,7 @@ class Component extends DCLogic {
       const q = new URLSearchParams({ embed:'1', sites:n, source:st.source||'ga', from:debut, to:fin, cmp:st.cmpMode||'previous' });
       return { site:n, src:'/?'+q.toString() };
     }) : [];
-    const compareGridStyle = `display:grid;grid-template-columns:repeat(${Math.max(1,compareFrames.length)},minmax(0,1fr));gap:14px;align-items:start`;
+    const compareGridStyle = `display:grid;grid-template-columns:repeat(${compareFrames.length>1?2:1},minmax(0,1fr));gap:16px;align-items:start`;
 
     const agg = this.aggregate(debut, fin);
     const cmpMode = st.cmpMode||'previous';
