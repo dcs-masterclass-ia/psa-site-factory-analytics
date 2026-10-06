@@ -58,9 +58,14 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
       - name: Relever les métadonnées
+        env:
+          IN_DEBUT: ${{ inputs.debut }}
+          IN_FIN: ${{ inputs.fin }}
+          IN_HOTE: ${{ inputs.hote }}
+          IN_PROPRIETE: ${{ inputs.propriete }}
         run: |
-          ARGS="--propriete ${{ inputs.propriete }} --debut ${{ inputs.debut }} --fin ${{ inputs.fin }}"
-          if [ -n "${{ inputs.hote }}" ]; then ARGS="$ARGS --hote ${{ inputs.hote }}"; fi
+          ARGS="--propriete $IN_PROPRIETE --debut $IN_DEBUT --fin $IN_FIN"
+          if [ -n "$IN_HOTE" ]; then ARGS="$ARGS --hote $IN_HOTE"; fi
           python -m pipeline.metadata $ARGS
 
       - name: Effacer la clé

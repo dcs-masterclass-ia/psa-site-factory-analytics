@@ -182,20 +182,21 @@ les fonctions `api/*.js` en runtime Node (`crypto` natif) :
 1. `api/auth.js` vérifie un ID token Google (endpoint `tokeninfo`, pas de
    lib JWT), vérifie le domaine (`ALLOWED_DOMAIN`) ou, si définie, la liste blanche
    `ALLOWED_EMAILS` (qui la remplace), signe un cookie
-   `psf_session` (HMAC, 7 jours).
+   `psf_session` (HMAC, **1 h absolue**, `MAX_SESSION_MS`).
 2. `middleware.js` (`export const config = {matcher: [...]}`) est le
    **vrai** contrôle d'accès — un écran de connexion côté client seul ne
    bloquerait rien, n'importe qui pourrait appeler `/data/*.json`
-   directement. Le matcher actuel :
-   `["/data/:path*", "/api/agent", "/api/refresh", "/api/perf-ticket",
-   "/api/kamia-conversations", "/api/gsc-compare"]` (23/09/2026 :
+   directement. Le matcher actuel (protection **par défaut** : toute route
+   `/api/*` est fermée sauf `auth`, `config`, `logout`) :
+   `["/data/:path*", "/api/((?!auth$|config$|logout$).*)"]` (historique, 23/09/2026 :
    `gsc-compare` ajouté au matcher, et `gsc-compare.js`/`perf-ticket.js`
    ajoutés à `vercel.json` `functions.*.includeFiles` — `loadSiteRaw()` lit
    `data/*.json` via `fs`, sans `includeFiles` le bundle serverless de ces
    deux fonctions ne contenait pas `data/`, cause probable du "Appel API
    échoué - Non authentifié" sur la comparaison de périodes Search
-   Console). Tout nouvel endpoint sensible doit être ajouté au tableau
-   `matcher`, et tout endpoint lisant `data/*.json` via `loadSite`/
+   Console). Un nouvel endpoint est protégé d'office ; pour en
+   rendre un public il faut l'ajouter à la liste d'exclusion du `matcher`.
+   Tout endpoint lisant `data/*.json` via `loadSite`/
    `loadSiteRaw` doit être ajouté à `functions.*.includeFiles`.
 
 ### 3.5 `api/_lib/store.js` — magasin clé/JSON sur le repo data

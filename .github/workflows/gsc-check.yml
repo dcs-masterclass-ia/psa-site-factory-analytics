@@ -65,11 +65,15 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
       - name: Interroger Search Console
+        env:
+          IN_DEBUT: ${{ inputs.debut }}
+          IN_FIN: ${{ inputs.fin }}
+          IN_SITE_URL: ${{ inputs.site_url }}
         run: |
-          SITE_URL="${{ inputs.site_url }}"
+          SITE_URL="$IN_SITE_URL"
           if [ -n "$SITE_URL" ]; then
             python -m pipeline.search_console --sites \
-              --site-url "$SITE_URL" --debut "${{ inputs.debut }}" --fin "${{ inputs.fin }}"
+              --site-url "$SITE_URL" --debut "$IN_DEBUT" --fin "$IN_FIN"
           else
             python -m pipeline.search_console --sites
           fi

@@ -11,6 +11,7 @@
 const { callClaude } = require("./_lib/anthropic");
 const { loadSite } = require("./_lib/data");
 const { verifySessionFromRequest } = require("./_lib/auth");
+const { fail } = require("./_lib/errors");
 
 // Meme profil que les agents specialistes (api/_lib/tools.js) : redige un
 // texte structure a partir de donnees deja fournies, tache ciblee et
@@ -85,6 +86,6 @@ module.exports = async function handler(req, res) {
     }
     res.status(200).json({ title: title || ("Optimisation performance -- " + site), body });
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    fail(res, 500, "Generation du ticket indisponible.", e, "perf-ticket");
   }
 };

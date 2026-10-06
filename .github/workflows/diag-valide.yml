@@ -39,10 +39,13 @@ jobs:
 
       - name: Comparer brut vs filtre
         env:
+          IN_DEBUT: ${{ inputs.debut }}
+          IN_FIN: ${{ inputs.fin }}
+          IN_SITE: ${{ inputs.site }}
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
           SORTIE="$RUNNER_TEMP/rapport.txt"
-          python -m pipeline._diag_valide "${{ inputs.site }}" "${{ inputs.debut }}" "${{ inputs.fin }}" | tee "$SORTIE"
+          python -m pipeline._diag_valide "$IN_SITE" "$IN_DEBUT" "$IN_FIN" | tee "$SORTIE"
           {
             echo '```'
             cat "$SORTIE"

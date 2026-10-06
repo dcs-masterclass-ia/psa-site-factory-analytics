@@ -9,9 +9,15 @@
  * cf. api/_lib/auth.js pour l'equivalent Node qui signe le meme cookie.
  */
 
+// Protection par defaut : TOUTE route /api/* exige une session, sauf les trois
+// points d'entree publics (connexion, config OAuth, deconnexion). Une future
+// route oubliee ici reste donc fermee. /data/* (JSON business) idem.
 export const config = {
-  matcher: ["/data/:path*", "/api/agent", "/api/refresh", "/api/perf-ticket", "/api/kamia-conversations", "/api/gsc-compare", "/api/gsc-page-queries"],
+  matcher: ["/data/:path*", "/api/((?!auth$|config$|logout$).*)"],
 };
+
+// Meme valeur que MAX_SESSION_MS dans api/_lib/auth.js (1 h absolue).
+const MAX_SESSION_MS = 60 * 60 * 1000;
 
 function parseCookies(header) {
   const out = {};
@@ -49,6 +55,7 @@ async function verifySession(token, secret) {
   try {
     const data = JSON.parse(b64urlDecode(payload));
     if (!data.exp || Date.now() > data.exp) return null;
+    if (data.exp - Date.now() > MAX_SESSION_MS + 60 * 1000) return null;
     return data;
   } catch (e) {
     return null;

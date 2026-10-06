@@ -36,11 +36,12 @@ jobs:
 
       - name: Identifier les sites
         env:
+          IN_PAIRES: ${{ inputs.paires }}
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
           DIAG_JOURS: ${{ inputs.jours }}
         run: |
           SORTIE="$RUNNER_TEMP/rapport.txt"
-          python -m pipeline._diag_siteid ${{ inputs.paires }} | tee "$SORTIE"
+          python -m pipeline._diag_siteid $IN_PAIRES | tee "$SORTIE"
           {
             echo '```'
             cat "$SORTIE"

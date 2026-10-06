@@ -19,6 +19,7 @@
 
 const { loadSiteRaw } = require("./_lib/data");
 const { verifySessionFromRequest } = require("./_lib/auth");
+const { fail } = require("./_lib/errors");
 const { accessToken } = require("./_lib/google");
 
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
@@ -103,6 +104,6 @@ module.exports = async function handler(req, res) {
       lignes,
     });
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    fail(res, 500, "Search Console indisponible.", e, "gsc-compare");
   }
 };

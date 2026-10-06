@@ -16,9 +16,10 @@
  *   AUTH_COOKIE_SECRET   secret aleatoire (ex. `openssl rand -hex 32`)
  */
 
-const { sign, allowedEmails } = require("./_lib/auth");
+const { sign, allowedEmails, MAX_SESSION_MS } = require("./_lib/auth");
+const { fail } = require("./_lib/errors");
 
-const MAX_AGE_S = 60 * 60 * 24 * 7; // 7 jours
+const MAX_AGE_S = MAX_SESSION_MS / 1000; // 1 h, voir _lib/auth.js
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -77,6 +78,6 @@ module.exports = async function handler(req, res) {
     ]);
     res.status(200).json({ ok: true, email });
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    fail(res, 500, "Erreur d'authentification.", e, "auth");
   }
 };

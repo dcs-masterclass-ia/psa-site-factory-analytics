@@ -18,6 +18,9 @@
  *                  valeur par defaut ci-dessous)
  */
 
+const { verifySessionFromRequest } = require("./_lib/auth");
+const { fail } = require("./_lib/errors");
+
 const REPO = process.env.GITHUB_REPO || "dcs-masterclass-ia/psa-site-factory-analytics";
 const WORKFLOW = "refresh.yml";
 // VERCEL_GIT_COMMIT_REF (fournie automatiquement par Vercel a chaque
@@ -37,10 +40,14 @@ module.exports = async function handler(req, res) {
     res.status(405).json({ error: "Methode non autorisee." });
     return;
   }
+  if (!verifySessionFromRequest(req)) {
+    res.status(401).json({ error: "Non authentifie." });
+    return;
+  }
 
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
-    res.status(500).json({ error: "GITHUB_TOKEN n'est pas configure sur le serveur." });
+    fail(res, 500, "Rafraichissement indisponible.", new Error("GITHUB_TOKEN non configure"), "refresh");
     return;
   }
 
@@ -86,13 +93,12 @@ module.exports = async function handler(req, res) {
     );
 
     if (dispatch.status !== 204) {
-      const detail = await dispatch.text();
-      res.status(502).json({ error: "GitHub a refuse le declenchement.", detail });
+      fail(res, 502, "GitHub a refuse le declenchement.", new Error(dispatch.status + " " + (await dispatch.text())), "refresh");
       return;
     }
 
     res.status(200).json({ ok: true });
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    fail(res, 500, "Rafraichissement indisponible.", e, "refresh");
   }
 };

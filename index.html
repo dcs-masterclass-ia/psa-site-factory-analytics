@@ -5,6 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Converge — Reprise</title>
 <link rel="icon" type="image/png" href="./favicon.png">
+<script>
+/* Session de 1 h max (api/auth.js) : sur toute reponse 401 des routes
+   same-origin, ou des que le cookie d'identite expire, on efface ce cookie
+   (sans quoi l'ecran de connexion ne s'afficherait pas) puis on recharge.
+   Ne boucle pas : le rechargement sans cookie d'identite affiche la
+   connexion, et le gestionnaire 401 ne se declenche que cookie present. */
+(function () {
+  var avait = /(^|; )psf_user_email=/.test(document.cookie);
+  function deconnecter() {
+    document.cookie = "psf_user_email=; Path=/; Max-Age=0; Secure; SameSite=Lax";
+    location.reload();
+  }
+  var f = window.fetch;
+  window.fetch = function (input) {
+    var url = String((input && input.url) || input);
+    return f.apply(this, arguments).then(function (r) {
+      var memeOrigine = url.charAt(0) === "/" || url.indexOf(location.origin) === 0;
+      if (r.status === 401 && memeOrigine && !/\/api\/(auth|logout)/.test(url) && /(^|; )psf_user_email=/.test(document.cookie)) deconnecter();
+      return r;
+    });
+  };
+  setInterval(function () {
+    if (avait && !/(^|; )psf_user_email=/.test(document.cookie)) location.reload();
+  }, 15000);
+})();
+</script>
 <script src="./support.js"></script>
 </head>
 <body>

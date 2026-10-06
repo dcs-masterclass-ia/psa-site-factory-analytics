@@ -66,10 +66,13 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
       - name: Comparer l'API au fichier en production
+        env:
+          IN_MOIS: ${{ inputs.mois }}
+          IN_SITE: ${{ inputs.site }}
         run: |
           python -m pipeline.compare_ga4 \
-            --site "${{ inputs.site }}" \
-            --mois ${{ inputs.mois }}
+            --site "$IN_SITE" \
+            --mois "$IN_MOIS"
 
       - name: Effacer la clé
         if: always()

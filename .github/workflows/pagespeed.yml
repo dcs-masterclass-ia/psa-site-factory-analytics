@@ -58,14 +58,15 @@ jobs:
 
       - name: Mesurer les sites
         env:
+          IN_SITES: ${{ inputs.sites }}
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: |
           if [ -z "$PAGESPEED_API_KEY" ]; then
             echo "::error::Le secret PAGESPEED_API_KEY est vide ou absent."
             exit 1
           fi
-          if [ -n "${{ inputs.sites }}" ]; then
-            python -m pipeline.pagespeed --sites ${{ inputs.sites }} --ecrire
+          if [ -n "$IN_SITES" ]; then
+            python -m pipeline.pagespeed --sites $IN_SITES --ecrire
           else
             python -m pipeline.pagespeed --tous --ecrire
           fi
@@ -76,9 +77,11 @@ jobs:
         # data/ vit dans un repo separe depuis le 15/08/2026 -- voir
         # refresh.yml pour le detail. Sans ce hook, une mesure publiee
         # ne serait jamais servie par le site.
+        env:
+          SEC_VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          if [ -z "$SEC_VERCEL_DEPLOY_HOOK" ]; then
             echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
             exit 0
           fi
-          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+          curl -fsS -X POST "$SEC_VERCEL_DEPLOY_HOOK"

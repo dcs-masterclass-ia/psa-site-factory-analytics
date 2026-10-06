@@ -54,13 +54,18 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
       - name: Funnel filtré par canal
+        env:
+          IN_CANAL: ${{ inputs.canal }}
+          IN_DEBUT: ${{ inputs.debut }}
+          IN_FIN: ${{ inputs.fin }}
+          IN_SITE: ${{ inputs.site }}
         run: |
           SORTIE="$RUNNER_TEMP/rapport.json"
           python -m pipeline._diag_funnel_canal \
-            --site "${{ inputs.site }}" \
-            --debut "${{ inputs.debut }}" \
-            --fin "${{ inputs.fin }}" \
-            --canal "${{ inputs.canal }}" | tee "$SORTIE"
+            --site "$IN_SITE" \
+            --debut "$IN_DEBUT" \
+            --fin "$IN_FIN" \
+            --canal "$IN_CANAL" | tee "$SORTIE"
           {
             echo '```json'
             cat "$SORTIE"

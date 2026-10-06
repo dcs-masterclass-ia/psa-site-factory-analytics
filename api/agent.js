@@ -13,6 +13,8 @@
 const { callClaudeStream } = require("./_lib/anthropic");
 const { TOOLS, runTool } = require("./_lib/tools");
 const { verifySessionFromRequest } = require("./_lib/auth");
+const { sanitizeHistory } = require("./_lib/history");
+const { fail } = require("./_lib/errors");
 
 // Sonnet 5 + effort medium : qualite proche d'Opus sur ce type de travail
 // agentique (orchestration + synthese), pour une fraction du cout -- le
@@ -219,24 +221,28 @@ function aguiUserContentToBlocks(content) {
 function aguiMessagesToClaude(aguiMessages) {
   const claudeMessages = [];
   const systemExtra = [];
-  for (const m of aguiMessages || []) {
+  const TOOL_NAMES = new Set(TOOLS.map((t) => t.name));
+  const cap = (v, n) => (typeof v === "string" ? v.slice(0, n) : "");
+  for (const m of (aguiMessages || []).slice(-100)) {
+    if (!m || typeof m !== "object") continue;
     if (m.role === "system" || m.role === "developer") {
-      if (m.content) systemExtra.push(m.content);
+      // ignore : le client ne peut pas completer le prompt systeme du serveur
     } else if (m.role === "user") {
       claudeMessages.push({ role: "user", content: aguiUserContentToBlocks(m.content) });
     } else if (m.role === "assistant") {
       const blocks = [];
-      if (m.content) blocks.push({ type: "text", text: m.content });
-      for (const tc of m.toolCalls || []) {
+      if (m.content) blocks.push({ type: "text", text: cap(m.content, 20000) });
+      for (const tc of (Array.isArray(m.toolCalls) ? m.toolCalls : []).slice(0, 10)) {
+        if (!tc || !tc.function || !TOOL_NAMES.has(tc.function.name) || typeof tc.id !== "string") continue;
         let input = {};
         try {
-          input = JSON.parse(tc.function.arguments || "{}");
+          input = JSON.parse(cap(tc.function.arguments, 20000) || "{}");
         } catch (_) {}
-        blocks.push({ type: "tool_use", id: tc.id, name: tc.function.name, input });
+        blocks.push({ type: "tool_use", id: tc.id.slice(0, 128), name: tc.function.name, input });
       }
       claudeMessages.push({ role: "assistant", content: blocks });
     } else if (m.role === "tool") {
-      const block = { type: "tool_result", tool_use_id: m.toolCallId, content: m.content };
+      const block = { type: "tool_result", tool_use_id: cap(m.toolCallId, 128), content: cap(m.content, 100000) };
       const last = claudeMessages[claudeMessages.length - 1];
       if (last && last.role === "user" && Array.isArray(last.content) && last.content.every((b) => b.type === "tool_result")) {
         last.content.push(block);
@@ -419,7 +425,8 @@ module.exports = async function handler(req, res) {
       }
       await runAguiLoop(send, claudeMessages, system, threadId, runId);
     } catch (e) {
-      send({ type: "RUN_ERROR", message: String(e && e.message ? e.message : e) });
+      console.error("[agent:agui]", e);
+      send({ type: "RUN_ERROR", message: "Erreur interne de l'assistant." });
     } finally {
       res.end();
     }
@@ -433,7 +440,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const messages = Array.isArray(history) ? history.slice(-20) : [];
+  const messages = sanitizeHistory(history);
   messages.push({ role: "user", content: buildInitialContent(question, scope, attachments, view) });
 
   try {
@@ -444,6 +451,6 @@ module.exports = async function handler(req, res) {
       }
     }
   } catch (e) {
-    res.status(500).json({ error: String(e && e.message ? e.message : e) });
+    fail(res, 500, "Erreur interne de l'assistant.", e, "agent");
   }
 };

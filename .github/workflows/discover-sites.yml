@@ -55,10 +55,13 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
 
       - name: Lister les sites accessibles
+        env:
+          IN_DEBUT: ${{ inputs.debut }}
+          IN_FIN: ${{ inputs.fin }}
         run: |
           ARGS=""
-          if [ -n "${{ inputs.debut }}" ]; then ARGS="$ARGS --debut ${{ inputs.debut }}"; fi
-          if [ -n "${{ inputs.fin }}" ]; then ARGS="$ARGS --fin ${{ inputs.fin }}"; fi
+          if [ -n "$IN_DEBUT" ]; then ARGS="$ARGS --debut $IN_DEBUT"; fi
+          if [ -n "$IN_FIN" ]; then ARGS="$ARGS --fin $IN_FIN"; fi
           SORTIE="$RUNNER_TEMP/rapport.txt"
           python -m pipeline.discover_sites $ARGS | tee "$SORTIE"
           {

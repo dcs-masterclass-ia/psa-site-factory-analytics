@@ -55,18 +55,20 @@ jobs:
 
       - name: Rattraper les leads BO janv-avril 2025
         env:
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+          IN_SITES: ${{ inputs.sites }}
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
           ARGS=()
-          if [ -n "${{ inputs.sites }}" ]; then
+          if [ -n "$IN_SITES" ]; then
             ARGS+=(--sites)
-            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            IFS=',' read -ra SITES <<< "$IN_SITES"
             for s in "${SITES[@]}"; do
               s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
               ARGS+=("$s")
             done
           fi
-          if [ "${{ inputs.dry_run }}" = "oui" ]; then ARGS+=(--dry-run); fi
+          if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
           python -m pipeline.backfill_leads_2025_debut "${ARGS[@]}"
 
       - name: Déclencher le redéploiement Vercel
@@ -74,9 +76,11 @@ jobs:
         # refresh.yml pour le detail. Sans ce hook, un rattrapage publie
         # bien les donnees mais le site ne les sert jamais.
         if: ${{ inputs.dry_run != 'oui' }}
+        env:
+          SEC_VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          if [ -z "$SEC_VERCEL_DEPLOY_HOOK" ]; then
             echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
             exit 0
           fi
-          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+          curl -fsS -X POST "$SEC_VERCEL_DEPLOY_HOOK"

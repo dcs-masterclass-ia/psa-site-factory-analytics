@@ -89,6 +89,8 @@ jobs:
       - name: Extraire, contrôler, assembler
         id: build
         env:
+          IN_SIMULATION: ${{ inputs.simulation }}
+          IN_SITES: ${{ inputs.sites }}
           # optionnel comme Search Console lui-meme : absent, insights.py se
           # desactive proprement (liste vide), rien d'autre n'est affecte.
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -102,16 +104,16 @@ jobs:
           # deux arguments invalides ("OPEL", "PT"), trouve le 12/08/2026 sur
           # un dispatch scope OPEL PT (KeyError: site inconnu : OPEL).
           ARGS=()
-          if [ -n "${{ inputs.sites }}" ]; then
+          if [ -n "$IN_SITES" ]; then
             ARGS+=(--sites)
-            IFS=',' read -ra SITES <<< "${{ inputs.sites }}"
+            IFS=',' read -ra SITES <<< "$IN_SITES"
             for s in "${SITES[@]}"; do
               s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
               ARGS+=("$s")
             done
           fi
-          if [ "${{ inputs.simulation }}" != "oui" ]; then ARGS+=(--ecrire); fi
-          echo "mode : $([ "${{ inputs.simulation }}" = "oui" ] && echo SIMULATION || echo ECRITURE)"
+          if [ "$IN_SIMULATION" != "oui" ]; then ARGS+=(--ecrire); fi
+          echo "mode : $([ "$IN_SIMULATION" = "oui" ] && echo SIMULATION || echo ECRITURE)"
           # build.py ecrit lui-meme le recapitulatif complet dans
           # GITHUB_STEP_SUMMARY au fil de l'execution : rien a extraire ici,
           # et surtout rien a tronquer (un `tail` precedent avait coupe les
@@ -158,12 +160,14 @@ jobs:
         # (meme si un site est en echec de controle) : les autres sites
         # du run ont quand meme ete publies, ca vaut la peine de redeployer.
         if: ${{ always() && inputs.simulation != 'oui' }}
+        env:
+          SEC_VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
         run: |
-          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+          if [ -z "$SEC_VERCEL_DEPLOY_HOOK" ]; then
             echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
             exit 0
           fi
-          curl -fsS -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+          curl -fsS -X POST "$SEC_VERCEL_DEPLOY_HOOK"
 
       - name: Effacer la clé
         if: always()

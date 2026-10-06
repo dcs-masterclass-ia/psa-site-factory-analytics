@@ -105,11 +105,18 @@ install/build anything for this static site).
     type Anthropic adds needs the same explicit handling, not a fallback to
     "text".
 - **`middleware.js`**: Vercel Edge Middleware, the *real* access control.
-  Guards `/data/:path*` and the sensitive `/api/*` routes (`agent`,
-  `refresh`, `perf-ticket`, `kamia-conversations`) by verifying the
-  `psf_session` HMAC cookie — the client-side login screen alone would not
-  stop someone from fetching `/data/*.json` directly. Add any new
-  session-protected endpoint to the `matcher` array.
+  Guards `/data/:path*` and EVERY `/api/*` route except `auth`, `config`
+  and `logout` (protected by default: a new route is closed unless added to
+  that public list) by verifying the `psf_session` HMAC cookie — the
+  client-side login screen alone would not stop someone from fetching
+  `/data/*.json` directly. Sessions last 1 h absolute (`MAX_SESSION_MS` in
+  `api/_lib/auth.js`, mirrored in `middleware.js`; `verify` also rejects
+  tokens whose `exp` is further than 1 h away, so old long-lived cookies
+  die). `index.html` clears the identity cookie and reloads on any 401 or
+  when that cookie expires. API handlers must return generic errors via
+  `api/_lib/errors.js` `fail()` (detail goes to logs only), and client
+  conversation history goes through `api/_lib/history.js` before reaching
+  Anthropic.
 - **`pipeline/`** (Python): the data pipeline. `build.py` is the entry
   point — extracts GA4 (`ga4.py`, `funnel.py`, `channel.py`), Search
   Console (`search_console.py`, `insights.py`), leads/BO

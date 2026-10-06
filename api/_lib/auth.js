@@ -7,6 +7,11 @@
 
 const crypto = require("crypto");
 
+// Duree de vie absolue d'une session : 1 h, puis reconnexion Google. verify()
+// refuse aussi tout jeton dont l'expiration depasse cette fenetre (+60 s de
+// tolerance d'horloge), ce qui invalide d'un coup les anciens cookies de 7 j.
+const MAX_SESSION_MS = 60 * 60 * 1000;
+
 function b64url(str) {
   return Buffer.from(str, "utf8").toString("base64url");
 }
@@ -36,6 +41,7 @@ function verify(token) {
     if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
     const data = JSON.parse(fromB64url(payload));
     if (!data.exp || Date.now() > data.exp) return null;
+    if (data.exp - Date.now() > MAX_SESSION_MS + 60 * 1000) return null;
     return data;
   } catch (e) {
     return null;
@@ -74,4 +80,4 @@ function verifySessionFromRequest(req) {
   return session;
 }
 
-module.exports = { sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, isEmailAllowed };
+module.exports = { MAX_SESSION_MS, sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, isEmailAllowed };

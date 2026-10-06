@@ -26,6 +26,7 @@
 
 const crypto = require("crypto");
 const { verifySessionFromRequest } = require("./_lib/auth");
+const { fail } = require("./_lib/errors");
 const { readJson, writeJson } = require("./_lib/store");
 
 const MAX_CONVERSATIONS = 200;
@@ -139,7 +140,6 @@ module.exports = async function handler(req, res) {
 
     res.status(405).json({ error: "Methode non autorisee." });
   } catch (e) {
-    console.error("[kamia-conversations]", e);
-    res.status(502).json({ error: "Stockage indisponible.", detail: String(e && e.message || e) });
+    fail(res, 502, "Stockage indisponible.", e, "kamia-conversations");
   }
 };
