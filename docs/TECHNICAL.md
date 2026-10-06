@@ -180,7 +180,8 @@ partagé), parce que `middleware.js` tourne en Edge Runtime (Web Crypto) et
 les fonctions `api/*.js` en runtime Node (`crypto` natif) :
 
 1. `api/auth.js` vérifie un ID token Google (endpoint `tokeninfo`, pas de
-   lib JWT), vérifie le domaine (`ALLOWED_DOMAIN`), signe un cookie
+   lib JWT), vérifie le domaine (`ALLOWED_DOMAIN`) ou, si définie, la liste blanche
+   `ALLOWED_EMAILS` (qui la remplace), signe un cookie
    `psf_session` (HMAC, 7 jours).
 2. `middleware.js` (`export const config = {matcher: [...]}`) est le
    **vrai** contrôle d'accès — un écran de connexion côté client seul ne
@@ -293,6 +294,7 @@ dev`) :
 |---|---|---|
 | `GOOGLE_CLIENT_ID` | `auth.js`, `config.js` | Client OAuth Web |
 | `ALLOWED_DOMAIN` | `auth.js` | ex. `autobiz.com` |
+| `ALLOWED_EMAILS` | `auth.js`, `_lib/auth.js`, `middleware.js` | optionnel : adresses autorisées séparées par des virgules ; remplace le contrôle de domaine et est revérifiée à chaque requête (révoque les cookies déjà émis). À garder dans Vercel, pas dans le repo (public) |
 | `AUTH_COOKIE_SECRET` | `_lib/auth.js`, `middleware.js` | secret aléatoire (`openssl rand -hex 32`) |
 | `ANTHROPIC_API_KEY` | `_lib/anthropic.js` | clé API Claude |
 | `GITHUB_TOKEN` | `refresh.js` | fin, **Actions: Read/write uniquement** sur ce repo |

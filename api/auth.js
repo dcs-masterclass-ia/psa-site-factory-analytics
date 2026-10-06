@@ -11,10 +11,12 @@
  * Variables d'environnement Vercel a creer :
  *   GOOGLE_CLIENT_ID     client OAuth Google (Web application)
  *   ALLOWED_DOMAIN       domaine autorise, ex. autobiz.com
+ *   ALLOWED_EMAILS       (optionnel) liste blanche d'adresses separees par des
+ *                        virgules ; si definie, elle remplace le controle de domaine
  *   AUTH_COOKIE_SECRET   secret aleatoire (ex. `openssl rand -hex 32`)
  */
 
-const { sign } = require("./_lib/auth");
+const { sign, allowedEmails } = require("./_lib/auth");
 
 const MAX_AGE_S = 60 * 60 * 24 * 7; // 7 jours
 
@@ -26,7 +28,8 @@ module.exports = async function handler(req, res) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const allowedDomain = (process.env.ALLOWED_DOMAIN || "").toLowerCase();
-  if (!clientId || !allowedDomain) {
+  const allowList = allowedEmails();
+  if (!clientId || (!allowedDomain && !allowList.length)) {
     res.status(500).json({ error: "Configuration serveur incomplete (GOOGLE_CLIENT_ID / ALLOWED_DOMAIN)." });
     return;
   }
@@ -57,7 +60,12 @@ module.exports = async function handler(req, res) {
       return;
     }
     const email = String(info.email || "").toLowerCase();
-    if (!email.endsWith("@" + allowedDomain)) {
+    if (allowList.length) {
+      if (!allowList.includes(email)) {
+        res.status(403).json({ error: "Acces reserve aux comptes autorises." });
+        return;
+      }
+    } else if (!email.endsWith("@" + allowedDomain)) {
       res.status(403).json({ error: `Acces reserve aux comptes @${allowedDomain}.` });
       return;
     }

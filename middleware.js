@@ -59,7 +59,8 @@ export default async function middleware(request) {
   const secret = process.env.AUTH_COOKIE_SECRET;
   const cookies = parseCookies(request.headers.get("cookie"));
   const session = await verifySession(cookies.psf_session, secret);
-  if (session) return; // laisse passer
+  const allowed = (process.env.ALLOWED_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+  if (session && (allowed.length === 0 || allowed.includes(String(session.email || "").toLowerCase()))) return; // laisse passer
 
   return new Response(JSON.stringify({ error: "Non authentifie." }), {
     status: 401,

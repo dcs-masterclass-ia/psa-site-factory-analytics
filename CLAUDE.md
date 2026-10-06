@@ -155,7 +155,11 @@ doesn't become a nested repo.
 
 Serverless functions (`api/*.js`) need Vercel env vars documented in each
 file's header comment (`GOOGLE_CLIENT_ID`, `ALLOWED_DOMAIN`,
-`AUTH_COOKIE_SECRET`, `GITHUB_TOKEN`, `OPENAI_API_KEY`/Anthropic key, etc.) —
+`ALLOWED_EMAILS` (optional allowlist, comma-separated; when set it replaces
+the domain check at login AND is re-checked on every request by
+`middleware.js`/`verifySessionFromRequest`, so already-issued cookies of
+non-listed accounts stop working — keep the addresses in the Vercel env var,
+never in this public repo), `AUTH_COOKIE_SECRET`, `GITHUB_TOKEN`, `OPENAI_API_KEY`/Anthropic key, etc.) —
 not needed just to browse the static dashboard against local data.
 
 ## Testing (run before every push to main)

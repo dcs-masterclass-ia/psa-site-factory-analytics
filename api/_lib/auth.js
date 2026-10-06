@@ -52,9 +52,26 @@ function parseCookies(header) {
   return out;
 }
 
-function verifySessionFromRequest(req) {
-  const cookies = parseCookies(req.headers.cookie);
-  return verify(cookies.psf_session);
+// Liste blanche optionnelle (ALLOWED_EMAILS, separee par des virgules). Absente
+// = on retombe sur le controle de domaine seul fait a la connexion. Presente =
+// seules ces adresses passent, y compris pour les cookies deja emis.
+function allowedEmails() {
+  return (process.env.ALLOWED_EMAILS || "")
+    .split(",")
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
 }
 
-module.exports = { sign, verify, parseCookies, verifySessionFromRequest };
+function isEmailAllowed(email) {
+  const list = allowedEmails();
+  return list.length === 0 || list.includes(String(email || "").toLowerCase());
+}
+
+function verifySessionFromRequest(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  const session = verify(cookies.psf_session);
+  if (!session || !isEmailAllowed(session.email)) return null;
+  return session;
+}
+
+module.exports = { sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, isEmailAllowed };
