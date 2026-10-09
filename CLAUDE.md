@@ -25,10 +25,9 @@ install/build anything for this static site).
     `compare_to_peers`), per-channel×device conversion with deltas vs the
     comparison period and best/worst-channel callouts, a day-of-week
     seasonality module (volume only), a "Conversion" sub-tab (daily
-    accueil→estimation curve + 7-day rolling average + previous period,
-    from `funnelDaily` = `pipeline/funnel_daily.py`: 4 GA4 requests per
-    site over a 120-day window, GA4-only so limited profiles see it too —
-    the per-step funnel itself stays weekly/monthly, never interpolated), and a trend-break module (z-score
+    accueil→estimation curve + 7-day rolling average + previous period +
+    V2 switch marker, from `funnelDaily`, GA4-only so limited profiles see it
+    too — see "Conversion — one definition everywhere" below), and a trend-break module (z-score
     on rolling weekly sessions/leads, `RUPTURE_VOLUME_MIN`/`RUPTURE_Z_SEUIL`
     guards, same spirit as `pipeline/watch.py`'s thresholds but duplicated
     client-side since this tab makes no server call).
