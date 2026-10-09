@@ -64,6 +64,12 @@ install/build anything for this static site).
   on the form page, so that was always 0). Landing paths include parent-site
   pages (sessions cross over); the UI only attaches them to pages known to
   Search Console, and never attributes "/" (shared by parent and reprise).
+  Format v2 (`{"v":2,"pages":[{page,sessions,conversions,c:{o|p|d|a:[sessions,conv]}}]}`,
+  restricted to `build.chemins_landing`): channel groups o=Organic Search,
+  p=paid/display, d=Direct, a=other. The Pages card has a channel filter
+  (`state.pagesCanal`, default `o`); old-format months only feed "Tous canaux"
+  until `backfill-landing.yml` rewrites them. Never name GA4 fields `leads`
+  (limited role `stripLeads`).
   History is filled by the manual workflow `backfill-landing.yml`.
 - **`api/*.js`** (Vercel serverless functions):
   - `auth.js` / `logout.js` — Google Sign-In verification, signs an HMAC
