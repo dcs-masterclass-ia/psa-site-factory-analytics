@@ -758,6 +758,67 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         </sc-if>
 
+        <div>
+          <div style="background:linear-gradient(135deg,#f3f6ff,#f7f3ff);border:1px solid #e3e8fb;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+              <span style="{{ cChip }}">{{ cIcon }}</span>
+              <div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Comparer deux périodes<span class="dc-info" tabindex="0">i<span class="dc-tip">Interrogation directe de Search Console pour deux périodes au choix : le détail jour par jour n'est pas stocké, il est lu à la demande.</span></span></div>
+                <div style="font-size:12.5px;color:#6d727a">Choisis une dimension et des dates : appel en direct à Search Console, données jour par jour</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap;margin-bottom:16px;background:#fff;border:1px solid #efeff1;border-radius:14px;padding:14px 16px">
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Dimension</div>
+                <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:4px">
+                  <span onClick="{{ dimPages }}" style="{{ dimPagesStyle }}">Pages</span>
+                  <span onClick="{{ dimQueries }}" style="{{ dimQueriesStyle }}">Requêtes</span>
+                </div>
+              </div>
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de début</div>
+                <input type="date" value="{{ cmpStart }}" onInput="{{ onCmpStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
+              </div>
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de fin</div>
+                <input type="date" value="{{ cmpEnd }}" onInput="{{ onCmpEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
+              </div>
+              <div onClick="{{ runApi }}" style="{{ runStyle }}">{{ runLabel }}</div>
+              <span style="font-size:13px;color:#9a9fa6;max-width:260px">{{ apiStatus }}</span>
+            </div>
+
+            <sc-if value="{{ cmpError }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:flex-start;gap:12px;border-radius:16px;background:#fdf3f3;border:1px solid #f6dedc;padding:14px 16px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a33c39" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4h.01"/></svg>
+              <span style="min-width:0">
+                <span style="display:block;font-size:15px;font-weight:600;color:#8d3b38;margin-bottom:3px">Appel API échoué</span>
+                <span style="display:block;font-size:14px;line-height:1.5;color:#8d3b38">{{ cmpErrorText }}</span>
+                <span onClick="{{ runApi }}" style="display:inline-flex;align-items:center;height:34px;padding:0 14px;margin-top:10px;border-radius:11px;background:#fff;border:1px solid #f0cfcd;font-size:14px;font-weight:500;color:#8d3b38;cursor:pointer">Réessayer</span>
+              </span>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ cmpReady }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">{{ cmpPeriodsLabel }}</div>
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
+                <span>{{ cmpDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">Δ clics</span><span style="text-align:right">Impressions</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
+              </div>
+              <sc-for list="{{ cmpRows }}" as="r" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                  <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.a }}</span>
+                  <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
+                  <span style="{{ r.posStyle }}">{{ r.pos }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+        </div>
+
         <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:15px;align-items:start">
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
@@ -856,64 +917,6 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div>
-          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison de périodes</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Interrogation directe de Search Console pour deux périodes au choix : le détail jour par jour n'est pas stocké, il est lu à la demande.</span></span>
-            <span style="flex:1;height:1px;background:#e8e8ec"></span>
-            <span style="font-size:13px;color:#9a9fa6">Appel API en direct · données journalières</span>
-          </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
-            <div style="display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap;margin-bottom:16px">
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Dimension</div>
-                <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:4px">
-                  <span onClick="{{ dimPages }}" style="{{ dimPagesStyle }}">Pages</span>
-                  <span onClick="{{ dimQueries }}" style="{{ dimQueriesStyle }}">Requêtes</span>
-                </div>
-              </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de début</div>
-                <input type="date" value="{{ cmpStart }}" onInput="{{ onCmpStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de fin</div>
-                <input type="date" value="{{ cmpEnd }}" onInput="{{ onCmpEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div onClick="{{ runApi }}" style="{{ runStyle }}">{{ runLabel }}</div>
-              <span style="font-size:13px;color:#9a9fa6;max-width:260px">{{ apiStatus }}</span>
-            </div>
-
-            <sc-if value="{{ cmpError }}" hint-placeholder-val="{{ false }}">
-            <div style="display:flex;align-items:flex-start;gap:12px;border-radius:16px;background:#fdf3f3;border:1px solid #f6dedc;padding:14px 16px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a33c39" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.4h.01"/></svg>
-              <span style="min-width:0">
-                <span style="display:block;font-size:15px;font-weight:600;color:#8d3b38;margin-bottom:3px">Appel API échoué</span>
-                <span style="display:block;font-size:14px;line-height:1.5;color:#8d3b38">{{ cmpErrorText }}</span>
-                <span onClick="{{ runApi }}" style="display:inline-flex;align-items:center;height:34px;padding:0 14px;margin-top:10px;border-radius:11px;background:#fff;border:1px solid #f0cfcd;font-size:14px;font-weight:500;color:#8d3b38;cursor:pointer">Réessayer</span>
-              </span>
-            </div>
-            </sc-if>
-
-            <sc-if value="{{ cmpReady }}" hint-placeholder-val="{{ true }}">
-            <div>
-              <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">{{ cmpPeriodsLabel }}</div>
-              <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
-                <span>{{ cmpDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">Δ clics</span><span style="text-align:right">Impressions</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
-              </div>
-              <sc-for list="{{ cmpRows }}" as="r" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
-                  <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.a }}</span>
-                  <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
-                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impressions }}</span>
-                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
-                  <span style="{{ r.posStyle }}">{{ r.pos }}</span>
-                </div>
-              </sc-for>
-            </div>
-            </sc-if>
-          </div>
-        </div>
       </div>
       </sc-if>
 
@@ -3241,7 +3244,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, pagesCanaux, qChip:kPuce('#3b76e8'), qIcon:kIcone('#3b76e8',h('circle',{cx:11,cy:11,r:7}),h('path',{d:'M21 21l-4.3-4.3'})), pChip:kPuce('#7c63ee'), pIcon:kIcone('#7c63ee',h('path',{d:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'}),h('path',{d:'M14 3v5h5'})), scQueries, allQueries, pageInsightText, queryInsight,
+      scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, pagesCanaux, cChip:kPuce('#7c63ee'), cIcon:kIcone('#7c63ee',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})), qChip:kPuce('#3b76e8'), qIcon:kIcone('#3b76e8',h('circle',{cx:11,cy:11,r:7}),h('path',{d:'M21 21l-4.3-4.3'})), pChip:kPuce('#7c63ee'), pIcon:kIcone('#7c63ee',h('path',{d:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'}),h('path',{d:'M14 3v5h5'})), scQueries, allQueries, pageInsightText, queryInsight,
       pageQueriesOpen, pageQueriesLoading, pageQueriesError, pageQueriesPath, pageQueriesRows, fermerRequetesPage,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,
@@ -3258,7 +3261,7 @@ class Component extends DCLogic {
       cmpError:st.apiState==='error',
       cmpErrorText:this._gscCompareError||'Erreur inconnue.',
       runApi, runLabel:running?'Appel en cours…':'Comparer',
-      runStyle:`display:flex;align-items:center;justify-content:center;height:38px;padding:0 22px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${running?'background:#eaeaee;color:#9a9fa6':'background:#141414;color:#fff'}`,
+      runStyle:`display:flex;align-items:center;justify-content:center;height:38px;padding:0 22px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${running?'background:#eaeaee;color:#9a9fa6':'background:linear-gradient(135deg,#3b76e8,#7c63ee);color:#fff;box-shadow:0 6px 14px -6px rgba(91,92,240,.6)'}`,
       apiStatus:st.apiState==='done'?`Réponse API · ${cmpRows.length} ligne${cmpRows.length>1?'s':''} · ${this._gscCompareMs||0} ms`:st.apiState==='loading'?'searchanalytics.query en cours…':st.apiState==='error'?'Échec de l’appel':'Aucun appel lancé — la donnée stockée est mensuelle',
       cmpReady:st.apiState==='done', cmpRows,
       rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`,
