@@ -2262,11 +2262,20 @@ class Component extends DCLogic {
     }
     const monthsSelKeys = Object.keys(searchAgg.monthly).sort();
     const padTo2 = arr => arr.length>=2 ? arr : (arr.length===1 ? [arr[0],arr[0]] : [0,0]);
+    // jours de la periode qui ont une donnee Search Console (le dernier jour publie
+    // peut preceder la fin de la periode) : base des moyennes "par jour".
+    let scDernierJour = null;
+    for (const sn of st.sites) {
+      const dd = this.data && this.data[sn] && this.data[sn].daily;
+      if (!dd || !dd.sc) continue;
+      for (let i = dd.d.length-1; i >= 0; i--) { if (dd.d[i] <= fin && dd.sc[i] != null) { if (!scDernierJour || dd.d[i] > scDernierJour) scDernierJour = dd.d[i]; break; } }
+    }
+    const scJoursData = scDernierJour && scDernierJour >= debut ? Math.max(1, Math.round((new Date(scDernierJour+'T00:00:00Z') - new Date(debut+'T00:00:00Z'))/86400000) + 1) : rangeDays;
     const scKpis=[
       {label:'Clics',value:this.fmt(searchAgg.clics),...deltaBadgeAsKpi(deltaBadge(searchAgg.clics, searchCmp&&searchCmp.clics)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].clics)),'#3b76e8',300,70),note:'moy. '+this.fmt(searchAgg.clics/rangeDays)+' / jour'},
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].clics)),'#3b76e8',300,70),note:'moy. '+this.fmt(searchAgg.clics/scJoursData)+' / jour'},
       {label:'Impressions',value:this.fmt(searchAgg.impressions),...deltaBadgeAsKpi(deltaBadge(searchAgg.impressions, searchCmp&&searchCmp.impressions)),
-       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].impressions)),'#7c63ee',300,70),note:'moy. '+this.fmt(searchAgg.impressions/rangeDays)+' / jour'},
+       spark:safeSpark(padTo2(monthsSelKeys.map(m=>searchAgg.monthly[m].impressions)),'#7c63ee',300,70),note:'moy. '+this.fmt(searchAgg.impressions/scJoursData)+' / jour'},
       {label:'CTR',value:dec(scCtr,2)+' %',...deltaBadgeAsKpi(ptDeltaBadge(scCtr, scCtrCmp)),
        spark:safeSpark(padTo2(monthsSelKeys.map(m=>{const mm=searchAgg.monthly[m];return mm.impressions?mm.clics/mm.impressions*100:0;})),'#d78b35',300,70),note:scCtrMedianLabel},
       {label:'Position moyenne',value: scPos!=null? dec(scPos,1) : '—',...deltaBadgeAsKpi(posDeltaBadge(scPos, scPosCmp)),
@@ -2298,13 +2307,20 @@ class Component extends DCLogic {
           if (d.daily.si[i]!=null) imprParJour[jour]=(imprParJour[jour]||0)+d.daily.si[i];
         });
       }
-      clicks = jours.map(j=>clicsParJour[j]||0);
-      impr = jours.map(j=>imprParJour[j]||0);
-      pos = jours.map(()=>0);
+      // Search Console publie avec 2-3 jours de retard : les derniers jours n'ont PAS
+      // de donnee (null cote pipeline). On ne les trace pas (ni point, ni 0, ni etiquette).
+      let dernier = jours.length-1;
+      while (dernier > 0 && clicsParJour[jours[dernier]]==null && imprParJour[jours[dernier]]==null) dernier--;
+      const joursAvecDonnee = jours.slice(0, dernier+1);
+      const fmtJ = j => j.slice(8,10)+'/'+j.slice(5,7);
+      clicks = joursAvecDonnee.map(j=>clicsParJour[j]||0);
+      impr = joursAvecDonnee.map(j=>imprParJour[j]||0);
+      pos = joursAvecDonnee.map(()=>0);
       scPosDispo = false;
-      labels = jours.map(j=>j.slice(8,10)+' '+moisNoms[parseInt(j.slice(5,7),10)-1]);
-      gDays = jours.length;
-      scTrendRangeLabel = `${jours[0].slice(8,10)}/${jours[0].slice(5,7)} → ${jours[jours.length-1].slice(8,10)}/${jours[jours.length-1].slice(5,7)} · survolez la courbe`;
+      labels = joursAvecDonnee.map(j=>j.slice(8,10)+' '+moisNoms[parseInt(j.slice(5,7),10)-1]);
+      gDays = joursAvecDonnee.length;
+      scTrendRangeLabel = `${fmtJ(jours[0])} → ${fmtJ(joursAvecDonnee[joursAvecDonnee.length-1])} · survolez la courbe`
+        + (joursAvecDonnee.length < jours.length ? ` · dernière donnée Search Console : ${fmtJ(joursAvecDonnee[joursAvecDonnee.length-1])} (délai de publication de 2-3 jours)` : '');
     } else {
       const searchTrend = this.aggregateSearch(this.decale(todayIso,-370), todayIso);
       const trendMonthsKeys = Object.keys(searchTrend.monthly).sort().slice(-12);

@@ -106,3 +106,22 @@ test("info-bulle d'une tuile : jamais rognée par la carte, reste dans l'écran"
   await page.mouse.move(5, 300);
   await expect(bulle).toBeHidden();
 });
+
+test("Search Console : pas de point à 0 pour les jours sans donnée (délai de publication)", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("CITROEN FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "CITROEN FR" }).first().click();
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await page.locator('div[title="Search Console"]').first().click();
+  await page.waitForTimeout(600);
+  // les données stockées s'arrêtent avant la fin de la période : le libellé le dit
+  await expect(page.getByText(/dernière donnée Search Console : \d{2}\/\d{2}/)).toBeVisible();
+  // aucune étiquette d'axe pour le dernier jour de la période (07 oct.), vide de données
+  await expect(page.getByText("07 oct.", { exact: true })).toHaveCount(0);
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
