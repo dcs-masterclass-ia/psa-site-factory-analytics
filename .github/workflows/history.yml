@@ -1,0 +1,91 @@
+name: Historique profond (leads BO, GA4, Search Console)
+
+# Manuel : collecte l'historique le plus ancien possible dans le repo de
+# donnees, sous data/history/<source>/<site>.csv.gz (CSV compresse, lisible
+# par Converge / pandas / Excel). Le dashboard n'y touche pas. Voir
+# pipeline/history.py pour les profondeurs et les formats.
+# Search Console : chaque passage FUSIONNE avec l'existant (Google ne garde
+# que 16 mois) -- a relancer de temps en temps pour archiver.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Source à collecter"
+        type: choice
+        options: ["leads", "ga4", "gsc"]
+        default: "leads"
+      sites:
+        description: "Sites (séparés par des virgules ; vide = tous)"
+        required: false
+        default: ""
+      depuis:
+        description: "Date de début AAAA-MM-JJ (vide = défaut de la source)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run : n'écrit/ne commit rien"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
+
+permissions:
+  contents: write
+
+jobs:
+  historique:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Collecter l'historique
+        env:
+          IN_SOURCE: ${{ inputs.source }}
+          IN_SITES: ${{ inputs.sites }}
+          IN_DEPUIS: ${{ inputs.depuis }}
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: |
+          ARGS=("$IN_SOURCE")
+          if [ -n "$IN_SITES" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "$IN_SITES"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ -n "$IN_DEPUIS" ]; then ARGS+=(--depuis "$IN_DEPUIS"); fi
+          if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
+          python -m pipeline.history "${ARGS[@]}"
