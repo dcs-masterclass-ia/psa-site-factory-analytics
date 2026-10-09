@@ -75,7 +75,7 @@ SITE_EXTRACT = {
     # pas d'entree "fr" fournie pour la Belgique cote FIAT (seule .nl a ete
     # communiquee) : perimetre incomplet en l'etat, a corriger si l'ID
     # manquant est retrouve.
-    "FIAT BE":       [(121, 2026)],
+    "FIAT BE":       [(121, 2026), (125, 2026)],   # 121 = .nl, 125 = .fr (ajoute le 09/10/2026)
     "FIAT ES":       [(155, 2026)],
     "FIAT FR":       [(137, 2026)],
     "FIAT IT":       [(166, 2026)],
@@ -157,6 +157,11 @@ SITE_EXTRACT = {
 
     "LEAPMOTOR BE": [(247, 2026), (250, 2026)],
     "LEAPMOTOR LU": [(249, 2026)],
+
+    # identifies le 09/10/2026 en comparant la liste des sites a l'extraction ;
+    # sans Site() GA4 non plus, donc pipeline leads seulement
+    "FIAT PL": [(149, 2026)],
+    "LANCIA LU": [(245, 2026)],
 }
 
 # colonnes du CSV effectivement exploitees -- jamais les colonnes PII
