@@ -1,0 +1,35 @@
+# outputDirectory est "." (pas de framework, pas de build front) : SANS ce
+# fichier, Vercel sert TOUT le repo comme fichier statique public, y compris
+# le code serveur -- constate le 09/10/2026 (test d'intrusion) : middleware.js
+# (logique d'auth complete), pipeline/*.py (IDs GA4, table des siteId back-
+# office), .github/workflows/*.yml (noms des secrets), scripts/, tests/
+# etaient tous lisibles en clair par un visiteur anonyme, sans session.
+#
+# Seuls les fichiers que le navigateur doit charger restent publics :
+# index.html, support.js, style.css/script.js (morts mais inoffensifs),
+# hermes-agui.js, favicon*.png, logo-*.png, vercel.json, le dossier api/
+# (necessaire aux fonctions serverless) et data/ (sert les JSON par site,
+# deja protege par middleware.js -- data/history et data/kamia sont deja
+# retires du clone par scripts/fetch-data.sh).
+#
+# middleware.js N'EST PAS exclu ici : Vercel doit le detecter a la racine
+# pour l'executer comme Edge Middleware, et exclure un fichier via
+# .vercelignore peut empecher le build de le voir du tout (teste en preview
+# avant toute decision). Il reste donc lisible en clair pour l'instant --
+# aucun secret dedans (la cle vient de process.env), risque accepte en
+# attendant un test de preview concluant. scripts/ n'est pas exclu non plus :
+# vercel.json l'appelle comme buildCommand ("sh scripts/fetch-data.sh"), et
+# ce fichier ne contient aucun secret (le token BO vient de l'env).
+
+pipeline/
+tests/
+panel/
+.github/
+.claude/
+docs/
+requirements.txt
+CLAUDE.md
+README.md
+.gitignore
+.vercelignore
+*.md
