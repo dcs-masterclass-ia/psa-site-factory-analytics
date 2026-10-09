@@ -80,8 +80,29 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
   await expect(page.getByText(/[+−]\d+,\d pt/).first()).toBeVisible();
   // info-bulle : visible au survol
   const info = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "28 jours qui précèdent la bascule" }) }).first();
+  await info.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300); // le défilement masque la bulle (voulu) : on survole une fois la page immobile
   await info.hover();
-  await expect(page.locator(".dc-tip", { hasText: "28 jours qui précèdent la bascule" }).first()).toBeVisible();
+  await expect(page.locator("#dc-tipbox")).toBeVisible();
+  await expect(page.locator("#dc-tipbox")).toContainText("28 jours qui précèdent la bascule");
   await page.locator("body").screenshot({ path: "test-results/v2-opel.png" });
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("info-bulle d'une tuile : jamais rognée par la carte, reste dans l'écran", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const icone = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "Sessions GA4 de l'outil de reprise" }) }).first();
+  await icone.hover();
+  const bulle = page.locator("#dc-tipbox");
+  await expect(bulle).toBeVisible();
+  await expect(bulle).toContainText("Sessions GA4 de l'outil de reprise");
+  const b = await bulle.boundingBox();
+  const vp = page.viewportSize();
+  expect(b.x).toBeGreaterThanOrEqual(0);
+  expect(b.y).toBeGreaterThanOrEqual(0);
+  expect(b.x + b.width).toBeLessThanOrEqual(vp.width);
+  expect(b.y + b.height).toBeLessThanOrEqual(vp.height);
+  await page.screenshot({ path: "test-results/tip-tuile.png" });
+  await page.mouse.move(5, 300);
+  await expect(bulle).toBeHidden();
 });

@@ -29,6 +29,27 @@
   setInterval(function () {
     if (avait && !/(^|; )psf_user_email=/.test(document.cookie)) location.reload();
   }, 15000);
+
+  /* Info-bulles (i) : une seule bulle fixe rattachee au document, positionnee
+     d'apres l'icone et gardee dans l'ecran -- une bulle dans la carte serait
+     rognee par ses overflow:hidden. Le texte vient du .dc-tip de l'icone. */
+  var bulle = null;
+  function montre(info) {
+    var tip = info.querySelector(".dc-tip"); if (!tip) return;
+    if (!bulle) { bulle = document.createElement("div"); bulle.id = "dc-tipbox"; document.documentElement.appendChild(bulle); }
+    bulle.textContent = tip.textContent; bulle.style.display = "block";
+    var r = info.getBoundingClientRect(), w = bulle.offsetWidth, h = bulle.offsetHeight;
+    var gauche = Math.max(8, Math.min(r.left - 12, window.innerWidth - w - 8));
+    var haut = r.bottom + 9; if (haut + h > window.innerHeight - 8) haut = Math.max(8, r.top - h - 9);
+    bulle.style.left = gauche + "px"; bulle.style.top = haut + "px";
+  }
+  function cache() { if (bulle) bulle.style.display = "none"; }
+  function icone(e) { return e.target && e.target.closest ? e.target.closest(".dc-info") : null; }
+  document.addEventListener("mouseover", function (e) { var i = icone(e); if (i) montre(i); });
+  document.addEventListener("mouseout", function (e) { var i = icone(e); if (i && !(e.relatedTarget && i.contains(e.relatedTarget))) cache(); });
+  document.addEventListener("focusin", function (e) { var i = icone(e); if (i) montre(i); });
+  document.addEventListener("focusout", function (e) { if (icone(e)) cache(); });
+  window.addEventListener("scroll", cache, true);
 })();
 </script>
 <script src="./support.js"></script>
@@ -101,9 +122,8 @@ html,body{margin:0;height:100%;background:#f4f4f6;font-family:Poppins,system-ui,
 a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 .dc-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;border-radius:50%;background:#ecebf4;color:#6d727a;font-size:11px;font-weight:600;font-style:normal;letter-spacing:0;text-transform:none;line-height:1;cursor:help;vertical-align:middle;margin-left:7px}
 .dc-info:hover,.dc-info:focus{background:#d9d2fb;color:#4a36b0;outline:none}
-.dc-tip{display:none;position:absolute;z-index:90;left:-12px;top:calc(100% + 9px);width:310px;max-width:72vw;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28)}
-.dc-info:hover .dc-tip,.dc-info:focus .dc-tip{display:block}
-.dc-info.r .dc-tip{left:auto;right:-12px}
+.dc-tip{display:none!important}
+#dc-tipbox{display:none;position:fixed;z-index:9999;width:310px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-family:Poppins,system-ui,sans-serif;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28);pointer-events:none}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#dedee2;border-radius:6px;border:3px solid #f4f4f6}
 @keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes orbSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
