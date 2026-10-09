@@ -145,6 +145,13 @@ install/build anything for this static site).
   `api/_lib/errors.js` `fail()` (detail goes to logs only), and client
   conversation history goes through `api/_lib/history.js` before reaching
   Anthropic.
+- **Maintenance mode**: set the Vercel env var `MAINTENANCE=1` (production)
+  and redeploy (`vercel redeploy <prod url>`; unset + redeploy to lift). The
+  page stays reachable but blurred and inert behind a "Maintenance en cours"
+  card (`#maint` in `index.html`, flag read from the public, no-store
+  `/api/config`, re-checked every 60 s, auto-reload when lifted), and
+  `middleware.js` answers 503 on `/data/*` and every protected `/api/*`
+  whatever the profile — the overlay alone is cosmetic.
 - **`pipeline/`** (Python): the data pipeline. `build.py` is the entry
   point — extracts GA4 (`ga4.py`, `funnel.py`, `channel.py`), Search
   Console (`search_console.py`, `insights.py`), leads/BO

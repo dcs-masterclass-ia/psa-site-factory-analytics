@@ -86,6 +86,14 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 });
 
 export default async function middleware(request) {
+  // Maintenance (MAINTENANCE=1) : plus aucune donnee ni API, quel que soit le profil.
+  // La page, elle, reste accessible (voilee et bloquee, cf. index.html).
+  if (/^(1|true|oui)$/i.test(process.env.MAINTENANCE || "")) {
+    return new Response(JSON.stringify({ error: "Maintenance en cours.", maintenance: true }), {
+      status: 503,
+      headers: { "content-type": "application/json", "retry-after": "300", "cache-control": "no-store" },
+    });
+  }
   const secret = process.env.AUTH_COOKIE_SECRET;
   const cookies = parseCookies(request.headers.get("cookie"));
   const session = await verifySession(cookies.psf_session, secret);

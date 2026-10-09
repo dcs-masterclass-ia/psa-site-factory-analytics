@@ -7,5 +7,11 @@
  */
 
 module.exports = async function handler(req, res) {
-  res.status(200).json({ googleClientId: process.env.GOOGLE_CLIENT_ID || null });
+  // maintenance : MAINTENANCE=1 (variable Vercel). Lu par la page (voile + blocage)
+  // et appliqué côté serveur par middleware.js (503 sur les données et les API).
+  res.setHeader("Cache-Control", "no-store");
+  res.status(200).json({
+    googleClientId: process.env.GOOGLE_CLIENT_ID || null,
+    maintenance: /^(1|true|oui)$/i.test(process.env.MAINTENANCE || ""),
+  });
 };

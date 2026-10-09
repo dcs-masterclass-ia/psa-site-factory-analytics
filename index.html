@@ -50,6 +50,29 @@
   document.addEventListener("focusin", function (e) { var i = icone(e); if (i) montre(i); });
   document.addEventListener("focusout", function (e) { if (icone(e)) cache(); });
   window.addEventListener("scroll", cache, true);
+
+  /* Maintenance : /api/config (public, jamais en cache) porte le drapeau. Page
+     floutee et bloquee (voile plein ecran, reste de la page inerte : pas de clic,
+     pas de clavier) ; verifie toutes les 60 s et rechargee toute seule des que la
+     maintenance est levee. Le blocage reel des donnees est cote serveur (middleware). */
+  var voile = null;
+  function maintenance(active) {
+    if (active && !voile) {
+      voile = document.createElement("div"); voile.id = "maint";
+      voile.setAttribute("role", "alertdialog"); voile.setAttribute("aria-live", "polite");
+      voile.innerHTML = '<div class="maint-carte"><div class="maint-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><div class="maint-titre">Maintenance en cours</div><div class="maint-txt">Le dashboard est temporairement indisponible : nous mettons à jour les données et les indicateurs.</div><div class="maint-sous">Cette page se rechargera automatiquement dès la fin de l\'intervention.</div></div>';
+      document.documentElement.appendChild(voile);
+      var bloque = function () { for (var i = 0; i < document.body.children.length; i++) { var n = document.body.children[i]; if (n !== voile && n.id !== "dc-tipbox") n.setAttribute("inert", ""); } };
+      bloque(); new MutationObserver(bloque).observe(document.body, { childList: true });
+      document.body.style.overflow = "hidden";
+    } else if (!active && voile) { location.reload(); }
+  }
+  function verifieMaintenance() {
+    fetch("/api/config", { cache: "no-store" }).then(function (r) { return r.json(); })
+      .then(function (c) { maintenance(!!c.maintenance); }).catch(function () {});
+  }
+  document.addEventListener("DOMContentLoaded", verifieMaintenance);
+  setInterval(verifieMaintenance, 60000);
 })();
 </script>
 <script src="./support.js"></script>
@@ -123,6 +146,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 .dc-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;border-radius:50%;background:#ecebf4;color:#6d727a;font-size:11px;font-weight:600;font-style:normal;letter-spacing:0;text-transform:none;line-height:1;cursor:help;vertical-align:middle;margin-left:7px}
 .dc-info:hover,.dc-info:focus{background:#d9d2fb;color:#4a36b0;outline:none}
 .dc-tip{display:none!important}
+#maint{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;background:rgba(244,244,246,.5);-webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1);font-family:Poppins,system-ui,sans-serif}
+.maint-carte{max-width:430px;width:100%;box-sizing:border-box;background:#fff;border:1px solid #efeff1;border-radius:20px;padding:30px 30px 26px;text-align:center;box-shadow:0 18px 50px rgba(27,22,54,.14)}
+.maint-ico{width:54px;height:54px;margin:0 auto 16px;border-radius:16px;background:#f1edff;display:flex;align-items:center;justify-content:center}
+.maint-titre{font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214;margin-bottom:8px}
+.maint-txt{font-size:14.5px;line-height:1.55;color:#4a4f57}
+.maint-sous{margin-top:14px;font-size:12.5px;color:#9a9fa6}
 #dc-tipbox{display:none;position:fixed;z-index:9999;width:310px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-family:Poppins,system-ui,sans-serif;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28);pointer-events:none}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#dedee2;border-radius:6px;border:3px solid #f4f4f6}
 @keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
