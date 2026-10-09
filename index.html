@@ -134,12 +134,15 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div onClick="{{ pickPS }}" style="{{ srcPS }}" style-hover="background:#f4f4f6" title="PageSpeed Insights">
       <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
+    <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickTB }}" style="{{ srcTB }}" style-hover="background:#f4f4f6" title="Tableau">
       <img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <div onClick="{{ pickGCP }}" style="{{ srcGCP }}" style-hover="background:#f4f4f6" title="Google Cloud Platform">
       <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M14.4 8.1h-.7l2.2-2.2-.1-.9A8 8 0 0 0 3.4 8.6l.7-.1 4.4-.7.3-.3a4.5 4.5 0 0 1 5.7-.5z" fill="#ea4335"/><path d="M19.5 8.6a8 8 0 0 0-2.4-3.9l-3.1 3.1a4.5 4.5 0 0 1 1.7 3.5v.6a2.2 2.2 0 0 1 0 4.4h-4.4l-.5.5v2.6l.5.5h4.4a5.8 5.8 0 0 0 3.8-10.3z" fill="#4285f4"/><path d="M6.9 20h4.4v-3.6H6.9a2.2 2.2 0 0 1-.9-.2l-.6.2-2.2 2.2-.2.6A5.7 5.7 0 0 0 6.9 20z" fill="#34a853"/><path d="M6.9 8.3a5.8 5.8 0 0 0-3.5 10.4l2.6-2.6a2.2 2.2 0 0 1 .9-4.2c.6 0 1.2.2 1.6.6l2.6-2.6a5.8 5.8 0 0 0-4.2-1.6z" fill="#fbbc05"/></svg>
     </div>
+
+    </sc-if>
 
     <span style="flex:1"></span>
     <div style="width:36px;height:36px;flex:none;border-radius:18px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14.5px;font-weight:600" title="{{ userEmail }}">{{ userInitials }}</div>
@@ -418,6 +421,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </div>
 
+              <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
               <div style="position:relative;display:flex;align-items:center;gap:10px;margin-top:14px;flex:none">
                 <span style="display:inline-flex;align-items:center;gap:9px;height:38px;padding:0 16px;border-radius:12px;background:#fff;color:#20143f;font-size:14.5px;font-weight:600;cursor:pointer;white-space:nowrap">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#20143f" stroke-width="2" stroke-linecap="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
@@ -425,6 +429,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </span>
                 <span style="display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:12px;border:1px solid rgba(255,255,255,.2);color:#e6e0ff;font-size:14.5px;cursor:pointer;white-space:nowrap">Régénérer</span>
               </div>
+              </sc-if>
             </div>
           </div>
         </div>
@@ -1227,6 +1232,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
   </div>
 
+  <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
   <div data-chrome="chat" onClick="{{ toggleChat }}" style="{{ chatFabStyle }}" style-hover="transform:scale(1.04)">
     <span style="width:26px;height:26px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
       <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
@@ -1237,6 +1243,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <span style="font-size:15px;font-weight:600;color:#fff;white-space:nowrap">KamIA</span>
     <span style="width:7px;height:7px;border-radius:4px;background:#6ee7a8;box-shadow:0 0 8px #6ee7a8"></span>
   </div>
+
+  </sc-if>
 
   <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
   <div data-chrome="chat" style="{{ chatPanelOuterStyle }}">
@@ -1351,6 +1359,12 @@ class Component extends DCLogic {
   componentWillUnmount() {
     if (this._onOutsideClick) document.removeEventListener('mousedown', this._onOutsideClick);
   }
+  estLimite() {
+    // profil GA4 / Search Console / PageSpeed uniquement : sert seulement a
+    // masquer l'interface ; l'acces reel est refuse cote serveur
+    // (middleware.js + api/data.js retirent les leads back-office).
+    return /(^|; )psf_role=limited/.test(document.cookie);
+  }
   lireEmailCookie() {
     const m = document.cookie.split("; ").find(c => c.startsWith("psf_user_email="));
     return m ? decodeURIComponent(m.split("=")[1]) : null;
@@ -1402,13 +1416,15 @@ class Component extends DCLogic {
       // data/pipeline.json existe deja (rapport de la pipeline, ecrit a
       // chaque execution) -- sa cle "sites" liste les 82 vrais noms de site
       // ("OPEL FR", etc.), pas besoin d'un fichier dedie.
-      const pipeline = await (await fetch("/data/pipeline.json")).json();
+      const limite = this.estLimite();
+      const urlData = nom => limite ? "/api/data?f=" + encodeURIComponent(nom) : "/data/" + nom + ".json";
+      const pipeline = await (await fetch(urlData("pipeline"))).json();
       this._allSites = Object.keys(pipeline.sites || {}).sort();
       this._pipelineToday = pipeline.jour_ga4_fiable || new Date().toISOString().slice(0, 10);
       const slug = n => n.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-");
       const loaded = {};
       await Promise.all(this._allSites.map(async s => {
-        try { loaded[s] = await (await fetch("/data/" + slug(s) + ".json")).json(); } catch (e) {}
+        try { loaded[s] = await (await fetch(urlData(slug(s)))).json(); } catch (e) {}
       }));
       this.data = loaded;
       // mode embarque (colonne du mode "Comparer") : un seul site, meme
@@ -1418,7 +1434,7 @@ class Component extends DCLogic {
       if (qp.get('embed') === '1') {
         const voulus = (qp.get('sites') || '').split('|').filter(n => this._allSites.includes(n));
         if (voulus.length) initial.sites = voulus;
-        if (['ga','sc','ps','tb','gcp'].includes(qp.get('source'))) initial.source = qp.get('source');
+        if (['ga','sc','ps','tb','gcp'].includes(qp.get('source')) && !(this.estLimite() && ['tb','gcp'].includes(qp.get('source')))) initial.source = qp.get('source');
         if (qp.get('from') && qp.get('to')) { initial.from = qp.get('from'); initial.to = qp.get('to'); }
         if (['none','previous','year'].includes(qp.get('cmp'))) initial.cmpMode = qp.get('cmp');
       }
@@ -1763,7 +1779,7 @@ class Component extends DCLogic {
     const kpis=[
       {label:'Sessions site parent',value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
       {label:'Sessions site reprise',value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
-      {label:'Leads GA4',value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:safeSpark(leadsBuckets,'#d78b35')}
+      {label:'Leads GA4',value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:this.estLimite()?'':safeSpark(leadsBuckets,'#d78b35')}
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = trafficBuckets.map((_,i)=> repriseBuckets[i] ? leadsBuckets[i]/repriseBuckets[i]*100 : 0);
@@ -1772,7 +1788,7 @@ class Component extends DCLogic {
     // au meme conteneur reel, la courbe s'affichait ~4x plus epaisse ici
     // que sur les mini-cartes -- passer une largeur/hauteur proportionnelles
     // a la vraie carte donne un trait de la meme finesse partout.
-    const rateSpark=safeSpark(rateBuckets.length?rateBuckets:[0,0,0,0,0,0,0],'#7c63ee',600,110);
+    const rateSpark=this.estLimite()?'':safeSpark(rateBuckets.length?rateBuckets:[0,0,0,0,0,0,0],'#7c63ee',600,110);
     const kpiRateDelta = deltaBadge(rate, cmpRate, ' pt');
 
     // classement reel sur le taux de conversion, parmi tout le parc --
@@ -1917,7 +1933,7 @@ class Component extends DCLogic {
     const maxLds=Math.max(1,...lds);
     let sd=`M${SL+sstep/2},${STp+sph-(lds[0]/maxLds)*sph}`;
     lds.forEach((v,i)=>{if(i)sd+=` L${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`;});
-    sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
+    if (!this.estLimite()) sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
     const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,width:'100%',style:{display:'block',height:'auto'}},sk);
 
     const browserTotal = [...agg.browser.values()].reduce((a,v)=>a+v.sessions,0) || 1;
@@ -1926,7 +1942,7 @@ class Component extends DCLogic {
       return { name, pct:pct+' %', bar:`width:${pct}%;height:100%;border-radius:4px;background:#b6a5f8` };
     });
 
-    const tabDefs=[['sources','Sources'],['trend','Tendance'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']];
+    const tabDefs=[['sources','Sources'],['trend','Tendance'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']].filter(t=>!(this.estLimite()&&t[0]==='v2'));
     const tabs=tabDefs.map(t=>({name:t[1],pick:()=>set({tab:t[0]}),style:this.tabStyle(st.tab===t[0])}));
     // libelle honnete : le graphe trace la vraie periode selectionnee dans
     // le calendrier, jamais fixe a "12 mois" quelle que soit la selection.
@@ -1983,6 +1999,8 @@ class Component extends DCLogic {
     } else {
       kamiaRupture = `Leads de la semaine dans la fourchette habituelle (${this.fmt(semaineActuelle)} vs ${this.fmt(moyenneSem)} ± ${this.fmt(ecartType)} attendu).`;
     }
+
+    if (this.estLimite()) kamiaRupture='Indisponible sur ce profil.';
 
     const combosConv=Array.from(agg.convCanalDevice.values()).filter(r=>r.sessions>=30);
     let kamiaOpportunite='Pas assez de volume par canal × device pour une comparaison fiable.';
@@ -2789,6 +2807,7 @@ class Component extends DCLogic {
     return {
       chatOpen:!!st.chatOpen,
       toggleChat:()=>{
+        if (this.estLimite()) return;
         if (st.chatOpen) { set({chatClosing:true}); setTimeout(()=>this.setState({chatOpen:false,chatClosing:false}), 200); }
         else { set({chatOpen:true, chatClosing:false}); }
       },
@@ -2861,7 +2880,7 @@ class Component extends DCLogic {
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Tableau — leads back-office',gcp:'GCP — leads back-office'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Tableau',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>set({source:'tb'}), pickGCP:()=>set({source:'gcp'}),
+      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rate,2)+' %', rateSpark, kpiRateDelta,
@@ -2874,7 +2893,7 @@ class Component extends DCLogic {
       channelCount:allChannels.length,
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
-      kamiaVigilance, kamiaRupture, kamiaOpportunite,
+      kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
       isSources:st.tab==='sources', isTrend:st.tab==='trend', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };

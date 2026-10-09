@@ -40,8 +40,13 @@ module.exports = async function handler(req, res) {
     res.status(405).json({ error: "Methode non autorisee." });
     return;
   }
-  if (!verifySessionFromRequest(req)) {
+  const session = verifySessionFromRequest(req);
+  if (!session) {
     res.status(401).json({ error: "Non authentifie." });
+    return;
+  }
+  if (session.role !== "full") {
+    res.status(403).json({ error: "Acces non autorise pour ce profil." });
     return;
   }
 

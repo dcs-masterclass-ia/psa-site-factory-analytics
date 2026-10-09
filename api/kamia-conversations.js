@@ -78,6 +78,10 @@ module.exports = async function handler(req, res) {
     res.status(401).json({ error: "Non authentifie." });
     return;
   }
+  if (session.role !== "full") {
+    res.status(403).json({ error: "Acces non autorise pour ce profil." });
+    return;
+  }
   const filePath = fileFor(session.email);
 
   try {

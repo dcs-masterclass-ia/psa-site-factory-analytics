@@ -58,26 +58,34 @@ function parseCookies(header) {
   return out;
 }
 
-// Liste blanche optionnelle (ALLOWED_EMAILS, separee par des virgules). Absente
-// = on retombe sur le controle de domaine seul fait a la connexion. Presente =
-// seules ces adresses passent, y compris pour les cookies deja emis.
-function allowedEmails() {
-  return (process.env.ALLOWED_EMAILS || "")
-    .split(",")
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
+// Roles. ALLOWED_EMAILS = acces complet ; LIMITED_EMAILS = GA4 / Search Console /
+// PageSpeed uniquement (jamais les leads back-office). Aucune des deux definie
+// = comportement historique (controle de domaine a la connexion, tout le monde
+// "full"). Des qu'une liste est definie, seules les adresses listees passent.
+function parseList(v) {
+  return (v || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+}
+function allowedEmails() { return parseList(process.env.ALLOWED_EMAILS); }
+function limitedEmails() { return parseList(process.env.LIMITED_EMAILS); }
+
+function roleFor(email) {
+  const full = allowedEmails(), limited = limitedEmails();
+  if (!full.length && !limited.length) return "full";
+  const e = String(email || "").toLowerCase();
+  if (full.includes(e)) return "full";
+  if (limited.includes(e)) return "limited";
+  return null;
 }
 
-function isEmailAllowed(email) {
-  const list = allowedEmails();
-  return list.length === 0 || list.includes(String(email || "").toLowerCase());
-}
+function isEmailAllowed(email) { return roleFor(email) !== null; }
 
 function verifySessionFromRequest(req) {
   const cookies = parseCookies(req.headers.cookie);
   const session = verify(cookies.psf_session);
-  if (!session || !isEmailAllowed(session.email)) return null;
-  return session;
+  if (!session) return null;
+  const role = roleFor(session.email);
+  if (!role) return null;
+  return { ...session, role };
 }
 
-module.exports = { MAX_SESSION_MS, sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, isEmailAllowed };
+module.exports = { MAX_SESSION_MS, sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, limitedEmails, roleFor, isEmailAllowed };

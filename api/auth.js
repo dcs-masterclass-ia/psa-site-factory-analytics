@@ -16,7 +16,7 @@
  *   AUTH_COOKIE_SECRET   secret aleatoire (ex. `openssl rand -hex 32`)
  */
 
-const { sign, allowedEmails, MAX_SESSION_MS } = require("./_lib/auth");
+const { sign, allowedEmails, limitedEmails, roleFor, MAX_SESSION_MS } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 
 const MAX_AGE_S = MAX_SESSION_MS / 1000; // 1 h, voir _lib/auth.js
@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const allowedDomain = (process.env.ALLOWED_DOMAIN || "").toLowerCase();
-  const allowList = allowedEmails();
+  const allowList = allowedEmails().concat(limitedEmails());
   if (!clientId || (!allowedDomain && !allowList.length)) {
     res.status(500).json({ error: "Configuration serveur incomplete (GOOGLE_CLIENT_ID / ALLOWED_DOMAIN)." });
     return;
@@ -62,7 +62,7 @@ module.exports = async function handler(req, res) {
     }
     const email = String(info.email || "").toLowerCase();
     if (allowList.length) {
-      if (!allowList.includes(email)) {
+      if (!roleFor(email)) {
         res.status(403).json({ error: "Acces reserve aux comptes autorises." });
         return;
       }
@@ -75,6 +75,9 @@ module.exports = async function handler(req, res) {
     res.setHeader("Set-Cookie", [
       `psf_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
       `psf_user_email=${encodeURIComponent(email)}; Path=/; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
+      // pour l'interface seulement (masquer les onglets) ; l'acces reel est
+      // controle cote serveur a chaque requete (middleware + api/data.js)
+      `psf_role=${roleFor(email) === "limited" ? "limited" : "full"}; Path=/; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
     ]);
     res.status(200).json({ ok: true, email });
   } catch (e) {

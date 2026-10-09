@@ -62,15 +62,38 @@ async function verifySession(token, secret) {
   }
 }
 
+// Roles : memes regles que roleFor() dans api/_lib/auth.js (a garder alignees).
+function parseList(v) {
+  return (v || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
+}
+function roleFor(email) {
+  const full = parseList(process.env.ALLOWED_EMAILS), limited = parseList(process.env.LIMITED_EMAILS);
+  if (!full.length && !limited.length) return "full";
+  const e = String(email || "").toLowerCase();
+  if (full.includes(e)) return "full";
+  if (limited.includes(e)) return "limited";
+  return null;
+}
+
+// Profil "limited" (GA4 / Search Console / PageSpeed) : jamais /data/* en
+// direct (il passe par /api/data, qui retire les leads back-office), et
+// seulement ces routes API.
+const LIMITED_API = ["/api/data", "/api/gsc-compare", "/api/gsc-page-queries", "/api/perf-ticket"];
+
+const json = (status, body) => new Response(JSON.stringify(body), {
+  status,
+  headers: { "content-type": "application/json" },
+});
+
 export default async function middleware(request) {
   const secret = process.env.AUTH_COOKIE_SECRET;
   const cookies = parseCookies(request.headers.get("cookie"));
   const session = await verifySession(cookies.psf_session, secret);
-  const allowed = (process.env.ALLOWED_EMAILS || "").split(",").map(e => e.trim().toLowerCase()).filter(Boolean);
-  if (session && (allowed.length === 0 || allowed.includes(String(session.email || "").toLowerCase()))) return; // laisse passer
-
-  return new Response(JSON.stringify({ error: "Non authentifie." }), {
-    status: 401,
-    headers: { "content-type": "application/json" },
-  });
+  const role = session ? roleFor(session.email) : null;
+  if (!role) return json(401, { error: "Non authentifie." });
+  if (role === "limited") {
+    const path = new URL(request.url).pathname.replace(/\/+$/, "");
+    if (!LIMITED_API.includes(path)) return json(403, { error: "Acces non autorise pour ce profil." });
+  }
+  return; // laisse passer
 }

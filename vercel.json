@@ -13,6 +13,7 @@
   ],
   "functions": {
     "api/agent.js": { "includeFiles": "data/**", "maxDuration": 300 },
+    "api/data.js": { "includeFiles": "data/**" },
     "api/gsc-compare.js": { "includeFiles": "data/**" },
     "api/gsc-page-queries.js": { "includeFiles": "data/**" },
     "api/perf-ticket.js": { "includeFiles": "data/**" }

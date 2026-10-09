@@ -162,7 +162,7 @@ doesn't become a nested repo.
 
 Serverless functions (`api/*.js`) need Vercel env vars documented in each
 file's header comment (`GOOGLE_CLIENT_ID`, `ALLOWED_DOMAIN`,
-`ALLOWED_EMAILS` (optional allowlist, comma-separated; when set it replaces
+`LIMITED_EMAILS` (comma-separated accounts restricted to GA4 / Search Console / PageSpeed: never BO leads, V2 comparison, KamIA or refresh — enforced server-side by `middleware.js` + `api/data.js`/`api/_lib/limited.js`, which strip `leads`, `insights.leads` and `v2*` from the JSON; `index.html` only hides the matching tabs via the `psf_role` cookie), `ALLOWED_EMAILS` (optional allowlist, comma-separated; when set it replaces
 the domain check at login AND is re-checked on every request by
 `middleware.js`/`verifySessionFromRequest`, so already-issued cookies of
 non-listed accounts stop working — keep the addresses in the Vercel env var,

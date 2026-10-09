@@ -295,6 +295,7 @@ dev`) :
 |---|---|---|
 | `GOOGLE_CLIENT_ID` | `auth.js`, `config.js` | Client OAuth Web |
 | `ALLOWED_DOMAIN` | `auth.js` | ex. `autobiz.com` |
+| `LIMITED_EMAILS` | `auth.js`, `_lib/auth.js`, `middleware.js` | optionnel : comptes limités à GA4 / Search Console / PageSpeed (jamais les leads BO). Ils ne lisent pas `/data/*` (403) : `api/data.js` leur sert les JSON sans `leads`, `insights.leads`, `v2*` ; ils n'ont accès qu'à `/api/data`, `gsc-compare`, `gsc-page-queries`, `perf-ticket`. Dès qu'une des deux listes est définie, seules les adresses listées passent |
 | `ALLOWED_EMAILS` | `auth.js`, `_lib/auth.js`, `middleware.js` | optionnel : adresses autorisées séparées par des virgules ; remplace le contrôle de domaine et est revérifiée à chaque requête (révoque les cookies déjà émis). À garder dans Vercel, pas dans le repo (public) |
 | `AUTH_COOKIE_SECRET` | `_lib/auth.js`, `middleware.js` | secret aléatoire (`openssl rand -hex 32`) |
 | `ANTHROPIC_API_KEY` | `_lib/anthropic.js` | clé API Claude |
