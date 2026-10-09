@@ -37,3 +37,26 @@ test("sans donnees quotidiennes, un message clair remplace la courbe", async ({ 
   await expect(page.getByText("Conversion par jour")).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("module Pages (Search Console) : leads GA4 rattachés à la page d'atterrissage", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("CITROEN FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "CITROEN FR" }).first().click();
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await page.locator('div[title="Search Console"]').first().click();
+
+  await expect(page.getByText("Leads GA4", { exact: true }).first()).toBeVisible();
+  // l'ancienne colonne "Conv. GA4" (comptee par pagePath, donc toujours 0) a disparu
+  await expect(page.getByText("Conv. GA4")).toHaveCount(0);
+  // une page de contenu avec des leads rattaches : nombre de leads puis taux (pas "—", pas 0)
+  const lignes = await page.evaluate(() => [...document.querySelectorAll("span")]
+    .filter((e) => e.textContent.trim() === "/lp/leasing-social-voitures-electriques")
+    .map((e) => e.parentElement.innerText.replace(/\s+/g, " ")));
+  expect(lignes.some((t) => /\s[1-9][\d ]* \d+,\d{2} %$/.test(t)), lignes.join(" || ")).toBeTruthy();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

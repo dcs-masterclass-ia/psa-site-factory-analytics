@@ -6,6 +6,9 @@ const { defineConfig, devices } = require("@playwright/test");
 const PORT = 8199;
 
 module.exports = defineConfig({
+  // serveur statique local mono-thread (python http.server) : en parallele il perd
+  // des fichiers de donnees (82 JSON charges a chaque page) -> faux zeros
+  workers: 1,
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

@@ -122,6 +122,31 @@ def rebond_et_conversion_par_page(cli, pid, hote, debut, fin, evenement, limite=
     return out
 
 
+def landing_conversions_par_page(cli, pid, hote, debut, fin, evenement, limite=80):
+    """Sessions et sessions CONVERTIES par page d'atterrissage (landingPage,
+    chemin de la premiere page de la session), triees par sessions.
+
+    Pourquoi pas pagePath (rebond_et_conversion_par_page) : l'evenement de
+    conversion (tradein_request) part du formulaire d'estimation, jamais de
+    la page de contenu par laquelle le visiteur est arrive -- la conversion
+    par pagePath restait donc a 0 sur les pages de contenu. Ici la
+    conversion est rattachee a la page d'ENTREE de la session.
+
+    Limites connues : (1) landingPage est un chemin sans hote -- une session
+    qui demarre sur le site parent puis passe sur le site reprise apparait
+    aussi (ex. /vehicules/e-c3.html) ; seul "/" est ambigu entre les deux
+    sites, le dashboard ne l'attribue donc pas. (2) "sessions converties" =
+    sessions ayant declenche au moins une fois `evenement`.
+    """
+    filtre_hote = _egal("hostName", hote)
+    tot = _rapport(cli, pid, debut, fin, ["landingPage"], ["sessions"], filtre_hote)
+    conv = _rapport(cli, pid, debut, fin, ["landingPage"], ["sessions"],
+                    _et(filtre_hote, _egal("eventName", evenement)))
+    conv_map = {p: int(n) for p, n in conv}
+    lignes = sorted(((p, int(n)) for p, n in tot if p and p != "(not set)"), key=lambda x: -x[1])
+    return [{"page": p, "sessions": n, "conversions": conv_map.get(p, 0)} for p, n in lignes[:limite]]
+
+
 def profils(cli, pid, hote, debut, fin):
     """Ventilation pays / navigateur / appareil, pour reperer un automate."""
     l = _rapport(cli, pid, debut, fin,

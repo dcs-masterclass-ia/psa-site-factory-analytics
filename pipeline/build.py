@@ -170,6 +170,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("searchMonth", {})
     d.setdefault("audienceMonth", {})
     d.setdefault("rebondMonth", {})
+    d.setdefault("landingMonth", {})
     d.setdefault("convCanalDevice", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
@@ -236,6 +237,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"{mois} : taux de rebond {taux_reb} %")
         except Exception as e:
             journal.append(f"{mois} : taux de rebond en erreur ({type(e).__name__})")
+
+        # conversions rattachees a la page d'atterrissage (colonne "Leads GA4"
+        # du module Pages de Search Console) : voir
+        # ga4.landing_conversions_par_page pour la difference avec pagePath.
+        try:
+            d["landingMonth"][mois] = {"pages": ga4.landing_conversions_par_page(
+                cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)}
+        except Exception as e:
+            journal.append(f"{mois} : pages d'atterrissage en erreur ({type(e).__name__})")
 
         # conversion par canal d'acquisition x type d'appareil -- demande du
         # 10/08/2026, meme evenement GA4 que le reste du Taux de conversion
@@ -417,7 +427,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "convCanalDevice"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 
@@ -561,17 +571,18 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     except Exception as e:
         journal.append(f"funnel hebdo en erreur ({type(e).__name__}: {e})")
 
-    # conversion quotidienne (funnelDaily) : accueil -> estimation par jour sur
-    # une fenetre glissante, 4 requetes GA4 par site. Ne bloque jamais le site.
+    # funnel quotidien (funnelDaily) : les 6 etapes par jour sur une fenetre
+    # glissante, 5 requetes GA4 par site. Source unique des taux de conversion
+    # du dashboard. Ne bloque jamais le site.
     try:
         jf = date.fromisoformat(jour_fiable())
-        quotidien = funnel_daily.conversion_quotidienne(
+        quotidien = funnel_daily.funnel_quotidien(
             cli, s.propriete, hote_reprise, jf - timedelta(days=funnel_daily.FENETRE_JOURS - 1), jf)
         if quotidien:
             d["funnelDaily"] = quotidien
-            journal.append(f"conversion quotidienne : {len(quotidien)} jour(s)")
+            journal.append(f"funnel quotidien : {len(quotidien)} jour(s)")
     except Exception as e:
-        journal.append(f"conversion quotidienne en erreur ({type(e).__name__}: {e})")
+        journal.append(f"funnel quotidien en erreur ({type(e).__name__}: {e})")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios

@@ -41,6 +41,27 @@ install/build anything for this static site).
     range only gets real funnel data (not "unavailable") when it fully
     contains one or more of the precomputed weekly buckets in `v2Weekly`
     (summed, never interpolated).
+- **Conversion — one definition everywhere (2026-10-09).** Taux de conversion
+  = estimations (users who fired `tradein_request` with step "price
+  estimation") ÷ visitors of the funnel's home step, summed over the **exact
+  selected days**. Source of truth: `funnelDaily` (`pipeline/funnel_daily.py`,
+  6 steps per day, 5 GA4 requests per site over 180 days). The top-of-page
+  rate, funnel bars/completion, "Leads GA4" tile, sparklines, park ranking
+  and median, and the daily curve all derive from it (`aggregate()` →
+  `funnelSteps`/`convDaily`). Fallback to whole weeks/months
+  (`funnelWeekly`/`funnelMonth`) only when a site has no daily funnel
+  covering the period start, and the UI then says "période approchée".
+  Rate deltas are in **points** (`ptDeltaBadge`), never a relative % labelled
+  "pt". The channel×device table is a different, labelled metric (converted
+  sessions ÷ sessions). Do not add another "conversion" computed from
+  sessions or leads BO.
+- **Search Console "Pages" — Leads GA4 / Conv.**: `landingMonth[mois].pages`
+  (`ga4.landing_conversions_par_page`): sessions and converted sessions by GA4
+  `landingPage` (the session's entry page), not by `pagePath` (the event fires
+  on the form page, so that was always 0). Landing paths include parent-site
+  pages (sessions cross over); the UI only attaches them to pages known to
+  Search Console, and never attributes "/" (shared by parent and reprise).
+  History is filled by the manual workflow `backfill-landing.yml`.
 - **`api/*.js`** (Vercel serverless functions):
   - `auth.js` / `logout.js` — Google Sign-In verification, signs an HMAC
     session cookie (`psf_session`).

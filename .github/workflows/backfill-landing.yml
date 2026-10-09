@@ -1,0 +1,97 @@
+name: Rattrapage pages d'atterrissage (historique complet)
+
+# Manuel uniquement, a usage ponctuel : landingMonth (conversions par page
+# d'atterrissage, colonne "Leads GA4" du module Pages de Search Console) n'est
+# calcule par refresh.yml que sur les derniers mois (MOIS_RECENTS) ; ce
+# rattrapage comble les mois plus anciens. Voir pipeline/backfill_landing.py.
+# Ecriture incrementale, site par site (meme mecanisme que
+# backfill-leads.yml) : un site publie tout de suite, le run peut
+# continuer meme si un autre echoue.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites à rattraper, séparés par des virgules (vide = tous les sites exploitables)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Dry-run : calcule et affiche, n'écrit/ne commit rien"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
+
+permissions:
+  contents: write
+
+jobs:
+  rattrapage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      # data/ vit desormais dans un repo prive separe (12/08/2026) -- voir
+      # refresh.yml pour le detail.
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then
+            echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."
+            exit 1
+          fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          python -c "import json,os;json.load(open(os.environ['RUNNER_TEMP']+'/ga4.json'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Rattraper les pages d'atterrissage
+        env:
+          IN_DRY_RUN: ${{ inputs.dry_run }}
+          IN_SITES: ${{ inputs.sites }}
+        run: |
+          ARGS=()
+          if [ -n "$IN_SITES" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "$IN_SITES"
+            for s in "${SITES[@]}"; do
+              s="$(echo "$s" | sed 's/^ *//;s/ *$//')"
+              ARGS+=("$s")
+            done
+          fi
+          if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
+          python -m pipeline.backfill_landing "${ARGS[@]}"
+
+      - name: Déclencher le redéploiement Vercel
+        # data/ vit dans un repo separe depuis le 15/08/2026 -- voir
+        # refresh.yml pour le detail. Sans ce hook, un rattrapage publie
+        # bien les donnees mais le site ne les sert jamais.
+        if: ${{ inputs.dry_run != 'oui' }}
+        env:
+          SEC_VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$SEC_VERCEL_DEPLOY_HOOK" ]; then
+            echo "::warning::VERCEL_DEPLOY_HOOK non configure, redeploiement manuel necessaire."
+            exit 0
+          fi
+          curl -fsS -X POST "$SEC_VERCEL_DEPLOY_HOOK"
