@@ -61,14 +61,20 @@ def _recalcule_total(d):
     d["meta"]["total"]["partial"] = len(cons) < len(d["months"])
 
 
-def rattrape_site(nom, dry_run=False):
+def rattrape_site(nom, dry_run=False, forcer=False):
     chemin = DATA_DIR / f"{_slug(nom)}.json"
     if not chemin.exists():
         print(f"{nom} : fichier introuvable ({chemin.name}), ignore")
         return None
 
     d = json.loads(chemin.read_text(encoding="utf-8"))
-    mois = _mois_a_zero(d)
+    # forcer : rejoue TOUS les mois consolides (pas seulement ceux a zero) --
+    # utile quand un siteId est ajoute a SITE_EXTRACT (ex. Spoticar FR, 222) :
+    # les mois deja remplis sont alors incomplets, pas a zero.
+    if forcer:
+        mois = [m for m in d.get("months", []) if not d.get("meta", {}).get(m, {}).get("provisional")]
+    else:
+        mois = _mois_a_zero(d)
     if not mois:
         return None
 
@@ -83,9 +89,10 @@ def rattrape_site(nom, dry_run=False):
         except Exception as e:
             print(f"  {nom} {m} : echec extraction ({type(e).__name__}: {e}), conserve a zero")
             continue
+        ancien = (d["leads"].get(m) or {}).get("total", 0)
         d["leads"][m] = bloc
         ecrit = True
-        print(f"  {nom} {m} : {bloc['total']} leads (etait 0)")
+        print(f"  {nom} {m} : {bloc['total']} leads (etait {ancien})")
 
     if not ecrit:
         print(f"  {nom} : aucun mois recupere (toutes les extractions ont echoue)")
@@ -113,6 +120,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sites", nargs="*", help="par defaut : tous ceux couverts par SITE_EXTRACT")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--forcer", action="store_true", help="rejoue tous les mois consolides, pas seulement ceux a zero")
     a = ap.parse_args()
 
     if not a.dry_run:
@@ -121,7 +129,7 @@ def main():
     cibles = a.sites or sorted(leads_extract.SITE_EXTRACT.keys())
     resultats = {}
     for nom in cibles:
-        r = rattrape_site(nom, dry_run=a.dry_run)
+        r = rattrape_site(nom, dry_run=a.dry_run, forcer=a.forcer)
         if r:
             resultats[nom] = r
 

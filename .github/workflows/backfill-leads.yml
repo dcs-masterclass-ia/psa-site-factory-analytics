@@ -14,6 +14,11 @@ on:
         description: "Sites à rattraper, séparés par des virgules (vide = tous ceux couverts par SITE_EXTRACT)"
         required: false
         default: ""
+      forcer:
+        description: "Rejouer TOUS les mois consolidés (pas seulement ceux à zéro) — après ajout d'un siteId"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
       dry_run:
         description: "Dry-run : calcule et affiche, n'écrit/ne commit rien"
         type: choice
@@ -55,6 +60,7 @@ jobs:
         env:
           IN_DRY_RUN: ${{ inputs.dry_run }}
           IN_SITES: ${{ inputs.sites }}
+          IN_FORCER: ${{ inputs.forcer }}
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
           # tableau bash (pas une chaine concatenee) : les noms de site
@@ -71,6 +77,7 @@ jobs:
             done
           fi
           if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
+          if [ "$IN_FORCER" = "oui" ]; then ARGS+=(--forcer); fi
           python -m pipeline.backfill_leads "${ARGS[@]}"
 
       - name: Déclencher le redéploiement Vercel
