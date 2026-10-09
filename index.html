@@ -352,8 +352,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between">
-            <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Estimations ÷ visiteurs de la page d'accueil du funnel, sur les jours exacts choisis (somme des jours). Estimation = utilisateur ayant déclenché la demande de reprise (événement GA4 tradein_request). Même taux dans le funnel, le classement du parc et la courbe Conversion. La variation est un écart en points de pourcentage.</span></span></div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px;flex-wrap:wrap"><span style="{{ convChip }}">{{ convIcon }}</span>Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Estimations ÷ visiteurs de la page d'accueil du funnel, sur les jours exacts choisis (somme des jours). Estimation = utilisateur ayant déclenché la demande de reprise (événement GA4 tradein_request). Même taux dans le funnel, le classement du parc et la courbe Conversion. La variation est un écart en points de pourcentage.</span></span></div>
             <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
               <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ kpiRate }}</span>
               <span style="{{ kpiRateDelta.style }}">{{ kpiRateDelta.text }}</span>
@@ -372,8 +372,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
             <sc-for list="{{ kpis }}" as="kpi" hint-placeholder-count="3">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:11px;min-width:0;overflow:hidden">
-                <div style="flex:1 1 auto;min-width:132px">
+              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+                <span style="{{ kpi.chip }}">{{ kpi.icon }}</span>
+                <div style="flex:1 1 auto;min-width:120px">
                   <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
                   <div style="font-size:23px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ kpi.value }}</div>
                 </div>
@@ -1957,10 +1958,12 @@ class Component extends DCLogic {
     const funnelQuotidien = Object.keys(agg.convDaily).length > 0;
     const safeSpark = (vals, color, w, hgt, invert) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt, invert); };
 
+    const kIcone = (c, ...els) => h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:c,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},els);
+    const kPuce = c => `width:30px;height:30px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:${c}1a`;
     const kpis=[
-      {label:'Sessions site parent',info:"Sessions GA4 du site de la marque (site parent) sur la période. Une session qui passe du site parent à l'outil de reprise est comptée dans les deux sites.",value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
-      {label:'Sessions site reprise',info:"Sessions GA4 de l'outil de reprise (son nom d'hôte) sur la période.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
-      {label:'Leads GA4',info:"Estimations sur la période : utilisateurs ayant déclenché la demande de reprise (tradein_request), somme des jours exacts. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
+      {label:'Sessions site parent',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),info:"Sessions GA4 du site de la marque (site parent) sur la période. Une session qui passe du site parent à l'outil de reprise est comptée dans les deux sites.",value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
+      {label:'Sessions site reprise',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('path',{d:'M3 12a9 9 0 019-9 9 9 0 016.4 2.6L21 8'}),h('path',{d:'M21 3v5h-5'}),h('path',{d:'M21 12a9 9 0 01-9 9 9 9 0 01-6.4-2.6L3 16'}),h('path',{d:'M3 21v-5h5'})),info:"Sessions GA4 de l'outil de reprise (son nom d'hôte) sur la période.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
+      {label:'Leads GA4',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Estimations sur la période : utilisateurs ayant déclenché la demande de reprise (tradein_request), somme des jours exacts. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = homeBuckets.map((hb,i)=> hb ? estBuckets[i]/hb*100 : 0);
@@ -1969,7 +1972,29 @@ class Component extends DCLogic {
     // au meme conteneur reel, la courbe s'affichait ~4x plus epaisse ici
     // que sur les mini-cartes -- passer une largeur/hauteur proportionnelles
     // a la vraie carte donne un trait de la meme finesse partout.
-    const rateSpark=funnelQuotidien?safeSpark(rateBuckets,'#7c63ee',600,110):'';
+    const rateSpark=funnelQuotidien?(()=>{
+      // courbe du taux au pas du jour (regroupee au-dela de 60 points) ; survol = taux de la tranche
+      const nB=Math.min(dates.length,60), size=dates.length/nB, mNoms=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+      const lib=iso=>parseInt(iso.slice(8,10),10)+' '+mNoms[parseInt(iso.slice(5,7),10)-1];
+      const B=[];
+      for(let i=0;i<nB;i++){ const a=Math.floor(i*size), e=Math.max(Math.floor((i+1)*size),a+1), js=dates.slice(a,e);
+        let ho=0,es=0; js.forEach(j=>{ho+=homeDaily[j]||0; es+=estDaily[j]||0;});
+        B.push({ho,es,r:ho?es/ho*100:null,label:js.length>1?lib(js[0])+' → '+lib(js[js.length-1]):lib(js[0])}); }
+      const pts=B.filter(b=>b.r!=null); if(pts.length<2) return '';
+      const W=600,H=130,T=8,Bt=6,mx0=Math.max(...pts.map(b=>b.r)),mn0=Math.min(...pts.map(b=>b.r)),pad=(mx0-mn0)*0.25||1,mx=mx0+pad,mn=Math.max(0,mn0-pad);
+      const X=i=>i/(nB-1)*W, Y=v=>T+(1-(v-mn)/((mx-mn)||1))*(H-T-Bt);
+      let d='',first=true; B.forEach((b,i)=>{ if(b.r==null) return; d+=(first?'M':'L')+X(i)+','+Y(b.r)+' '; first=false; });
+      const ch=[h('path',{key:'a',d:d+'L'+W+','+H+' L0,'+H+' Z',fill:'#7c63ee1a'}),h('path',{key:'b',d,fill:'none',stroke:'#7c63ee',strokeWidth:2,strokeLinejoin:'round',strokeLinecap:'round'})];
+      const hv=st.convHover;
+      if(hv!=null&&B[hv]&&B[hv].r!=null){ const b=B[hv], x=X(hv), tw=190, tx=x+tw+14>W?x-tw-14:x+14;
+        ch.push(h('line',{key:'l',x1:x,y1:0,x2:x,y2:H,stroke:'#c9cbd2',strokeWidth:1}),h('circle',{key:'c',cx:x,cy:Y(b.r),r:4.5,fill:'#7c63ee',stroke:'#fff',strokeWidth:2}),
+          h('g',{key:'t',pointerEvents:'none',transform:'translate('+tx+',6)'},[h('rect',{key:'r',width:tw,height:62,rx:10,fill:'#141414',opacity:.96}),
+            h('text',{key:'d',x:12,y:19,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},b.label),
+            h('text',{key:'v',x:12,y:39,fontSize:15,fontWeight:600,fill:'#cfc4ff',fontFamily:F},'Conversion '+dec(b.r,1)+' %'),
+            h('text',{key:'n',x:12,y:55,fontSize:11.5,fill:'#c4c7d0',fontFamily:F},this.fmt(b.es)+' estim. / '+this.fmt(b.ho)+' visiteurs')])); }
+      B.forEach((b,i)=>ch.push(h('rect',{key:'h'+i,x:X(i)-W/nB/2,y:0,width:W/nB,height:H,fill:'transparent',style:{cursor:'crosshair'},onMouseEnter:()=>set({convHover:i}),onMouseLeave:()=>set({convHover:null})})));
+      return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto',overflow:'visible'}},ch);
+    })():'';
     const kpiRateDelta = ptDeltaBadge(rate, cmpRate);
 
     // classement reel sur le taux de conversion, parmi tout le parc --
@@ -2339,8 +2364,6 @@ class Component extends DCLogic {
       els.push(h('text',{key:'t2',x:W-8,y:H-6,fontSize:10.5,fill:'#9a9fa6',fontFamily:F,textAnchor:'end'},'20+'));
       return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto',overflow:'visible'}},els);
     };
-    const kIcone = (c, ...els) => h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:c,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},els);
-    const kPuce = c => `width:30px;height:30px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:${c}1a`;
     const badgeKpi = b => ({ delta:b.text, deltaStyle:b.style });
     const scKpis=[
       {label:'Clics',icon:kIcone('#3b76e8',h('path',{d:'M5 3l14 7-6 2-2 6z'})),chip:kPuce('#3b76e8'),value:this.fmt(searchAgg.clics),...badgeKpi(deltaBadge(searchAgg.clics, searchCmp&&searchCmp.clics)),
@@ -3276,7 +3299,7 @@ class Component extends DCLogic {
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, convChip:kPuce('#7c63ee'), convIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
       matrixCount:allMatrix.length,
       openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
       matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,
