@@ -26,3 +26,20 @@ git clone --depth 1 --branch "$VERCEL_GIT_COMMIT_REF" "$REPO" data \
 # jamais par fichier statique). Sans ce nettoyage ils seraient servis en
 # statique sous /data/ a tout compte connecte.
 rm -rf data/history data/kamia
+
+# public/ = outputDirectory reel (vercel.json), construit a chaque build.
+# Avant ce changement (09/10/2026, test d'intrusion), outputDirectory="."
+# servait TOUT le repo en statique -- middleware.js (logique d'auth
+# complete), pipeline/*.py (table des siteId back-office, IDs GA4),
+# .github/workflows/*.yml etc. etaient lisibles par un visiteur anonyme,
+# sans session. Seuls les fichiers listes ici doivent etre publics ; data/
+# est copie en plus (il reste aussi a la racine pour que vercel.json
+# "includeFiles":"data/**" puisse le bundler dans les fonctions serverless,
+# qui resolvent ce chemin depuis la racine du projet, pas depuis
+# outputDirectory). middleware.js et api/ restent a la racine : Vercel ne
+# les detecte qu'a cet emplacement precis, jamais dans outputDirectory.
+rm -rf public
+mkdir -p public
+cp index.html support.js style.css script.js hermes-agui.js \
+   favicon.png favicon-preprod.png logo-blanc.png logo-noir.png public/
+cp -R data public/data

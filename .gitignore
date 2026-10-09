@@ -3,6 +3,14 @@
 # workflows GitHub Actions), plus suivi ici.
 /data/
 
+# public/ est un artefact de build Vercel (09/10/2026, test d'intrusion) :
+# scripts/fetch-data.sh y copie les fichiers publics + data/ apres le
+# clonage, outputDirectory="public" dans vercel.json. Les sources restent a
+# la racine (index.html, support.js...) pour le dev local et les tests --
+# seul ce dossier genere est ce que Vercel sert reellement en prod, ce qui
+# retire middleware.js (et tout le reste du repo) de ce qui est public.
+/public/
+
 # clés de comptes de service — ne doivent jamais être versionnées
 psa-reporting*.json
 ga4-consolidation*.json
