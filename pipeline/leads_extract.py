@@ -126,12 +126,12 @@ SITE_EXTRACT = {
     "SPOTICAR AT":         [(106, 2026)],
     "SPOTICAR BE":         [(66, 2026), (68, 2026)],
     "SPOTICAR DE":         [(81, 2026)],
-    "SPOTICAR ES":         [(22, 2026)],
+    "SPOTICAR ES":         [(22, 2026), (242, 2026)],   # 242 = SPOTICAR.SPAIN.es.PROJET_VO (ajoute le 09/10/2026)
     "SPOTICAR FR":         [(1, 2026), (222, 2026)],   # 222 = SPOTICAR.FRANCE.fr.PROJETVO (ajoute le 09/10/2026, ~59 000 leads Jan-Sep)
     "SPOTICAR IT":         [(71, 2014)],
     "SPOTICAR LU":         [(69, 2026)],
     "SPOTICAR PL":         [(146, 2026)],
-    "SPOTICAR PT":         [(70, 2026)],
+    "SPOTICAR PT":         [(70, 2026), (259, 2026)],   # 259 = SPOTICAR.PORTUGAL.pt.PROJET_VO (depuis aout 2026)
     "SPOTICAR UK":         [(104, 2026)],
 
     "STELLANTIS &YOU AT":  [(145, 2026)],
