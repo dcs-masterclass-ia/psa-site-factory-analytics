@@ -501,18 +501,19 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
 
           <sc-if value="{{ isSources }}" hint-placeholder-val="{{ true }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Sources d'acquisition</div>
-                <div style="font-size:13.5px;color:#9a9fa6">Top 6 par sessions · cliquez un en-tête pour trier</div>
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipS }}">{{ tIconS }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Sources d'acquisition</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Top 6 par sessions · cliquez un en-tête pour trier</div>
               </div>
-              <span onClick="{{ openChannels }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ channelCount }} canaux</span>
+              </div>
+              <span onClick="{{ openChannels }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ channelCount }} canaux</span>
             </div>
-            <div style="font-size:13.5px;color:#6d727a;margin-bottom:14px">{{ topChannelInsight }}</div>
+            <div style="font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin-bottom:12px;display:inline-block">{{ topChannelInsight }}</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
               <span onClick="{{ sortByName }}" style="cursor:pointer">Canal</span>
               <span onClick="{{ sortBySessions }}" style="text-align:right;cursor:pointer">Sessions</span>
@@ -520,7 +521,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span style="text-align:right">Part</span>
             </div>
             <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#faf9ff">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                 <div style="min-width:0">
                   <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
                   <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ ch.bar }}"></div></div>
@@ -536,9 +537,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ isTrend }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 de l'outil de reprise par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">{{ trendRangeLabel }}</div>
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipT }}">{{ tIconT }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 de l'outil de reprise par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ trendRangeLabel }}</div>
+              </div>
               </div>
               <span style="flex:1"></span>
               <sc-for list="{{ channelToggles }}" as="t" hint-placeholder-count="4">
@@ -552,9 +554,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ isConv }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">{{ convRangeLabel }}</div>
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipC }}">{{ tIconC }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ convRangeLabel }}</div>
+              </div>
               </div>
               <span style="flex:1"></span>
               <span style="font-size:13px;color:#2f2f33">{{ convSummary }}</span>
@@ -576,9 +579,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Parcours avant / après V2<span class="dc-info" tabindex="0">i<span class="dc-tip">Mêmes jours exacts et même définition que partout dans le dashboard (estimations ÷ visiteurs de l'accueil, somme des jours). Avant = les 28 jours qui précèdent la bascule du site ; après = tous les jours depuis la bascule. Les volumes sont des moyennes par jour car les deux périodes n'ont pas la même durée. Publié à partir de 7 jours de recul. Plusieurs sites : chaque site garde ses propres dates, les volumes par jour s'additionnent.</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">{{ v2Subtitle }}</div>
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipV }}">{{ tIconV }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Parcours avant / après V2<span class="dc-info" tabindex="0">i<span class="dc-tip">Mêmes jours exacts et même définition que partout dans le dashboard (estimations ÷ visiteurs de l'accueil, somme des jours). Avant = les 28 jours qui précèdent la bascule du site ; après = tous les jours depuis la bascule. Les volumes sont des moyennes par jour car les deux périodes n'ont pas la même durée. Publié à partir de 7 jours de recul. Plusieurs sites : chaque site garde ses propres dates, les volumes par jour s'additionnent.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ v2Subtitle }}</div>
+              </div>
               </div>
               <sc-if value="{{ v2Has }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;align-items:center;gap:16px">
@@ -590,7 +594,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-if value="{{ v2Has }}" hint-placeholder-val="{{ true }}">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:16px">
                 <sc-for list="{{ v2Kpis }}" as="k" hint-placeholder-count="3">
-                  <div style="background:#faf9ff;border:1px solid #efeaff;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:6px">
+                  <div style="background:#fff;border:1px solid #efeff1;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:6px">
                     <span style="font-size:13px;color:#6d727a">{{ k.label }}</span>
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
                       <span style="font-size:19px;font-weight:600;color:#121214;letter-spacing:-.01em">{{ k.value }}</span>
@@ -603,7 +607,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:13px;color:#a16207;background:#fef6e7;border-radius:10px;padding:8px 12px;margin-bottom:12px">Volume faible (moins de 300 visiteurs sur l'une des périodes) : tendance indicative.</div>
               </sc-if>
               <sc-for list="{{ v2 }}" as="row" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.4fr) 130px 80px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#faf9ff">
+                <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.4fr) 130px 80px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#f6f7fb">
                   <span style="font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.beforeBar }}"></div></div>
@@ -623,11 +627,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipD }}">{{ tIconD }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
               </div>
-              <span onClick="{{ openMatrix }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ matrixCount }} canaux</span>
+              </div>
+              <span onClick="{{ openMatrix }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ matrixCount }} canaux</span>
             </div>
             <div style="margin-bottom:10px"></div>
             <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
@@ -646,8 +651,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <sc-if value="{{ isAudience }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
-            <div style="font-size:16px;font-weight:600;color:#121214">Audience &amp; saisonnalité<span class="dc-info" tabindex="0">i<span class="dc-tip">Moyenne par jour de la semaine sur la période (sessions de l'outil de reprise), répartition des navigateurs et des nouveaux / récurrents en sessions. Source GA4.</span></span></div>
-            <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Jour de semaine, navigateurs et type de visiteur</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span style="{{ tChipA }}">{{ tIconA }}</span><div>
+            <div style="font-size:15px;font-weight:600;color:#121214">Audience &amp; saisonnalité<span class="dc-info" tabindex="0">i<span class="dc-tip">Moyenne par jour de la semaine sur la période (sessions de l'outil de reprise), répartition des navigateurs et des nouveaux / récurrents en sessions. Source GA4.</span></span></div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:0">Jour de semaine, navigateurs et type de visiteur</div>
+            </div></div>
             <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:start">
               <div>{{ seasonChart }}</div>
               <div style="display:flex;flex-direction:column;gap:11px">
@@ -1124,7 +1131,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span>Site</span><span style="text-align:center">Mobile</span><span style="text-align:center">Desktop</span><span style="text-align:right">Tendance</span>
               </div>
               <sc-for list="{{ psSites }}" as="s" hint-placeholder-count="7">
-                <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 92px 92px 110px;align-items:center;gap:11px;padding:9px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#faf9ff">
+                <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 92px 92px 110px;align-items:center;gap:11px;padding:9px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                   <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
                   <span style="{{ s.mStyle }}">{{ s.mobile }}</span>
                   <span style="{{ s.dStyle }}">{{ s.desktop }}</span>
@@ -3300,7 +3307,13 @@ class Component extends DCLogic {
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, funChip:kPuce('#7c63ee'), funIcon:kIcone('#7c63ee',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), convChip:kPuce('#7c63ee'), convIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:560, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
+      tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
+      tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
+      tChipV:kPuce('#d78b35'), tIconV:kIcone('#d78b35',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})),
+      tChipD:kPuce('#3b76e8'), tIconD:kIcone('#3b76e8',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})),
+      tChipA:kPuce('#7c63ee'), tIconA:kIcone('#7c63ee',h('circle',{cx:9,cy:8,r:3.5}),h('path',{d:'M2.5 20a6.5 6.5 0 0113 0'}),h('path',{d:'M17 5a3.5 3.5 0 010 7M21.5 20a6.5 6.5 0 00-4-6'})),
+      funChip:kPuce('#7c63ee'), funIcon:kIcone('#7c63ee',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), convChip:kPuce('#7c63ee'), convIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
       matrixCount:allMatrix.length,
       openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
       matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,
