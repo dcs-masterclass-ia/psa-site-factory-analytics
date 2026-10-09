@@ -645,6 +645,21 @@ def _commit_et_pousse(chemins, message):
     return False, "push impossible apres 3 tentatives"
 
 
+def fusionne_etat_partiel(ancien, etat):
+    """Run partiel (--sites) : le fichier d'etat alimente la liste des sites du
+    dashboard, il ne doit JAMAIS se reduire aux seuls sites traites (bug
+    constate le 09/10/2026 : un run sur 7 sites avait fait disparaitre les 75
+    autres de l'interface). On repart de l'etat publie : les sites non traites
+    gardent leur entree et leurs anomalies, les sites traites sont mis a jour."""
+    traites = set(etat["sites"])
+    for nom, entree in (ancien.get("sites") or {}).items():
+        etat["sites"].setdefault(nom, entree)
+    etat["anomalies"] = [x for x in (ancien.get("anomalies") or []) if x.get("site") not in traites] + etat["anomalies"]
+    if etat["statut"] == "ok" and etat["anomalies"]:
+        etat["statut"] = "degrade"
+    return etat
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sites", nargs="*", help="par defaut : tous ceux qui ont l'acces API")
@@ -806,7 +821,14 @@ def main():
     print(f"ecrit+pousse  index.json ({len(noms_index)} site(s))" if ok
           else f"index.json : ECRIT MAIS PUSH EN ECHEC — {detail}")
 
-    (DATA / "pipeline.json").write_text(
+    chemin_etat = DATA / "pipeline.json"
+    if a.sites and chemin_etat.exists():
+        try:
+            etat = fusionne_etat_partiel(json.loads(chemin_etat.read_text()), etat)
+        except (ValueError, OSError) as e:
+            print(f"pipeline.json existant illisible, ecrase : {type(e).__name__}")
+
+    chemin_etat.write_text(
         json.dumps(etat, ensure_ascii=False, indent=1))
     ok, detail = _commit_et_pousse(["data/pipeline.json"],
                                    f"Rafraîchissement automatique — statut {etat['statut']}")
