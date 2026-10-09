@@ -86,6 +86,12 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 });
 
 export default async function middleware(request) {
+  // Defense en profondeur : l'historique profond et les conversations KamIA ne
+  // sont jamais servis en statique (scripts/fetch-data.sh les retire deja du
+  // deploiement) ; 404 quoi qu'il arrive, meme avec une session valide.
+  if (/^\/data\/(history|kamia)(\/|$)/i.test(new URL(request.url).pathname)) {
+    return json(404, { error: "Introuvable." });
+  }
   // Maintenance (MAINTENANCE=1) : plus aucune donnee ni API, quel que soit le profil.
   // La page, elle, reste accessible (voilee et bloquee, cf. index.html).
   if (/^(1|true|oui)$/i.test(process.env.MAINTENANCE || "")) {

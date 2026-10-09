@@ -19,3 +19,10 @@ rm -rf data
 REPO="https://x-access-token:${DATA_REPO_TOKEN}@github.com/dcs-masterclass-ia/psa-site-factory-data.git"
 git clone --depth 1 --branch "$VERCEL_GIT_COMMIT_REF" "$REPO" data \
   || git clone --depth 1 --branch main "$REPO" data
+
+# Jamais deployes : l'historique profond (data/history, plusieurs dizaines de
+# Mo, lu par Converge directement dans le repo de donnees) et les
+# conversations KamIA (data/kamia, lues via l'API GitHub par api/_lib/store.js,
+# jamais par fichier statique). Sans ce nettoyage ils seraient servis en
+# statique sous /data/ a tout compte connecte.
+rm -rf data/history data/kamia
