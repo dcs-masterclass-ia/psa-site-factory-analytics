@@ -32,15 +32,19 @@ install/build anything for this static site).
     on rolling weekly sessions/leads, `RUPTURE_VOLUME_MIN`/`RUPTURE_Z_SEUIL`
     guards, same spirit as `pipeline/watch.py`'s thresholds but duplicated
     client-side since this tab makes no server call).
-  - **"Comparaison V2" tab**: compares a site's funnel/traffic/leads before
-    vs after its V2 redesign (`is_v2_split` sites only). Supports fixed
-    weekly pills, a genuine custom date range (two `<input type="date">`),
-    and a client-generated PDF export (`exportV2Pdf()`, jsPDF, own
-    unicode-safe `pdfText()` — must strip `\xa0`/` ` from
-    `Intl.NumberFormat("fr-FR")` output or numbers render broken). A custom
-    range only gets real funnel data (not "unavailable") when it fully
-    contains one or more of the precomputed weekly buckets in `v2Weekly`
-    (summed, never interpolated).
+  - **"Avant / après V2" sub-tab** (GA4 view): derived from `funnelDaily`
+    like everything else (`pipeline/v2_report.py`
+    `avant_apres_depuis_quotidien`, no GA4 request): before = the 28 days
+    preceding the site's `v2_date`, after = every day since; volumes shown
+    per day (windows differ in length), rates in points; published only with
+    ≥ 7 days after and ≥ 21 measured days before; < 300 visitors in a window
+    shows a "tendance indicative" notice. `v2_date` (set by hand in
+    `data/<slug>.json`, e.g. FR 2026-09-29/30, ES 2026-10-06/07) is the only
+    manual input; `v2steps`/`v2` are recomputed for every site that has one
+    (hand-entered ones included), and the old weekly `v2Weekly` report (other
+    definition: unique users, whole-history baseline) is no longer produced.
+    Info bubbles (`.dc-info` / `.dc-tip`, pure CSS) document how each block is
+    computed — keep them in sync when a definition changes.
 - **Conversion — one definition everywhere (2026-10-09).** Taux de conversion
   = estimations (users who fired `tradein_request` with step "price
   estimation") ÷ visitors of the funnel's home step, summed over the **exact

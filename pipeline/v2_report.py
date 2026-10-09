@@ -1,24 +1,22 @@
-"""Rapport hebdomadaire de performance de la V2 du site de reprise.
+"""Avant / apres V2 : meme funnel quotidien, meme definition que tout le dashboard.
 
-Compare chaque semaine depuis la bascule vers la V2 a la reference V1 :
-tout l'historique disponible avant la bascule. Trois familles de mesures :
+Conversion = estimations / visiteurs de l'accueil du funnel, jours exacts,
+a partir de funnelDaily (pipeline/funnel_daily.py). Pas de requete GA4 ici.
 
-  - sessions site parent et sessions site de reprise : recalculees a
-    partir des series quotidiennes deja assemblees par build.py, aucun
-    appel GA4 supplementaire.
-  - leads : idem, a partir du back-office deja extrait.
-  - funnel (6 etapes, taux de completion) : necessite une requete GA4 par
-    semaine (funnel.bloc_funnel accepte une plage de dates arbitraire,
-    pas seulement des mois pleins).
-
-Ne bloque jamais l'assemblage d'un site : toute erreur degrade vers une
-semaine partielle (sans funnel) ou vers l'absence de rapport, jamais vers
-une exception qui remonterait a build.py.
+  - AVANT = les AVANT_JOURS (28) jours qui precedent la bascule : 4 semaines
+    pleines (pas d'effet jour de semaine), l'etat reel juste avant le
+    changement -- pas toute l'histoire du site, qui melange campagnes et
+    saisons differentes.
+  - APRES = tous les jours depuis la bascule.
+  - Publie seulement avec au moins SEUIL_JOURS_SIGNIFICATIF jours d'apres et
+    REFERENCE_MIN_JOURS jours de reference reellement mesures.
+Les volumes se comparent PAR JOUR (les deux fenetres n'ont pas la meme duree).
 """
+
 
 from datetime import date, timedelta
 
-from pipeline import funnel
+from pipeline import funnel_daily
 
 MAX_SEMAINES = 26  # ~6 mois de recul, largement au-dessus du besoin actuel
 
@@ -109,12 +107,6 @@ def _agrege_leads_par_device(leads_par_mois, debut, fin):
     return out
 
 
-def _label_semaine(debut, fin):
-    if debut.month == fin.month:
-        return f"{debut.day}–{fin.day} {MOIS_ABREGES[debut.month - 1]}"
-    return f"{debut.day} {MOIS_ABREGES[debut.month - 1]} – {fin.day} {MOIS_ABREGES[fin.month - 1]}"
-
-
 def label_plage(debut_iso, fin_iso):
     """Format compact 'JJ–JJ/MM' (ou 'JJ/MM–JJ/MM' si les mois different),
     meme convention que les pre_label/post_label saisis a la main sur les
@@ -125,118 +117,57 @@ def label_plage(debut_iso, fin_iso):
     return f"{d.day:02d}/{d.month:02d}–{f.day:02d}/{f.month:02d}"
 
 
-def _funnel_periode(cli, pid, hote, debut, fin):
-    """Renvoie (steps, conversion_pct) ou (None, None) sans jamais lever."""
-    try:
-        jours = (fin - debut).days + 1
-        bloc, _methode = funnel.bloc_funnel(cli, pid, hote, debut.isoformat(), fin.isoformat(), jours)
-        if bloc:
-            return bloc["steps"], bloc["conversion_pct"]
-    except Exception:
-        pass
-    return None, None
+AVANT_JOURS = 28
+REFERENCE_MIN_JOURS = 21   # jours avec donnee dans la fenetre "avant" pour publier
+SEUIL_JOURS_SIGNIFICATIF = 7  # en dessous, une cesure avant/apres est trop bruitee
+
+NOTE_AUTO = ("Avant = les 28 jours précédant la bascule, après = depuis la bascule ; "
+             "même funnel quotidien et même définition de la conversion que le reste du dashboard.")
 
 
-def rapport_hebdo(cli, s, d, jour_fiable_iso, hote_reprise):
-    """Construit le rapport V2 hebdomadaire d'un site, ou None si pas de
-    bascule connue ou pas assez de recul avant bascule pour comparer.
-    hote_reprise est passe explicitement plutot que lu dans d['_hotes'],
-    qui n'est renseigne qu'a la toute fin de assemble()."""
-    v2_date_iso = d.get("v2_date")
-    if not v2_date_iso:
+def avant_apres_depuis_quotidien(d, v2_date_iso, jour_fiable_iso, nom):
+    """(v2steps, v2) ou None si pas assez de recul / de reference.
+
+    v2steps : [{"step", "a" (avant, somme des jours), "b" (apres)}] -- meme forme
+    que l'ancien v2steps, lue telle quelle par le dashboard. v2 : metadonnees
+    (nombre de jours reels de chaque fenetre, libelles, conversion) ; les
+    volumes se lisent par jour via pre_days / post_days.
+    """
+    quotidien = d.get("funnelDaily") or {}
+    if not quotidien or not v2_date_iso:
         return None
-
-    daily = d.get("daily") or {}
-    jours_iso = daily.get("d") or []
-    if not jours_iso:
-        return None
-
     v2_date = date.fromisoformat(v2_date_iso)
-    jour_fiable = date.fromisoformat(jour_fiable_iso)
+    avant_debut, avant_fin = v2_date - timedelta(days=AVANT_JOURS), v2_date - timedelta(days=1)
+    apres_fin = min(date.fromisoformat(jour_fiable_iso), max(date.fromisoformat(j) for j in quotidien))
 
-    # dates completes ("YYYY-MM-DD") depuis le 08/08/2026 : une seule
-    # "annee" appliquee a tout le tableau etait fausse des que la reference
-    # V1 remontait sur l'annee civile precedente (bascule en debut d'annee).
-    dates_disponibles = [date.fromisoformat(j) for j in jours_iso]
-    premiere_donnee, derniere_donnee = min(dates_disponibles), max(dates_disponibles)
-    borne_haute = min(jour_fiable, derniere_donnee)
+    def somme(debut, fin):
+        total, jours = [0] * len(funnel_daily.ETAPES), 0
+        for j, v in quotidien.items():
+            if debut.isoformat() <= j <= fin.isoformat() and len(v) >= len(total):
+                jours += 1
+                for i in range(len(total)):
+                    total[i] += v[i]
+        return total, jours
 
-    if not hote_reprise:
+    avant, n_avant = somme(avant_debut, avant_fin)
+    apres, n_apres = somme(v2_date, apres_fin)
+    if n_apres < SEUIL_JOURS_SIGNIFICATIF or n_avant < REFERENCE_MIN_JOURS or not avant[0] or not apres[0]:
         return None
 
-    # ---- reference V1 : tout l'historique disponible avant la bascule ----
-    avant_debut, avant_fin = premiere_donnee, v2_date - timedelta(days=1)
-    if avant_fin < avant_debut:
-        return None  # aucune donnee avant bascule : rien a comparer
-
-    jours_avant = (avant_fin - avant_debut).days + 1
-    sp_avant = _agrege_jours(jours_iso, daily.get("u") or [], avant_debut, avant_fin)
-    sr_avant = _agrege_jours(jours_iso, daily.get("rep") or [], avant_debut, avant_fin)
-    lv_avant = _agrege_leads(d.get("leads"), avant_debut, avant_fin)
-    dv_avant = _agrege_leads_par_device(d.get("leads"), avant_debut, avant_fin)
-    steps_avant, conv_avant = _funnel_periode(cli, s.propriete, hote_reprise, avant_debut, avant_fin)
-
-    baseline = {
-        "debut": avant_debut.isoformat(), "fin": avant_fin.isoformat(), "jours": jours_avant,
-        "sessionsParent": sp_avant, "sessionsReprise": sr_avant, "leads": lv_avant,
-        "sessionsReprisePerDay": round(sr_avant / jours_avant, 1) if jours_avant else 0,
-        "leadsPerDay": round(lv_avant / jours_avant, 2) if jours_avant else 0,
-        "funnel": steps_avant, "conversionPct": conv_avant, "leadsParDevice": dv_avant,
+    steps = [{"step": nom_etape, "a": avant[i], "b": apres[i]}
+             for i, nom_etape in enumerate(funnel_daily.ETAPES)]
+    conv_avant, conv_apres = 100 * avant[-1] / avant[0], 100 * apres[-1] / apres[0]
+    par_jour_avant, par_jour_apres = avant[0] / n_avant, apres[0] / n_apres
+    meta = {
+        "site": nom, "is_v2_split": True, "note": NOTE_AUTO,
+        "pre_days": n_avant, "post_days": n_apres,
+        "pre_label": label_plage(avant_debut.isoformat(), avant_fin.isoformat()),
+        "post_label": label_plage(v2_date.isoformat(), apres_fin.isoformat()),
+        "pre_step1_total": avant[0], "post_step1_total": apres[0],
+        "pre_users_per_day": round(par_jour_avant, 1), "post_users_per_day": round(par_jour_apres, 1),
+        "delta_users_per_day_pct": round((par_jour_apres - par_jour_avant) / par_jour_avant * 100, 1),
+        "pre_final_users": avant[-1], "post_final_users": apres[-1],
+        "pre_conversion_pct": round(conv_avant, 1), "post_conversion_pct": round(conv_apres, 1),
+        "delta_conversion_pts": round(conv_apres - conv_avant, 1),
     }
-
-    # ---- une entree par semaine ecoulee depuis la bascule ----
-    semaines = []
-    for deb, fin in _semaines(v2_date, borne_haute):
-        jours_semaine = (fin - deb).days + 1
-        sp = _agrege_jours(jours_iso, daily.get("u") or [], deb, fin)
-        sr = _agrege_jours(jours_iso, daily.get("rep") or [], deb, fin)
-        lv = _agrege_leads(d.get("leads"), deb, fin)
-        dv = _agrege_leads_par_device(d.get("leads"), deb, fin)
-        steps, conv = _funnel_periode(cli, s.propriete, hote_reprise, deb, fin)
-        semaines.append({
-            "debut": deb.isoformat(), "fin": fin.isoformat(), "jours": jours_semaine,
-            "label": _label_semaine(deb, fin),
-            "sessionsParent": sp, "sessionsReprise": sr, "leads": lv,
-            "sessionsReprisePerDay": round(sr / jours_semaine, 1) if jours_semaine else 0,
-            "leadsPerDay": round(lv / jours_semaine, 2) if jours_semaine else 0,
-            "funnel": steps, "conversionPct": conv, "leadsParDevice": dv,
-        })
-
-    return {"v2Date": v2_date_iso, "baseline": baseline, "weeks": semaines}
-
-
-SEUIL_JOURS_SIGNIFICATIF = 7  # en dessous, une cesure "avant/apres" est trop bruitee pour etre publiee
-
-# note posee sur les sites dont le funnel avant/apres a ete calcule
-# automatiquement par cette fonction : sert aussi de marqueur pour savoir,
-# au prochain run, qu'on peut recalculer (par opposition a une extraction
-# manuelle ponctuelle comme celle de Peugeot/DS/Citroen PT, jamais touchee).
-NOTE_AUTO = ("Funnel avant/après calculé automatiquement à partir du rapport "
-             "hebdomadaire V2 (baseline = tout l'historique avant bascule, "
-             "\"après\" = somme des semaines écoulées depuis).")
-
-
-def v2steps_depuis_hebdo(v2w):
-    """Derive le funnel 6 etapes avant/apres (meme forme que v2steps, un
-    {step, a, b} par etape) a partir du rapport hebdomadaire deja calcule :
-    aucune requete GA4 supplementaire, la meme donnee reelle (v2Weekly,
-    lui-meme issu de funnel.bloc_funnel) juste reagregee. None si la
-    reference V1 ou le recul post-bascule sont insuffisants pour publier
-    quelque chose de fiable."""
-    if not v2w:
-        return None
-    baseline_funnel = (v2w.get("baseline") or {}).get("funnel")
-    if not baseline_funnel:
-        return None
-    semaines = [w for w in v2w.get("weeks", []) if w.get("funnel")]
-    jours_apres = sum(w.get("jours", 0) for w in semaines)
-    if jours_apres < SEUIL_JOURS_SIGNIFICATIF:
-        return None
-    apres_par_etape = {}
-    for w in semaines:
-        for pas in w["funnel"]:
-            apres_par_etape[pas["step"]] = apres_par_etape.get(pas["step"], 0) + pas["users"]
-    return [
-        {"step": pas["step"], "a": pas["users"], "b": apres_par_etape.get(pas["step"], 0)}
-        for pas in baseline_funnel
-    ]
+    return steps, meta

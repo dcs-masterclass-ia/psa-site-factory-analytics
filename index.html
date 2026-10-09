@@ -99,6 +99,11 @@
 <style>
 html,body{margin:0;height:100%;background:#f4f4f6;font-family:Poppins,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
+.dc-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;border-radius:50%;background:#ecebf4;color:#6d727a;font-size:11px;font-weight:600;font-style:normal;letter-spacing:0;text-transform:none;line-height:1;cursor:help;vertical-align:middle;margin-left:7px}
+.dc-info:hover,.dc-info:focus{background:#d9d2fb;color:#4a36b0;outline:none}
+.dc-tip{display:none;position:absolute;z-index:90;left:-12px;top:calc(100% + 9px);width:310px;max-width:72vw;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28)}
+.dc-info:hover .dc-tip,.dc-info:focus .dc-tip{display:block}
+.dc-info.r .dc-tip{left:auto;right:-12px}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#dedee2;border-radius:6px;border:3px solid #f4f4f6}
 @keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes orbSpinRev{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
@@ -299,14 +304,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between">
-            <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span></div>
+            <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Estimations ÷ visiteurs de la page d'accueil du funnel, sur les jours exacts choisis (somme des jours). Estimation = utilisateur ayant déclenché la demande de reprise (événement GA4 tradein_request). Même taux dans le funnel, le classement du parc et la courbe Conversion. La variation est un écart en points de pourcentage.</span></span></div>
             <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
               <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ kpiRate }}</span>
               <span style="{{ kpiRateDelta.style }}">{{ kpiRateDelta.text }}</span>
             </div>
             <div style="margin:16px 0 4px">{{ rateSpark }}</div>
             <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#6d727a;flex-wrap:wrap">
-              <span>{{ convRankLabel }}</span>
+              <span>{{ convRankLabel }}<span class="dc-info" tabindex="0">i<span class="dc-tip">Rang du taux de conversion du site parmi tous les sites du parc, sur la même période et avec la même définition. La médiane est le taux du site situé au milieu du classement.</span></span></span>
               <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
               <span>{{ convMedianLabel }}</span>
               <sc-if value="{{ hasConvDelta }}" hint-placeholder-val="{{ false }}">
@@ -320,7 +325,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-for list="{{ kpis }}" as="kpi" hint-placeholder-count="3">
               <div style="background:#fff;border:1px solid #efeff1;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:11px;min-width:0;overflow:hidden">
                 <div style="flex:1 1 auto;min-width:132px">
-                  <div style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</div>
+                  <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
                   <div style="font-size:23px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ kpi.value }}</div>
                 </div>
                 <div style="flex:0 1 90px;min-width:0">{{ kpi.spark }}</div>
@@ -342,7 +347,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Tunnel de conversion</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">Accueil → Estimation · 6 étapes</div>
               </div>
               <span style="font-size:13px;color:#6d727a;text-align:right;max-width:230px">{{ stepLabel }}</span>
@@ -366,7 +371,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:13.5px;line-height:1.45;color:#9a9fa6">Visiteurs de l'accueil menés jusqu'à l'estimation · {{ compMedianLabel }}</div>
               </div>
               <div style="flex:none;text-align:right">
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:2px">Abandon cumulé</div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:2px">Abandon cumulé<span class="dc-info r" tabindex="0">i<span class="dc-tip">100 % moins le taux de conversion : part des visiteurs de l'accueil qui n'arrivent pas jusqu'à l'estimation.</span></span></div>
                 <div style="font-size:16px;font-weight:600;color:#a33c39">{{ abandonLabel }}</div>
               </div>
             </div>
@@ -481,7 +486,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Sessions par canal</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 de l'outil de reprise par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">{{ trendRangeLabel }}</div>
               </div>
               <span style="flex:1"></span>
@@ -497,7 +502,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par jour</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">{{ convRangeLabel }}</div>
               </div>
               <span style="flex:1"></span>
@@ -521,24 +526,46 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Parcours avant / après V2</div>
-                <div style="font-size:13.5px;color:#9a9fa6">Sites V2 uniquement · refonte de juin 2026</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Parcours avant / après V2<span class="dc-info" tabindex="0">i<span class="dc-tip">Mêmes jours exacts et même définition que partout dans le dashboard (estimations ÷ visiteurs de l'accueil, somme des jours). Avant = les 28 jours qui précèdent la bascule du site ; après = tous les jours depuis la bascule. Les volumes sont des moyennes par jour car les deux périodes n'ont pas la même durée. Publié à partir de 7 jours de recul. Plusieurs sites : chaque site garde ses propres dates, les volumes par jour s'additionnent.</span></span></div>
+                <div style="font-size:13.5px;color:#9a9fa6">{{ v2Subtitle }}</div>
               </div>
+              <sc-if value="{{ v2Has }}" hint-placeholder-val="{{ true }}">
               <div style="display:flex;align-items:center;gap:16px">
                 <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#9a9fa6;white-space:nowrap"><span style="width:10px;height:10px;border-radius:5px;background:#d9d2fb"></span>Avant</span>
                 <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#9a9fa6;white-space:nowrap"><span style="width:10px;height:10px;border-radius:5px;background:#7c63ee"></span>Après</span>
               </div>
+              </sc-if>
             </div>
-            <sc-for list="{{ v2 }}" as="row" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.6fr) 100px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#faf9ff">
-                <span style="font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
-                <div style="display:flex;flex-direction:column;gap:5px">
-                  <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.beforeBar }}"></div></div>
-                  <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.afterBar }}"></div></div>
-                </div>
-                <span style="{{ row.deltaStyle }}">{{ row.delta }}</span>
+            <sc-if value="{{ v2Has }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:16px">
+                <sc-for list="{{ v2Kpis }}" as="k" hint-placeholder-count="3">
+                  <div style="background:#faf9ff;border:1px solid #efeaff;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:13px;color:#6d727a">{{ k.label }}</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+                      <span style="font-size:19px;font-weight:600;color:#121214;letter-spacing:-.01em">{{ k.value }}</span>
+                      <span style="{{ k.deltaStyle }}">{{ k.delta }}</span>
+                    </div>
+                  </div>
+                </sc-for>
               </div>
-            </sc-for>
+              <sc-if value="{{ v2LowVolume }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:#a16207;background:#fef6e7;border-radius:10px;padding:8px 12px;margin-bottom:12px">Volume faible (moins de 300 visiteurs sur l'une des périodes) : tendance indicative.</div>
+              </sc-if>
+              <sc-for list="{{ v2 }}" as="row" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.4fr) 130px 80px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#faf9ff">
+                  <span style="font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                  <div style="display:flex;flex-direction:column;gap:5px">
+                    <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.beforeBar }}"></div></div>
+                    <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.afterBar }}"></div></div>
+                  </div>
+                  <span style="font-size:13.5px;color:#6d727a;text-align:right;white-space:nowrap">{{ row.pcts }}</span>
+                  <span style="{{ row.deltaStyle }}">{{ row.delta }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !v2Has }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Aucun site V2 avec assez de recul dans la sélection. La comparaison est publiée 7 jours après la bascule d'un site, avec 4 semaines de référence avant.</div>
+            </sc-if>
           </div>
           </sc-if>
 
@@ -546,7 +573,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
               </div>
               <span onClick="{{ openMatrix }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ matrixCount }} canaux</span>
@@ -568,7 +595,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <sc-if value="{{ isAudience }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
-            <div style="font-size:16px;font-weight:600;color:#121214">Audience &amp; saisonnalité</div>
+            <div style="font-size:16px;font-weight:600;color:#121214">Audience &amp; saisonnalité<span class="dc-info" tabindex="0">i<span class="dc-tip">Moyenne par jour de la semaine sur la période (sessions de l'outil de reprise), répartition des navigateurs et des nouveaux / récurrents en sessions. Source GA4.</span></span></div>
             <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Jour de semaine, navigateurs et type de visiteur</div>
             <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:start">
               <div>{{ seasonChart }}</div>
@@ -627,7 +654,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Performances de recherche</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Performances de recherche</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Données Search Console de la propriété du site. CTR = clics ÷ impressions ; position moyenne pondérée par les impressions. Le détail par mois est exact ; le jour par jour (clics, impressions) n'est tracé que sur 60 jours ou moins, la position n'étant stockée qu'au mois.</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
           </div>
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
@@ -688,7 +715,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Requêtes</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">Top 6 par clics</div>
               </div>
               <span onClick="{{ openQueries }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ queryCount }} requêtes</span>
@@ -727,7 +754,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
               <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Pages</div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
                 <div style="font-size:13.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
               </div>
               <span onClick="{{ openPages }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ pageCount }} pages</span>
@@ -771,7 +798,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison de périodes</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Comparaison de périodes</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Interrogation directe de Search Console pour deux périodes au choix : le détail jour par jour n'est pas stocké, il est lu à la demande.</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">Appel API en direct · données journalières</span>
           </div>
@@ -960,7 +987,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Site sélectionné</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Site sélectionné</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Scores Lighthouse de l'outil de reprise mesurés via l'API PageSpeed Insights (médiane de 3 mesures par site et par appareil). Mesure hebdomadaire, pas quotidienne : la performance d'un site varie peu d'un jour à l'autre.</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">{{ psReleveLabel }}</span>
           </div>
@@ -1059,7 +1086,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads back-office</span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads back-office</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">{{ rangeLabel }} · toutes marques</span>
           </div>
@@ -1081,7 +1108,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <sc-for list="{{ tbKpis }}" as="kpi" hint-placeholder-count="3">
                 <div style="background:#fff;border:1px solid #efeff1;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:11px;min-width:0;overflow:hidden">
                   <div style="flex:1 1 auto;min-width:132px">
-                    <div style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</div>
+                    <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
                     <div style="font-size:23px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ kpi.value }}</div>
                   </div>
                   <span style="{{ kpi.deltaStyle }}">{{ kpi.delta }}</span>
@@ -1477,7 +1504,7 @@ class Component extends DCLogic {
   decale(iso, n) { const d = new Date(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   aggregate(debutIso, finIso) {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
-    const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null,
+    const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), browser:new Map(), newVsReturning:new Map(),
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false };
     for (const s of this.state.sites) {
@@ -1536,6 +1563,13 @@ class Component extends DCLogic {
       if (d.v2 && d.v2.is_v2_split && d.v2steps && d.v2steps.length) {
         if (!out.v2Steps) out.v2Steps = d.v2steps.map(x=>({step:x.step,a:0,b:0}));
         d.v2steps.forEach((x,i)=>{ if (out.v2Steps[i]) { out.v2Steps[i].a += x.a||0; out.v2Steps[i].b += x.b||0; } });
+        const m = d.v2;
+        if (!out.v2Meta) out.v2Meta = { sites:[], preHome:0, postHome:0, preEst:0, postEst:0 };
+        if (m.pre_days && m.post_days) {
+          out.v2Meta.preHome += (m.pre_step1_total||0)/m.pre_days; out.v2Meta.postHome += (m.post_step1_total||0)/m.post_days;
+          out.v2Meta.preEst += (m.pre_final_users||0)/m.pre_days;  out.v2Meta.postEst += (m.post_final_users||0)/m.post_days;
+        }
+        out.v2Meta.sites.push({ site:s, pre:m.pre_label, post:m.post_label, preDays:m.pre_days, postDays:m.post_days });
       }
       for (const mois of Object.keys(d.canalQuotidien || {})) {
         const c = d.canalQuotidien[mois];
@@ -1853,9 +1887,9 @@ class Component extends DCLogic {
     const safeSpark = (vals, color, w, hgt, invert) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt, invert); };
 
     const kpis=[
-      {label:'Sessions site parent',value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
-      {label:'Sessions site reprise',value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
-      {label:'Leads GA4',value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
+      {label:'Sessions site parent',info:"Sessions GA4 du site de la marque (site parent) sur la période. Une session qui passe du site parent à l'outil de reprise est comptée dans les deux sites.",value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
+      {label:'Sessions site reprise',info:"Sessions GA4 de l'outil de reprise (son nom d'hôte) sur la période.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
+      {label:'Leads GA4',info:"Estimations sur la période : utilisateurs ayant déclenché la demande de reprise (tradein_request), somme des jours exacts. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = homeBuckets.map((hb,i)=> hb ? estBuckets[i]/hb*100 : 0);
@@ -2001,16 +2035,35 @@ class Component extends DCLogic {
     }
     const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,width:'100%',style:{display:'block',height:'auto'}},ck);
 
-    // avant / apres V2 : reel (agg.v2Steps), sites is_v2_split uniquement
-    const v2=(agg.v2Steps||[]).map(r=>{
-      const base = agg.v2Steps[0];
+    // avant / apres V2 : memes jours exacts et meme definition que le reste du
+    // dashboard (funnelDaily) ; avant = 28 j avant la bascule, apres = depuis la
+    // bascule ; volumes PAR JOUR (les deux fenetres n'ont pas la meme duree).
+    const v2Steps = agg.v2Steps || [];
+    const v2Has = v2Steps.length > 0;
+    const v2Rate = (arr, k) => arr.length && arr[0][k] ? arr[arr.length-1][k]/arr[0][k]*100 : null;
+    const v2ConvA = v2Has ? v2Rate(v2Steps,'a') : null, v2ConvB = v2Has ? v2Rate(v2Steps,'b') : null;
+    const v2m = agg.v2Meta;
+    const v2Kpis = v2Has ? [
+      { label:'Conversion', value: dec(v2ConvA,1)+' % → '+dec(v2ConvB,1)+' %', ...(()=>{ const b=ptDeltaBadge(v2ConvB,v2ConvA); return {delta:b.text,deltaStyle:b.style}; })() },
+      ...(v2m ? [
+        { label:'Visiteurs accueil / jour', value: this.fmt(Math.round(v2m.preHome))+' → '+this.fmt(Math.round(v2m.postHome)), ...(()=>{ const b=deltaBadge(v2m.postHome,v2m.preHome); return {delta:b.text,deltaStyle:b.style}; })() },
+        { label:'Estimations / jour', value: this.fmt(Math.round(v2m.preEst))+' → '+this.fmt(Math.round(v2m.postEst)), ...(()=>{ const b=deltaBadge(v2m.postEst,v2m.preEst); return {delta:b.text,deltaStyle:b.style}; })() }
+      ] : [])
+    ] : [];
+    const v2Subtitle = !v2Has ? 'Sites V2 uniquement'
+      : v2m && v2m.sites.length===1 ? `Avant : ${v2m.sites[0].pre} (${v2m.sites[0].preDays} j) · Après : ${v2m.sites[0].post} (${v2m.sites[0].postDays} j)`
+      : `${v2m ? v2m.sites.length : ''} sites V2 · avant : 28 jours précédant chaque bascule · après : depuis chaque bascule`;
+    const v2LowVolume = v2Has && (v2Steps[0].a < 300 || v2Steps[0].b < 300);
+    const v2=v2Steps.map((r,i)=>{
+      const base = v2Steps[0];
       const beforePct = base.a? r.a/base.a*100 : 0, afterPct = base.b? r.b/base.b*100 : 0;
-      const d = beforePct? Math.round((afterPct-beforePct)/beforePct*100) : 0;
+      const dpt = afterPct-beforePct;
       return {name:r.step,
+        pcts: dec(beforePct,1)+' % → '+dec(afterPct,1)+' %',
         beforeBar:`width:${Math.max(beforePct,2)}%;height:100%;border-radius:5px;background:#d9d2fb`,
         afterBar:`width:${Math.max(afterPct,2)}%;height:100%;border-radius:5px;background:#7c63ee`,
-        delta:(d>0?'+':'')+d+' %',
-        deltaStyle:`font-size:14px;font-weight:600;text-align:right;white-space:nowrap;color:${d>0?'#1f9254':d<0?'#a33c39':'#9a9fa6'}`};
+        delta: i===0 ? '—' : (dpt>=0?'+':'−')+dec(Math.abs(dpt),1)+' pt',
+        deltaStyle:`font-size:14px;font-weight:600;text-align:right;white-space:nowrap;color:${i===0?'#9a9fa6':dpt>0?'#1f9254':dpt<0?'#a33c39':'#9a9fa6'}`};
     });
 
     // canal x device : reel (agg.convCanalDevice), delta vs periode de comparaison
@@ -2654,9 +2707,9 @@ class Component extends DCLogic {
     const tbLeadsV = boLeads;
     const tbLeadsDelta = deltaBadge(boLeads, cmp&&cmp.leads);
     const tbKpis=[
-      {label:'Leads back-office',value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
-      {label:'Part avec immatriculation',value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(entryPct, entryPctCmp, ' pt'))},
-      {label:'Part mobile',value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(deltaBadge(mobilePct, mobilePctCmp, ' pt'))}
+      {label:'Leads back-office',info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
+      {label:'Part avec immatriculation',info:"Part des leads du back-office saisis avec une plaque d'immatriculation, sur la période. Écart en points avec la période de comparaison.",value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(entryPct, entryPctCmp))},
+      {label:'Part mobile',info:"Part des leads du back-office déposés depuis un mobile, sur la période. Écart en points avec la période de comparaison.",value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(mobilePct, mobilePctCmp))}
     ];
     // meme carte "hero" large que le taux de conversion GA4 -- meme
     // correctif de largeur/hauteur de viewBox (cf. rateSpark).
@@ -3014,7 +3067,7 @@ class Component extends DCLogic {
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, convHasData, convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
       matrixCount:allMatrix.length,
       openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
       matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,

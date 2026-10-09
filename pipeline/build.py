@@ -512,45 +512,6 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # reelle) — jamais invente sur des donnees absentes.
     d["insights"] = insights.genere_tous(s.nom, d, gsc_site)
 
-    # rapport hebdomadaire V2 : sessions/leads recalcules depuis les series
-    # deja assemblees ci-dessus, funnel via une requete GA4 par semaine
-    # ecoulee depuis la bascule. Ne bloque jamais le site en cas d'echec.
-    try:
-        v2w = v2_report.rapport_hebdo(cli, s, d, jour_fiable(), hote_reprise)
-        if v2w:
-            d["v2Weekly"] = v2w
-            journal.append(f"V2 hebdo : {len(v2w['weeks'])} semaine(s) depuis le {v2w['v2Date']}")
-        elif "v2Weekly" in d:
-            journal.append("V2 hebdo : pas assez de recul avant/après la bascule, conservé tel quel")
-    except Exception as e:
-        journal.append(f"V2 hebdo en erreur ({type(e).__name__}: {e})")
-        v2w = None
-
-    # funnel avant/apres V2 (v2steps, carte "Parcours d'estimation" du
-    # dashboard) : derive de v2Weekly ci-dessus, jamais une extraction GA4
-    # a part. Ne touche jamais un site deja curé manuellement (v2steps deja
-    # non vide, sans le marqueur NOTE_AUTO) -- seuls les sites sans donnee ou
-    # deja auto-generes sont (re)calcules, pour ameliorer tout seul avec
-    # plus de recul au fil des semaines sans ecraser un travail manuel.
-    # is_v2_split == False explicite = l'auteur de CETTE donnee a lui-meme
-    # indique que ce n'est pas une vraie comparaison avant/apres (ex. un
-    # decoupage ad-hoc en deux moities d'un mois, sans rapport avec
-    # v2_date) -- jamais une "curation" a proteger. Trouve le 12/08/2026
-    # sur OPEL PT : bloquait le recalcul depuis des semaines alors que
-    # v2Weekly avait largement assez de recul (397j avant / 69j apres).
-    deja_curee = (bool(d.get("v2steps"))
-                  and (d.get("v2") or {}).get("note") != v2_report.NOTE_AUTO
-                  and (d.get("v2") or {}).get("is_v2_split") is not False)
-    if not deja_curee:
-        steps = v2_report.v2steps_depuis_hebdo(v2w) if v2w else None
-        if steps:
-            d["v2steps"] = steps
-            pre_label = v2_report.label_plage(v2w["baseline"]["debut"], v2w["baseline"]["fin"])
-            post_label = v2_report.label_plage(v2w["weeks"][0]["debut"], v2w["weeks"][-1]["fin"])
-            d["v2"] = {"site": s.nom, "is_v2_split": True, "note": v2_report.NOTE_AUTO,
-                       "pre_label": pre_label, "post_label": post_label}
-            journal.append("V2 funnel avant/après : calculé automatiquement depuis v2Weekly")
-
     # funnel hebdomadaire glissant (funnelWeekly) : cadre precisement les
     # periodes choisies par l'utilisateur sur le dashboard, complementaire a
     # funnelMonth (mensuel, seul recours au-dela de la fenetre glissante).
@@ -583,6 +544,25 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"funnel quotidien : {len(quotidien)} jour(s)")
     except Exception as e:
         journal.append(f"funnel quotidien en erreur ({type(e).__name__}: {e})")
+
+    # avant / apres V2 : derive du funnel quotidien ci-dessus (meme definition que
+    # le reste du dashboard), pour TOUS les sites ayant une date de bascule --
+    # y compris ceux dont l'avant/apres avait ete saisi a la main. v2Weekly
+    # (ancien rapport hebdomadaire, autre definition : utilisateurs uniques et
+    # reference sur tout l'historique) n'est plus produit et est retire.
+    d.pop("v2Weekly", None)
+    if d.get("v2_date"):
+        try:
+            res = v2_report.avant_apres_depuis_quotidien(d, d["v2_date"], jour_fiable(), s.nom)
+            if res:
+                d["v2steps"], d["v2"] = res
+                journal.append(f"V2 avant/après : {d['v2']['pre_days']} j avant / {d['v2']['post_days']} j après la bascule du {d['v2_date']}")
+            else:
+                for cle in ("v2steps", "v2"):
+                    d.pop(cle, None)
+                journal.append("V2 avant/après : pas assez de recul ou de référence, non publié")
+        except Exception as e:
+            journal.append(f"V2 avant/après en erreur ({type(e).__name__}: {e})")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios

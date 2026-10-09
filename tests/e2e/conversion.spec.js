@@ -60,3 +60,28 @@ test("module Pages (Search Console) : leads GA4 rattachés à la page d'atterris
   expect(lignes.some((t) => /\s[1-9][\d ]* \d+,\d{2} %$/.test(t)), lignes.join(" || ")).toBeTruthy();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, info-bulle", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("OPEL FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await page.getByText("Avant / après V2", { exact: true }).first().click();
+  await expect(page.getByText("Parcours avant / après V2")).toBeVisible();
+  await expect(page.getByText(/Avant : .+ \(\d+ j\) · Après : .+ \(\d+ j\)/)).toBeVisible();
+  await expect(page.getByText("Visiteurs accueil / jour")).toBeVisible();
+  await expect(page.getByText("Estimations / jour")).toBeVisible();
+  // écarts de conversion en POINTS (jamais une variation relative étiquetée pt)
+  await expect(page.getByText(/[+−]\d+,\d pt/).first()).toBeVisible();
+  // info-bulle : visible au survol
+  const info = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "28 jours qui précèdent la bascule" }) }).first();
+  await info.hover();
+  await expect(page.locator(".dc-tip", { hasText: "28 jours qui précèdent la bascule" }).first()).toBeVisible();
+  await page.locator("body").screenshot({ path: "test-results/v2-opel.png" });
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
