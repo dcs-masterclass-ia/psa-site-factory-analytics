@@ -242,8 +242,9 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # du module Pages de Search Console) : voir
         # ga4.landing_conversions_par_page pour la difference avec pagePath.
         try:
-            d["landingMonth"][mois] = {"pages": ga4.landing_conversions_par_page(
-                cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)}
+            d["landingMonth"][mois] = {"v": 2, "pages": ga4.landing_conversions_par_page(
+                cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION,
+                pages=chemins_landing(d))}
         except Exception as e:
             journal.append(f"{mois} : pages d'atterrissage en erreur ({type(e).__name__})")
 
@@ -643,6 +644,28 @@ def _commit_et_pousse(chemins, message):
                 _git("rebase", "--abort")
                 return False, f"conflit sur {conflits or '(indetermine)'}"
     return False, "push impossible apres 3 tentatives"
+
+
+def chemins_landing(d, maximum=45):
+    """Chemins des pages connues de Search Console (union de tous les mois du
+    site, les plus cliquees d'abord), avec et sans "/" final : ce sont les
+    seules pages auxquelles le dashboard rattache des leads par page
+    d'atterrissage. "/" est exclue (commune au site parent et au site reprise).
+    Liste vide = pas de donnee Search Console : repli sur le top par sessions."""
+    from urllib.parse import urlparse
+    clics = {}
+    for mois, bloc in (d.get("searchMonth") or {}).items():
+        if mois == "total":
+            continue
+        for p in (bloc.get("pages") or []):
+            chemin = urlparse(p.get("page", "")).path or "/"
+            if chemin != "/":
+                clics[chemin] = clics.get(chemin, 0) + (p.get("clics") or 0)
+    out = []
+    for c in sorted(clics, key=lambda c: -clics[c])[:maximum]:
+        base = c.rstrip("/") or "/"
+        out += [base, base + "/"]
+    return out
 
 
 def fusionne_etat_partiel(ancien, etat):

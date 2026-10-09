@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 from pipeline import funnel, ga4
-from pipeline.build import _commit_et_pousse, _configure_git, jour_fiable
+from pipeline.build import _commit_et_pousse, _configure_git, chemins_landing, jour_fiable
 from pipeline.sites import exploitables, site as trouve_site
 
 RACINE = Path(__file__).resolve().parent.parent
@@ -33,7 +33,8 @@ def rattrape_site(cli, s, dry_run=False):
     d = json.loads(chemin.read_text(encoding="utf-8"))
     d.setdefault("landingMonth", {})
     limite = jour_fiable().replace("-", "")
-    a_faire = [m for m in d.get("months", []) if m not in d["landingMonth"]]
+    # a refaire : mois absents, ou calcules avant la ventilation par canal (format sans "v": 2)
+    a_faire = [m for m in d.get("months", []) if (d["landingMonth"].get(m) or {}).get("v") != 2]
     if not a_faire:
         return None
 
@@ -48,11 +49,12 @@ def rattrape_site(cli, s, dry_run=False):
         f_iso = f"{f_num[:4]}-{f_num[4:6]}-{f_num[6:]}"
         try:
             pages = ga4.landing_conversions_par_page(
-                cli, s.propriete, s.hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)
+                cli, s.propriete, s.hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION,
+                pages=chemins_landing(d))
         except Exception as e:
             print(f"  {s.nom} {m} : echec extraction ({type(e).__name__}: {e}), laisse absent")
             continue
-        d["landingMonth"][m] = {"pages": pages}
+        d["landingMonth"][m] = {"v": 2, "pages": pages}
         recuperes += 1
         print(f"  {s.nom} {m} : {len(pages)} pages d'atterrissage")
 

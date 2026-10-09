@@ -51,6 +51,9 @@ test("module Pages (Search Console) : leads GA4 rattachés à la page d'atterris
   await page.locator('div[title="Search Console"]').first().click();
 
   await expect(page.getByText("Leads GA4", { exact: true }).first()).toBeVisible();
+  // filtre canal : Organique par defaut, pastille active sombre ; "Tous canaux" = totaux
+  for (const c of ["Organique", "Payant", "Direct", "Autres", "Tous canaux"]) await expect(page.getByText(c, { exact: true }).first()).toBeVisible();
+  await page.getByText("Tous canaux", { exact: true }).first().click();
   // l'ancienne colonne "Conv. GA4" (comptee par pagePath, donc toujours 0) a disparu
   await expect(page.getByText("Conv. GA4")).toHaveCount(0);
   // une page de contenu avec des leads rattaches : nombre de leads puis taux (pas "—", pas 0)

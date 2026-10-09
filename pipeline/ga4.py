@@ -122,9 +122,24 @@ def rebond_et_conversion_par_page(cli, pid, hote, debut, fin, evenement, limite=
     return out
 
 
-def landing_conversions_par_page(cli, pid, hote, debut, fin, evenement, limite=80):
+# Regroupement des canaux par defaut GA4 pour le filtre du module Pages : un
+# groupe par lecture utile (le reste, y compris Email, Referral, Unassigned,
+# reseaux sociaux organiques, assistants IA, tombe dans "a").
+GROUPES_CANAUX = {
+    "Organic Search": "o",
+    "Paid Search": "p", "Paid Other": "p", "Paid Social": "p", "Display": "p", "Cross-network": "p",
+    "Direct": "d",
+}
+
+
+def groupe_canal(nom):
+    return GROUPES_CANAUX.get(nom, "a")
+
+
+def landing_conversions_par_page(cli, pid, hote, debut, fin, evenement, limite=80, pages=None):
     """Sessions et sessions CONVERTIES par page d'atterrissage (landingPage,
-    chemin de la premiere page de la session), triees par sessions.
+    chemin de la premiere page de la session), avec la ventilation par groupe
+    de canaux (o = Organic Search, p = payant, d = direct, a = autres).
 
     Pourquoi pas pagePath (rebond_et_conversion_par_page) : l'evenement de
     conversion (tradein_request) part du formulaire d'estimation, jamais de
@@ -132,19 +147,41 @@ def landing_conversions_par_page(cli, pid, hote, debut, fin, evenement, limite=8
     par pagePath restait donc a 0 sur les pages de contenu. Ici la
     conversion est rattachee a la page d'ENTREE de la session.
 
+    `pages` : chemins a retenir (ceux connus de Search Console) -- filtre cote
+    GA4, donc une page peu visitee n'est pas evincee d'un top par sessions
+    par les pages du site parent. Sans `pages` : les `limite` premieres par
+    sessions.
+
     Limites connues : (1) landingPage est un chemin sans hote -- une session
     qui demarre sur le site parent puis passe sur le site reprise apparait
-    aussi (ex. /vehicules/e-c3.html) ; seul "/" est ambigu entre les deux
-    sites, le dashboard ne l'attribue donc pas. (2) "sessions converties" =
-    sessions ayant declenche au moins une fois `evenement`.
+    aussi ; seul "/" est ambigu entre les deux sites, le dashboard ne
+    l'attribue donc pas. (2) "sessions converties" = sessions ayant declenche
+    au moins une fois `evenement`.
+
+    Retour : [{"page", "sessions", "conversions", "c": {groupe: [sessions, conversions]}}]
     """
-    filtre_hote = _egal("hostName", hote)
-    tot = _rapport(cli, pid, debut, fin, ["landingPage"], ["sessions"], filtre_hote)
-    conv = _rapport(cli, pid, debut, fin, ["landingPage"], ["sessions"],
-                    _et(filtre_hote, _egal("eventName", evenement)))
-    conv_map = {p: int(n) for p, n in conv}
-    lignes = sorted(((p, int(n)) for p, n in tot if p and p != "(not set)"), key=lambda x: -x[1])
-    return [{"page": p, "sessions": n, "conversions": conv_map.get(p, 0)} for p, n in lignes[:limite]]
+    filtre = _egal("hostName", hote)
+    if pages:
+        filtre = _et(filtre, FilterExpression(filter=Filter(
+            field_name="landingPage", in_list_filter=Filter.InListFilter(values=list(pages)))))
+    dims = ["landingPage", "sessionDefaultChannelGroup"]
+    tot = _rapport(cli, pid, debut, fin, dims, ["sessions"], filtre)
+    conv = _rapport(cli, pid, debut, fin, dims, ["sessions"], _et(filtre, _egal("eventName", evenement)))
+    par_page = {}
+    for page, canal, n in tot:
+        if not page or page == "(not set)":
+            continue
+        e = par_page.setdefault(page, {"s": 0, "c": 0, "g": {}})
+        g = e["g"].setdefault(groupe_canal(canal), [0, 0])
+        e["s"] += int(n); g[0] += int(n)
+    for page, canal, n in conv:
+        e = par_page.get(page)
+        if not e:
+            continue
+        g = e["g"].setdefault(groupe_canal(canal), [0, 0])
+        e["c"] += int(n); g[1] += int(n)
+    lignes = sorted(par_page.items(), key=lambda kv: -kv[1]["s"])
+    return [{"page": p, "sessions": e["s"], "conversions": e["c"], "c": e["g"]} for p, e in lignes[:limite]]
 
 
 def profils(cli, pid, hote, debut, fin):

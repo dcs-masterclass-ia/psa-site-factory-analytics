@@ -745,7 +745,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
           </div>
           <sc-for list="{{ pageQueriesRows }}" as="r" hint-placeholder-count="8">
-            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
               <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
               <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
               <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
@@ -760,24 +760,27 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:15px;align-items:start">
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">Top 6 par clics</div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="{{ qChip }}">{{ qIcon }}</span>
+                <div>
+                  <div style="font-size:15px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
+                  <div style="font-size:12.5px;color:#9a9fa6">Top 6 par clics</div>
+                </div>
               </div>
-              <span onClick="{{ openQueries }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ queryCount }} requêtes</span>
+              <span onClick="{{ openQueries }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ queryCount }} requêtes</span>
             </div>
-            <div style="display:flex;align-items:center;gap:14px;padding:0 4px 6px;font-size:11.5px;color:#9a9fa6">
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;font-size:11.5px;color:#6d727a">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
             </div>
             <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
               <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
             </div>
             <sc-for list="{{ scQueries }}" as="r" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
                 <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
@@ -799,24 +802,33 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
           </div>
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
-              <div>
-                <div style="font-size:16px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
-                <div style="font-size:13.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="{{ pChip }}">{{ pIcon }}</span>
+                <div>
+                  <div style="font-size:15px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
+                  <div style="font-size:12.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
+                </div>
               </div>
-              <span onClick="{{ openPages }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap">Voir les {{ pageCount }} pages</span>
+              <span onClick="{{ openPages }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ pageCount }} pages</span>
             </div>
-            <div style="display:flex;align-items:center;gap:14px;padding:0 4px 6px;font-size:11.5px;color:#9a9fa6">
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
-              <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+              <span style="font-size:12px;color:#9a9fa6;margin-right:2px">Canal des leads</span>
+              <sc-for list="{{ pagesCanaux }}" as="c" hint-placeholder-count="5">
+                <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span>
+              </sc-for>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;font-size:11.5px;color:#6d727a">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
+              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
             </div>
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
             </div>
             <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
                 <span onClick="{{ r.pick }}" style="font-size:14px;color:#3b76e8;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Voir les requêtes de cette page">{{ r.name }}</span>
                 <span>{{ r.sparkClicks }}</span>
                 <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
@@ -828,7 +840,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
-            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA4 et Conv. proviennent de GA4, rapprochés par page. Leads GA4 et Conv. rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
+            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA4 et Conv. proviennent de GA4, rapprochés par page. Leads GA4 et Conv. suivent le canal choisi au-dessus et rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
             <div style="margin-top:14px;display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
               <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                 <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
@@ -889,7 +901,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span>{{ cmpDimLabel }}</span><span style="text-align:right">Clics</span><span style="text-align:right">Δ clics</span><span style="text-align:right">Impressions</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
               </div>
               <sc-for list="{{ cmpRows }}" as="r" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+                <div style="display:grid;grid-template-columns:minmax(0,2fr) 84px 96px 104px 76px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
                   <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
                   <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.a }}</span>
                   <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
@@ -1190,7 +1202,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span>Marque</span><span style="text-align:right">Leads</span><span style="text-align:center">Écart médiane</span><span style="text-align:right">Part</span>
               </div>
               <sc-for list="{{ brandPerf }}" as="b" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+                <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
                   <span style="display:flex;align-items:center;gap:8px;min-width:0">
                     <span style="{{ b.rankStyle }}">{{ b.rank }}</span>
                     <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span>
@@ -1226,7 +1238,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span>Pays</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">Avec plaque</span>
               </div>
               <sc-for list="{{ countryPerf }}" as="c" hint-placeholder-count="5">
-                <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#faf9ff">
+                <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
                   <span style="display:flex;align-items:center;gap:8px;min-width:0">
                     <span style="{{ c.dot }}"></span>
                     <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
@@ -1703,7 +1715,7 @@ class Component extends DCLogic {
      -- searchMonth[mois].pages, en URL complete, et rebondMonth[mois].pages,
      en pagePath GA4) : jamais recoupe au niveau requete/URL exacte (pas de
      tracking par-requete cote GA4), seulement au niveau de la page. */
-  aggregatePages(debutIso, finIso) {
+  aggregatePages(debutIso, finIso, canal = 't') {
     const pages = new Map();
     // un meme chemin peut etre ecrit avec/sans "/" final, encode, avec query :
     // on normalise partout pour rapprocher Search Console et GA4.
@@ -1744,9 +1756,14 @@ class Component extends DCLogic {
         const [anMois,moisNum] = mois.split('-').map(Number);
         const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
         if (finMois < debutIso || debutMois > finIso) continue;
-        for (const p of ((d.landingMonth[mois]||{}).pages || [])) {
+        const bloc = d.landingMonth[mois] || {};
+        // ancien format (liste a plat) : tous canaux seulement ; v2 : decoupe o/p/d/a
+        if (bloc.v !== 2 && canal !== 't') continue;
+        for (const p of (bloc.pages || [])) {
           const c = pages.get(norm(p.page));
-          if (c) { c.landingSessions += p.sessions||0; c.landingLeads += p.conversions||0; }
+          if (!c) continue;
+          const sc = canal === 't' ? [p.sessions||0, p.conversions||0] : ((p.c||{})[canal] || [0,0]);
+          c.landingSessions += sc[0]; c.landingLeads += sc[1];
         }
       }
     }
@@ -2577,7 +2594,8 @@ class Component extends DCLogic {
     // pagePath GA4 -- retrouve le 14/09/2026, non exploite jusqu'ici cote
     // dashboard). Recoupement seulement au niveau de la page : pas de
     // tracking par requete cote GA4, jamais invente.
-    const pagesAgg = this.aggregatePages(debut, fin);
+    const pagesCanal = st.pagesCanal || 'o';
+    const pagesAgg = this.aggregatePages(debut, fin, pagesCanal);
     const SEUIL_SESSIONS_FIABLE = 100;
     const pagesSorted = Array.from(pagesAgg.entries())
       .filter(([,v]) => v.clics>0 || v.sessions>0)
@@ -2665,6 +2683,10 @@ class Component extends DCLogic {
         pick:()=>{ if (v.pageUrl) this.chargerRequetesPage(v.pageUrl, path); },
       };
     };
+    const pagesCanaux = [['o','Organique'],['p','Payant'],['d','Direct'],['a','Autres'],['t','Tous canaux']].map(([k,label])=>({
+      label, pick:()=>set({pagesCanal:k}),
+      style:'font-size:12.5px;font-weight:500;border-radius:999px;padding:5px 12px;cursor:pointer;white-space:nowrap;'+(pagesCanal===k?'background:#121214;color:#fff':'background:#f6f6f8;color:#6d727a'),
+    }));
     const allPages = pagesSorted.map(mkPageRow);
     const scPages = allPages.slice(0,6);
     const pireePage = pagesSorted.map(([path,v])=>({path,v}))
@@ -3219,7 +3241,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
+      scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, pagesCanaux, qChip:kPuce('#3b76e8'), qIcon:kIcone('#3b76e8',h('circle',{cx:11,cy:11,r:7}),h('path',{d:'M21 21l-4.3-4.3'})), pChip:kPuce('#7c63ee'), pIcon:kIcone('#7c63ee',h('path',{d:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'}),h('path',{d:'M14 3v5h5'})), scQueries, allQueries, pageInsightText, queryInsight,
       pageQueriesOpen, pageQueriesLoading, pageQueriesError, pageQueriesPath, pageQueriesRows, fermerRequetesPage,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,
