@@ -15,10 +15,11 @@ etc.), qui ne sont ni lues ni publiees dans data/*.json.
 import csv
 import io
 import os
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
-from datetime import date
+from datetime import date, timedelta
 
 BASE = "https://api-psa-site-factory.autobiz.com/v1/public/extract/extraction_report.csv"
 
@@ -193,7 +194,34 @@ def token():
     return t
 
 
+# jours dont l'extraction a plante cote back-office (HTTP 500) et ont ete
+# sautes : exposes pour que l'appelant puisse les journaliser.
+JOURS_SAUTES = []
+
+
 def _telecharge_un(site_id, settings, debut, fin):
+    """Telecharge l'extraction d'un siteId. Si l'API BO repond 500 (constate
+    le 09/10/2026 sur Fiat BE fr, siteId 125, a cause d'un seul jour : le
+    06/04/2026), l'intervalle est coupe en deux recursivement pour isoler le
+    jour fautif, qui est alors saute avec un avertissement : on garde tout le
+    reste au lieu de perdre le mois entier."""
+    try:
+        return _telecharge_brut(site_id, settings, debut, fin)
+    except urllib.error.HTTPError as e:
+        if e.code != 500:
+            raise
+        d0 = date.fromisoformat(debut)
+        d1 = date.fromisoformat(fin)
+        if d0 >= d1:
+            JOURS_SAUTES.append((site_id, debut))
+            print(f"  AVERTISSEMENT : siteId {site_id} {debut} saute (erreur 500 de l'API BO)")
+            return []
+        milieu = d0 + (d1 - d0) // 2
+        return (_telecharge_un(site_id, settings, debut, milieu.isoformat())
+                + _telecharge_un(site_id, settings, (milieu + timedelta(days=1)).isoformat(), fin))
+
+
+def _telecharge_brut(site_id, settings, debut, fin):
     params = {
         "extract": "1", "iframeLeads": "0",
         "dateBegin": debut, "dateEnd": fin,
