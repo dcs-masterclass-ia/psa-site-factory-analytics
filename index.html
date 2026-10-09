@@ -717,16 +717,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:13.5px;color:#9a9fa6">{{ scTrendRangeLabel }}</div>
               </div>
               <span style="flex:1"></span>
-              <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:16px;height:3px;border-radius:2px;background:#3b76e8"></span>Clics</span>
-              <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:12px;height:12px;border-radius:4px;background:#d7e4fb"></span>Impressions</span>
-              <sc-if value="{{ scPosDispo }}" hint-placeholder-val="{{ true }}">
-              <span style="display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#6d727a;white-space:nowrap"><span style="width:16px;height:0;border-top:3px dashed #e08a33"></span>Position</span>
-              </sc-if>
+              <sc-for list="{{ scToggles }}" as="t" hint-placeholder-count="4">
+                <span onClick="{{ t.toggle }}" style="{{ t.style }}"><span style="{{ t.dot }}"></span>{{ t.name }}</span>
+              </sc-for>
             </div>
             <div>{{ scChart }}</div>
-            <sc-if value="{{ scPosIndispo }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:12px;color:#c2c5cb;margin-top:6px;font-style:italic">Position moyenne disponible uniquement en vue mensuelle (période &gt; 60 jours) — pas de donnée quotidienne stockée.</div>
-            </sc-if>
           </div>
         </div>
 
@@ -2348,7 +2343,7 @@ class Component extends DCLogic {
     // et sous ce seuil la ligne position est honnetement masquee (note
     // dans le markup) plutot qu'un point quotidien invente.
     const moisNoms=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-    let clicks, impr, pos, labels, gDays, scTrendRangeLabel, scPosDispo;
+    let clicks, impr, pos, labels, gDays, scTrendRangeLabel, scPosDispo, gJours = null, gJoursTous = null, gDernierPartiel = false;
     if (rangeDays<=60) {
       const jours=[];
       for (let t=new Date(debut+'T00:00:00Z').getTime(), tf=new Date(fin+'T00:00:00Z').getTime(); t<=tf; t+=86400000) jours.push(new Date(t).toISOString().slice(0,10));
@@ -2374,8 +2369,9 @@ class Component extends DCLogic {
       scPosDispo = false;
       labels = joursAvecDonnee.map(j=>j.slice(8,10)+' '+moisNoms[parseInt(j.slice(5,7),10)-1]);
       gDays = joursAvecDonnee.length;
-      scTrendRangeLabel = `${fmtJ(jours[0])} → ${fmtJ(joursAvecDonnee[joursAvecDonnee.length-1])} · survolez la courbe`
-        + (joursAvecDonnee.length < jours.length ? ` · dernière donnée Search Console : ${fmtJ(joursAvecDonnee[joursAvecDonnee.length-1])} (délai de publication de 2-3 jours)` : '');
+      gJours = joursAvecDonnee; gJoursTous = jours;
+      scTrendRangeLabel = `${fmtJ(jours[0])} → ${fmtJ(jours[jours.length-1])} · survolez la courbe`
+        + (joursAvecDonnee.length < jours.length ? ` · données Search Console jusqu'au ${fmtJ(joursAvecDonnee[joursAvecDonnee.length-1])}` : '');
     } else {
       const searchTrend = this.aggregateSearch(this.decale(todayIso,-370), todayIso);
       const trendMonthsKeys = Object.keys(searchTrend.monthly).sort().slice(-12);
@@ -2386,6 +2382,12 @@ class Component extends DCLogic {
       pos=monthsForChart.map(m=>mval(m,x=>x.impressions?x.posSum/x.impressions:0));
       scPosDispo = true;
       labels=monthsForChart.map(m=> m ? (moisNoms[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)) : '—');
+      // dernier mois pas termine : un mois partiel tracerait une fausse chute
+      const dernierMois = monthsForChart[monthsForChart.length-1];
+      if (dernierMois && dernierMois === todayIso.slice(0,7)) {
+        const [ay, am] = dernierMois.split('-').map(Number);
+        if (parseInt(todayIso.slice(8,10),10) < new Date(Date.UTC(ay, am, 0)).getUTCDate()) { gDernierPartiel = true; labels[labels.length-1] += ' (en cours)'; }
+      }
       gDays=monthsForChart.length;
       scTrendRangeLabel = trendMonthsKeys.length
         ? `${moisNoms[parseInt(trendMonthsKeys[0].slice(5,7),10)-1]} ${trendMonthsKeys[0].slice(2,4)} → ${moisNoms[parseInt(trendMonthsKeys[trendMonthsKeys.length-1].slice(5,7),10)-1]} ${trendMonthsKeys[trendMonthsKeys.length-1].slice(2,4)} · survolez la courbe`
@@ -2393,61 +2395,123 @@ class Component extends DCLogic {
     }
     const scPosIndispo = !scPosDispo;
 
-    const GW=1000,GH=210,GL=58,GR=80,GT=18,GB=40,gpw=GW-GL-GR,gph=GH-GT-GB;
-    // +20% de marge au-dessus du maximum reel : sans ca, le point le plus
-    // haut touche le bord du graphe et une variation normale a l'air d'un
-    // pic spectaculaire.
-    const maxC=Math.max(1,...clicks)*1.2, maxI=Math.max(1,...impr)*1.2;
+    // ---------- graphique : deux axes, moyenne 7 j, periode precedente, week-ends ----------
+    const isDaily = !!gJours;
+    const hide = st.scHide || {};
+    const GW=1000,GH=262,GL=58,GR=scPosDispo?132:70,GT=20,GB=42,gpw=GW-GL-GR,gph=GH-GT-GB;
+    const nTot = isDaily ? gJoursTous.length : gDays;            // axe X : periode complete (jours non publies inclus)
+    const gx=i=>GL+(nTot>1?i/(nTot-1):0)*gpw;
+    const pasX = nTot>1 ? gpw/(nTot-1) : gpw;
+    const fmtAxe = v => v>=1e6 ? (v/1e6).toFixed(v>=1e7?0:1).replace('.',',')+' M' : v>=1e3 ? (v/1e3).toFixed(v>=1e4?0:1).replace('.',',')+' k' : String(Math.round(v));
+    // periode precedente (jour a jour), meme rang que la periode
+    let prevClics = null;
+    if (isDaily && cmpRange) {
+      const pj = {};
+      const cmpDates = isoRange(cmpRange.debut, cmpRange.fin);
+      for (const sn of st.sites) {
+        const dd = this.data && this.data[sn] && this.data[sn].daily;
+        if (!dd || !dd.sc) continue;
+        dd.d.forEach((j,i)=>{ if (j >= cmpRange.debut && j <= cmpRange.fin && dd.sc[i] != null) pj[j] = (pj[j]||0) + dd.sc[i]; });
+      }
+      prevClics = gJoursTous.map((_,i)=> pj[cmpDates[i]] != null ? pj[cmpDates[i]] : null);
+      if (!prevClics.some(v=>v!=null)) prevClics = null;
+    }
+    // moyenne glissante 7 jours sur les clics
+    const ma7 = isDaily ? clicks.map((_,i)=>{ let t=0,n=0; for (let k=Math.max(0,i-6);k<=i;k++){ t+=clicks[k]; n++; } return n? t/n : 0; }) : null;
+    const maxC=Math.max(1,...clicks,...(prevClics?prevClics.filter(v=>v!=null):[0]))*1.15, maxI=Math.max(1,...impr)*1.15;
     const posValsReal=pos.filter(v=>v>0);
     const posMinR=posValsReal.length?Math.min(...posValsReal):0, posMaxR=posValsReal.length?Math.max(...posValsReal):1;
     const posPad=Math.max(1,(posMaxR-posMinR)*0.2);
     const posMin=Math.max(0,posMinR-posPad), posMax=posMaxR+posPad;
-    const gx=i=>GL+(gDays>1?i/(gDays-1):0)*gpw;
     const gyC=v=>GT+gph-(v/maxC)*gph;
     const gyI=v=>GT+gph-(v/maxI)*gph;
     const gyP=v=>GT+((v-posMin)/((posMax-posMin)||1))*gph;
     const gk=[];
-    [0,.33,.66,1].forEach((frac,i)=>{
-      const v=Math.round(maxC*frac);
-      gk.push(h('line',{key:'g'+i,x1:GL,y1:gyC(v),x2:GL+gpw,y2:gyC(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
-      gk.push(h('text',{key:'t'+i,x:GL-12,y:gyC(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
-    });
-    if (scPosDispo) [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+10,y:gyP(v)+4,fontSize:10,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
-    let areaD='M'+gx(0)+','+gyI(impr[0]);
-    for(let i=1;i<gDays;i++) areaD+=' L'+gx(i)+','+gyI(impr[i]);
-    gk.push(h('path',{key:'area',d:areaD+' L'+gx(gDays-1)+','+(GT+gph)+' L'+gx(0)+','+(GT+gph)+' Z',fill:'#d7e4fb'}));
-    let cD='M'+gx(0)+','+gyC(clicks[0]);
-    for(let i=0;i<gDays-1;i++){const c=(gx(i)+gx(i+1))/2;cD+=' C'+c+','+gyC(clicks[i])+' '+c+','+gyC(clicks[i+1])+' '+gx(i+1)+','+gyC(clicks[i+1]);}
-    gk.push(h('path',{key:'clicks',d:cD,fill:'none',stroke:'#3b76e8',strokeWidth:2,strokeLinecap:'round'}));
-    if (scPosDispo) {
-      let pD='M'+gx(0)+','+gyP(pos[0]);
-      for(let i=1;i<gDays;i++) pD+=' L'+gx(i)+','+gyP(pos[i]);
-      gk.push(h('path',{key:'pos',d:pD,fill:'none',stroke:'#e08a33',strokeWidth:1.6,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    gk.push(h('defs',{key:'defs'},h('pattern',{id:'scHach',width:7,height:7,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},h('line',{x1:0,y1:0,x2:0,y2:7,stroke:'#e3e4ea',strokeWidth:2.2}))));
+    // week-ends (vue quotidienne) : bandes tres legeres derriere tout le reste
+    if (isDaily) gJours.forEach((j,i)=>{ const w=new Date(j+'T00:00:00Z').getUTCDay(); if (w===0||w===6) gk.push(h('rect',{key:'we'+i,x:gx(i)-pasX/2,y:GT,width:pasX,height:gph,fill:'#f5f5f8'})); });
+    // jours attendus mais pas encore publies : zone hachuree a droite
+    if (isDaily && gDays < nTot) {
+      const x0 = gx(gDays-1)+pasX/2, w = GL+gpw+pasX/2-x0;
+      gk.push(h('rect',{key:'np',x:x0,y:GT,width:w,height:gph,fill:'url(#scHach)',opacity:.7}));
+      if (w>=62) gk.push(h('text',{key:'npt',x:x0+w/2,y:GT+gph/2,textAnchor:'middle',fontSize:10.5,fill:'#9a9fa6',fontFamily:F},'non publié'));
     }
-    // au-dela de ~15 points (vue quotidienne), n'affiche qu'un label sur N
-    // pour eviter que l'axe X ne devienne illisible.
+    // grille + deux axes (clics a gauche, impressions a droite), chacun dans sa couleur
+    [0,.25,.5,.75,1].forEach((frac,i)=>{
+      const y=GT+gph-frac*gph;
+      gk.push(h('line',{key:'g'+i,x1:GL,y1:y,x2:GL+gpw,y2:y,stroke:'#eeeef2',strokeWidth:1,strokeDasharray:i===0?undefined:'4 6'}));
+      if (!hide.clics) gk.push(h('text',{key:'t'+i,x:GL-10,y:y+4,textAnchor:'end',fontSize:10.5,fill:'#3b76e8',fontFamily:F},fmtAxe(maxC*frac)));
+      if (!hide.impr) gk.push(h('text',{key:'ti'+i,x:GL+gpw+10,y:y+4,fontSize:10.5,fill:'#7c63ee',fontFamily:F},fmtAxe(maxI*frac)));
+    });
+    if (scPosDispo && !hide.pos) [posMin,(posMin+posMax)/2,posMax].forEach((v,i)=>gk.push(h('text',{key:'p'+i,x:GL+gpw+58,y:gyP(v)+4,fontSize:10.5,fill:'#d78b35',fontFamily:F},'pos '+dec(v,1))));
+    // segments droits (pas de courbe lissee : elle inventait des rebonds entre deux jours)
+    const ligne = (vals, f) => { let d='',pen=false; vals.forEach((v,i)=>{ if (v==null){pen=false;return;} d+=(pen?' L':' M')+gx(i)+','+f(v); pen=true; }); return d; };
+    // vue mensuelle, mois en cours : le dernier segment est en pointilles
+    const ligneP = (vals, f) => gDernierPartiel ? ligne(vals.map((v,i)=> i<vals.length-1 ? v : null), f) : ligne(vals, f);
+    const segFinal = (vals, f) => (gDernierPartiel && vals.length>=2) ? 'M'+gx(vals.length-2)+','+f(vals[vals.length-2])+' L'+gx(vals.length-1)+','+f(vals[vals.length-1]) : null;
+    if (!hide.impr) {
+      const dI = ligne(impr, gyI);
+      gk.push(h('path',{key:'area',d:dI+' L'+gx(gDays-1)+','+(GT+gph)+' L'+gx(0)+','+(GT+gph)+' Z',fill:'#7c63ee1a'}));
+      gk.push(h('path',{key:'imprl',d:ligneP(impr,gyI),fill:'none',stroke:'#7c63ee',strokeOpacity:.55,strokeWidth:1.4,strokeLinejoin:'round'}));
+      if (segFinal(impr,gyI)) gk.push(h('path',{key:'imprd',d:segFinal(impr,gyI),fill:'none',stroke:'#7c63ee',strokeOpacity:.55,strokeWidth:1.4,strokeDasharray:'4 4'}));
+    }
+    if (prevClics && !hide.prev) gk.push(h('path',{key:'prev',d:ligne(prevClics,gyC),fill:'none',stroke:'#aeb2bb',strokeWidth:1.7,strokeDasharray:'5 5',strokeLinejoin:'round'}));
+    if (isDaily) {
+      if (!hide.clics) gk.push(h('path',{key:'clicksj',d:ligne(clicks,gyC),fill:'none',stroke:'#3b76e8',strokeOpacity:.38,strokeWidth:1.5,strokeLinejoin:'round'}));
+      if (!hide.ma7) gk.push(h('path',{key:'ma7',d:ligne(ma7,gyC),fill:'none',stroke:'#3b76e8',strokeWidth:2.8,strokeLinecap:'round',strokeLinejoin:'round'}));
+    } else if (!hide.clics) {
+      gk.push(h('path',{key:'clicksm',d:ligneP(clicks,gyC),fill:'none',stroke:'#3b76e8',strokeWidth:2.6,strokeLinecap:'round',strokeLinejoin:'round'}));
+      if (segFinal(clicks,gyC)) gk.push(h('path',{key:'clicksd',d:segFinal(clicks,gyC),fill:'none',stroke:'#3b76e8',strokeWidth:2.6,strokeDasharray:'5 5',strokeLinecap:'round'}));
+      clicks.forEach((v,i)=>gk.push(h('circle',{key:'cm'+i,cx:gx(i),cy:gyC(v),r:3.2,fill:'#fff',stroke:'#3b76e8',strokeWidth:2})));
+    }
+    if (scPosDispo && !hide.pos) gk.push(h('path',{key:'pos',d:ligne(pos,gyP),fill:'none',stroke:'#e08a33',strokeWidth:1.8,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    // etiquettes de l'axe X (un label sur N)
     const labelStep=Math.max(1,Math.ceil(gDays/15));
-    labels.forEach((l,i)=>{ if (i%labelStep===0 || i===gDays-1) gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-8,textAnchor:'middle',fontSize:10,fill:'#9a9fa6',fontFamily:F},l)); });
+    const fullLabel = i => isDaily ? gJoursTous[i].slice(8,10)+' '+moisNoms[parseInt(gJoursTous[i].slice(5,7),10)-1] : labels[i];
+    // le dernier label n'est force que s'il ne chevauche pas le precedent
+    const dernierRegulier = Math.floor((nTot-1)/labelStep)*labelStep;
+    for (let i=0;i<nTot;i++) if (i%labelStep===0 || (i===nTot-1 && nTot-1-dernierRegulier >= Math.ceil(labelStep*0.8))) gk.push(h('text',{key:'x'+i,x:gx(i),y:GH-12,textAnchor:'middle',fontSize:10.5,fill:'#8a8f98',fontFamily:F},fullLabel(i)));
+    // survol : repere vertical + une carte (date, clics, moyenne, impressions, CTR, ecart vs periode precedente)
     const hov=st.scHover;
     if(hov!=null && hov<gDays){
+      const jourTxt = isDaily ? ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][new Date(gJours[hov]+'T00:00:00Z').getUTCDay()]+' '+labels[hov] : labels[hov];
       gk.push(h('line',{key:'cl',x1:gx(hov),y1:GT,x2:gx(hov),y2:GT+gph,stroke:'#c9cbd2',strokeWidth:1}));
-      gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:3.5,fill:'#3b76e8',stroke:'#fff',strokeWidth:1.5}));
-      if (scPosDispo) gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:3.5,fill:'#e08a33',stroke:'#fff',strokeWidth:1.5}));
-      const tw=168,th=scPosDispo?76:56,tx=Math.max(GL,Math.min(gx(hov)-tw/2,GL+gpw-tw));
-      const tipLines=[
-        h('rect',{key:'r',width:tw,height:th,rx:10,fill:'#141414'}),
-        h('text',{key:'d',x:12,y:18,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},labels[hov]),
-        h('text',{key:'c',x:12,y:36,fontSize:12.5,fill:'#8fb6ff',fontFamily:F},'Clics '+this.fmt(clicks[hov])),
-        h('text',{key:'i',x:12,y:52,fontSize:12.5,fill:'#cfd9ff',fontFamily:F},'Impr. '+this.fmt(impr[hov])),
+      if (!hide.impr) gk.push(h('circle',{key:'di',cx:gx(hov),cy:gyI(impr[hov]),r:3.5,fill:'#7c63ee',stroke:'#fff',strokeWidth:1.5}));
+      if (!hide.clics) gk.push(h('circle',{key:'dc',cx:gx(hov),cy:gyC(clicks[hov]),r:4,fill:'#3b76e8',stroke:'#fff',strokeWidth:1.8}));
+      if (scPosDispo && !hide.pos) gk.push(h('circle',{key:'dp',cx:gx(hov),cy:gyP(pos[hov]),r:3.5,fill:'#e08a33',stroke:'#fff',strokeWidth:1.5}));
+      const ctrJ = impr[hov] ? clicks[hov]/impr[hov]*100 : null;
+      const lignesTip = [
+        {t:'Clics '+this.fmt(clicks[hov]), c:'#8fb6ff'},
+        ...(isDaily ? [{t:'Moy. 7 j '+this.fmt(Math.round(ma7[hov])), c:'#8fb6ff'}] : []),
+        {t:'Impr. '+this.fmt(impr[hov]), c:'#cfc4ff'},
+        ...(ctrJ!=null ? [{t:'CTR '+dec(ctrJ,2)+' %', c:'#ffd9a8'}] : []),
+        ...(scPosDispo ? [{t:'Position '+dec(pos[hov],1), c:'#ffc98f'}] : []),
+        ...(prevClics && prevClics[hov]!=null ? [{t:'Préc. '+this.fmt(prevClics[hov])+(prevClics[hov]?' ('+(clicks[hov]>=prevClics[hov]?'+':'−')+dec(Math.abs((clicks[hov]-prevClics[hov])/prevClics[hov]*100),0)+' %)':''), c:'#c4c7d0'}] : [])
       ];
-      if (scPosDispo) tipLines.push(h('text',{key:'p',x:12,y:68,fontSize:12.5,fill:'#ffc98f',fontFamily:F},'Position '+dec(pos[hov],1)));
-      gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx+','+GT+')'},tipLines));
+      const tw=176, th=32+lignesTip.length*17, tx2 = gx(hov)+14+tw>GL+gpw ? Math.max(GL,gx(hov)-14-tw) : gx(hov)+14;
+      const tip=[h('rect',{key:'r',width:tw,height:th,rx:10,fill:'#141414',opacity:.96}), h('text',{key:'d',x:12,y:20,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},jourTxt)];
+      lignesTip.forEach((l,k)=>tip.push(h('text',{key:'l'+k,x:12,y:40+k*17,fontSize:12.5,fill:l.c,fontFamily:F},l.t)));
+      gk.push(h('g',{key:'tip',pointerEvents:'none',transform:'translate('+tx2+','+(GT+4)+')'},tip));
     }
     for(let i=0;i<gDays;i++){
-      gk.push(h('rect',{key:'hit'+i,x:gx(i)-(gDays>1?gpw/(gDays-1)/2:gpw/2),y:GT,width:gDays>1?gpw/(gDays-1):gpw,height:gph,fill:'transparent',
+      gk.push(h('rect',{key:'hit'+i,x:gx(i)-pasX/2,y:GT,width:pasX,height:gph,fill:'transparent',
         onMouseEnter:()=>set({scHover:i}),onMouseLeave:()=>set({scHover:null}),style:{cursor:'crosshair'}}));
     }
     const scChart=h('svg',{viewBox:'0 0 '+GW+' '+GH,width:'100%',style:{display:'block',height:'auto'}},gk);
+    // pastilles de la legende : cliquer = afficher / masquer la serie
+    const scToggleDef = [
+      {k:'clics', name: isDaily?'Clics (jour)':'Clics', color:'#3b76e8', on:true},
+      {k:'ma7', name:'Moyenne 7 jours', color:'#3b76e8', on:isDaily, bold:true},
+      {k:'impr', name:'Impressions', color:'#7c63ee', on:true},
+      {k:'prev', name:'Période précédente', color:'#aeb2bb', on:!!prevClics, dashed:true},
+      {k:'pos', name:'Position', color:'#e08a33', on:scPosDispo, dashed:true},
+    ];
+    const scToggles = scToggleDef.filter(t=>t.on).map(t=>({
+      name:t.name,
+      toggle:()=>set({scHide:Object.assign({},st.scHide||{},{[t.k]:!(st.scHide||{})[t.k]})}),
+      style:'display:inline-flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;'+((st.scHide||{})[t.k]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:#f6f6f8'),
+      dot:'display:inline-block;width:16px;height:0;border-top:'+(t.bold?3:2)+'px '+(t.dashed?'dashed':'solid')+' '+((st.scHide||{})[t.k]?'#d2d4d8':t.color)
+    }));
 
     // requêtes reelles (searchMonth[mois].queries), agregees sur la
     // periode d'en-tete selectionnee et sur les sites du perimetre.
@@ -3155,7 +3219,7 @@ class Component extends DCLogic {
       brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
-      scKpis, scChart, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
+      scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, scQueries, allQueries, pageInsightText, queryInsight,
       pageQueriesOpen, pageQueriesLoading, pageQueriesError, pageQueriesPath, pageQueriesRows, fermerRequetesPage,
       queryCount:allQueries.length, pageCount:allPages.length,
       openQueries:queriesCtl.openIt, closeQueries:queriesCtl.closeIt, queriesModal:queriesCtl.isOpen,

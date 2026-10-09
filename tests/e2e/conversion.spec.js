@@ -119,9 +119,29 @@ test("Search Console : pas de point à 0 pour les jours sans donnée (délai de 
   await page.mouse.click(5, 5);
   await page.locator('div[title="Search Console"]').first().click();
   await page.waitForTimeout(600);
-  // les données stockées s'arrêtent avant la fin de la période : le libellé le dit
-  await expect(page.getByText(/dernière donnée Search Console : \d{2}\/\d{2}/)).toBeVisible();
-  // aucune étiquette d'axe pour le dernier jour de la période (07 oct.), vide de données
-  await expect(page.getByText("07 oct.", { exact: true })).toHaveCount(0);
+  // les données stockées s'arrêtent avant la fin de la période : le libellé le dit,
+  // et la fin de l'axe est une zone hachurée « non publié » (jamais un point à 0)
+  await expect(page.getByText(/données Search Console jusqu'au \d{2}\/\d{2}/)).toBeVisible();
+  await expect(page.locator('svg rect[fill="url(#scHach)"]').first()).toBeVisible();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("graphique Search Console : deux axes, moyenne 7 j, bulle de survol et pastilles", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Search Console"]').first().click();
+  await page.waitForTimeout(500);
+  const graphe = page.locator('svg[viewBox="0 0 1000 262"]').first();
+  await graphe.scrollIntoViewIfNeeded();
+  await expect(page.getByText("Moyenne 7 jours", { exact: true })).toBeVisible();
+  // la moyenne glissante est tracée ; la masquer via sa pastille la retire
+  await expect(page.locator('svg path[stroke="#3b76e8"][stroke-width="2.8"]').first()).toBeVisible();
+  const b = await graphe.boundingBox();
+  await page.mouse.move(b.x + b.width * 0.5, b.y + b.height * 0.5);
+  await expect(graphe.getByText(/^Moy\. 7 j /)).toBeVisible();
+  await expect(graphe.getByText(/^CTR /)).toBeVisible();
+  await page.getByText("Moyenne 7 jours", { exact: true }).click();
+  await expect(page.locator('svg path[stroke="#3b76e8"][stroke-width="2.8"]')).toHaveCount(0);
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
