@@ -508,7 +508,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipS }}">{{ tIconS }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Sources d'acquisition</div>
-                <div style="font-size:12.5px;color:#9a9fa6">Top 6 par sessions · cliquez un en-tête pour trier</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Site parent · top 6 par sessions · cliquez un en-tête pour trier</div>
               </div>
               </div>
               <span onClick="{{ openChannels }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ channelCount }} canaux</span>
@@ -538,7 +538,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipT }}">{{ tIconT }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 de l'outil de reprise par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 du site parent (pas de l'outil de reprise) par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">{{ trendRangeLabel }}</div>
               </div>
               </div>
@@ -2225,7 +2225,7 @@ class Component extends DCLogic {
     // fmtFr n'est defini que plus bas dans cette fonction (const, TDZ) --
     // formatage local identique pour eviter la ReferenceError.
     const fmtFrLocal=iso=>iso? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
-    const trendRangeLabel=`${rangeDays} j (${fmtFrLocal(debut)}→${fmtFrLocal(fin)}) · cliquez une légende pour isoler`;
+    const trendRangeLabel=`Site parent · ${rangeDays} j (${fmtFrLocal(debut)}→${fmtFrLocal(fin)}) · cliquez une légende pour isoler`;
 
     // ---------- KamIA : 3 encarts, chacun recalcule sur les vraies donnees
     // deja chargees (agg/raw pour le tunnel, historique quotidien des leads
