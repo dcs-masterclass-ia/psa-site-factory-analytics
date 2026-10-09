@@ -6,7 +6,7 @@
  */
 
 const LEADS_RE = /\bleads?\b/i;
-const V2_KEYS = ["v2", "v2Weekly", "v2channels", "v2steps", "v2_date"];
+const V2_KEYS = ["v2", "v2Weekly", "v2channels", "v2steps"]; // v2_date reste : simple date de bascule, sert de repere sur la courbe de conversion
 
 function stripLeads(data) {
   if (!data || typeof data !== "object" || Array.isArray(data)) return data;

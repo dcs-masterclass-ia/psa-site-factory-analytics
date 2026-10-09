@@ -493,6 +493,30 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
 
+          <sc-if value="{{ isConv }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div>
+                <div style="font-size:16px;font-weight:600;color:#121214">Conversion par jour</div>
+                <div style="font-size:13.5px;color:#9a9fa6">{{ convRangeLabel }}</div>
+              </div>
+              <span style="flex:1"></span>
+              <span style="font-size:13px;color:#2f2f33">{{ convSummary }}</span>
+            </div>
+            <sc-if value="{{ convHasData }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#6d727a;margin-bottom:6px">
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:3px;border-radius:2px;background:#7c63ee"></span>Moyenne glissante 7 jours</span>
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:2px;border-radius:2px;background:#cdbffa"></span>Conversion du jour</span>
+                <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed #b3b7bd"></span>Période précédente</span>
+              </div>
+              <div>{{ convChart }}</div>
+            </sc-if>
+            <sc-if value="{{ !convHasData }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:34px 0;font-size:14px;color:#9a9fa6;text-align:center">La conversion quotidienne n'est pas encore disponible sur cette période : elle apparaît après le prochain rafraîchissement des données.</div>
+            </sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
@@ -1452,7 +1476,7 @@ class Component extends DCLogic {
   aggregate(debutIso, finIso) {
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null,
                   convCanalDevice:new Map(), browser:new Map(), newVsReturning:new Map(),
-                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{} };
+                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{} };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.daily) continue;
@@ -1463,6 +1487,9 @@ class Component extends DCLogic {
         out.reprise += d.daily.rep[i] || 0;
         out.trafficDaily[jour] = (out.trafficDaily[jour] || 0) + (d.daily.u[i] || 0);
         out.repriseDaily[jour] = (out.repriseDaily[jour] || 0) + (d.daily.rep[i] || 0);
+      }
+      for (const [jour, v] of Object.entries(d.funnelDaily || {})) {
+        if (jour >= debutIso && jour <= finIso) { const c = out.convDaily[jour] || (out.convDaily[jour] = [0, 0]); c[0] += v[0] || 0; c[1] += v[1] || 0; }
       }
       for (const mois of Object.keys(d.leads || {})) {
         if (mois === "total") continue;
@@ -1882,6 +1909,49 @@ class Component extends DCLogic {
     joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
     const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,width:'100%',style:{display:'block',height:'auto'}},mk);
 
+    // ---------- Conversion par jour (accueil -> estimation, GA4 uniquement) ----------
+    const convPts = j => { const c = agg.convDaily[j]; return c && c[0] > 0 ? { home:c[0], est:c[1], pct:c[1]/c[0]*100 } : null; };
+    const convSerie = dates.map(convPts);
+    const convHasData = convSerie.some(Boolean);
+    const convSomme = (a,b) => { let hh=0,ee=0; for (const j of Object.keys(a||{})) { if (j>=b[0] && j<=b[1]) { hh+=a[j][0]; ee+=a[j][1]; } } return hh? ee/hh*100 : null; };
+    const convMoy = convSomme(agg.convDaily,[debut,fin]);
+    const convMoyCmp = cmp && cmpRange ? convSomme(cmp.convDaily,[cmpRange.debut,cmpRange.fin]) : null;
+    const fmtJ = iso => iso ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
+    const convRangeLabel = `${rangeDays} j (${fmtJ(debut)}→${fmtJ(fin)}) · utilisateurs accueil → estimation`;
+    const convSummary = convMoy==null ? '' : `Conversion moyenne ${dec(convMoy,1)} %`+(convMoyCmp!=null?` · période précédente ${dec(convMoyCmp,1)} % (${convMoy>=convMoyCmp?'+':'−'}${dec(Math.abs(convMoy-convMoyCmp),1)} pt)`:'');
+    const v2Dates = [...new Set(st.sites.map(n=>this.data&&this.data[n]&&this.data[n].v2_date).filter(Boolean))];
+    const v2Marker = v2Dates.length===1 && st.sites.every(n=>this.data&&this.data[n]&&this.data[n].v2_date) ? v2Dates[0] : null;
+    const CW=900,CH=250,CL=52,CR=16,CT=18,CB=40,cpw=CW-CL-CR,cph=CH-CT-CB;
+    const ck=[];
+    if (convHasData) {
+      const maxPct = Math.max(10, ...convSerie.filter(Boolean).map(p=>p.pct), ...(cmp?Object.keys(cmp.convDaily).map(j=>{const c=cmp.convDaily[j]; return c[0]? c[1]/c[0]*100 : 0;}):[0]))*1.15;
+      const cx=i=>CL+(dates.length>1?i/(dates.length-1):0)*cpw, cy=v=>CT+cph-(v/maxPct)*cph;
+      [0,.25,.5,.75,1].forEach((frac,i)=>{
+        const v=maxPct*frac;
+        ck.push(h('line',{key:'g'+i,x1:CL,y1:cy(v),x2:CL+cpw,y2:cy(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
+        ck.push(h('text',{key:'t'+i,x:CL-10,y:cy(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},Math.round(v)+' %'));
+      });
+      if (v2Marker && v2Marker>=debut && v2Marker<=fin) {
+        const iv=dates.indexOf(v2Marker);
+        if (iv>=0) {
+          ck.push(h('line',{key:'v2l',x1:cx(iv),y1:CT,x2:cx(iv),y2:CT+cph,stroke:'#e8544a',strokeWidth:1.4,strokeDasharray:'4 4'}));
+          ck.push(h('text',{key:'v2t',x:cx(iv)+6,y:CT+11,fontSize:10.5,fontWeight:600,fill:'#e8544a',fontFamily:F},'Bascule V2'));
+        }
+      }
+      const trace=(vals,color,w,dash,key)=>{ let d='',pen=false; vals.forEach((v,i)=>{ if (v==null){pen=false;return;} d+=(pen?' L':' M')+cx(i)+','+cy(v); pen=true; }); if (d) ck.push(h('path',{key,d,fill:'none',stroke:color,strokeWidth:w,strokeLinecap:'round',strokeLinejoin:'round',strokeDasharray:dash||undefined})); };
+      if (cmp && cmpRange) {
+        const cmpDates = isoRange(cmpRange.debut, cmpRange.fin);
+        trace(dates.map((_,i)=>{ const c=cmp.convDaily[cmpDates[i]]; return c&&c[0]>0? c[1]/c[0]*100 : null; }),'#b3b7bd',1.8,'5 5','cmpl');
+      }
+      trace(convSerie.map(p=>p?p.pct:null),'#cdbffa',1.6,null,'jour');
+      const ma = dates.map((_,i)=>{ let hh=0,ee=0; for (let k=Math.max(0,i-6);k<=i;k++){ const p=convSerie[k]; if (p){hh+=p.home;ee+=p.est;} } return hh? ee/hh*100 : null; });
+      trace(ma,'#7c63ee',2.8,null,'ma7');
+      convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} visiteurs accueil)`))); });
+      const stepX=Math.max(1,Math.floor(dates.length/8));
+      dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
+    }
+    const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,width:'100%',style:{display:'block',height:'auto'}},ck);
+
     // avant / apres V2 : reel (agg.v2Steps), sites is_v2_split uniquement
     const v2=(agg.v2Steps||[]).map(r=>{
       const base = agg.v2Steps[0];
@@ -1942,7 +2012,7 @@ class Component extends DCLogic {
       return { name, pct:pct+' %', bar:`width:${pct}%;height:100%;border-radius:4px;background:#b6a5f8` };
     });
 
-    const tabDefs=[['sources','Sources'],['trend','Tendance'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']].filter(t=>!(this.estLimite()&&t[0]==='v2'));
+    const tabDefs=[['sources','Sources'],['trend','Tendance'],['conv','Conversion'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']].filter(t=>!(this.estLimite()&&t[0]==='v2'));
     const tabs=tabDefs.map(t=>({name:t[1],pick:()=>set({tab:t[0]}),style:this.tabStyle(st.tab===t[0])}));
     // libelle honnete : le graphe trace la vraie periode selectionnee dans
     // le calendrier, jamais fixe a "12 mois" quelle que soit la selection.
@@ -2886,7 +2956,7 @@ class Component extends DCLogic {
       kpis, kpiRate:dec(rate,2)+' %', rateSpark, kpiRateDelta,
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, convHasData, convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
       matrixCount:allMatrix.length,
       openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
       matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,
@@ -2894,7 +2964,7 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isSources:st.tab==='sources', isTrend:st.tab==='trend', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
+      isSources:st.tab==='sources', isTrend:st.tab==='trend', isConv:st.tab==='conv', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };
   }

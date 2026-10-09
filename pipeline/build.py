@@ -26,7 +26,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, funnel_weekly, ga4, insights, leads_extract, search_console, v2_report
+from pipeline import channel, detect, discover, funnel, funnel_daily, funnel_weekly, ga4, insights, leads_extract, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -560,6 +560,18 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"funnel hebdo : {len(d['funnelWeekly'])} semaine(s) en memoire")
     except Exception as e:
         journal.append(f"funnel hebdo en erreur ({type(e).__name__}: {e})")
+
+    # conversion quotidienne (funnelDaily) : accueil -> estimation par jour sur
+    # une fenetre glissante, 4 requetes GA4 par site. Ne bloque jamais le site.
+    try:
+        jf = date.fromisoformat(jour_fiable())
+        quotidien = funnel_daily.conversion_quotidienne(
+            cli, s.propriete, hote_reprise, jf - timedelta(days=funnel_daily.FENETRE_JOURS - 1), jf)
+        if quotidien:
+            d["funnelDaily"] = quotidien
+            journal.append(f"conversion quotidienne : {len(quotidien)} jour(s)")
+    except Exception as e:
+        journal.append(f"conversion quotidienne en erreur ({type(e).__name__}: {e})")
 
     d["anomaly"] = anomalies
     d["_ratios_sessions_users"] = ratios
