@@ -572,6 +572,51 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
 
+          <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ evChip }}">{{ evIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Calendrier d'événements<span class="dc-info" tabindex="0">i<span class="dc-tip">Ce qui explique une cassure de courbe : campagne lancée, bouton ajouté, bascule V2, offre commerciale, changement de balisage. Chaque événement apparaît comme un repère orange sur les courbes « Sessions par canal » et « Conversion par jour », et nourrit l'analyse des présentations.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ evSubtitle }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <sc-if value="{{ evCanWrite }}" hint-placeholder-val="{{ true }}"><span class="pr-btn" onClick="{{ evToggleForm }}" style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#7c63ee;color:#fff">{{ evFormLabel }}</span></sc-if>
+            </div>
+            <sc-if value="{{ evFormOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:#f7f6fe;border-radius:14px;padding:12px 14px;margin-bottom:12px">
+                <div><div style="font-size:12px;color:#8a8f98;margin-bottom:4px">Date</div><input type="date" value="{{ evFDate }}" onInput="{{ onEvDate }}" style="font-family:Poppins,sans-serif;font-size:13.5px;border:1px solid #ececee;border-radius:9px;padding:7px 9px;width:100%;box-sizing:border-box;background:#fff" /></div>
+                <div><div style="font-size:12px;color:#8a8f98;margin-bottom:4px">Fin (optionnel)</div><input type="date" value="{{ evFFin }}" onInput="{{ onEvFin }}" style="font-family:Poppins,sans-serif;font-size:13.5px;border:1px solid #ececee;border-radius:9px;padding:7px 9px;width:100%;box-sizing:border-box;background:#fff" /></div>
+                <div style="grid-column:span 2;min-width:220px"><div style="font-size:12px;color:#8a8f98;margin-bottom:4px">Titre</div><input type="text" value="{{ evFTitre }}" onInput="{{ onEvTitre }}" placeholder="Ex. Lancement campagne Search Q3" style="font-family:Poppins,sans-serif;font-size:13.5px;border:1px solid #ececee;border-radius:9px;padding:7px 9px;width:100%;box-sizing:border-box;background:#fff" /></div>
+                <div style="grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                  <sc-for list="{{ evTypeChips }}" as="c" hint-placeholder-count="6"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+                  <span style="flex:1"></span>
+                  <sc-for list="{{ evScopeChips }}" as="c" hint-placeholder-count="2"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+                  <span class="pr-btn" onClick="{{ evSave }}" style="{{ evSaveStyle }}">{{ evSaveLabel }}</span>
+                </div>
+                <sc-if value="{{ evMsgOn }}" hint-placeholder-val="{{ false }}"><div style="grid-column:1/-1;font-size:13px;color:#c24a44">{{ evMsg }}</div></sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ evHas }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto">
+                <sc-for list="{{ evRows }}" as="e" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                    <span style="width:92px;flex:none;font-size:13.5px;color:#6d727a;font-variant-numeric:tabular-nums">{{ e.date }}</span>
+                    <span style="{{ e.typeStyle }}">{{ e.type }}</span>
+                    <div style="flex:1;min-width:0"><div style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.titre }}</div><div style="font-size:12px;color:#9a9fa6">{{ e.scope }}</div></div>
+                    <span style="{{ e.inStyle }}">{{ e.inLabel }}</span>
+                    <sc-if value="{{ e.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ e.del }}" style="font-size:12.5px;cursor:pointer;color:#9a9fa6" style-hover="color:#c24a44">Supprimer</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !evHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ evEmpty }}</div>
+            </sc-if>
+            <sc-if value="{{ insEvents }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insEvents }}</div></sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ isHist }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
@@ -2155,6 +2200,20 @@ class Component extends DCLogic {
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
+  prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
+  /* calendrier d'événements (api/events.js) : chargé une fois, lecture seule pour le profil limité */
+  async evCharge(force) {
+    if (this._ev && this._ev.loaded && !force) return;
+    try { const r = await fetch('/api/events'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status);
+      this._ev = { loaded:true, list:j.events||[], peutEcrire:!!j.peutEcrire, moi:j.moi }; }
+    catch (e) { this._ev = { loaded:true, list:[], peutEcrire:false, err:true }; }
+    this.setState({ evTick:Date.now() });
+  }
+  /* événements qui concernent la sélection de sites (liste vide = tous les sites) et, si bornes données, la période */
+  eventsFor(sites, debutIso, finIso) {
+    const l = (this._ev && this._ev.list) || [];
+    return l.filter(e => (!e.sites || !e.sites.length || (sites||[]).some(x => e.sites.includes(x))) && (!debutIso || (e.date >= debutIso && e.date <= finIso))).sort((a,b)=>a.date.localeCompare(b.date));
+  }
   /* hauteur des graphiques de « Analyses détaillées » : le conteneur remplit la carte (même hauteur pour tous les onglets), le viewBox suit son rapport largeur/hauteur */
   measureBoxes() {
     const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib', hist:'cbHist' };
@@ -2170,6 +2229,7 @@ class Component extends DCLogic {
   }
   componentDidUpdate() { this.measureBoxes(); }
   componentDidMount() {
+    this.evCharge();
     window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
     this.wireLogin();
     this.boot();
@@ -2832,6 +2892,13 @@ class Component extends DCLogic {
     const topChannelInsight = tousCanaux.length
       ? `${tousCanaux[0]} est le premier canal (${Math.round(totalParCanal[tousCanaux[0]]/tot*100)} % des sessions)`
       : 'Aucune donnée de canal disponible sur la période.';
+    // repères des événements (calendrier) sur les courbes : trait pointillé orange + pastille avec le titre en infobulle
+    const evVisible=this.eventsFor(st.sites,debut,fin);
+    const evMarks=(kp,days,xf,top,bottom)=>{ const out=[]; if (!days.length) return out;
+      evVisible.forEach((e,k)=>{ if (e.date<days[0]||e.date>days[days.length-1]) return; let i=days.indexOf(e.date); if (i<0) i=days.findIndex(d=>d>=e.date); if (i<0) return; const x=xf(i);
+        out.push(h('line',{key:kp+'l'+k,x1:x,y1:top,x2:x,y2:bottom,stroke:'#d78b35',strokeWidth:1.4,strokeDasharray:'4 3',opacity:.8}));
+        out.push(h('circle',{key:kp+'c'+k,cx:x,cy:top,r:5.5,fill:'#d78b35',stroke:'#fff',strokeWidth:1.5},h('title',null,e.date.slice(8,10)+'/'+e.date.slice(5,7)+' · '+e.titre))); });
+      return out; };
     const CHAN_COLORS=['#7c63ee','#3fae7a','#d78b35','#e8544a','#3b76e8'];
     const majeurs = tousCanaux.slice(0,4);
     const channelToggles=majeurs.map((name,i)=>({
@@ -2857,6 +2924,7 @@ class Component extends DCLogic {
     });
     const step8=Math.max(1,Math.floor(joursCanal.length/8));
     joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
+    mk.push(...evMarks('ev',joursCanal,mx2,MT,MH-MB));
     const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},mk);
 
     // ---------- Conversion par jour (accueil -> estimation, GA4 uniquement) ----------
@@ -2899,6 +2967,7 @@ class Component extends DCLogic {
       convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} visiteurs accueil)`))); });
       const stepX=Math.max(1,Math.floor(dates.length/8));
       dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
+      ck.push(...evMarks('ev',dates,cx,CT,CH-CB));
     }
     const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck);
 
@@ -3136,12 +3205,50 @@ class Component extends DCLogic {
     const histChips=mkChips([['est','Estimations'],['sess','Sessions'],['home','Accueil'],['conv','Conversion']],histMetric,'histMetric');
     const hIcon=kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 14l3-4 3 3 5-7'})), hChip=kPuce('#7c63ee');
 
+    // ---- Calendrier d'événements (liste filtrée sur la sélection de sites ; repères sur les courbes)
+    const EV_TYPES=[['campagne','Campagne','#7c63ee'],['site','Site','#3b76e8'],['v2','V2','#3fae7a'],['offre','Offre','#d78b35'],['tracking','Suivi','#8a8f98'],['autre','Autre','#9a9fa6']];
+    const evTypeOf=t=>EV_TYPES.find(x=>x[0]===t)||EV_TYPES[5];
+    const evState=this._ev||{loaded:false,list:[]}, evCanWrite=!!evState.peutEcrire;
+    const evAll=this.eventsFor(st.sites).sort((x,y)=>y.date.localeCompare(x.date));
+    const evInRange=this.eventsFor(st.sites,debut,fin);
+    const evF=Object.assign({date:'',fin:'',type:'campagne',titre:'',scope:'sel'},st.evF||{});
+    const evSet=patch=>set({evF:Object.assign({},evF,patch),evMsg:null});
+    const fmtJE=iso=>iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4);
+    const evRows=evAll.slice(0,40).map(e=>{ const ty=evTypeOf(e.type), inR=e.date>=debut&&e.date<=fin;
+      return { date:fmtJE(e.date)+(e.fin?' → '+fmtJE(e.fin):''), type:ty[1], typeStyle:`flex:none;font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 10px;color:${ty[2]};background:${ty[2]}1a`,
+        titre:e.titre, scope:(!e.sites||!e.sites.length)?'Tous les sites':(e.sites.length<=2?e.sites.join(', '):e.sites.length+' sites'),
+        inLabel:inR?'dans la période':'', inStyle:'flex:none;font-size:12px;color:#c4842a;font-weight:500',
+        canDel:evCanWrite, del:async()=>{ try { await fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'delete',id:e.id})}); await this.evCharge(true); } catch(_){} } }; });
+    const evHas=evRows.length>0;
+    const evEmpty=evState.err?"Le calendrier d'événements n'est pas disponible ici (API indisponible en local).":"Aucun événement pour cette sélection. Ajoute les campagnes, évolutions du site ou offres qui peuvent expliquer les variations.";
+    const evSubtitle=`${evAll.length} événement${evAll.length>1?'s':''} pour cette sélection · ${evInRange.length} dans la période`;
+    const evFormOpen=!!st.evOpen&&evCanWrite;
+    const evToggleForm=()=>set({evOpen:!st.evOpen,evMsg:null});
+    const evFormLabel=evFormOpen?'Fermer':'+ Ajouter un événement';
+    const evTypeChips=EV_TYPES.map(t=>({label:t[1],pick:()=>evSet({type:t[0]}),style:this.prChipLite(evF.type===t[0])}));
+    const evScopeChips=[['sel',`Sites sélectionnés (${st.sites.length})`],['all','Tous les sites']].map(([k,l])=>({label:l,pick:()=>evSet({scope:k}),style:this.prChipLite(evF.scope===k)}));
+    const evMsg=st.evMsg||'', evMsgOn=!!st.evMsg;
+    const evSaveLabel=st.evBusy?'Enregistrement…':'Enregistrer', evSaveStyle='display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#121214;color:#fff';
+    const evSave=async()=>{
+      if (st.evBusy) return;
+      if (!evF.date) { set({evMsg:'Indique la date.'}); return; }
+      if (evF.titre.trim().length<3) { set({evMsg:'Donne un titre (3 caractères minimum).'}); return; }
+      set({evBusy:true,evMsg:null});
+      try { const r=await fetch('/api/events',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'save',event:{date:evF.date,fin:evF.fin||null,type:evF.type,titre:evF.titre.trim(),sites:evF.scope==='all'?[]:st.sites}})});
+        const j=await r.json(); if (!r.ok) throw new Error(j&&j.error||('Erreur '+r.status));
+        await this.evCharge(true); set({evBusy:false,evF:{date:'',fin:'',type:evF.type,titre:'',scope:evF.scope},evOpen:false,evMsg:null}); }
+      catch(e) { set({evBusy:false,evMsg:e.message}); }
+    };
+    let insEvents='';
+    if (evInRange.length) { const f=evInRange.slice(0,3).map(e=>fmtJE(e.date).slice(0,5)+' '+e.titre); insEvents=`Dans la période : ${f.join(' · ')}${evInRange.length>3?' · …':''}.`; }
+    const evIcon=kIcone('#d78b35',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'}),h('path',{d:'M8 15h.01M12 15h.01M16 15h.01'})), evChip=kPuce('#d78b35');
+
     // ---- navigation des analyses détaillées : 4 questions (thèmes) -> vues, du constat vers l'explication
-    const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist']],
+    const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist','events']],
                      ['acquisition','Acquisition',"D'où vient le trafic ?",['sources','utm','quality']],
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
                      ['audience','Audience','Qui sont les visiteurs ?',['audience']]];
-    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
     const gaOk=v=>!(this.estLimite()&&v==='v2');
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
@@ -4881,7 +4988,9 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isContrib:gaCur==='contrib', isHist:gaCur==='hist', isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
+      isContrib:gaCur==='contrib', isEvents:gaCur==='events', isHist:gaCur==='hist',
+      evHas, evRows, evEmpty, evSubtitle, evFormOpen, evToggleForm, evFormLabel, evTypeChips, evScopeChips, evMsg, evMsgOn, evSaveLabel, evSaveStyle, evSave, insEvents, evIcon, evChip, evCanWrite,
+      evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
       histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isSources:gaCur==='sources', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', gaThemes, gaViews, gaThemeQuestion,
       contribHas, contribChart, contribRange, contribEmpty, contribInsight, insTrend, insConv, insDevice, insAudience,
