@@ -42,6 +42,8 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
+      - run: node --test api/tickets.test.js
+        working-directory: tests
       - run: npm test
 
       - if: always()

@@ -352,6 +352,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
       </div>
 
+      <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;background:#f2f2f5;color:#4b4f57;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#e8e8ee">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg>
+        Ticket
+      </div>
+
       <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
         <sc-for list="{{ themeOpts }}" as="t" hint-placeholder-count="3">
           <span onClick="{{ t.pick }}" title="{{ t.title }}" aria-label="{{ t.title }}" style="{{ t.style }}">{{ t.icon }}</span>
@@ -949,6 +954,89 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ tkModal }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ tkBackdropStyle }}">
+        <div style="{{ tkPanelStyle }}">
+          <div style="flex:none;display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid #f0f0f2;flex-wrap:wrap">
+            <span style="{{ tkChip }}">{{ tkIcon }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:16px;font-weight:600;color:#121214">Tickets</div>
+              <div style="font-size:13px;color:#9a9fa6">Signaler un bug dans les données, demander une optimisation, poser une question</div>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:12px;padding:3px">
+              <sc-for list="{{ tkTabs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for>
+            </div>
+            <span onClick="{{ closeTickets }}" style="width:36px;height:36px;flex:none;border-radius:12px;background:#f4f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4b4b4f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </span>
+          </div>
+
+          <div style="flex:1;min-height:0;overflow-y:auto;padding:20px 24px 22px">
+            <sc-if value="{{ tkMsgOn }}" hint-placeholder-val="{{ false }}"><div style="{{ tkMsgStyle }};margin-bottom:14px">{{ tkMsgText }}</div></sc-if>
+
+            <sc-if value="{{ tkIsNew }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Type de demande</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ tkTypeOpts }}" as="o" hint-placeholder-count="3"><span onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</span></sc-for></div>
+              </div>
+              <div>
+                <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Titre</div>
+                <input type="text" value="{{ tkTitre }}" onInput="{{ onTkTitre }}" placeholder="En une phrase" maxlength="120" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12.5px;color:#9a9fa6">Description</span><span style="font-size:12px;color:#b3b7bd">{{ tkDescCount }}</span></div>
+                <textarea value="{{ tkDesc }}" onInput="{{ onTkDesc }}" placeholder="{{ tkPlaceholder }}" rows="6" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%;resize:vertical;line-height:1.5;min-height:120px"></textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <span style="font-size:12.5px;color:#9a9fa6">Priorité</span>
+                <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ tkPrioOpts }}" as="o" hint-placeholder-count="2"><span onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</span></sc-for></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border-top:1px solid #f2f2f4;padding-top:16px">
+                <div style="min-width:0;font-size:12.5px;color:#9a9fa6;line-height:1.5"><span style="color:#6d727a;font-weight:500">Contexte joint automatiquement</span><br>{{ tkContexteLabel }}</div>
+                <span onClick="{{ tkSubmit }}" style="{{ tkSubmitStyle }}">{{ tkSubmitLabel }}</span>
+              </div>
+            </div>
+            </sc-if>
+
+            <sc-if value="{{ tkIsSuivi }}" hint-placeholder-val="{{ false }}">
+              <sc-if value="{{ tkNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:34px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun ticket pour l'instant.</div></sc-if>
+              <div style="font-size:13.5px;color:#c24a44;padding:6px 0">{{ tkErr }}</div>
+              <sc-for list="{{ tkRows }}" as="r" hint-placeholder-count="3">
+                <div style="border:1px solid #efeff1;border-radius:14px;margin-bottom:10px;overflow:hidden">
+                  <div onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap" style-hover="background:#fafafc">
+                    <span style="{{ r.typeStyle }}">{{ r.typeLabel }}</span>
+                    <span style="flex:1;min-width:140px;font-size:14.5px;font-weight:500;color:#121214">{{ r.titre }}</span>
+                    <sc-if value="{{ r.urgent }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:#c24a44;background:#fdf1f0;border-radius:999px;padding:2px 9px">Priorité haute</span></sc-if>
+                    <span style="{{ r.statStyle }}">{{ r.statLabel }}</span>
+                    <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ r.id }} · {{ r.meta }}</span>
+                  </div>
+                  <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:2px 14px 14px;border-top:1px solid #f4f4f6">
+                    <div style="font-size:14px;line-height:1.6;color:#2f2f33;white-space:pre-wrap;margin-top:12px">{{ r.desc }}</div>
+                    <div style="font-size:12px;color:#9a9fa6;margin-top:8px">Contexte : {{ r.ctx }}</div>
+                    <sc-if value="{{ tkPeutGerer }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><span style="font-size:12.5px;color:#9a9fa6;margin-right:4px">Statut</span><sc-for list="{{ r.statusBtns }}" as="b" hint-placeholder-count="4"><span onClick="{{ b.pick }}" style="{{ b.style }}">{{ b.label }}</span></sc-for></div>
+                    </sc-if>
+                    <sc-if value="{{ r.hasComments }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid #f4f4f6;padding-top:12px">
+                      <sc-for list="{{ r.comments }}" as="k" hint-placeholder-count="2"><div><span style="font-size:12px;font-weight:600;color:#6d727a">{{ k.who }}</span><span style="font-size:11.5px;color:#b3b7bd"> · {{ k.when }}</span><div style="{{ k.style }}">{{ k.text }}</div></div></sc-for>
+                    </div>
+                    </sc-if>
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                      <input type="text" value="{{ tkComment }}" onInput="{{ onTkComment }}" placeholder="Ajouter un commentaire…" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%;padding:8px 12px;font-size:13.5px" />
+                      <span onClick="{{ r.sendComment }}" style="display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:11px;background:#121214;color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap">Envoyer</span>
+                    </div>
+                  </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </sc-if>
+          </div>
+        </div>
       </div>
       </sc-if>
 
@@ -3806,6 +3894,76 @@ class Component extends DCLogic {
     };
     const suggestions=['Compare au parc','Génère le graphe des canaux','Que faire cette semaine ?'].map(t=>({text:t,pick:()=>pushMsg(t)}));
 
+    // ---------- tickets : bug de données / optimisation / question (11/10/2026) ----------
+    // stockés côté serveur (api/tickets.js, repo de données privé). Le contexte
+    // (onglet, périmètre, période) est joint automatiquement à chaque ticket.
+    const tkCtl = modalCtl('tkModal');
+    const tkStyles = modalStyles(tkCtl,'width:700px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    const tkData = this._tk || {};
+    const tkTab = st.tkTab || 'nouveau';
+    const tkType = st.tkType || 'bug', tkPrio = st.tkPrio || 'normale';
+    const tkTitre = st.tkTitre || '', tkDesc = st.tkDesc || '';
+    const tkPeutGerer = !!tkData.peutGerer;
+    const TK_TYPES = {bug:['Bug de données','#c24a44','#fdf1f0'], optimisation:['Optimisation','#3b76e8','#eef3fe'], question:['Question','#7c63ee','#f1eefe']};
+    const TK_STATUTS = {nouveau:['Nouveau','#3b76e8','#eef3fe'], en_cours:['En cours','#c4842a','#fdf3e3'], resolu:['Résolu','#2b8f62','#eaf6ef'], refuse:['Refusé','#8a8f98','#f2f2f5']};
+    const tkPill = (c,bg)=>`font-size:11px;font-weight:600;letter-spacing:.04em;color:${c};background:${bg};border-radius:999px;padding:2px 9px;white-space:nowrap`;
+    const tkContexte = { source:st.source||null, sites:(st.sites||[]).length<=3?(st.sites||[]):[], nbSites:(st.sites||[]).length, periode:{from:debut,to:fin}, onglet:srcNames[st.source]||'' };
+    const tkContexteLabel = (srcNames[st.source]||'Dashboard')+' · '+((st.sites||[]).length===1?st.sites[0]:(st.sites||[]).length+' sites')+' · '+debut.slice(8,10)+'/'+debut.slice(5,7)+' → '+fin.slice(8,10)+'/'+fin.slice(5,7);
+    const tkValide = tkTitre.trim().length>=3 && tkDesc.trim().length>=10 && !st.tkBusy;
+    const tkApi = async (body) => {
+      const r = await fetch('/api/tickets',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+      let j=null; try { j=await r.json(); } catch(e) {}
+      if (!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status));
+      return j;
+    };
+    const tkCharge = async () => {
+      try {
+        const r = await fetch('/api/tickets'); const j = await r.json();
+        if (!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status);
+        this._tk = { list:j.tickets||[], peutGerer:!!j.peutGerer, moi:j.moi };
+      } catch(e) { this._tk = Object.assign({}, this._tk, { err:'Chargement des tickets impossible.' }); }
+      this.setState({ tkTick:Date.now() });
+    };
+    const tkEnvoie = async () => {
+      if (!tkValide) return;
+      set({tkBusy:true, tkMsg:null});
+      try {
+        const j = await tkApi({ action:'create', type:tkType, priorite:tkPrio, titre:tkTitre.trim(), description:tkDesc.trim(), contexte:tkContexte });
+        this._tk = Object.assign({}, this._tk, { list:[j.ticket].concat((this._tk&&this._tk.list)||[]) });
+        this.setState({ tkBusy:false, tkTitre:'', tkDesc:'', tkPrio:'normale', tkTab:'suivi', tkOpenId:j.ticket.id, tkMsg:{ ok:true, text:'Ticket '+j.ticket.id+' créé. Merci !' } });
+      } catch(e) { this.setState({ tkBusy:false, tkMsg:{ ok:false, text:e.message } }); }
+    };
+    const tkMaj = async (body) => { try { const j = await tkApi(body); const l=(this._tk&&this._tk.list)||[]; this._tk = Object.assign({}, this._tk, { list:l.map(t=>t.id===j.ticket.id?j.ticket:t) }); this.setState(body.action==='comment'?{ tkComment:'', tkMsg:null }:{ tkMsg:null }); } catch(e) { this.setState({ tkMsg:{ ok:false, text:e.message } }); } };
+    const tkFmtDate = ts => { const d=new Date(ts); return pad2tk(d.getDate())+'/'+pad2tk(d.getMonth()+1)+' '+pad2tk(d.getHours())+':'+pad2tk(d.getMinutes()); };
+    function pad2tk(n){ return String(n).padStart(2,'0'); }
+    const tkOpenId = st.tkOpenId || null;
+    const tkRows = ((this._tk&&this._tk.list)||[]).map(t=>{
+      const ty=TK_TYPES[t.type]||TK_TYPES.question, sx=TK_STATUTS[t.statut]||TK_STATUTS.nouveau, ouvert=t.id===tkOpenId;
+      const c=t.contexte||{};
+      return { id:t.id, titre:t.titre, open:ouvert, desc:t.description,
+        typeLabel:ty[0], typeStyle:tkPill(ty[1],ty[2]), statLabel:sx[0], statStyle:tkPill(sx[1],sx[2]),
+        urgent:t.priorite==='haute', meta:tkFmtDate(t.createdAt)+(tkPeutGerer?' · '+String(t.auteur||'').split('@')[0]:''),
+        ctx:[c.onglet, c.nbSites?(c.sites&&c.sites.length===1?c.sites[0]:c.nbSites+' sites'):null, c.periode&&c.periode.from?c.periode.from.slice(8,10)+'/'+c.periode.from.slice(5,7)+' → '+c.periode.to.slice(8,10)+'/'+c.periode.to.slice(5,7):null].filter(Boolean).join(' · '),
+        toggle:()=>set({tkOpenId:ouvert?null:t.id, tkComment:'', tkMsg:null}),
+        comments:(t.commentaires||[]).map(k=>({ who:String(k.auteur||'').split('@')[0], text:k.systeme?String(k.texte).replace(/nouveau|en_cours|resolu|refuse/g,m=>TK_STATUTS[m][0]):k.texte, when:tkFmtDate(k.at), style:k.systeme?'font-size:12.5px;color:#9a9fa6;font-style:italic':'font-size:13.5px;color:#2f2f33;line-height:1.5' })),
+        hasComments:(t.commentaires||[]).length>0,
+        statusBtns:tkPeutGerer?Object.keys(TK_STATUTS).map(k=>({ label:TK_STATUTS[k][0], pick:()=>tkMaj({action:'status',id:t.id,statut:k}),
+          style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 11px;cursor:pointer;'+(t.statut===k?`background:${TK_STATUTS[k][2]};color:${TK_STATUTS[k][1]}`:'background:#f6f6f8;color:#8a8f98') })):[],
+        sendComment:()=>{ const x=(st.tkComment||'').trim(); if (x) tkMaj({action:'comment',id:t.id,texte:x}); } };
+    });
+    const tkTypeOpts = Object.keys(TK_TYPES).map(k=>({ label:TK_TYPES[k][0], pick:()=>set({tkType:k,tkMsg:null}),
+      style:'font-size:13px;font-weight:500;border-radius:10px;padding:7px 14px;cursor:pointer;white-space:nowrap;border:1px solid '+(tkType===k?TK_TYPES[k][1]:'#ececee')+';'+(tkType===k?`background:${TK_TYPES[k][2]};color:${TK_TYPES[k][1]}`:'background:#fff;color:#6d727a') }));
+    const tkPrioOpts = [['normale','Normale'],['haute','Haute']].map(([k,l])=>({ label:l, pick:()=>set({tkPrio:k}),
+      style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;'+(tkPrio===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
+    const tkTabs = [['nouveau','Nouveau ticket'],['suivi','Suivi'+(tkRows.length?' ('+tkRows.length+')':'')]].map(([k,l])=>({ label:l, pick:()=>{ set({tkTab:k,tkMsg:null}); if (k==='suivi') tkCharge(); },
+      style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(tkTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
+    const tkPlaceholder = tkType==='bug' ? "Ex. : le total des leads FR ne correspond pas au BO sur septembre. Dis ce que tu vois, ce que tu attendais, et la page concernée."
+      : tkType==='optimisation' ? "Ex. : ajouter un export CSV du tableau Pages, ou un filtre par marque. Dis ce que tu voudrais voir et à quoi ça te servirait."
+      : "Pose ta question : comment est calculé un chiffre, d'où vient une donnée…";
+    const tkMsg = st.tkMsg||null;
+    const tkMsgStyle = tkMsg ? 'font-size:13px;border-radius:10px;padding:9px 12px;'+(tkMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44') : '';
+    const tkErrList = (this._tk&&this._tk.err)||'';
+
     const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const channelsCtl=modalCtl('channelsModal'), channelsStyles=modalStyles(channelsCtl,'width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
@@ -3870,6 +4028,13 @@ class Component extends DCLogic {
       ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
       themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
         style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
+      tkModal:tkCtl.isOpen, tkBackdropStyle:tkStyles.backdrop, tkPanelStyle:tkStyles.panel, openTickets:()=>{ tkCtl.openIt(); tkCharge(); }, closeTickets:tkCtl.closeIt,
+      tkTabs, tkIsNew:tkTab==='nouveau', tkIsSuivi:tkTab==='suivi', tkTypeOpts, tkPrioOpts, tkPlaceholder, tkContexteLabel,
+      tkTitre, onTkTitre:e=>set({tkTitre:e.target.value.slice(0,120)}), tkDesc, onTkDesc:e=>set({tkDesc:e.target.value.slice(0,3000)}),
+      tkDescCount:tkDesc.length+' / 3000', tkSubmit:tkEnvoie, tkSubmitLabel:st.tkBusy?'Envoi…':'Envoyer le ticket',
+      tkSubmitStyle:'display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 22px;border-radius:12px;font-size:14.5px;font-weight:600;white-space:nowrap;'+(tkValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
+      tkMsgOn:!!tkMsg, tkMsgText:tkMsg?tkMsg.text:'', tkMsgStyle, tkRows, tkNoRows:!tkRows.length&&!tkErrList, tkErr:tkErrList, tkPeutGerer, tkComment:st.tkComment||'', onTkComment:e=>set({tkComment:e.target.value.slice(0,1000)}),
+      tkChip:kPuce('#7c63ee'), tkIcon:kIcone('#7c63ee',h('path',{d:'M4 21V4'}),h('path',{d:'M4 5h13l-2 4 2 4H4'})),
       listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
       cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
       cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),

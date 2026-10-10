@@ -296,3 +296,29 @@ création des propriétés (2022), Search Console 16 mois fusionnés avec
 l'existant (à relancer de temps en temps pour archiver). Jamais déployé ni
 servi par le dashboard. Pas de GSC pour Spoticar, Stellantis &You, Alfa DE,
 DS GB (propriété absente du compte de service) ni Citroën PT (403).
+
+## Thème clair / sombre (2026-10-11)
+
+`html[data-theme="dark"]` applique `filter: invert(.92) hue-rotate(180deg) …`
+sur toute la page (un seul jeu de styles à maintenir : les couleurs du code
+restent celles du mode clair). Ce qui doit garder ses vraies couleurs est
+ré-inversé : `[data-keep]` (logos colorés, en-tête du panneau KamIA),
+`[data-fab]` (bouton KamIA), les `iframe`, les orbes (`background:#0c1120`).
+Un nouvel élément coloré à préserver = lui ajouter `data-keep`. Choix
+Automatique / Clair / Sombre dans l'en-tête, mémorisé dans
+`localStorage.psf_theme` ; l'amorce dans `<head>` applique le thème avant le
+premier rendu et suit `prefers-color-scheme` en direct.
+
+## Tickets (2026-10-11)
+
+Bouton « Ticket » dans l'en-tête : bug de données, optimisation, question,
+avec le contexte (onglet, périmètre, période) joint automatiquement.
+`api/tickets.js` stocke dans le repo de données PRIVÉ (`tickets/tickets.json`,
+jamais dans ce repo public). Profil complet : voit tous les tickets, change le
+statut, commente ; profil limité : crée et ne voit que les siens (la route est
+dans `LIMITED_API` de `middleware.js`, les droits sont revérifiés dans le
+handler). Limites : 10 tickets / personne / jour, 500 au total. Notification
+optionnelle : variable Vercel `TICKETS_WEBHOOK_URL` (webhook Teams, carte
+adaptative). Pour traiter les tickets : lire `tickets/tickets.json` dans le repo
+de données. Tests : `node --test tests/api/tickets.test.js` (API, sans réseau) et
+`tests/e2e/tickets.spec.js` (interface, API simulée).
