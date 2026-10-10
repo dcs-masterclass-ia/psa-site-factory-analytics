@@ -180,3 +180,17 @@ test("Search Console, Pages : l'URL est un lien vers la vraie page (nouvel ongle
   expect(await lien.getAttribute("rel")).toContain("noopener");
   await expect(page.locator('span[title="Voir les requêtes de cette page"]').first()).toBeVisible();
 });
+
+test("PageSpeed : synthèse du parc (moyennes, seuils, optimisations, marques)", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title^="PageSpeed"]').first().click();
+  for (const t of ["Synthèse du périmètre", "Répartition et seuils", "À optimiser en priorité", "Par marque", "Sites les plus lents"]) {
+    await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
+  }
+  await expect(page.getByText(/^\d+ \/ 100$/).first()).toBeVisible();
+  await page.getByText("Desktop", { exact: true }).first().click();
+  await expect(page.getByText("LCP (affichage principal)")).toBeVisible();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

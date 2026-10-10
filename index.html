@@ -1046,6 +1046,102 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-if value="{{ isPS }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
+        <sc-if value="{{ ps2Has }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Synthèse du périmètre</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Moyennes et problèmes communs sur les sites sélectionnés (tous par défaut), d'après le dernier relevé PageSpeed de chaque site. Scores Lighthouse en laboratoire ; les données terrain (INP) ne sont disponibles que pour les sites assez fréquentés.</span></span>
+            <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
+            <span style="font-size:13px;color:#9a9fa6">{{ ps2RelLabel }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:15px">
+            <sc-for list="{{ ps2Tiles }}" as="k" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+                <span style="{{ k.chip }}">{{ k.icon }}</span>
+                <div style="min-width:0;flex:1">
+                  <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ k.tip }}</span></span></div>
+                  <div style="font-size:25px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap">{{ k.value }}</div>
+                  <div style="font-size:12px;color:#9a9fa6">{{ k.sub }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:15px;align-items:stretch">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip1 }}">{{ ps2Icon1 }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Répartition et seuils</div><div style="font-size:12.5px;color:#9a9fa6">Scores par palier, puis métriques moyennes face aux seuils Lighthouse</div></div></div><div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ ps2Devs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
+            </div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+                <sc-for list="{{ ps2Bands }}" as="b" hint-placeholder-count="2">
+                  <div>
+                    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px"><span style="font-size:13.5px;color:#2f2f33;font-weight:500;width:62px">{{ b.label }}</span><span style="font-size:12px;color:#9a9fa6">{{ b.legend }}</span></div>
+                    <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;background:#f2f2f4;gap:2px"><sc-for list="{{ b.segs }}" as="g" hint-placeholder-count="3"><span style="{{ g.style }}" title="{{ g.title }}"></span></sc-for></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 62px 56px minmax(70px,1fr);gap:10px;padding:0 4px 6px;font-size:12px;color:#9a9fa6"><span>Métrique</span><span style="text-align:right">Moyenne</span><span style="text-align:right">Seuil</span><span>Sites hors seuil</span></div>
+              <sc-for list="{{ ps2Metrics }}" as="m" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1.5fr) 62px 56px minmax(70px,1fr);gap:10px;align-items:center;padding:0 4px;min-height:38px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                  <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.name }}</span>
+                  <span style="{{ m.vStyle }}">{{ m.value }}</span>
+                  <span style="font-size:12.5px;color:#9a9fa6;text-align:right">{{ m.seuil }}</span>
+                  <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ m.bar }}"></span></span><span style="font-size:12.5px;color:#6d727a;min-width:44px;text-align:right">{{ m.out }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip2 }}">{{ ps2Icon2 }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">À optimiser en priorité</div><div style="font-size:12.5px;color:#9a9fa6">Problèmes les plus répandus, classés par gain total estimé</div></div></div>
+            </div>
+              <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(70px,1fr) 88px;gap:10px;padding:0 4px 6px;font-size:12px;color:#9a9fa6"><span>Optimisation</span><span>Sites concernés</span><span style="text-align:right">Gain moyen</span></div>
+              <sc-for list="{{ ps2Opp }}" as="o" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(70px,1fr) 88px;gap:10px;align-items:center;padding:0 4px;min-height:44px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                  <span style="font-size:13.5px;line-height:1.35;color:#121214">{{ o.titre }}</span>
+                  <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ o.bar }}"></span></span><span style="font-size:12.5px;color:#6d727a;min-width:46px;text-align:right">{{ o.sites }}</span></span>
+                  <span style="font-size:13.5px;font-weight:600;color:#121214;text-align:right;white-space:nowrap">{{ o.gain }}</span>
+                </div>
+              </sc-for>
+              <div style="margin-top:auto;padding-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px">
+                  <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120"><span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span><span style="position:absolute;inset:24%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%)"></span></span>
+                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="{{ ps2Insight }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#3b76e8;background:#eef3fe;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">LEVIER</span>{{ ps2Insight }}</span>
+                </div>
+              </div>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip3 }}">{{ ps2Icon3 }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Par marque</div><div style="font-size:12.5px;color:#9a9fa6">Score moyen, des plus lentes aux plus rapides</div></div></div>
+            </div>
+              <sc-for list="{{ ps2Brands }}" as="b" hint-placeholder-count="8">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(80px,1.3fr) 40px;gap:10px;align-items:center;padding:0 4px;min-height:38px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                  <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span><span style="font-size:12px;color:#9a9fa6;text-align:right">{{ b.n }}</span>
+                  <span style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ b.bar }}"></span></span><span style="{{ b.sStyle }}">{{ b.score }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip4 }}">{{ ps2Icon4 }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Sites les plus lents</div><div style="font-size:12.5px;color:#9a9fa6">Les 5 plus bas scores du périmètre, avec leur LCP</div></div></div>
+            </div>
+              <sc-for list="{{ ps2SlowList }}" as="r" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 70px 44px;gap:10px;align-items:center;padding:0 4px;min-height:38px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                  <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:12.5px;color:#9a9fa6;text-align:right">LCP {{ r.lcp }}</span><span style="{{ r.sStyle }}">{{ r.score }}</span>
+                </div>
+              </sc-for>
+              <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px"><span style="{{ ps2Chip5 }}">{{ ps2Icon5 }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Sites les plus rapides</div><div style="font-size:12.5px;color:#9a9fa6">Les références à répliquer</div></div></div>
+              <sc-for list="{{ ps2FastList }}" as="r" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 70px 44px;gap:10px;align-items:center;padding:0 4px;min-height:38px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                  <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:12.5px;color:#9a9fa6;text-align:right">LCP {{ r.lcp }}</span><span style="{{ r.sStyle }}">{{ r.score }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Site sélectionné</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Scores Lighthouse de l'outil de reprise mesurés via l'API PageSpeed Insights (médiane de 3 mesures par site et par appareil). Mesure hebdomadaire, pas quotidienne : la performance d'un site varie peu d'un jour à l'autre.</span></span>
@@ -2952,6 +3048,74 @@ class Component extends DCLogic {
         : {text:'Laboratoire',style:'font-size:12.5px;font-weight:600;color:#6d727a;background:#f2f2f4;border-radius:9px;padding:4px 10px;white-space:nowrap'};
     }
 
+    // ---------- PageSpeed : synthèse du périmètre (10/10/2026) ----------
+    // moyennes, seuils Lighthouse, optimisations communes, marques et sites les
+    // plus lents -- sur les sites sélectionnés (parc entier par défaut). Tout
+    // vient de data/<site>.json -> pagespeed (dernier relevé de chaque site).
+    const ps2Dev = st.psSynthDev==='desktop' ? 'desktop' : 'mobile';
+    const ps2Rows = (st.sites||[]).map(n=>{ const p=this.data[n]&&this.data[n].pagespeed; const x=p&&p[ps2Dev]; return x&&x.score!=null ? {name:n,x,releve:p.releve||null} : null; }).filter(Boolean);
+    const ps2N = ps2Rows.length;
+    const ps2Avg = a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:null;
+    const ps2Med = a=>{ if(!a.length) return null; const b=a.slice().sort((x,y)=>x-y), m=Math.floor(b.length/2); return b.length%2?b[m]:(b[m-1]+b[m])/2; };
+    const ps2Pick = (dev,k)=>(st.sites||[]).map(n=>{ const p=this.data[n]&&this.data[n].pagespeed; const x=p&&p[dev]; return x&&x[k]!=null?x[k]:null; }).filter(v=>v!=null);
+    const ps2Fmt = (v,k)=> v==null?'—': k==='cls'?dec(v,2): v>=1000?dec(v/1000,1)+' s':Math.round(v)+' ms';
+    const ps2Col = s=>s>=90?'#2b8f62':s>=50?'#e8a33d':'#e8544a';
+    const ps2Sc = {
+      mobile:{avg:ps2Avg(ps2Pick('mobile','score')),n:ps2Pick('mobile','score').length,sc:ps2Pick('mobile','score')},
+      desktop:{avg:ps2Avg(ps2Pick('desktop','score')),n:ps2Pick('desktop','score').length,sc:ps2Pick('desktop','score')}
+    };
+    const ps2Has = ps2Sc.mobile.n>0 || ps2Sc.desktop.n>0;
+    const ps2Lcp = ps2Pick('mobile','lcp'), ps2Inp = (st.sites||[]).map(n=>{ const p=this.data[n]&&this.data[n].pagespeed; const t=p&&p.mobile&&p.mobile.terrain; return t&&t.inp?t.inp:null; }).filter(v=>v!=null);
+    const ps2Tiles = [
+      {label:'Performance mobile',chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('rect',{x:7,y:2,width:10,height:20,rx:2}),h('path',{d:'M11 18h2'})),
+       value:ps2Sc.mobile.avg!=null?Math.round(ps2Sc.mobile.avg)+' / 100':'—',sub:ps2Sc.mobile.n?'médiane '+Math.round(ps2Med(ps2Sc.mobile.sc))+' · '+ps2Sc.mobile.n+' sites · '+ps2Sc.mobile.sc.filter(s=>s>=90).length+' ≥ 90':'aucune donnée',
+       tip:'Score Lighthouse mobile moyen des sites du périmètre (dernier relevé de chaque site). Vert ≥ 90, orange 50-89, rouge < 50.'},
+      {label:'Performance desktop',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})),
+       value:ps2Sc.desktop.avg!=null?Math.round(ps2Sc.desktop.avg)+' / 100':'—',sub:ps2Sc.desktop.n?'médiane '+Math.round(ps2Med(ps2Sc.desktop.sc))+' · '+ps2Sc.desktop.n+' sites · '+ps2Sc.desktop.sc.filter(s=>s>=90).length+' ≥ 90':'aucune donnée',
+       tip:'Score Lighthouse desktop moyen des sites du périmètre.'},
+      {label:'LCP mobile moyen',chip:kPuce('#e08a33'),icon:kIcone('#e08a33',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M12 7v5l3 2'})),
+       value:ps2Lcp.length?ps2Fmt(ps2Avg(ps2Lcp),'lcp'):'—',sub:ps2Lcp.length?'seuil 2,5 s · '+ps2Lcp.filter(v=>v>2500).length+' / '+ps2Lcp.length+' sites au-dessus':'aucune donnée',
+       tip:'Largest Contentful Paint : temps d\'affichage du contenu principal, en laboratoire (réseau et processeur mobiles simulés, donc plus sévère que la réalité). « Bon » : 2,5 s ou moins.'},
+      {label:'Réactivité terrain (INP)',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('path',{d:'M5 3l14 7-6 2-2 6z'})),
+       value:ps2Inp.length?Math.round(ps2Med(ps2Inp))+' ms':'—',sub:ps2Inp.length?'médiane · '+ps2Inp.filter(v=>v>200).length+' / '+ps2Inp.length+' sites > 200 ms':'données terrain absentes',
+       tip:'Interaction to Next Paint mesurée chez de vrais visiteurs (Chrome UX Report), mobile. Disponible seulement pour les sites assez fréquentés. « Bon » : 200 ms ou moins.'}
+    ];
+    const ps2Bands = [['mobile','Mobile'],['desktop','Desktop']].map(([dev,label])=>{
+      const sc=ps2Sc[dev].sc, tot=sc.length||1, lo=sc.filter(s=>s<50).length, hi=sc.filter(s=>s>=90).length, mid=sc.length-lo-hi;
+      return { label, n:sc.length,
+        segs:[[lo,'#e8544a','< 50'],[mid,'#e8a33d','50-89'],[hi,'#2b8f62','≥ 90']].map(([c,col,t])=>({ style:`display:block;height:100%;width:${c/tot*100}%;background:${col}`, title:t+' : '+c+' site'+(c>1?'s':'') })),
+        legend:`${lo} < 50 · ${mid} entre 50 et 89 · ${hi} ≥ 90` };
+    });
+    const ps2Metrics = [['lcp','LCP (affichage principal)',2500,'2,5 s'],['fcp','FCP (premier affichage)',1800,'1,8 s'],['tbt','TBT (blocage du thread)',200,'200 ms'],['cls','CLS (décalage visuel)',0.1,'0,1'],['si','Speed Index',3400,'3,4 s']].map(([k,name,seuil,seuilT])=>{
+      const v=ps2Pick(ps2Dev,k), m=ps2Avg(v), out=v.filter(x=>x>seuil).length, share=v.length?out/v.length*100:0;
+      return { name, value:ps2Fmt(m,k), seuil:seuilT, out:v.length?out+' / '+v.length:'—',
+        vStyle:'font-size:14px;font-weight:600;text-align:right;white-space:nowrap;color:'+(m==null?'#9a9fa6':m>seuil?'#a33c39':'#2b8f62'),
+        bar:`display:block;height:100%;width:${share}%;border-radius:4px;background:${share>=60?'#e8544a':share>=25?'#e8a33d':'#3fae7a'}` };
+    });
+    const ps2Opp = (()=>{
+      const o={}; ps2Rows.forEach(r=>(r.x.opportunites||[]).forEach(p=>{ const e=o[p.titre]||(o[p.titre]={n:0,g:0}); e.n++; e.g+=p.gainMs||0; }));
+      return Object.keys(o).map(t=>({titre:t,n:o[t].n,gain:o[t].g/o[t].n})).filter(e=>e.n>=2).sort((a,b)=>b.n*b.gain-a.n*a.gain).slice(0,6)
+        .map(e=>({ titre:e.titre, sites:e.n+' / '+ps2N, gain:'≈ '+ps2Fmt(e.gain,'lcp'), bar:`display:block;height:100%;width:${e.n/Math.max(1,ps2N)*100}%;border-radius:4px;background:#7c63ee` , _n:e.n, _g:e.gain }));
+    })();
+    const ps2Brands = (()=>{
+      const g={}; ps2Rows.forEach(r=>{ const m=r.name.split(' ').slice(0,-1).join(' '); (g[m]=g[m]||[]).push(r.x.score); });
+      return Object.keys(g).map(m=>({m,avg:ps2Avg(g[m]),n:g[m].length})).sort((a,b)=>a.avg-b.avg)
+        .map(e=>({ name:(e.m.length<=3?e.m:e.m.toLowerCase().replace(/(^|[\s&])\S/g,c=>c.toUpperCase())), score:Math.round(e.avg), n:e.n+' site'+(e.n>1?'s':''),
+          bar:`display:block;height:100%;width:${e.avg}%;border-radius:4px;background:${ps2Col(e.avg)}`, sStyle:'font-size:14px;font-weight:600;text-align:right;color:'+ps2Col(e.avg) }));
+    })();
+    const ps2Lists = (()=>{ const s=ps2Rows.slice().sort((a,b)=>a.x.score-b.x.score); const mk=r=>({ name:r.name, score:r.x.score, sStyle:'font-size:14px;font-weight:600;text-align:right;color:'+ps2Col(r.x.score), lcp:ps2Fmt(r.x.lcp,'lcp') });
+      return { slow:s.slice(0,5).map(mk), fast:s.slice(-5).reverse().map(mk) }; })();
+    const ps2Dates = ps2Rows.map(r=>r.releve).filter(Boolean).sort();
+    const ps2Today = this._pipelineToday || new Date().toISOString().slice(0,10);
+    const ps2Stale = ps2Dates.length && ps2Dates[ps2Dates.length-1] < this.decale(ps2Today,-30);
+    const ps2Lab = d=>d.slice(8,10)+'/'+d.slice(5,7);
+    const ps2RelLabel = ps2Dates.length ? ps2N+' site'+(ps2N>1?'s':'')+' · relevés du '+ps2Lab(ps2Dates[0])+(ps2Dates[0]!==ps2Dates[ps2Dates.length-1]?' au '+ps2Lab(ps2Dates[ps2Dates.length-1]):'')+(ps2Stale?' · à rafraîchir':'') : 'aucun relevé';
+    const ps2Insight = ps2Opp.length && ps2Brands.length
+      ? `${ps2Opp[0].titre} concerne ${ps2Opp[0]._n} sites sur ${ps2N} (gain moyen ≈ ${ps2Fmt(ps2Opp[0]._g,'lcp')} en ${ps2Dev}) : levier n°1. ${ps2Brands[0].name} est la marque la plus lente (${ps2Brands[0].score} / 100 en moyenne).`
+      : 'Pas assez de relevés pour dégager un levier commun sur ce périmètre.';
+    const ps2Devs = [['mobile','Mobile'],['desktop','Desktop']].map(([k,l])=>({ label:l, pick:()=>set({psSynthDev:k}),
+      style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;'+(ps2Dev===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
+
     // marche = pays du site selectionne (dernier mot du nom de site, meme
     // convention que marqueDeSite/paysDeSite dans le bloc en-tete plus bas
     // -- redefini localement pour eviter une dependance a une declaration
@@ -3665,6 +3829,7 @@ class Component extends DCLogic {
       quaChip:kPuce('#3fae7a'), quaIcon:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
       tbCaps, capTitle, capTip, capNeeded, capDate, capSubTxt:capSub, fcOk, fcKpis, fcNote, tbForecastChart, tbYoyChart, yoyLegend, annualRows, weekdayRows, monthSeasonRows:monthSeason.rows, monthSeasonOk:monthSeason.ok, seasonLabel, ruptTabs, ruptDown, ruptUp, ruptNote, qualOk, qualTop, qualKpis, qualNote, capPct:capPct.toFixed(1), tbHasAdvanced:!!tb_lastDay,
       tbGridAlign:(countryRows.length>=4?'stretch':'start'),
+      ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
       listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
       cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
       cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
