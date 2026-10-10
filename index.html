@@ -1740,9 +1740,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Langue de la présentation</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipB }}">{{ prIconB }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Périmètre et période</div><div style="font-size:12.5px;color:#9a9fa6">Un seul périmètre pour toute la présentation</div></div></div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays</div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays <span style="color:#b3b7bd">· clic = un seul, Cmd / Maj + clic = en ajouter ou en retirer, BELUX = BE + LU</span></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><span onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Périodicité</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Période : {{ prPeriodeLabel }}</div>
@@ -4146,10 +4146,11 @@ class Component extends DCLogic {
     const prMarquesSel = pr.marques.length ? pr.marques.filter(m=>prMarquesDispo.includes(m)) : prMarquesDispo;
     const prTog = (arr,v)=>arr.includes(v)?arr.filter(x=>x!==v):arr.concat([v]);
     const prChip = on => 'font-size:13px;font-weight:500;border-radius:10px;padding:6px 13px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a');
-    const prPaysChips = prPaysDispo.map(p=>({ label:p, pick:()=>prSet({pays:prTog(pr.pays,p), marques:[]}), style:prChip(pr.pays.includes(p)) }));
+    const prMulti = e => !!(e && (e.metaKey||e.ctrlKey||e.shiftKey));   // clic simple = cette seule entrée ; Cmd/Ctrl/Maj + clic = ajouter ou retirer
+    const prPaysChips = prPaysDispo.map(p=>({ label:p, pick:e=>prSet({pays:(prMulti(e)?(pr.pays.includes(p)&&pr.pays.length>1?pr.pays.filter(x=>x!==p):pr.pays.includes(p)?pr.pays:pr.pays.concat([p])):[p]), marques:[]}), style:prChip(pr.pays.includes(p)) }));
     const prBelux = { label:'BELUX', pick:()=>prSet({pays:['BE','LU'],marques:[]}), style:prChip(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')) };
     const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:()=>prSet({marques:[]}), style:prChip(!pr.marques.length) }]
-      .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:()=>prSet({marques:prTog(pr.marques.length?pr.marques:prMarquesDispo,m)}), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
+      .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:e=>prSet({marques:(prMulti(e)?(()=>{ const r=prTog(pr.marques,m); return r.length>=prMarquesDispo.length?[]:r; })():(pr.marques.length===1&&pr.marques[0]===m?[]:[m]))}), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
     const prCy = new Date(todayIso+'T00:00:00Z').getUTCFullYear();
     const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:()=>prSet({periode:prDernierePeriode(k)}), style:prChip(per.type===k) }));
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))

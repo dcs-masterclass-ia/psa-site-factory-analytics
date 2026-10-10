@@ -126,3 +126,24 @@ test("génération : le bouton se remplit avec le temps, puis propose le téléc
   await expect.poll(pct, { timeout: 8000 }).toBeGreaterThan(p1);          // progresse sans rechargement
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("périmètre : un clic sélectionne une seule entrée, Cmd/Maj + clic en ajoute", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  const nbMarques = async () => parseInt(((await page.getByText(/\d+ marques? ×/).first().innerText().catch(() => "0")).match(/(\d+) marque/) || [])[1] || "0", 10);
+  const toutes = await page.getByText(/^Toutes \(\d+\)$/).innerText();
+  const n = parseInt(toutes.match(/\d+/)[0], 10);
+  expect(n).toBeGreaterThan(3);
+  await page.getByText("Peugeot", { exact: true }).first().click();               // une seule marque, pas toutes les autres
+  await expect(page.getByText(/^1 marque ×/).first()).toBeVisible();
+  await page.getByText("Opel", { exact: true }).first().click({ modifiers: ["Shift"] });   // ajout
+  await expect(page.getByText(/^2 marques ×/).first()).toBeVisible();
+  await page.getByText("Peugeot", { exact: true }).first().click();               // clic simple : seulement Peugeot
+  await expect(page.getByText(/^1 marque ×/).first()).toBeVisible();
+  await page.getByText("Peugeot", { exact: true }).first().click();               // re-clic sur la seule marque : retour à « Toutes »
+  await expect(page.getByText(new RegExp(`^${n} marques ×`)).first()).toBeVisible();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
