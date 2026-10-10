@@ -149,6 +149,17 @@
   .login-help a{font-weight:600}
 
   .login-foot{font-size:12.5px;font-weight:500;color:#9a9fa6}
+/* Onglet Présentations : transitions douces sur les puces, cases et boutons (les nœuds persistent entre deux rendus, la transition s'applique) */
+[style*="padding:6px 13px"][style*="border-radius:10px"]{transition:background-color .28s cubic-bezier(.4,0,.2,1),border-color .28s cubic-bezier(.4,0,.2,1),color .28s cubic-bezier(.4,0,.2,1),transform .18s cubic-bezier(.4,0,.2,1),box-shadow .28s cubic-bezier(.4,0,.2,1);animation:prPuceIn .32s cubic-bezier(.2,.8,.2,1) both;will-change:transform}
+[style*="padding:6px 13px"][style*="border-radius:10px"]:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(124,99,238,.14)}
+[style*="padding:6px 13px"][style*="border-radius:10px"]:active{transform:translateY(0) scale(.96);box-shadow:none}
+[style*="width:20px;height:20px;flex:none;border-radius:6px"]{transition:background-color .25s cubic-bezier(.4,0,.2,1),border-color .25s cubic-bezier(.4,0,.2,1),transform .18s cubic-bezier(.4,0,.2,1)}
+[style*="width:20px;height:20px;flex:none;border-radius:6px"]:active{transform:scale(.88)}
+[style*="height:42px;border-radius:12px"]{transition:background .35s cubic-bezier(.4,0,.2,1),color .25s ease,transform .18s cubic-bezier(.4,0,.2,1),box-shadow .25s ease,filter .2s ease}
+[style*="height:42px;border-radius:12px"]:hover{filter:brightness(.97);box-shadow:0 4px 14px rgba(40,30,90,.12)}
+[style*="height:42px;border-radius:12px"]:active{transform:scale(.985)}
+@keyframes prPuceIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){[style*="padding:6px 13px"][style*="border-radius:10px"],[style*="width:20px;height:20px;flex:none;border-radius:6px"],[style*="height:42px;border-radius:12px"]{transition:none!important;animation:none!important}}
 </style>
 
 <x-dc>
