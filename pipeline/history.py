@@ -64,6 +64,16 @@ def lit_csv_gz(chemin):
         return list(csv.reader(f))[1:]
 
 
+def remplace_depuis(chemin, nouvelles, depuis_iso):
+    """Fusion incrementale : garde les lignes existantes ANTERIEURES a depuis_iso
+    (colonne 0 = date ou mois AAAA-MM), remplace tout ce qui est >= par les
+    nouvelles lignes. Un re-passage sur une fenetre recente corrige donc les
+    leads requalifies apres coup (doublon, test) sans jamais perdre l'ancien."""
+    cle = depuis_iso[:len(depuis_iso)] if len(depuis_iso) == 10 else depuis_iso
+    gardees = [l for l in lit_csv_gz(chemin) if l and l[0] < cle]
+    return gardees + [[str(x) for x in l] for l in nouvelles]
+
+
 def publie(chemins, message, dry_run):
     if dry_run:
         print(f"  (dry-run) {len(chemins)} fichier(s) ecrit(s), rien de commite")
@@ -118,6 +128,7 @@ def statut(l):
 
 
 def collecte_leads(nom, depuis, fin, dry_run=False):
+    depuis = depuis.replace(day=1)   # codes marketing agreges par mois : fenetre en mois entiers
     quotidien = Counter()
     codes = Counter()
     for sid, st in L.SITE_EXTRACT[nom]:
@@ -137,14 +148,18 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
             time.sleep(1)
     if not quotidien:
         print(f"{nom} : aucun lead sur la periode")
-        return []
+        return []   # rien a remplacer : on ne touche pas au fichier existant
     slug = _slug(nom)
     racine = (Path("/tmp/history") if dry_run else HIST)
     p1 = racine / "leads" / f"{slug}.csv.gz"
     p2 = racine / "leads_codes" / f"{slug}.csv.gz"
-    ecrit_csv_gz(p1, ["date", "site_id", "source", "appareil", "carburant", "projet_achat",
-                      "marque_reprise", "statut", "n"], sorted((*k, v) for k, v in quotidien.items()))
-    ecrit_csv_gz(p2, ["mois", "code_marketing", "valides"], sorted((*k, v) for k, v in codes.items()))
+    ent1 = ["date", "site_id", "source", "appareil", "carburant", "projet_achat",
+            "marque_reprise", "statut", "n"]
+    ecrit_csv_gz(p1, ent1, sorted(remplace_depuis(p1, sorted((*k, v) for k, v in quotidien.items()),
+                                                  depuis.isoformat())))
+    ecrit_csv_gz(p2, ["mois", "code_marketing", "valides"],
+                 sorted(remplace_depuis(p2, sorted((*k, v) for k, v in codes.items()),
+                                        depuis.isoformat()[:7])))
     valides = sum(v for k, v in quotidien.items() if k[-1] == "valide")
     jours = sorted({k[0] for k in quotidien})
     print(f"{nom} : {sum(quotidien.values())} leads bruts, {valides} valides, du {jours[0]} au {jours[-1]}")
@@ -181,12 +196,12 @@ def collecte_ga4(s, depuis, fin, dry_run=False):
     if lignes:
         p = racine / "ga4_sessions" / f"{s.slug}.csv.gz"
         ecrit_csv_gz(p, ["date", "site", "canal", "appareil", "sessions", "utilisateurs", "nouveaux_utilisateurs"],
-                     sorted(lignes))
+                     sorted(remplace_depuis(p, lignes, d0)))
         out.append(p)
     if funnel:
         p = racine / "ga4_funnel" / f"{s.slug}.csv.gz"
         ecrit_csv_gz(p, ["date", "accueil", "version", "kilometrage", "coordonnees", "point_de_vente", "estimation"],
-                     [(j, *v) for j, v in sorted(funnel.items())])
+                     sorted(remplace_depuis(p, [(j, *v) for j, v in sorted(funnel.items())], d0)))
         out.append(p)
     jours = sorted({l[0] for l in lignes})
     print(f"{s.nom} : {len(lignes)} lignes de sessions"
@@ -262,10 +277,15 @@ def main():
     ap.add_argument("--sites", nargs="*")
     ap.add_argument("--depuis", help="AAAA-MM-JJ (defaut : 2020-01-01 leads, 2022-01-01 ga4)")
     ap.add_argument("--jusqua", help="AAAA-MM-JJ (defaut : hier)")
+    ap.add_argument("--fenetre-jours", type=int,
+                    help="re-collecte seulement les N derniers jours (mode planifie, incremental) ; "
+                         "remplace --depuis")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
 
     fin = date.fromisoformat(a.jusqua) if a.jusqua else date.today() - timedelta(days=1)
+    if a.fenetre_jours:
+        a.depuis = (fin - timedelta(days=a.fenetre_jours)).isoformat()
     if not a.dry_run:
         from pipeline.build import _configure_git
         _configure_git()

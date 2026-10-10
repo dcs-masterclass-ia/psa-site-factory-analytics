@@ -7,7 +7,19 @@ name: Historique profond (leads BO, GA4, Search Console)
 # Search Console : chaque passage FUSIONNE avec l'existant (Google ne garde
 # que 16 mois) -- a relancer de temps en temps pour archiver.
 
+# Planifie (heures UTC), en mode incremental : seules les dernieres semaines
+# sont re-collectees et REMPLACENT la meme fenetre dans les fichiers, l'ancien
+# est conserve (pipeline/history.py, remplace_depuis) :
+#   - leads BO     : chaque jour 03:20, fenetre 75 jours (requalifications)
+#   - GA4          : chaque jour 04:20, fenetre 45 jours
+#   - Search Console : chaque lundi 05:20 (fusion avec l'archive ; Google ne
+#     garde que 16 mois, une semaine d'ecart ne perd rien)
+# Un run manuel garde le comportement d'avant (source / sites / depuis).
 on:
+  schedule:
+    - cron: "20 3 * * *"
+    - cron: "20 4 * * *"
+    - cron: "20 5 * * 1"
   workflow_dispatch:
     inputs:
       source:
@@ -17,6 +29,10 @@ on:
         default: "leads"
       sites:
         description: "Sites (séparés par des virgules ; vide = tous)"
+        required: false
+        default: ""
+      fenetre_jours:
+        description: "Mode incrémental : re-collecter seulement les N derniers jours (vide = tout, selon « depuis »)"
         required: false
         default: ""
       depuis:
@@ -31,6 +47,11 @@ on:
 
 permissions:
   contents: write
+
+# jamais deux collectes de la meme source en meme temps (pushes dans le meme repo)
+concurrency:
+  group: history-${{ inputs.source || github.event.schedule }}
+  cancel-in-progress: false
 
 jobs:
   historique:
@@ -74,9 +95,20 @@ jobs:
           IN_SOURCE: ${{ inputs.source }}
           IN_SITES: ${{ inputs.sites }}
           IN_DEPUIS: ${{ inputs.depuis }}
+          IN_FENETRE: ${{ inputs.fenetre_jours }}
           IN_DRY_RUN: ${{ inputs.dry_run }}
+          EVENT: ${{ github.event_name }}
+          CRON: ${{ github.event.schedule }}
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: |
+          if [ "$EVENT" = "schedule" ]; then
+            case "$CRON" in
+              "20 3 * * *") IN_SOURCE=leads; IN_FENETRE=75 ;;
+              "20 4 * * *") IN_SOURCE=ga4;   IN_FENETRE=45 ;;
+              "20 5 * * 1") IN_SOURCE=gsc ;;
+              *) echo "::error::cron inconnu : $CRON"; exit 1 ;;
+            esac
+          fi
           ARGS=("$IN_SOURCE")
           if [ -n "$IN_SITES" ]; then
             ARGS+=(--sites)
@@ -86,6 +118,7 @@ jobs:
               ARGS+=("$s")
             done
           fi
+          if [ -n "$IN_FENETRE" ]; then ARGS+=(--fenetre-jours "$IN_FENETRE"); fi
           if [ -n "$IN_DEPUIS" ]; then ARGS+=(--depuis "$IN_DEPUIS"); fi
           if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
           python -m pipeline.history "${ARGS[@]}"
