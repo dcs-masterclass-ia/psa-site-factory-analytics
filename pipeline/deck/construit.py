@@ -173,13 +173,16 @@ def synthese(ctx):
     g.tuile(s, x + 2 * (w + gap), 1.55, w, 1.35, t["sessions"], t.nb(sess_cur),
             detail_evol(sess_cur, lambda p: sum(sum(d.canaux(p, m).values()) for m in d.marques)))
     ga = {m: d.utilisateurs(per, m) for m in d.marques}
-    if all(v is not None for v in ga.values()) and ga:
-        hot = sum(v["hot_leads"] for v in ga.values())
+    mesurees = [m for m, v in ga.items() if v is not None]
+    if mesurees:
+        hot = sum(ga[m]["hot_leads"] for m in mesurees)
         det_h = []
         for cle, p in ctx.refs:
-            rr = [d.utilisateurs(p, m) for m in d.marques]
-            if all(v is not None for v in rr):
+            rr = [d.utilisateurs(p, m) for m in mesurees]
+            if all(v is not None for v in rr):       # comparaison sur les mêmes marques uniquement
                 det_h.append(f"{t.evol(hot, sum(v['hot_leads'] for v in rr))[0]} {libelle_ref(ctx, cle)}")
+        if len(mesurees) < len(d.marques):
+            det_h.append((f"{len(mesurees)} marques sur {len(d.marques)} mesurées" if ctx.langue == "fr" else f"{len(mesurees)} of {len(d.marques)} brands measured"))
         g.tuile(s, x + 3 * (w + gap), 1.55, w, 1.35, t["hot_leads"], t.nb(hot), "  ·  ".join(det_h) or None)
     else:
         g.tuile(s, x + 3 * (w + gap), 1.55, w, 1.35, t["hot_leads"], t["non_dispo"], t["ga4_indispo"])
@@ -297,6 +300,9 @@ def projets_groupe(ctx, nom_groupe, marques):
 
 def trafic_marque(ctx, m):
     t, d, per = ctx.t, ctx.d, ctx.per
+    if d.utilisateurs(per, m) is None and not sum(d.canaux(per, m).values()):
+        ctx.avertissements.append(f"{ctx.nom(m)} : aucune donnée de trafic sur la période, diapositive non générée.")
+        return None
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['trafic']} {ctx.et(per)}", ctx.perimetre, source_ga4(ctx),
                  notes=note_definitions(ctx, "Utilisateurs distincts calculés par GA4 sur la période entière (In Journey = événement form_step_view ; hot leads = événement tradein_request)."))
     ga = d.utilisateurs(per, m)

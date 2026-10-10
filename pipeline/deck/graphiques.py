@@ -168,8 +168,9 @@ def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10):
     """Anneau natif avec étiquettes de pourcentage."""
     if not categories or not sum(valeurs):
         return texte(slide, x, y, w, 0.4, "Aucune donnée sur ce périmètre.", taille=11, couleur=GRIS, italique=True)
+    total0 = sum(valeurs)
     cd = CategoryChartData()
-    cd.categories = categories
+    cd.categories = [f"{c} ({v / total0 * 100:.0f} %)" for c, v in zip(categories, valeurs)]   # parts dans la légende : pas d'étiquettes qui se chevauchent
     cd.add_series("Part", valeurs)
     gf = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, Inches(x), Inches(y), Inches(w), Inches(h), cd)
     ch = gf.chart
@@ -179,22 +180,13 @@ def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10):
     ch.legend.include_in_layout = False
     _police(ch.legend, taille)
     plot = ch.plots[0]
-    plot.has_data_labels = True
-    dl = plot.data_labels
-    dl.show_percentage = True
-    dl.show_value = False
-    dl.number_format = "0%"
-    dl.number_format_is_linked = False
-    dl.font.size = Pt(taille - 1)
-    dl.font.color.rgb = rgb("FFFFFF")
+    plot.has_data_labels = False
     s = plot.series[0]
     total = sum(valeurs) or 1
     for j in range(len(categories)):
         pt = s.points[j]
         pt.format.fill.solid()
         pt.format.fill.fore_color.rgb = rgb((couleurs or COULEURS_CANAUX)[j % len(couleurs or COULEURS_CANAUX)])
-        if valeurs[j] / total < 0.04:          # trop petit : pas d'étiquette (lisibilité)
-            pt.data_label.text_frame.text = ""
     return gf
 
 
