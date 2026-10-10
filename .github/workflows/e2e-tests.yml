@@ -44,6 +44,13 @@ jobs:
 
       - run: node --test api/tickets.test.js api/presentations.test.js
         working-directory: tests
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install python-pptx google-analytics-data
+        working-directory: .
+      - run: python -m unittest tests.py.test_deck
+        working-directory: .
       - run: npm test
 
       - if: always()
