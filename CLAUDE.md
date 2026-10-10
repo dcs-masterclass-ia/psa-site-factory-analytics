@@ -330,6 +330,10 @@ langue, périmètre pays/marques, trimestre, comparaisons QoQ/YoY, modules, poin
 ouverts, prochaines étapes, contact) + plan de présentation calculé en direct
 (nombre de diapositives). `api/presentations.js` stocke les briefs dans le repo de
 données privé (`presentations/briefs.json`) ; la route n'est pas dans `LIMITED_API`.
-Périodicité : mois / trimestre / semestre / année (`periode = {type, annee, indice}`) ; modèles enregistrables (`presentations/templates.json`, 3 modèles de base côté interface). Le générateur PPTX n'existe pas encore (bouton « Générer » désactivé) : il lira les
-briefs. Règles de calcul : `docs/presentations-definitions.md`. Tests :
+Périodicité : mois / trimestre / semestre / année (`periode = {type, annee, indice}`) ; modèles enregistrables (`presentations/templates.json`, 3 modèles de base côté interface). Génération : bouton « Générer » → `api/presentations.js` (action `generate`, `GITHUB_TOKEN`) déclenche
+`.github/workflows/presentation.yml` → `python -m pipeline.deck --briefs … --id …` (python-pptx, graphiques natifs,
+gabarit `pipeline/deck/gabarit_autobiz.pptx`) → `presentations/out/<id>.pptx` dans le repo de données, brief en
+`generee`/`echec` ; téléchargement par `GET /api/presentations?fichier=<id>`. Les sources d'acquisition sont
+regroupées (`GROUPES_SOURCES` dans `pipeline/deck/donnees.py`), la diapo détaille le regroupement. Tests Python :
+`python -m unittest tests.py.test_deck`. Règles de calcul : `docs/presentations-definitions.md`. Tests :
 `node --test tests/api/presentations.test.js`, `tests/e2e/presentations.spec.js`.
