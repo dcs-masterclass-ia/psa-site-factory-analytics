@@ -42,7 +42,7 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: node --test api/tickets.test.js
+      - run: node --test api/tickets.test.js api/presentations.test.js
         working-directory: tests
       - run: npm test
 

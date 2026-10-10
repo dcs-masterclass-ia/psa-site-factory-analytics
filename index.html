@@ -223,6 +223,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div onClick="{{ pickTB }}" style="{{ srcTB }}" style-hover="background:#f4f4f6" title="Tableau">
       <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
+    <div onClick="{{ pickPR }}" style="{{ srcPR }}" style-hover="background:#f4f4f6" title="Présentations">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M7 12l3-3 2.5 2.5L17 7"/></svg>
+    </div>
     <div onClick="{{ pickGCP }}" style="{{ srcGCP }}" style-hover="background:#f4f4f6" title="Google Cloud Platform">
       <svg data-keep width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M14.4 8.1h-.7l2.2-2.2-.1-.9A8 8 0 0 0 3.4 8.6l.7-.1 4.4-.7.3-.3a4.5 4.5 0 0 1 5.7-.5z" fill="#ea4335"/><path d="M19.5 8.6a8 8 0 0 0-2.4-3.9l-3.1 3.1a4.5 4.5 0 0 1 1.7 3.5v.6a2.2 2.2 0 0 1 0 4.4h-4.4l-.5.5v2.6l.5.5h4.4a5.8 5.8 0 0 0 3.8-10.3z" fill="#4285f4"/><path d="M6.9 20h4.4v-3.6H6.9a2.2 2.2 0 0 1-.9-.2l-.6.2-2.2 2.2-.2.6A5.7 5.7 0 0 0 6.9 20z" fill="#34a853"/><path d="M6.9 8.3a5.8 5.8 0 0 0-3.5 10.4l2.6-2.6a2.2 2.2 0 0 1 .9-4.2c.6 0 1.2.2 1.6.6l2.6-2.6a5.8 5.8 0 0 0-4.2-1.6z" fill="#fbbc05"/></svg>
     </div>
@@ -1716,6 +1719,111 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
       </div>
       </sc-if>
+      <sc-if value="{{ isPR }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Présentations clients</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Réponds au questionnaire : Converge prépare le plan et, bientôt, génère la présentation PowerPoint avec des graphiques éditables. Tous les chiffres suivent les mêmes règles de cohérence (un périmètre, une source par indicateur, une unité par chaîne).</span></span>
+          <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
+          <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:12px;padding:3px"><sc-for list="{{ prTabs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
+        </div>
+        <sc-if value="{{ prMsgOn }}" hint-placeholder-val="{{ false }}"><div style="{{ prMsgStyle }}">{{ prMsgText }}</div></sc-if>
+
+        <sc-if value="{{ prIsNew }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:15px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:15px;min-width:0">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Cadrage</div><div style="font-size:12.5px;color:#9a9fa6">Le titre et le client apparaissent sur la couverture</div></div></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Titre du brief</div><input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="{{ prTitreAuto }}" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Client</div><input type="text" value="{{ prClient }}" onInput="{{ onPrClient }}" placeholder="Stellantis" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Langue de la présentation</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipB }}">{{ prIconB }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Périmètre et période</div><div style="font-size:12.5px;color:#9a9fa6">Un seul périmètre pour toute la présentation</div></div></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><span onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Trimestre</div>
+              <div style="display:flex;gap:18px;flex-wrap:wrap"><div style="display:flex;gap:8px"><sc-for list="{{ prTrims }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div><div style="display:flex;gap:8px"><sc-for list="{{ prAnnees }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipC }}">{{ prIconC }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite</div></div></div>
+              <sc-for list="{{ prModulesRows }}" as="m" hint-placeholder-count="8">
+                <div onClick="{{ m.pick }}" style="{{ m.rowStyle }}">
+                  <span style="{{ m.box }}"><sc-if value="{{ m.check }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
+                  <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:14.5px;font-weight:500;color:#121214">{{ m.titre }}</span><span style="{{ m.badgeStyle }}">{{ m.badge }}</span></div>
+                    <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5;margin-top:2px">{{ m.desc }}</div>
+                    <sc-if value="{{ m.hasNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#c4842a;margin-top:2px">{{ m.note }}</div></sc-if></div>
+                  <span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ m.slides }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipD }}">{{ prIconE }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Points ouverts</div><div style="font-size:12.5px;color:#9a9fa6">Une diapositive par point (ex. déploiement d'une fonctionnalité, anomalie de tracking)</div></div></div>
+              <sc-for list="{{ prPoints }}" as="p" hint-placeholder-count="2">
+                <div style="border:1px solid #efeff1;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;gap:8px"><input type="text" value="{{ p.titre }}" onInput="{{ p.onTitre }}" placeholder="Titre du point" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%" /><span onClick="{{ p.remove }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;align-self:center;white-space:nowrap">Retirer</span></div>
+                  <textarea value="{{ p.texte }}" onInput="{{ p.onTexte }}" placeholder="Description, contact, état d'avancement…" rows="3" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%;resize:vertical;line-height:1.5"></textarea>
+                </div>
+              </sc-for>
+              <span onClick="{{ prAddPoint }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter un point ouvert</span>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipF }}">{{ prIconF }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Prochaines étapes</div><div style="font-size:12.5px;color:#9a9fa6">Tableau d'actions : clique sur le statut pour le changer</div></div></div>
+              <sc-for list="{{ prEtapes }}" as="e" hint-placeholder-count="2">
+                <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,.8fr) auto auto;gap:8px;align-items:center;margin-bottom:8px">
+                  <input type="text" value="{{ e.item }}" onInput="{{ e.onItem }}" placeholder="Action" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" />
+                  <input type="text" value="{{ e.resp }}" onInput="{{ e.onResp }}" placeholder="Responsable" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" />
+                  <input type="text" value="{{ e.ech }}" onInput="{{ e.onEch }}" placeholder="Échéance" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" />
+                  <span onClick="{{ e.cycle }}" style="{{ e.statStyle }}">{{ e.statLabel }}</span>
+                  <span onClick="{{ e.remove }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer">✕</span>
+                </div>
+              </sc-for>
+              <span onClick="{{ prAddEtape }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter une action</span>
+            </div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipG }}">{{ prIconG }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contact et commentaire</div><div style="font-size:12.5px;color:#9a9fa6">Contact affiché en dernière diapositive</div></div></div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">Nom</div><input type="text" value="{{ prContactNom }}" onInput="{{ onPrContactNom }}" placeholder="Prénom Nom" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
+                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">Fonction</div><input type="text" value="{{ prContactFonction }}" onInput="{{ onPrContactFonction }}" placeholder="Digital Key Account Manager" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
+                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">E-mail</div><input type="text" value="{{ prContactEmail }}" onInput="{{ onPrContactEmail }}" placeholder="prenom.nom@autobiz.com" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
+              </div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Commentaire libre (contexte, messages clés à faire passer)</div>
+              <textarea value="{{ prCommentaire }}" onInput="{{ onPrCommentaire }}" rows="4" placeholder="Ex. : insister sur la baisse du Display et la hausse du taux de leads New cars." style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%;resize:vertical;line-height:1.5"></textarea>
+            </div>
+          </div>
+
+          <div style="position:sticky;top:0;display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+              <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:2px">Plan de la présentation</div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:12px">{{ prPerimetreLabel }} · {{ prPeriodeLabel }}</div>
+              <sc-for list="{{ prPlanRows }}" as="r" hint-placeholder-count="5">
+                <div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:8px 0;border-top:1px solid #f2f2f4"><div style="min-width:0"><div style="font-size:13.5px;color:#121214">{{ r.titre }}</div><div style="font-size:12px;color:#9a9fa6">{{ r.detail }}</div></div><span style="font-size:12.5px;color:#6d727a;white-space:nowrap">{{ r.count }}</span></div>
+              </sc-for>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid #e8e8ec;padding-top:10px;margin-top:4px"><span style="font-size:13px;color:#6d727a">Total estimé</span><span style="font-size:18px;font-weight:600;color:#121214">{{ prPlanTotal }}</span></div>
+              <div style="font-size:12px;color:#9a9fa6;line-height:1.5;margin-top:10px">Source : back-office autobiz (leads) et GA4 (trafic), même périmètre sur toutes les diapositives.</div>
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+                <span onClick="{{ prSaveFn }}" style="{{ prSaveStyle }}">{{ prSaveLabel }}</span>
+                <span style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#f2f2f5;color:#9a9fa6;cursor:not-allowed" title="Le générateur de PowerPoint est en cours de construction">Générer le PowerPoint · bientôt</span>
+                <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;text-align:center">Nouveau brief vide</span></sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ prIsList }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+            <sc-if value="{{ prNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun brief enregistré pour l'instant.</div></sc-if>
+            <div style="font-size:13.5px;color:#c24a44">{{ prErr }}</div>
+            <sc-for list="{{ prRows }}" as="b" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 4px;border-top:1px solid #f2f2f4">
+                <div style="flex:1;min-width:220px"><div style="font-size:14.5px;font-weight:500;color:#121214">{{ b.titre }}</div><div style="font-size:12.5px;color:#9a9fa6">{{ b.client }} · {{ b.meta }}</div></div>
+                <span style="font-size:11px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:3px 10px">{{ b.statut }}</span>
+                <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ b.qui }}</span>
+                <span onClick="{{ b.open }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Ouvrir</span>
+                <span onClick="{{ b.dup }}" style="font-size:13px;color:#6d727a;cursor:pointer">Dupliquer</span>
+                <sc-if value="{{ b.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.del }}" style="{{ b.delStyle }}">{{ b.delLabel }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      </sc-if>
     </div>
   </div>
 
@@ -1923,7 +2031,7 @@ class Component extends DCLogic {
       if (qp.get('embed') === '1') {
         const voulus = (qp.get('sites') || '').split('|').filter(n => this._allSites.includes(n));
         if (voulus.length) initial.sites = voulus;
-        if (['ga','sc','ps','tb','gcp'].includes(qp.get('source')) && !(this.estLimite() && ['tb','gcp'].includes(qp.get('source')))) initial.source = qp.get('source');
+        if (['ga','sc','ps','tb','gcp','pr'].includes(qp.get('source')) && !(this.estLimite() && ['tb','gcp','pr'].includes(qp.get('source')))) initial.source = qp.get('source');
         if (qp.get('from') && qp.get('to')) { initial.from = qp.get('from'); initial.to = qp.get('to'); }
         if (['none','previous','year'].includes(qp.get('cmp'))) initial.cmpMode = qp.get('cmp');
       }
@@ -2239,7 +2347,7 @@ class Component extends DCLogic {
       backdrop:`position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px;animation:${ctl.isClosing?'modalBackdropOut .18s ease forwards':'modalBackdropIn .18s ease'}`,
       panel:`${panelBase};animation:${ctl.isClosing?'modalPanelOut .18s ease forwards':'modalPanelIn .2s cubic-bezier(.16,1,.3,1)'}`
     });
-    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Tableau',gcp:'Google Cloud'};
+    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Tableau',gcp:'Google Cloud',pr:'Présentations'};
     const srcStyle=a=>`width:38px;height:38px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;${a?'background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8':'background:transparent'}`;
 
     const badge=(t,up)=>`font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;${up?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
@@ -3964,6 +4072,110 @@ class Component extends DCLogic {
     const tkMsgStyle = tkMsg ? 'font-size:13px;border-radius:10px;padding:9px 12px;'+(tkMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44') : '';
     const tkErrList = (this._tk&&this._tk.err)||'';
 
+    // ---------- Présentations : brief (questionnaire) -> plan -> enregistrement ----------
+    // Le brief est enregistré par api/presentations.js ; le générateur de PPTX le lira.
+    // Règles de cohérence : docs/presentations-definitions.md.
+    const prPaysDe = n => { const p=n.split(' ').slice(-1)[0]; return p==='GB'?'UK':p; };
+    const prMarqueDe = n => n.split(' ').slice(0,-1).join(' ');
+    const prTitle = s => s.length<=3 ? s : s.toLowerCase().replace(/(^|[\s&])\S/g,c=>c.toUpperCase());
+    const PR_GROUPES = { XP:['PEUGEOT','CITROEN','DS','OPEL'], XF:['FIAT','FIAT PRO','JEEP','ALFA ROMEO','ABARTH','LANCIA','LEAPMOTOR'] };
+    const prGroupe = m => PR_GROUPES.XP.includes(m)?'XP':PR_GROUPES.XF.includes(m)?'XF':'Autres';
+    const prTrimDef = (()=>{ const d=new Date(todayIso+'T00:00:00Z'); let y=d.getUTCFullYear(), q=Math.floor(d.getUTCMonth()/3); if (q===0){ y-=1; q=4; } return {annee:y,trimestre:q}; })();
+    const PR_MODULES = [
+      {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par marque (vs trimestre précédent / an dernier), leads par mois, leads New cars', dispo:'ok', base:6},
+      {id:'projets',     titre:'Projets d\'achat',             desc:'New cars / Trade-in only / Used cars, par groupe de marques (XP, XF)', dispo:'ok', base:2},
+      {id:'trafic_marque',titre:'Trafic et leads par marque',  desc:'Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads', dispo:'ok', parMarque:2},
+      {id:'sources',     titre:'Sources d\'acquisition',       desc:'Display, Search, Emailing, Main-Website… par projet d\'achat, dans les diapositives de leads', dispo:'bientot', note:'Collecte de l\'historique en cours', base:0},
+      {id:'cta',         titre:'CTA du site (menu, footer, page offre)', desc:'Leads issus des CTA du site de la marque, par emplacement', dispo:'bientot', note:'Collecte de l\'historique en cours', parMarque:1},
+      {id:'crm',         titre:'Performance commerciale (CRM C1ST)', desc:'Statuts des leads, 1er appel, devis, commandes NSC, ventes additionnelles', dispo:'non', note:'Données CRM non disponibles dans Converge', base:5},
+      {id:'points_ouverts',titre:'Points ouverts',             desc:'Une diapositive par point à traiter (saisis ci-dessous)', dispo:'ok', pointsOuverts:true},
+      {id:'prochaines_etapes',titre:'Prochaines étapes',       desc:'Tableau d\'actions : item, responsable, statut, échéance (saisi ci-dessous)', dispo:'ok', base:1}
+    ];
+    const prDef = {
+      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prTrimDef, qoq:true, yoy:true,
+      modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:''
+    };
+    const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
+    const prSet = patch => set({pr:Object.assign({}, pr, patch)});
+    const prTab = st.prTab || 'nouveau';
+    const prData = this._pr || {};
+    const prPaysDispo = Array.from(new Set((this._allSites||[]).map(prPaysDe))).sort();
+    const prMarquesDispo = Array.from(new Set((this._allSites||[]).filter(n=>pr.pays.includes(prPaysDe(n))).map(prMarqueDe))).sort((a,b)=>(prGroupe(a)+a).localeCompare(prGroupe(b)+b));
+    const prMarquesSel = pr.marques.length ? pr.marques.filter(m=>prMarquesDispo.includes(m)) : prMarquesDispo;
+    const prTog = (arr,v)=>arr.includes(v)?arr.filter(x=>x!==v):arr.concat([v]);
+    const prChip = on => 'font-size:13px;font-weight:500;border-radius:10px;padding:6px 13px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a');
+    const prPaysChips = prPaysDispo.map(p=>({ label:p, pick:()=>prSet({pays:prTog(pr.pays,p), marques:[]}), style:prChip(pr.pays.includes(p)) }));
+    const prBelux = { label:'BELUX', pick:()=>prSet({pays:['BE','LU'],marques:[]}), style:prChip(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')) };
+    const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:()=>prSet({marques:[]}), style:prChip(!pr.marques.length) }]
+      .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:()=>prSet({marques:prTog(pr.marques.length?pr.marques:prMarquesDispo,m)}), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
+    const prAnnees = [prTrimDef.annee-2,prTrimDef.annee-1,prTrimDef.annee].map(a=>({ label:String(a), pick:()=>prSet({periode:Object.assign({},pr.periode,{annee:a})}), style:prChip(pr.periode.annee===a) }));
+    const prTrims = [1,2,3,4].map(q=>({ label:'T'+q, pick:()=>prSet({periode:Object.assign({},pr.periode,{trimestre:q})}), style:prChip(pr.periode.trimestre===q) }));
+    const prLangues = [['fr','Français'],['en','English']].map(([k,l])=>({ label:l, pick:()=>prSet({langue:k}), style:prChip(pr.langue===k) }));
+    const prCompar = [{ label:'vs trimestre précédent', pick:()=>prSet({qoq:!pr.qoq}), style:prChip(pr.qoq) }, { label:'vs même trimestre N-1', pick:()=>prSet({yoy:!pr.yoy}), style:prChip(pr.yoy) }];
+    const prPeriodeLabel = 'T'+pr.periode.trimestre+'-'+pr.periode.annee;
+    const prPerimetreLabel = pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU') ? 'BELUX (Belgique + Luxembourg)' : (pr.pays.join(' + ')||'—');
+    const prTitreAuto = pr.client+' — '+(pr.pays.join('+')||'?')+' '+prPeriodeLabel;
+    const prNb = pr.pointsOuverts.length;
+    const prSlidesOf = m => (m.base||0) + (m.parMarque?m.parMarque*prMarquesSel.length:0) + (m.pointsOuverts?Math.max(1,prNb):0);
+    const prModulesRows = PR_MODULES.map(m=>{
+      const on = pr.modules.includes(m.id), off = m.dispo==='non';
+      return { titre:m.titre, desc:m.desc, note:m.note||'', hasNote:!!m.note,
+        badge: m.dispo==='ok'?'Disponible':m.dispo==='bientot'?'Bientôt':'Indisponible',
+        badgeStyle:'font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap;'+(m.dispo==='ok'?'color:#2b8f62;background:#eaf6ef':m.dispo==='bientot'?'color:#c4842a;background:#fdf3e3':'color:#8a8f98;background:#f2f2f5'),
+        slides:prSlidesOf(m)+' diapo'+(prSlidesOf(m)>1?'s':''),
+        box:'width:20px;height:20px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;border:1.5px solid '+(off?'#e4e4e8':on?'#7c63ee':'#cfd1d6')+';background:'+(off?'#f6f6f8':on?'#7c63ee':'#fff'),
+        check:on&&!off, rowStyle:'display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-top:1px solid #f2f2f4;'+(off?'opacity:.6;cursor:not-allowed':'cursor:pointer'),
+        pick:()=>{ if (!off) prSet({modules:prTog(pr.modules,m.id)}); } };
+    });
+    const prPlan = (()=>{
+      const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
+      add('Couverture, agenda, contacts, Q/A','4 diapositives fixes',4);
+      PR_MODULES.forEach(m=>{ if (pr.modules.includes(m.id) && m.dispo!=='non') add(m.titre, m.parMarque?prMarquesSel.length+' marque'+(prMarquesSel.length>1?'s':'')+' × '+m.parMarque:(m.pointsOuverts?prNb+' point'+(prNb>1?'s':''):m.desc.split(',')[0]), prSlidesOf(m)); });
+      return { rows, total:n };
+    })();
+    const prPoints = pr.pointsOuverts.map((p,i)=>({ titre:p.titre||'', texte:p.texte||'',
+      onTitre:e=>prSet({pointsOuverts:pr.pointsOuverts.map((x,k)=>k===i?Object.assign({},x,{titre:e.target.value.slice(0,100)}):x)}),
+      onTexte:e=>prSet({pointsOuverts:pr.pointsOuverts.map((x,k)=>k===i?Object.assign({},x,{texte:e.target.value.slice(0,600)}):x)}),
+      remove:()=>prSet({pointsOuverts:pr.pointsOuverts.filter((_,k)=>k!==i)}) }));
+    const PR_STAT = { a_faire:['À faire','#6d727a','#f2f2f5'], en_cours:['En cours','#c4842a','#fdf3e3'], fait:['Fait','#2b8f62','#eaf6ef'], bloque:['Bloqué','#c24a44','#fdf1f0'] };
+    const prEtapes = pr.prochainesEtapes.map((e,i)=>({ item:e.item||'', resp:e.responsable||'', ech:e.echeance||'',
+      statLabel:PR_STAT[e.statut||'a_faire'][0], statStyle:'font-size:12px;font-weight:600;border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap;color:'+PR_STAT[e.statut||'a_faire'][1]+';background:'+PR_STAT[e.statut||'a_faire'][2],
+      cycle:()=>{ const k=Object.keys(PR_STAT); prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{statut:k[(k.indexOf(x.statut||'a_faire')+1)%k.length]}):x)}); },
+      onItem:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{item:ev.target.value.slice(0,160)}):x)}),
+      onResp:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{responsable:ev.target.value.slice(0,60)}):x)}),
+      onEch:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{echeance:ev.target.value.slice(0,30)}):x)}),
+      remove:()=>prSet({prochainesEtapes:pr.prochainesEtapes.filter((_,j)=>j!==i)}) }));
+    const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
+    const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
+    const prValide = (pr.titre.trim().length>=3||true) && pr.client.trim().length>0 && pr.pays.length>0 && pr.modules.length>0 && !st.prBusy;
+    const prSave = async () => {
+      if (!prValide) return;
+      set({prBusy:true, prMsg:null});
+      try {
+        const brief = { id:pr.id, titre:pr.titre.trim()||prTitreAuto, client:pr.client.trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:pr.periode,
+          comparaisons:{qoq:pr.qoq,yoy:pr.yoy}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire };
+        const j = await prApi({action:'save',brief});
+        const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
+        this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
+      } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
+    };
+    const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
+      periode:b.periode||prTrimDef, qoq:!!(b.comparaisons&&b.comparaisons.qoq), yoy:!!(b.comparaisons&&b.comparaisons.yoy), modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
+      pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'' });
+    const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+    const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
+      meta:'T'+(b.periode&&b.periode.trimestre)+'-'+(b.periode&&b.periode.annee)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
+      qui:String(b.auteur||'').split('@')[0]+' · '+prFmtDate(b.updatedAt), statut:b.statut==='generee'?'Générée':b.statut==='demandee'?'Demandée':'Brouillon',
+      open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null}),
+      dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)'}), prTab:'nouveau', prMsg:{ok:true,text:'Copie du brief « '+b.titre+' » : modifie puis enregistre.'}}),
+      delLabel:st.prDel===b.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDel===b.id?'#c24a44':'#9a9fa6')+';'+(st.prDel===b.id?'font-weight:600':''),
+      canDel:b.auteur===((this._pr&&this._pr.moi)||''),
+      del:async()=>{ if (st.prDel!==b.id) { set({prDel:b.id}); return; } try { await prApi({action:'delete',id:b.id}); this._pr=Object.assign({},this._pr,{list:this._pr.list.filter(x=>x.id!==b.id)}); this.setState({prDel:null, prMsg:null, pr:(pr.id===b.id?Object.assign({},pr,{id:null}):pr)}); } catch(e) { this.setState({prDel:null, prMsg:{ok:false,text:e.message}}); } } }));
+    const prTabs = [['nouveau','Nouveau brief'],['briefs','Briefs enregistrés'+(prRows.length?' ('+prRows.length+')':'')]].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs') prCharge(); },
+      style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(prTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
+    const prMsg = st.prMsg||null;
+    const prInput = 'font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%';
+
     const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const channelsCtl=modalCtl('channelsModal'), channelsStyles=modalStyles(channelsCtl,'width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
@@ -4004,7 +4216,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isPR:st.source==='pr'&&!this.estLimite(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
@@ -4035,6 +4247,27 @@ class Component extends DCLogic {
       tkSubmitStyle:'display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 22px;border-radius:12px;font-size:14.5px;font-weight:600;white-space:nowrap;'+(tkValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
       tkMsgOn:!!tkMsg, tkMsgText:tkMsg?tkMsg.text:'', tkMsgStyle, tkRows, tkNoRows:!tkRows.length&&!tkErrList, tkErr:tkErrList, tkPeutGerer, tkComment:st.tkComment||'', onTkComment:e=>set({tkComment:e.target.value.slice(0,1000)}),
       tkChip:kPuce('#7c63ee'), tkIcon:kIcone('#7c63ee',h('path',{d:'M4 21V4'}),h('path',{d:'M4 5h13l-2 4 2 4H4'})),
+      prTabs, prIsNew:prTab==='nouveau', prIsList:prTab==='briefs', prMsgOn:!!prMsg, prMsgText:prMsg?prMsg.text:'',
+      prMsgStyle:prMsg?'font-size:13px;border-radius:10px;padding:9px 12px;'+(prMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44'):'',
+      prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
+      prLangues, prBelux, prPaysChips, prMarquesChips, prAnnees, prTrims, prCompar, prPeriodeLabel, prPerimetreLabel,
+      prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },
+      prEtapes, prAddEtape:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:'',responsable:'',statut:'a_faire',echeance:''}])}); },
+      prContactNom:pr.contact.nom||'', onPrContactNom:e=>prSet({contact:Object.assign({},pr.contact,{nom:e.target.value.slice(0,80)})}),
+      prContactFonction:pr.contact.fonction||'', onPrContactFonction:e=>prSet({contact:Object.assign({},pr.contact,{fonction:e.target.value.slice(0,80)})}),
+      prContactEmail:pr.contact.email||'', onPrContactEmail:e=>prSet({contact:Object.assign({},pr.contact,{email:e.target.value.slice(0,120)})}),
+      prCommentaire:pr.commentaire, onPrCommentaire:e=>prSet({commentaire:e.target.value.slice(0,2000)}),
+      prPlanRows:prPlan.rows, prPlanTotal:prPlan.total+' diapositives', prSaveFn:prSave,
+      prSaveLabel:st.prBusy?'Enregistrement…':(pr.id?'Mettre à jour le brief':'Enregistrer le brief'),
+      prSaveStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
+      prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
+      prChipA:kPuce('#7c63ee'), prIconA:kIcone('#7c63ee',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M12 16v4M8 20h8'})),
+      prChipB:kPuce('#3b76e8'), prIconB:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
+      prChipC:kPuce('#3fae7a'), prIconC:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),
+      prChipD:kPuce('#d78b35'), prIconD:kIcone('#d78b35',h('path',{d:'M9 6h11M9 12h11M9 18h11'}),h('path',{d:'M4 6h.01M4 12h.01M4 18h.01'})),
+      prChipE:kPuce('#e8544a'), prIconE:kIcone('#e8544a',h('path',{d:'M12 4.5 21.5 19.5H3z'}),h('path',{d:'M12 10v4M12 17h.01'})),
+      prChipF:kPuce('#3b76e8'), prIconF:kIcone('#3b76e8',h('path',{d:'M5 12h14M13 6l6 6-6 6'})),
+      prChipG:kPuce('#7c63ee'), prIconG:kIcone('#7c63ee',h('circle',{cx:12,cy:8,r:4}),h('path',{d:'M4 21a8 8 0 0116 0'})),
       listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
       cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
       cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
@@ -4065,12 +4298,12 @@ class Component extends DCLogic {
       cmpReady:st.apiState==='done', cmpRows,
       rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`,
       sourceName:srcNames[st.source],
-      pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Tableau — leads back-office',gcp:'GCP — leads back-office'}[st.source],
+      pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Tableau — leads back-office',gcp:'GCP — leads back-office',pr:'Présentations clients'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Tableau',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickPR:()=>{ if (!this.estLimite()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
-      srcTB:srcStyle(st.source==='tb'), srcGCP:srcStyle(st.source==='gcp'),
+      srcTB:srcStyle(st.source==='tb'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rate,1)+' %', rateSpark, kpiRateDelta,
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,

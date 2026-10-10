@@ -322,3 +322,14 @@ optionnelle : variable Vercel `TICKETS_WEBHOOK_URL` (webhook Teams, carte
 adaptative). Pour traiter les tickets : lire `tickets/tickets.json` dans le repo
 de données. Tests : `node --test tests/api/tickets.test.js` (API, sans réseau) et
 `tests/e2e/tickets.spec.js` (interface, API simulée).
+
+## Onglet Présentations (2026-10-11)
+
+Icône sous Tableau (profil complet seulement). Questionnaire → **brief** (client,
+langue, périmètre pays/marques, trimestre, comparaisons QoQ/YoY, modules, points
+ouverts, prochaines étapes, contact) + plan de présentation calculé en direct
+(nombre de diapositives). `api/presentations.js` stocke les briefs dans le repo de
+données privé (`presentations/briefs.json`) ; la route n'est pas dans `LIMITED_API`.
+Le générateur PPTX n'existe pas encore (bouton « Générer » désactivé) : il lira les
+briefs. Règles de calcul : `docs/presentations-definitions.md`. Tests :
+`node --test tests/api/presentations.test.js`, `tests/e2e/presentations.spec.js`.
