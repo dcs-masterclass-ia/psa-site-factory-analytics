@@ -209,7 +209,11 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # retraite meme s'il est ancien, plutot que de publier un trou.
         mois_manquants = {m for m in mois_liste
                           if m not in anciens_daily or m not in d["trafficMonth"]}
-        mois_a_retraiter = [m for m in mois_liste if m in recents or m in mois_manquants]
+        # rattrapage progressif des campagnes/UTM et des sessions engagées (ajoutées le 11/10/2026) : 3 mois anciens
+        # de plus par passage et par site, jusqu'à ce que tout l'historique en dispose.
+        rattrapage = {m for m in reversed(mois_liste) if m not in d["utmMonth"]}
+        rattrapage = set(sorted(rattrapage, reverse=True)[:3])
+        mois_a_retraiter = [m for m in mois_liste if m in recents or m in mois_manquants or m in rattrapage]
     conserves = [m for m in mois_liste if m not in mois_a_retraiter]
     journal.append(
         f"mois retraités : {', '.join(mois_a_retraiter)}"

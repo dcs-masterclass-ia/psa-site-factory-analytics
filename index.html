@@ -572,6 +572,136 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
 
+          <sc-if value="{{ isHist }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ hChip }}">{{ hIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Même période, années passées<span class="dc-info" tabindex="0">i<span class="dc-tip">Chaque courbe est une année, mois par mois, d'après l'historique GA4 profond (depuis 2022 pour les sessions, depuis 2024 pour les estimations). Le mois en cours, incomplet, n'est pas tracé.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Mois par mois · site de reprise · le mois en cours n'est pas tracé</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <div style="display:flex;align-items:center;gap:2px">
+              <sc-for list="{{ histChips }}" as="c" hint-placeholder-count="3"><span class="ga-view" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ histHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#6d727a;margin-bottom:6px">
+                <sc-for list="{{ histLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px"><span style="{{ l.dot }}"></span>{{ l.name }}</span></sc-for>
+              </div>
+              <div id="cbHist" style="flex:1;min-height:220px;position:relative">{{ histChart }}</div>
+            </sc-if>
+            <sc-if value="{{ !histHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">L'historique mensuel arrive avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insHist }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insHist }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isUtm }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ uChip }}">{{ uIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Campagnes et UTM<span class="dc-info" tabindex="0">i<span class="dc-tip">Top 20 des couples source / médium × campagne de chaque mois, avec sessions, engagement et estimations déclenchées (événement tradein_request). « Campagne » regroupe par nom de campagne extrait du balisage (CN~…).</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Site de reprise · top 20 par mois · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <div style="display:flex;align-items:center;gap:2px;margin-right:6px">
+              <sc-for list="{{ utmGroupChips }}" as="c" hint-placeholder-count="3"><span class="ga-view" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:2px">
+              <sc-for list="{{ utmSortChips }}" as="c" hint-placeholder-count="3"><span class="ga-view" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ utmHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,2.4fr) 90px 90px minmax(0,1.3fr) 90px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
+                <span>Source / campagne</span><span style="text-align:right">Sessions</span><span style="text-align:right">Engagement</span><span>Estimations</span><span style="text-align:right">Conversion</span>
+              </div>
+              <sc-for list="{{ utmRows }}" as="r" hint-placeholder-count="8">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,2.4fr) 90px 90px minmax(0,1.3fr) 90px;align-items:center;gap:11px;padding:6px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.title }}">{{ r.name }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.sessions }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.eng }}</span>
+                  <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:48px;text-align:right">{{ r.est }}</span></div>
+                  <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.conv }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !utmHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Les campagnes et UTM arrivent avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insUtm }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insUtm }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isQuality }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tqChip }}">{{ tqIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Qualité du trafic par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des sessions « engagées » (GA4 : plus de 10 secondes, une conversion ou au moins 2 pages vues) par canal d'acquisition, comparée à la moyenne du site et à la période de comparaison. Un canal à gros volume mais faible engagement attire du trafic peu qualifié.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Sessions engagées ÷ sessions · site de reprise · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ tqHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 100px minmax(0,1.7fr) 100px 100px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
+                <span>Canal</span><span style="text-align:right">Sessions</span><span>Taux d'engagement</span><span style="text-align:right">vs comparaison</span><span style="text-align:right">Conversion</span>
+              </div>
+              <sc-for list="{{ tqRows }}" as="r" hint-placeholder-count="6">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) 100px minmax(0,1.7fr) 100px 100px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <span style="font-size:15px;color:#2f2f33;text-align:right">{{ r.sessions }}</span>
+                  <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:52px;text-align:right">{{ r.eng }}</span></div>
+                  <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
+                  <span style="font-size:15px;color:#2f2f33;text-align:right">{{ r.conv }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !tqHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Les sessions engagées par canal arrivent avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insQuality }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insQuality }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isLeaks }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ lChip }}">{{ lIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Fuites du tunnel par segment<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque appareil ou canal : part des visiteurs qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Passage d'une étape à la suivante · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <div style="display:flex;align-items:center;gap:2px">
+              <sc-for list="{{ leakChips }}" as="c" hint-placeholder-count="3"><span class="ga-view" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for>
+              </div>
+            </div>
+            <sc-if value="{{ leakHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:8px;font-size:13.5px;color:#9a9fa6">
+                <span>Segment</span><span style="text-align:right">Accueil</span><span style="text-align:center">→ Version</span><span style="text-align:center">→ Km</span><span style="text-align:center">→ Coord.</span><span style="text-align:center">→ PDV</span><span style="text-align:center">→ Estim.</span><span style="text-align:right">Conv.</span>
+              </div>
+              <sc-for list="{{ leakRows }}" as="r" hint-placeholder-count="4">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:6px 8px;border-top:1px solid #f2f2f4">
+                  <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.home }}</span>
+                  <span style="{{ r.s1 }}">{{ r.c1 }}</span><span style="{{ r.s2 }}">{{ r.c2 }}</span><span style="{{ r.s3 }}">{{ r.c3 }}</span><span style="{{ r.s4 }}">{{ r.c4 }}</span><span style="{{ r.s5 }}">{{ r.c5 }}</span>
+                  <span style="font-size:14.5px;font-weight:600;color:#121214;text-align:right">{{ r.conv }}</span>
+                </div>
+              </sc-for>
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:8px;border-top:1.5px solid #e8e8ec;font-size:13.5px;color:#6d727a">
+                <span style="font-weight:600">Moyenne du site</span><span></span><span style="text-align:center">{{ leakAvg1 }}</span><span style="text-align:center">{{ leakAvg2 }}</span><span style="text-align:center">{{ leakAvg3 }}</span><span style="text-align:center">{{ leakAvg4 }}</span><span style="text-align:center">{{ leakAvg5 }}</span><span></span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !leakHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">L'entonnoir par appareil et par canal arrive avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insLeaks }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insLeaks }}</div></sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ isSources }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
@@ -2027,7 +2157,7 @@ class Component extends DCLogic {
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   /* hauteur des graphiques de « Analyses détaillées » : le conteneur remplit la carte (même hauteur pour tous les onglets), le viewBox suit son rapport largeur/hauteur */
   measureBoxes() {
-    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib' };
+    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib', hist:'cbHist' };
     const prev = this._boxes || {};
     let changed = false; const next = Object.assign({}, prev);
     for (const [k, id] of Object.entries(ids)) {
@@ -2166,7 +2296,7 @@ class Component extends DCLogic {
   _aggregateImpl(debutIso, finIso) {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
-                  convCanalDevice:new Map(), browser:new Map(), newVsReturning:new Map(),
+                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
@@ -2246,11 +2376,43 @@ class Component extends DCLogic {
         if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
           for (const row of (d.convCanalDevice[mois]||[])) {
             const k = row.canal+"|"+row.device;
-            const cur = out.convCanalDevice.get(k) || { canal:row.canal, device:row.device, sessions:0, conversions:0 };
+            const cur = out.convCanalDevice.get(k) || { canal:row.canal, device:row.device, sessions:0, conversions:0, engagees:0, sessE:0 };
             cur.sessions += row.sessions; cur.conversions += row.conversions;
+            if (row.engagees != null) { cur.engagees += row.engagees; cur.sessE += row.sessions; }   // mois sans sessions engagées collectées : exclus du taux d'engagement
             out.convCanalDevice.set(k, cur);
           }
         }
+      }
+      // campagnes / UTM (mensuel, top 20 par mois) : mois qui chevauchent la période
+      for (const mois of Object.keys(d.utmMonth || {})) {
+        const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
+        if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
+          for (const row of d.utmMonth[mois]) {
+            const k = row.sm+'|'+row.camp;
+            const cur = out.utm.get(k) || { sm:row.sm, camp:row.camp, sessions:0, engagees:0, conv:0 };
+            cur.sessions += row.sessions; cur.engagees += row.engagees; cur.conv += row.conv;
+            out.utm.set(k, cur);
+          }
+        }
+      }
+      // entonnoir par appareil / canal (mensuel)
+      if (d.funnelSeg) for (const dim of ['device','canal']) {
+        for (const mois of Object.keys(d.funnelSeg[dim] || {})) {
+          const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
+          if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
+            for (const [seg, arr] of Object.entries(d.funnelSeg[dim][mois])) {
+              const cur = out.funnelSeg[dim].get(seg) || [0,0,0,0,0,0];
+              arr.forEach((v,i)=>{ cur[i]+=v; });
+              out.funnelSeg[dim].set(seg, cur);
+            }
+          }
+        }
+      }
+      // historique mensuel profond (années passées) : indépendant de la période
+      for (const [mois, arr] of Object.entries(d.histMonth || {})) {
+        const cur = out.histMonth.get(mois) || [0,0,0,0];
+        arr.forEach((v,i)=>{ cur[i]+=v; });
+        out.histMonth.set(mois, cur);
       }
       for (const mois of Object.keys(d.audienceMonth || {})) {
         const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
@@ -2885,12 +3047,101 @@ class Component extends DCLogic {
       if (tot>=1){ const pk=sess.indexOf(Math.max(...sess)), lw=sess.indexOf(Math.min(...sess));
         const nomsJ=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
         insAudience=`Pic le ${nomsJ[pk]} (${signedPct((sess[pk]/tot-1)*100)} vs la moyenne), creux le ${nomsJ[lw]} (${signedPct((sess[lw]/tot-1)*100)}) — sessions du site de reprise.`; } }
+    // ---- Qualité du trafic : sessions engagées / sessions par canal (convCanalDevice.engagees)
+    const tqAgg=a=>{ const m=new Map(); if (!a) return m; for (const r of a.convCanalDevice.values()) { const c=m.get(r.canal)||{s:0,e:0,c:0,se:0}; c.s+=r.sessions; c.e+=(r.engagees||0); c.se+=(r.sessE||0); c.c+=r.conversions; m.set(r.canal,c); } return m; };
+    const qa=tqAgg(agg), qc=cmp?tqAgg(cmp):null;
+    const qTotAll=[...qa.values()].reduce((x,r)=>x+r.s,0), qTotS=[...qa.values()].reduce((x,r)=>x+r.se,0), qTotE=[...qa.values()].reduce((x,r)=>x+r.e,0);
+    const tqHas=qTotS>0&&qTotE>0, qAvg=tqHas?qTotE/qTotS*100:0;
+    const tqRows=[...qa.entries()].filter(([,r])=>r.se>0).sort((x,y)=>y[1].s-x[1].s).slice(0,8).map(([name,r])=>{
+      const eng=r.e/r.se*100, pr=qc&&qc.get(name)&&qc.get(name).se>=100&&qc.get(name).e>0?qc.get(name).e/qc.get(name).se*100:null, dpt=pr==null?null:eng-pr;
+      const col=eng>=qAvg+5?'#3fae7a':eng<=qAvg-5?'#e8544a':'#b6a5f8';
+      return { name, sessions:this.fmt(r.s), eng:dec(eng,1)+' %', bar:`width:${Math.max(2,eng).toFixed(1)}%;height:100%;border-radius:4px;background:${col}`,
+        delta:dpt==null?'—':(dpt>=0?'+':'−')+dec(Math.abs(dpt),1)+' pt', deltaStyle:`font-size:14px;font-weight:600;text-align:right;color:${dpt==null?'#9a9fa6':dpt>0.5?'#1f9254':dpt<-0.5?'#a33c39':'#9a9fa6'}`,
+        conv:dec(r.c/r.s*100,1)+' %' };
+    });
+    let insQuality='';
+    if (tqHas) { const gros=[...qa.entries()].filter(([,r])=>r.s/qTotAll>=0.05&&r.se>0&&r.e>0).map(([n,r])=>({n,sh:r.s/qTotAll*100,e:r.e/r.se*100})).sort((x,y)=>x.e-y.e);
+      insQuality=gros.length&&gros[0].e<qAvg-5?`${gros[0].n} pèse ${dec(gros[0].sh,0)} % des sessions mais n'engage que ${dec(gros[0].e,1)} % (moyenne du site : ${dec(qAvg,1)} %).`:`Engagement moyen du site : ${dec(qAvg,1)} % ; aucun canal important ne s'écarte de plus de 5 points.`; }
+    const tqIcon=kIcone('#3fae7a',h('path',{d:'M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z'}),h('circle',{cx:12,cy:11,r:2.5})), tqChip=kPuce('#3fae7a');
+
+    // ---- Campagnes et UTM (top 20 par mois, regroupement par source/médium ou par campagne)
+    const utmGroup=st.utmGroup||'sm', utmSort=st.utmSort||'sessions';
+    const campName=c=>{ const m=/CN~([^_]+)/.exec(c||''); return m?m[1].replace(/\+/g,' ').trim():(c&&c!=='(not set)'?c.slice(0,50):'(sans campagne)'); };
+    const um=new Map();
+    for (const r of agg.utm.values()) { const key=utmGroup==='sm'?r.sm:(r.sm.split(' / ')[0]+' · '+campName(r.camp)); const cur=um.get(key)||{name:key,title:r.camp,s:0,e:0,c:0}; cur.s+=r.sessions; cur.e+=r.engagees; cur.c+=r.conv; um.set(key,cur); }
+    const utmArr=[...um.values()].filter(r=>r.s>0);
+    const utmCmp={sessions:(x,y)=>y.s-x.s, est:(x,y)=>y.c-x.c, conv:(x,y)=>(y.s>=200?y.c/y.s:-1)-(x.s>=200?x.c/x.s:-1)};
+    utmArr.sort(utmCmp[utmSort]||utmCmp.sessions);
+    const utmHas=utmArr.length>0, utmMaxC=Math.max(1,...utmArr.map(r=>r.c));
+    const utmRows=utmArr.slice(0,9).map(r=>({ name:r.name, title:r.title||r.name, sessions:this.fmt(r.s), eng:dec(r.e/r.s*100,0)+' %', est:this.fmt(r.c), conv:dec(r.c/r.s*100,1)+' %', bar:`width:${(r.c/utmMaxC*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8` }));
+    const mkChips=(opts,cur,key)=>opts.map(([v,l])=>({label:l,pick:()=>set({[key]:v}),style:`display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:9px;font-size:13px;cursor:pointer;white-space:nowrap;${cur===v?'background:#f1eefe;color:#5b43d6;font-weight:600':'color:#6d727a'}`}));
+    const utmGroupChips=mkChips([['sm','Source / médium'],['camp','Campagne']],utmGroup,'utmGroup'), utmSortChips=mkChips([['sessions','Sessions'],['est','Estimations'],['conv','Conversion']],utmSort,'utmSort');
+    let insUtm='';
+    if (utmHas) { const totS=utmArr.reduce((x,r)=>x+r.s,0); const best=utmArr.filter(r=>r.s>=300).sort((x,y)=>y.c/y.s-x.c/x.s)[0];
+      const sansC=[...agg.utm.values()].filter(r=>!r.camp||r.camp==='(not set)').reduce((x,r)=>x+r.sessions,0), totAll=[...agg.utm.values()].reduce((x,r)=>x+r.sessions,0);
+      insUtm=(best?`Meilleure conversion (plus de 300 sessions) : ${best.name} (${dec(best.c/best.s*100,1)} %). `:'')+(totAll&&sansC/totAll>0.1?`${dec(sansC/totAll*100,0)} % des sessions n'ont pas de campagne renseignée : balisage UTM à compléter.`:''); }
+    const uIcon=kIcone('#d78b35',h('path',{d:'M4 4h16v6H4z'}),h('path',{d:'M4 14h10v6H4z'}),h('path',{d:'M18 14l2 3-2 3'})), uChip=kPuce('#d78b35');
+
+    // ---- Fuites du tunnel par appareil / canal
+    const leakDim=st.leakDim||'device';
+    const DEV_FR={desktop:'Desktop',mobile:'Mobile',tablet:'Tablette','smart tv':'Smart TV'};
+    const segMap=agg.funnelSeg[leakDim];
+    const segTot=[0,0,0,0,0,0]; for (const v of segMap.values()) v.forEach((x,i)=>{ segTot[i]+=x; });
+    const trans=v=>[1,2,3,4,5].map(k=>v[k-1]>0?v[k]/v[k-1]*100:null);
+    const leakAvg=trans(segTot), leakHas=segTot[0]>=100;
+    const TR_NOMS=['Version','Kilométrage','Coordonnées','Point de vente','Estimation'];
+    const leakSegs=[...segMap.entries()].filter(([,v])=>v[0]>=100).sort((x,y)=>y[1][0]-x[1][0]).slice(0,8);
+    const cellS=(v,avg)=>{ const d=v==null||avg==null?0:v-avg; const bg=d>=2?'#e8f6ee':d<=-2?'#fdecec':'#f6f6f8', col=d>=2?'#1f7a4d':d<=-2?'#a33c39':'#2f2f33'; return `padding:9px 4px;border-radius:10px;text-align:center;font-size:14px;font-weight:600;background:${bg};color:${col}`; };
+    const leakRows=leakSegs.map(([name,v])=>{ const t=trans(v); const o={name:leakDim==='device'?(DEV_FR[name]||name):name, home:this.fmt(v[0]), conv:dec(v[5]/v[0]*100,1)+' %'}; t.forEach((x,i)=>{ o['c'+(i+1)]=x==null?'—':dec(x,1)+' %'; o['s'+(i+1)]=cellS(x,leakAvg[i]); }); return o; });
+    const leakAvgO={}; leakAvg.forEach((x,i)=>{ leakAvgO['leakAvg'+(i+1)]=x==null?'—':dec(x,1)+' %'; });
+    let insLeaks='';
+    if (leakHas) { let worst=null; leakSegs.filter(([,v])=>v[0]>=1000).forEach(([name,v])=>{ trans(v).forEach((x,i)=>{ if (x!=null&&leakAvg[i]!=null){ const d=x-leakAvg[i]; if (!worst||d<worst.d) worst={d,name:leakDim==='device'?(DEV_FR[name]||name):name,i,x}; } }); });
+      insLeaks=worst&&worst.d<=-2?`Plus gros écart à la moyenne : ${worst.name} à l'étape « ${TR_NOMS[worst.i]} » (${dec(worst.x,1)} % contre ${dec(leakAvg[worst.i],1)} %).`:'Aucun segment important ne s\'écarte de plus de 2 points de la moyenne du site sur une étape.'; }
+    const leakChips=mkChips([['device','Appareil'],['canal','Canal']],leakDim,'leakDim');
+    const lIcon=kIcone('#e8544a',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), lChip=kPuce('#e8544a');
+
+    // ---- Même période, années passées (histMonth : sessions reprise / accueil / estimations par mois depuis 2022)
+    const histMetric=st.histMetric||'est';
+    const HM={est:{l:'Estimations',g:a=>a[3]>0?a[3]:null},sess:{l:'Sessions',g:a=>a[0]>0?a[0]:null},home:{l:'Visiteurs accueil',g:a=>a[2]>0?a[2]:null},conv:{l:'Conversion',g:a=>a[2]>=100&&a[3]>0?a[3]/a[2]*100:null}};
+    const moisCourant=todayIso.slice(0,7), anCourant=+todayIso.slice(0,4);
+    const hySet=new Set([...agg.histMonth.keys()].map(k=>+k.slice(0,4)));
+    const histYears=[...hySet].sort().filter(y=>y>=anCourant-3);
+    const histVals={}; histYears.forEach(y=>{ histVals[y]=Array.from({length:12},(_,m)=>{ const k=y+'-'+String(m+1).padStart(2,'0'); if (k>=moisCourant) return null; const a=agg.histMonth.get(k); return a?HM[histMetric].g(a):null; }); });
+    const histYearsOk=histYears.filter(y=>histVals[y].some(v=>v!=null));
+    const histHas=histYearsOk.length>=1&&histYearsOk.some(y=>histVals[y].filter(v=>v!=null).length>=2);
+    const HCOL=['#d3d5db','#b6a5f8','#8d7bef','#7c63ee'];
+    const yrCol=y=>y===anCourant?'#5b43d6':HCOL[Math.max(0,Math.min(3,histYearsOk.length-1-histYearsOk.indexOf(y)))>2?1:Math.max(0,histYearsOk.length-1-histYearsOk.indexOf(y))];
+    const histLegend=histYearsOk.map(y=>({name:String(y),dot:`width:18px;height:${y===anCourant?4:2.5}px;border-radius:2px;background:${y===anCourant?'#5b43d6':histYearsOk.indexOf(y)===histYearsOk.length-2?'#9a86f2':'#c7c9d0'}`}));
+    let histChart=null;
+    if (histHas) {
+      const HW=900,HH=boxH('hist',900,300),HL=62,HR=16,HT=16,HB=34,hw=HW-HL-HR,hhh=HH-HT-HB;
+      const allV=histYearsOk.flatMap(y=>histVals[y]).filter(v=>v!=null), hMax=Math.max(...allV)*1.08||1;
+      const hx=i=>HL+hw*i/11, hy=v=>HT+hhh-(v/hMax)*hhh, hk=[];
+      [0,1,2,3].forEach(i=>{ const v=hMax*i/3; hk.push(h('line',{key:'g'+i,x1:HL,y1:hy(v),x2:HL+hw,y2:hy(v),stroke:'#f0f0f2',strokeWidth:1})); hk.push(h('text',{key:'t'+i,x:HL-10,y:hy(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},histMetric==='conv'?dec(v,1)+' %':this.fmt(Math.round(v)))); });
+      const MOIS3=['jan.','fév.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+      MOIS3.forEach((m,i)=>hk.push(h('text',{key:'m'+i,x:hx(i),y:HH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},m)));
+      histYearsOk.forEach(y=>{ const pts=histVals[y].map((v,i)=>v==null?null:[hx(i),hy(v),v,i]).filter(Boolean); if (pts.length<1) return;
+        const cur=y===anCourant, col=cur?'#5b43d6':histYearsOk.indexOf(y)===histYearsOk.length-2?'#9a86f2':'#c7c9d0';
+        if (pts.length>1) hk.push(h('path',{key:'p'+y,d:pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' '),fill:'none',stroke:col,strokeWidth:cur?3:2,strokeLinecap:'round',strokeLinejoin:'round'}));
+        pts.forEach(p=>hk.push(h('circle',{key:'c'+y+p[3],cx:p[0],cy:p[1],r:cur?3.6:2.6,fill:col},h('title',null,`${MOIS3[p[3]]} ${y} : ${histMetric==='conv'?dec(p[2],1)+' %':this.fmt(p[2])}`)))); });
+      histChart=h('svg',{viewBox:`0 0 ${HW} ${HH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},hk);
+    }
+    let insHist='';
+    if (histHas) { const dm=(()=>{ const d0=new Date(todayIso+'T00:00:00Z'); d0.setUTCMonth(d0.getUTCMonth()-1); return d0; })(); const mi=dm.getUTCMonth(), an=dm.getUTCFullYear();
+      const MOISF=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      const cur=(histVals[an]||[])[mi]; const prev=histYearsOk.filter(y=>y<an&&histVals[y][mi]!=null).map(y=>({y,v:histVals[y][mi]}));
+      if (cur!=null&&prev.length) { const all=[{y:an,v:cur},...prev].sort((x,y)=>y.v-x.v); const rank=all.findIndex(x=>x.y===an)+1, last=prev[prev.length-1];
+        const fm=v=>histMetric==='conv'?dec(v,1)+' %':this.fmt(v);
+        insHist=`${MOISF[mi].charAt(0).toUpperCase()+MOISF[mi].slice(1)} ${an} : ${fm(cur)} — ${rank===1?'le plus haut':rank===all.length?'le plus bas':rank+'ᵉ rang'} sur ${all.length} années ; ${last.y} : ${fm(last.v)}`+(histMetric!=='conv'&&last.v?` (${signedPct((cur/last.v-1)*100)})`:'')+'.'; } }
+    const histChips=mkChips([['est','Estimations'],['sess','Sessions'],['home','Accueil'],['conv','Conversion']],histMetric,'histMetric');
+    const hIcon=kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 14l3-4 3 3 5-7'})), hChip=kPuce('#7c63ee');
+
     // ---- navigation des analyses détaillées : 4 questions (thèmes) -> vues, du constat vers l'explication
-    const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend']],
-                     ['acquisition','Acquisition',"D'où vient le trafic ?",['sources']],
-                     ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','device','v2']],
+    const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist']],
+                     ['acquisition','Acquisition',"D'où vient le trafic ?",['sources','utm','quality']],
+                     ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
                      ['audience','Audience','Qui sont les visiteurs ?',['audience']]];
-    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',sources:'Sources',conv:'Par jour',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
     const gaOk=v=>!(this.estLimite()&&v==='v2');
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
@@ -4630,7 +4881,9 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isContrib:gaCur==='contrib', isSources:gaCur==='sources', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', gaThemes, gaViews, gaThemeQuestion,
+      isContrib:gaCur==='contrib', isHist:gaCur==='hist', isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
+      tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
+      histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isSources:gaCur==='sources', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', gaThemes, gaViews, gaThemeQuestion,
       contribHas, contribChart, contribRange, contribEmpty, contribInsight, insTrend, insConv, insDevice, insAudience,
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };
