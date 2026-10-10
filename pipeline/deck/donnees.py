@@ -28,6 +28,11 @@ NOMS_MARQUES = {"PEUGEOT": "Peugeot", "CITROEN": "Citroën", "DS": "DS", "OPEL":
 GROUPES_MARQUES = {"XP": ["PEUGEOT", "CITROEN", "DS", "OPEL"],
                    "XF": ["ALFA ROMEO", "ABARTH", "FIAT", "FIAT PRO", "JEEP", "LANCIA", "LEAPMOTOR"]}
 
+# Mots reconnus dans l'URL du site de la marque (source « referral ») ; la source UTM « Main-Website » marque les boutons du site de la marque.
+DOMAINES_MARQUE = {"PEUGEOT": ["peugeot"], "CITROEN": ["citroen"], "DS": ["dsautomobiles", "ds-automobiles"], "OPEL": ["opel"], "ALFA ROMEO": ["alfaromeo", "alfa-romeo"],
+                   "ABARTH": ["abarth"], "FIAT": ["fiat"], "FIAT PRO": ["fiatprofessional", "fiat-professional"], "JEEP": ["jeep"], "LANCIA": ["lancia"],
+                   "LEAPMOTOR": ["leapmotor"], "SPOTICAR": ["spoticar"], "STELLANTIS &YOU": ["stellantisandyou", "stellantis"]}
+
 # Projets d'achat (back-office) -> catégories de la présentation
 PROJETS = ["VN", "SANS", "VO"]
 PROJET_BO = {"VN": "VN", "No purchase project": "SANS", "VO": "VO"}
@@ -227,6 +232,26 @@ class Donnees:
                 c = d[(marque, r["date"])][r["canal_principal"] or "Unassigned"]
                 c[0] += int(r["sessions"]); c[1] += int(r["sessions_engagees"])
         self._trafic = d
+
+    def trafic_site_marque(self, periode, marque):
+        """(sessions venant du site de la marque, sessions totales) sur la période : source UTM « Main-Website » ou referral depuis l'URL de la marque."""
+        if getattr(self, "_site_marque", None) is None:
+            self._site_marque = defaultdict(lambda: [0, 0])
+            for nom, m, _ in self.sites:
+                mots = DOMAINES_MARQUE.get(m, [m.lower().replace(" ", "")])
+                for r in _lignes(self.hist / "ga4_sources" / f"{slug(nom)}.csv.gz"):
+                    n = int(r["sessions"])
+                    v = self._site_marque[(m, r["date"])]
+                    v[1] += n
+                    src = (r.get("source") or "").lower()
+                    if src in ("main-website", "website") or ((r.get("canal_principal") or "") == "Referral" and any(k in src for k in mots)):
+                        v[0] += n
+        deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
+        a = b = 0
+        for (m, jour), (x, y) in self._site_marque.items():
+            if m == marque and deb <= jour <= fin:
+                a += x; b += y
+        return a, b
 
     def canaux(self, periode, marque):
         """{canal: sessions} sur la période."""

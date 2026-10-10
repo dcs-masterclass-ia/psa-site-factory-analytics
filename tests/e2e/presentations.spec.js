@@ -93,8 +93,8 @@ test("modèles : modèle de base appliqué, enregistrement d'un modèle, onglet 
   });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Présentations"]').click();
-  await page.getByText("Synthèse mensuelle", { exact: true }).first().click();       // modèle de base
-  await expect(page.getByText(/Modèle « Synthèse mensuelle » appliqué/)).toBeVisible();
+  await page.getByText("Reporting mensuel — pays", { exact: true }).first().click();       // modèle de base
+  await expect(page.getByText(/Modèle « Reporting mensuel — pays » appliqué/)).toBeVisible();
   await expect(page.getByText("vs mois précédent")).toBeVisible();                  // périodicité du modèle
   await page.getByPlaceholder("Nom du modèle").fill("Mon mensuel BELUX");
   await page.getByText("Enregistrer", { exact: true }).click();

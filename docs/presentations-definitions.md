@@ -64,3 +64,10 @@ comparaisons, modules et contact. Il n'enregistre ni la période (recalculée su
 utilisation) ni les points ouverts et prochaines étapes (propres à chaque édition). Trois modèles de base sont fournis
 (BELUX trimestriel, synthèse mensuelle, bilan annuel) ; les modèles de l'équipe sont stockés dans le repo de données privé
 (`presentations/templates.json`).
+
+## Ajouts du reporting mensuel (2026-10-11)
+
+- **CVR (tuile de la diapo trafic)** = hot leads ÷ utilisateurs distincts trade-in de la période (GA4), variation en points vs période précédente et vs N-1 ; pas calculé sous 100 utilisateurs.
+- **Trafic venant du site de la marque** = sessions dont la source UTM est « Main-Website » (boutons du site de la marque) ou dont le canal est « Referral » depuis l'URL de la marque (`DOMAINES_MARQUE` dans `pipeline/deck/donnees.py`), ÷ sessions totales. Pas calculé sous 100 sessions.
+- **Groupes de marques** : XP (Peugeot, Citroën, DS, Opel), XF (Alfa Romeo, Abarth, Fiat, Fiat Pro, Jeep, Lancia, Leapmotor), Spoticar, autres ; la vue « hors Spoticar » recalcule les parts sans Spoticar.
+- **Blocs fixes** (modules `nps`, `utm`) : diapositives de texte réutilisables placées en annexes.

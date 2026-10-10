@@ -27,6 +27,8 @@ LIBELLES = {
         "ga4_indispo": "Mesures GA4 (utilisateurs, In Journey, hot leads) indisponibles pour cette édition.",
         "acq_indispo": "Sources d'acquisition indisponibles sur cette période (historique collecté depuis 2023).",
         "base_faible": "n.s. = non significatif (moins de 100 dans la période de référence).",
+        "cvr_global": "Taux de conversion (hot leads ÷ utilisateurs)", "site_marque": "Trafic venant du site de la marque", "groupes": "Leads par groupe de marques",
+        "hors_spoticar": "Hors Spoticar", "part_total": "Part du total", "annexes": "Annexes", "groupe": "Groupe",
     },
     "en": {
         "confidentiel": "Strictly confidential", "source_bo": "Source: autobiz back-office", "source_ga4": "Source: GA4",
@@ -46,6 +48,8 @@ LIBELLES = {
         "ga4_indispo": "GA4 measures (users, In Journey, hot leads) are unavailable for this edition.",
         "acq_indispo": "Acquisition sources unavailable for this period (history collected since 2023).",
         "base_faible": "n.s. = not significant (fewer than 100 in the reference period).",
+        "cvr_global": "Conversion rate (hot leads ÷ users)", "site_marque": "Traffic from the brand website", "groupes": "Leads by brand group",
+        "hors_spoticar": "Excluding Spoticar", "part_total": "Share of total", "annexes": "Appendix", "groupe": "Group",
     },
 }
 

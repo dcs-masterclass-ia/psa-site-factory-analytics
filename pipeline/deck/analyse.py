@@ -693,6 +693,12 @@ def s_trafic(ctx, m):
         rg, _ = _rang(sess_h)
         a.append(F("Sessions, même période : " + " → ".join(f"{aa} : {t.nb(v)}" for aa, v in sess_h[-4:]) + (" (plus bas de la série)." if rg == "bas" else " (plus haut de la série)." if rg == "haut" else "."),
                    "Sessions, same period: " + " → ".join(f"{aa}: {t.nb(v)}" for aa, v in sess_h[-4:]) + (" (lowest of the series)." if rg == "bas" else " (highest of the series)." if rg == "haut" else ".")))
+    a_site, b_site = d.trafic_site_marque(per, m)
+    if b_site >= SEUIL_BASE:
+        part = a_site / b_site * 100
+        a.append(F(f"{t.pct(part, 0)} du trafic vient du site de la marque (UTM Main-Website ou referral).", f"{t.pct(part, 0)} of traffic comes from the brand website (UTM Main-Website or referral)."))
+        if part < 10:
+            r.append(F("Le site de la marque envoie peu de trafic : renforcer la visibilité du trade-in (menu, showroom, page offre) et les UTM des boutons.", "The brand website sends little traffic: strengthen trade-in visibility (menu, showroom, offer page) and CTA UTMs."))
     un = can.get("Unassigned", 0)
     if un / S * 100 >= 10:
         r.append(F(f"Corriger le balisage UTM : {t.pct(un / S * 100, 0)} des sessions sont « Unassigned ».", f"Fix UTM tagging: {t.pct(un / S * 100, 0)} of sessions are “Unassigned”."))
@@ -767,4 +773,33 @@ def s_sources(ctx, m):
         r.append(F("Fiabiliser le suivi des sources (balisage des campagnes) pour une analyse complète.", "Make source tracking reliable (campaign tagging) for a complete analysis."))
     if not r:
         r.append(F("Mesurer la qualité des leads par source (taux New cars) avant d'arbitrer les budgets.", "Measure lead quality by source (New cars rate) before arbitrating budgets."))
+    return _fin((a, r))
+
+
+def s_groupes(ctx, grp):
+    d, t = ctx.d, ctx.t
+    F = ctx.t.l == "fr" and (lambda x, y: x) or (lambda x, y: y)
+    per = ctx.per
+    L = lambda p, ms: sum(d.leads_total(p, m) for m in ms)
+    tot = L(per, d.marques)
+    a, r = [], []
+    if tot < SEUIL_BASE:
+        return [], []
+    if "Spoticar" in grp:
+        sp = L(per, grp["Spoticar"])
+        hs = tot - sp
+        a.append(F(f"Spoticar pèse {t.pct(sp / tot * 100, 0)} des leads ; hors Spoticar : " + ", ".join(f"{k} {t.pct(L(per, ms) / hs * 100, 0)}" for k, ms in grp.items() if k != "Spoticar") + ".",
+                   f"Spoticar is {t.pct(sp / tot * 100, 0)} of leads; excluding Spoticar: " + ", ".join(f"{k} {t.pct(L(per, ms) / hs * 100, 0)}" for k, ms in grp.items() if k != "Spoticar") + ".") if hs else "")
+    if ctx.refs:
+        p = ctx.refs[0][1]
+        ev = [(k, _var(L(per, ms), L(p, ms))) for k, ms in grp.items()]
+        ev = [(k, v) for k, v in ev if v is not None]
+        if ev:
+            best, worst = max(ev, key=lambda e: e[1]), min(ev, key=lambda e: e[1])
+            a.append(F(f"vs {ctx.et(p)} : {best[0]} {t.pct(best[1], 0, signe=True)} (meilleure évolution), {worst[0]} {t.pct(worst[1], 0, signe=True)} (plus faible).",
+                       f"vs {ctx.et(p)}: {best[0]} {t.pct(best[1], 0, signe=True)} (best), {worst[0]} {t.pct(worst[1], 0, signe=True)} (weakest)."))
+            if worst[1] <= -SEUIL_ECART:
+                r.append(F(f"Concentrer l'analyse sur le groupe {worst[0]}, qui tire la performance vers le bas.", f"Focus the analysis on the {worst[0]} group, which drags performance down."))
+    if not r:
+        r.append(F("Suivre la répartition entre groupes : une dépendance forte à un seul groupe fragilise le volume global.", "Track the split between groups: heavy dependence on a single group makes total volume fragile."))
     return _fin((a, r))

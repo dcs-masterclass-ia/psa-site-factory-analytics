@@ -198,6 +198,70 @@ def synthese(ctx):
     return s
 
 
+def groupes_de_marques(ctx):
+    """{nom du groupe: [marques]} limité aux marques du périmètre : XP, XF, Spoticar, autres."""
+    ms = ctx.d.marques
+    g_ = {"XP": [m for m in GROUPES_MARQUES["XP"] if m in ms], "XF": [m for m in GROUPES_MARQUES["XF"] if m in ms], "Spoticar": [m for m in ms if m == "SPOTICAR"]}
+    g_["Autres" if ctx.langue == "fr" else "Other"] = [m for m in ms if m not in sum(g_.values(), [])]
+    return {k: v for k, v in g_.items() if v}
+
+
+def vue_groupes(ctx):
+    """Leads par groupe de marques (XP / XF / Spoticar / autres), avec la vue « hors Spoticar »."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    grp = groupes_de_marques(ctx)
+    if len(grp) < 2:
+        return None
+    periodes = ctx.periodes
+    L = lambda p, ms: sum(d.leads_total(p, m) for m in ms)
+    s = nouvelle(ctx, f"{t['groupes']} — {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx))
+    couleurs = ["1F3F7A", "F58A1F", "7FB7B0", "9AA3B2"]
+    series = [(k, [L(p, ms) for p in periodes], couleurs[i % 4]) for i, (k, ms) in enumerate(grp.items())]
+    g.colonnes(s, X0, Y0, 5.6, 4.2, [ctx.et(p) for p in periodes], series, empile=True, taille=10, fmt=t.nb)
+    ent = [t["groupe"], f"{t['leads']} {ctx.et(per)}", t["part_total"], f"{t['part_total']} ({t['hors_spoticar'].lower()})"] + [libelle_ref(ctx, c) for c, _ in ctx.refs]
+    tot = L(per, d.marques)
+    tot_hs = sum(L(per, ms) for k, ms in grp.items() if k != "Spoticar")
+    lignes = [ent]
+    for k, ms in grp.items():
+        v = L(per, ms)
+        row = [k, t.nb(v), t.pct(v / tot * 100, 0) if tot else "–", "–" if k == "Spoticar" or not tot_hs else t.pct(v / tot_hs * 100, 0)]
+        row += [t.evol(v, L(p, ms))[0] for _, p in ctx.refs]
+        lignes.append(row)
+    lignes.append([t["total"], t.nb(tot), "100 %", "–"] + [t.evol(tot, L(p, d.marques))[0] for _, p in ctx.refs])
+    if "Spoticar" in grp:
+        lignes.append([t["hors_spoticar"], t.nb(tot_hs), t.pct(tot_hs / tot * 100, 0) if tot else "–", "100 %"] + [t.evol(tot_hs, sum(L(p, ms) for k, ms in grp.items() if k != "Spoticar"))[0] for _, p in ctx.refs])
+    nc = len(ent)
+    g.tableau(s, 6.3, Y0 + 0.3, 6.6, lignes, largeurs=[1.5] + [(6.6 - 1.5) / (nc - 1)] * (nc - 1), taille=10, hauteur_ligne=0.4, gras_derniere=True)
+    bandeau(ctx, s, an.s_groupes(ctx, grp))
+    return s
+
+
+def blocs_fixes(ctx, nom):
+    """Diapositives fixes réutilisables : NPS autobiz (2), modèle d'URL avec balisage UTM (1)."""
+    fr = ctx.langue == "fr"
+    if nom == "nps":
+        s = nouvelle(ctx, "NPS autobiz — pourquoi ?" if fr else "NPS at autobiz — why?", None)
+        g.texte(s, X0, 1.6, 12.4, 0.5, ("Quel que soit le point de départ, l'objectif est d'améliorer le taux de réponse et le score NPS." if fr else "Whatever the starting point, the target is to improve the answer rate and the NPS score."), taille=16, gras=True, couleur=g.BLEU)
+        g.puces(s, X0, 2.4, 12.4, 3.8, [
+            ("Partager à l'avance les évolutions produit et les nouvelles fonctionnalités" if fr else "Share product evolutions and new features in advance"),
+            ("Suivi régulier et rencontres physiques" if fr else "Regular follow-up and physical meetings"),
+            ("Mise en place d'enquêtes qualitatives" if fr else "Qualitative surveys setup"),
+            ("Plus de communication en amont" if fr else "More communication in advance")], taille=16)
+        s = nouvelle(ctx, "NPS autobiz — comment ?" if fr else "NPS at autobiz — how?", None)
+        g.puces(s, X0, 1.8, 12.4, 4.0, [("Prochaine enquête NPS : dates à renseigner (envoi par e-mail)." if fr else "Next NPS survey: dates to be filled in (sent by email).")], taille=16)
+        return s
+    if nom == "utm":
+        s = nouvelle(ctx, "Modèle d'URL avec balisage UTM" if fr else "Template to generate URL with UTM tracking", None)
+        ent = ["URL du site trade-in", "utm_source", "utm_medium", "utm_campaign", "URL à poser sur le bouton"] if fr else ["Trade-in site URL", "utm_source", "utm_medium", "utm_campaign", "URL to add to the CTA"]
+        ex = ["https://reprise.marque.xx/", "Main-Website", "Showroom", "e-C3", "…?utm_source=Main-Website&utm_medium=Showroom&utm_campaign=e-C3"]
+        g.tableau(s, X0, 1.8, 12.4, [ent, ex], largeurs=[2.4, 1.6, 1.6, 1.6, 5.2], taille=11, hauteur_ligne=0.5, alignements=None)
+        g.puces(s, X0, 3.3, 12.4, 3.0, [
+            ("Source et medium : à laisser tels quels (ils identifient les boutons du site de la marque)." if fr else "Source and medium: leave as is (they identify the brand-website CTAs)."),
+            ("Pour les pages showroom uniquement : renseigner la campagne avec le modèle de la page (ex. « e-C3 »)." if fr else "For showroom pages only: set the campaign to the page's model (e.g. “e-C3”)."),
+            ("L'URL finale se construit automatiquement à partir de ces colonnes ; c'est elle qu'il faut poser sur le bouton pour le suivre." if fr else "The final URL is built from these columns; it is the one to place on the button to track it.")], taille=14)
+        return s
+
+
 def leads_par_marque(ctx, cle, ref):
     t, d, per = ctx.t, ctx.d, ctx.per
     marques = [m for m in d.marques if d.leads_total(per, m) + d.leads_total(ref, m) > 0]
@@ -309,7 +373,7 @@ def trafic_marque(ctx, m):
         ctx.avertissements.append(f"{ctx.nom(m)} : aucune donnée de trafic sur la période, diapositive non générée.")
         return None
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['trafic']} {ctx.et(per)}", ctx.perimetre, source_ga4(ctx),
-                 notes=note_definitions(ctx, "Utilisateurs distincts calculés par GA4 sur la période entière (In Journey = événement form_step_view ; hot leads = événement tradein_request)."))
+                 notes=note_definitions(ctx, "Utilisateurs distincts calculés par GA4 sur la période entière (In Journey = événement form_step_view ; hot leads = événement tradein_request). CVR = hot leads ÷ utilisateurs. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
     ga = d.utilisateurs(per, m)
     y, h, w = 1.55, 1.25, 2.55
     if ga is None:
@@ -326,6 +390,29 @@ def trafic_marque(ctx, m):
         g.tuile(s, X0 + w + 0.6, y, w, h, t["in_journey"], t.nb(ga["in_journey"]), det("in_journey"), taille_valeur=24)
         g.fleche(s, X0 + 2 * w + 0.65, y + 0.38, 0.5, 0.3, t.pct(t.taux(ga["hot_leads"], ga["in_journey"]), 0) if ga["in_journey"] else None)
         g.tuile(s, X0 + 2 * w + 1.2, y, w, h, t["hot_leads"], t.nb(ga["hot_leads"]), det("hot_leads"), taille_valeur=24)
+    # CVR global et part du trafic venant du site de la marque (tuiles étroites : pts vs chaque référence, libellés courts)
+    court = {"prec": ("vs préc.", "vs prev."), "n1": ("vs N-1", "vs LY")}
+    def det_pts(cur, refs):
+        out = []
+        for cle, v in refs:
+            if v is not None and cur is not None:
+                out.append(f"{t.pts(cur - v)} {court[cle][0 if ctx.langue == 'fr' else 1]}")
+        return "  ".join(out) or None
+    if ga is not None and ga["utilisateurs"] >= 100:
+        cvr = ga["hot_leads"] / ga["utilisateurs"] * 100
+        refs_cvr = []
+        for cle, p in ctx.refs:
+            u = d.utilisateurs(p, m)
+            refs_cvr.append((cle, (u["hot_leads"] / u["utilisateurs"] * 100) if (u and u["utilisateurs"] >= 100) else None))
+        g.tuile(s, X0 + 8.95, y, 1.7, h, "CVR", t.pct(cvr, 1), det_pts(cvr, refs_cvr), taille_valeur=22)
+    a_site, b_site = d.trafic_site_marque(per, m)
+    if b_site >= 100:
+        part = a_site / b_site * 100
+        refs_site = []
+        for cle, p in ctx.refs:
+            a2, b2 = d.trafic_site_marque(p, m)
+            refs_site.append((cle, (a2 / b2 * 100) if b2 >= 100 else None))
+        g.tuile(s, X0 + 10.75, y, 1.7, h, "Via site marque" if ctx.langue == "fr" else "Via brand site", t.pct(part, 0), det_pts(part, refs_site), taille_valeur=22)
     # canaux : anneau + tableau
     canaux = d.canaux(per, m)
     tot = sum(canaux.values())
@@ -532,12 +619,15 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         sections.append(("points", ctx.t["points_ouverts"]))
     if "prochaines_etapes" in m and (brief.get("prochainesEtapes") or []):
         sections.append(("etapes", ctx.t["prochaines_etapes"]))
+    if m & {"nps", "utm"}:
+        sections.append(("annexes", ctx.t["annexes"]))
     sections.append(("qa", ctx.t["questions"]))
 
     couverture(ctx)
     sommaire(ctx, sections, sections[0][0])
     if avoir_global:
         synthese(ctx)
+        vue_groupes(ctx)
         for cle, ref in ctx.refs:
             leads_par_marque(ctx, cle, ref)
         leads_mensuels(ctx)
@@ -569,6 +659,11 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     if "prochaines_etapes" in m and (brief.get("prochainesEtapes") or []):
         sommaire(ctx, sections, "etapes")
         prochaines_etapes(ctx)
+    if m & {"nps", "utm"}:
+        sommaire(ctx, sections, "annexes")
+        for nom in ("nps", "utm"):
+            if nom in m:
+                blocs_fixes(ctx, nom)
     sommaire(ctx, sections, "qa")
     questions(ctx)
     contacts(ctx)
