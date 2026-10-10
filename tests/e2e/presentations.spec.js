@@ -105,3 +105,24 @@ test("modèles : modèle de base appliqué, enregistrement d'un modèle, onglet 
   await expect(page.getByText("Mon mensuel BELUX").first()).toBeVisible();
   await expect(page.getByText("Modèle de base").first()).toBeVisible();
 });
+
+test("génération : le bouton se remplit avec le temps, puis propose le téléchargement", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  let etat = "demandee";
+  const brief = () => ({ id: "B-gen1", titre: "Brief test", client: "Stellantis", langue: "fr", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { type: "trimestre", annee: 2026, indice: 3 },
+    comparaisons: { precedente: true, n1: true }, modules: ["global"], contact: {}, pointsOuverts: [], prochainesEtapes: [], statut: etat, demandeeLe: Date.now() - 20000,
+    ...(etat === "generee" ? { fichier: "presentations/out/B-gen1.pptx", diapositives: 54 } : {}), auteur: "e2e@autobiz.com", updatedAt: Date.now() });
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText("Briefs enregistrés", { exact: false }).click();
+  await page.getByText("Ouvrir", { exact: true }).click();
+  const bouton = page.getByText(/^Génération en cours… \d+ %$/);
+  await expect(bouton).toBeVisible();
+  const pct = async () => parseInt(((await bouton.innerText()).match(/(\d+) %/) || [])[1], 10);
+  const p1 = await pct();
+  expect(p1).toBeGreaterThan(5);
+  await expect.poll(pct, { timeout: 8000 }).toBeGreaterThan(p1);          // progresse sans rechargement
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

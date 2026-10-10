@@ -4195,6 +4195,10 @@ class Component extends DCLogic {
     const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
     const prEnCours = !!(prCur&&prCur.statut==='demandee');
+    // progression estimée (la durée réelle n'est pas connue d'avance) : monte vite puis ralentit, plafonne à 95 % tant que le fichier n'est pas prêt
+    const prPct = prEnCours ? Math.min(95, Math.round(100*(1-Math.exp(-Math.max(0,Date.now()-(prCur.demandeeLe||Date.now()))/90000)))) : 0;
+    if (prEnCours && !this._prTick) this._prTick = setInterval(()=>this.setState({prTick:Date.now()}), 1000);
+    if (!prEnCours && this._prTick) { clearInterval(this._prTick); this._prTick = null; }
     const prValide = (pr.titre.trim().length>=3||true) && pr.client.trim().length>0 && pr.pays.length>0 && pr.modules.length>0 && !st.prBusy;
     const prSave = async () => {
       if (!prValide) return;
@@ -4365,8 +4369,8 @@ class Component extends DCLogic {
       prPlanRows:prPlan.rows, prPlanTotal:prPlan.total+' diapositives', prSaveFn:prSave,
       prSaveLabel:st.prBusy?'Enregistrement…':(pr.id?'Mettre à jour le brief':'Enregistrer le brief'),
       prSaveStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
-      prGenFn:prGenere, prGenLabel:prEnCours?'Génération en cours…':'Générer le PowerPoint',
-      prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prValide&&!prEnCours?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
+      prGenFn:prGenere, prGenLabel:prEnCours?'Génération en cours… '+prPct+' %':'Générer le PowerPoint',
+      prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prEnCours?'background:linear-gradient(90deg,#b9aef7 '+prPct+'%,#efecfd '+prPct+'%);color:#2d2470;cursor:progress;transition:background .8s linear':prValide?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
       prGenPret:!!(prCur&&prCur.statut==='generee'&&prCur.fichier), prDlFn:()=>prCur&&prTelecharge(prCur.id), prDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
       prGenInfo:prCur&&prCur.statut==='echec'?'La dernière génération a échoué : relance, et préviens-moi si ça se répète.':(prCur&&prCur.avertissements&&prCur.avertissements.length&&prCur.statut==='generee'?prCur.avertissements.join(' · '):''),
       prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
