@@ -543,10 +543,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
 
           <sc-if value="{{ isSources }}" hint-placeholder-val="{{ true }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipS }}">{{ tIconS }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Sources d'acquisition</div>
@@ -563,7 +563,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span style="text-align:right">Part</span>
             </div>
             <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                 <div style="min-width:0">
                   <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
                   <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ ch.bar }}"></div></div>
@@ -577,7 +577,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isTrend }}" hint-placeholder-val="{{ false }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipT }}">{{ tIconT }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Sessions par canal<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions GA4 du site parent (pas de l'outil de reprise) par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.</span></span></div>
@@ -589,12 +589,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span onClick="{{ t.toggle }}" style="{{ t.style }}">{{ t.name }}</span>
               </sc-for>
             </div>
-            <div>{{ multiChart }}</div>
+            <div id="cbTrend" style="flex:1;min-height:220px;position:relative">{{ multiChart }}</div>
           </div>
           </sc-if>
 
           <sc-if value="{{ isConv }}" hint-placeholder-val="{{ false }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipC }}">{{ tIconC }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
@@ -610,7 +610,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:2px;border-radius:2px;background:#cdbffa"></span>Conversion du jour</span>
                 <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed #b3b7bd"></span>Période précédente</span>
               </div>
-              <div>{{ convChart }}</div>
+              <div id="cbConv" style="flex:1;min-height:220px;position:relative">{{ convChart }}</div>
             </sc-if>
             <sc-if value="{{ !convHasData }}" hint-placeholder-val="{{ false }}">
               <div style="padding:34px 0;font-size:14px;color:#9a9fa6;text-align:center">La conversion quotidienne n'est pas encore disponible sur cette période : elle apparaît après le prochain rafraîchissement des données.</div>
@@ -619,7 +619,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isV2 }}" hint-placeholder-val="{{ false }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipV }}">{{ tIconV }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Parcours avant / après V2<span class="dc-info" tabindex="0">i<span class="dc-tip">Mêmes jours exacts et même définition que partout dans le dashboard (estimations ÷ visiteurs de l'accueil, somme des jours). Avant = les 28 jours qui précèdent la bascule du site ; après = tous les jours depuis la bascule. Les volumes sont des moyennes par jour car les deux périodes n'ont pas la même durée. Publié à partir de 7 jours de recul. Plusieurs sites : chaque site garde ses propres dates, les volumes par jour s'additionnent.</span></span></div>
@@ -649,7 +649,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:13px;color:#a16207;background:#fef6e7;border-radius:10px;padding:8px 12px;margin-bottom:12px">Volume faible (moins de 300 visiteurs sur l'une des périodes) : tendance indicative.</div>
               </sc-if>
               <sc-for list="{{ v2 }}" as="row" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.4fr) 130px 80px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#f6f7fb">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.4fr) 130px 80px;align-items:center;gap:11px;padding:8px;border-radius:12px" style-hover="background:#f6f7fb">
                   <span style="font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <div style="height:10px;border-radius:5px;background:#f4f4f6;overflow:hidden"><div style="{{ row.beforeBar }}"></div></div>
@@ -667,7 +667,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isDevice }}" hint-placeholder-val="{{ false }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipD }}">{{ tIconD }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
@@ -681,7 +681,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span>Canal</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
             <sc-for list="{{ matrix }}" as="row" hint-placeholder-count="5">
-              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
                 <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
                 <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
@@ -692,13 +692,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
 
           <sc-if value="{{ isAudience }}" hint-placeholder-val="{{ false }}">
-          <div style="animation:tabFadeIn .22s ease">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span style="{{ tChipA }}">{{ tIconA }}</span><div>
             <div style="font-size:15px;font-weight:600;color:#121214">Audience &amp; saisonnalité<span class="dc-info" tabindex="0">i<span class="dc-tip">Moyenne par jour de la semaine sur la période (sessions de l'outil de reprise), répartition des navigateurs et des nouveaux / récurrents en sessions. Source GA4.</span></span></div>
             <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:0">Jour de semaine, navigateurs et type de visiteur</div>
             </div></div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:start">
-              <div>{{ seasonChart }}</div>
+            <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:stretch">
+              <div id="cbSeason" style="position:relative;min-height:240px">{{ seasonChart }}</div>
               <div style="display:flex;flex-direction:column;gap:11px">
                 <sc-for list="{{ browsers }}" as="b" hint-placeholder-count="5">
                   <div>
@@ -1994,7 +1994,22 @@ class Component extends DCLogic {
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
+  /* hauteur des graphiques de « Analyses détaillées » : le conteneur remplit la carte (même hauteur pour tous les onglets), le viewBox suit son rapport largeur/hauteur */
+  measureBoxes() {
+    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason' };
+    const prev = this._boxes || {};
+    let changed = false; const next = Object.assign({}, prev);
+    for (const [k, id] of Object.entries(ids)) {
+      const el = document.getElementById(id); if (!el) continue;
+      const r = el.getBoundingClientRect(); if (r.width < 50 || r.height < 50) continue;
+      const ratio = Math.round(r.height / r.width * 1000) / 1000;
+      if (!prev[k] || Math.abs(prev[k] - ratio) > 0.004) { next[k] = ratio; changed = true; }
+    }
+    if (changed) { this._boxes = next; this.setState({ boxTick: Date.now() }); }
+  }
+  componentDidUpdate() { this.measureBoxes(); }
   componentDidMount() {
+    window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
     this.wireLogin();
     this.boot();
     if (new URLSearchParams(location.search).get('embed') === '1') {
@@ -2630,7 +2645,8 @@ class Component extends DCLogic {
       name, toggle:()=>set({hidden:Object.assign({},st.hidden,{[name]:!st.hidden[name]})}),
       style:`display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;${st.hidden[name]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:'+CHAN_COLORS[i%CHAN_COLORS.length]+'1a'}`
     }));
-    const MW=900,MH=210,ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
+    const boxH=(k,w,d0)=>Math.max(150,Math.min(520,Math.round(w*(((this._boxes||{})[k])||d0/w))));
+    const MW=900,MH=boxH('trend',900,210),ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
     const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }))*1.2;
     const mx2=i=>ML+(joursCanal.length>1?i/(joursCanal.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
     [0,.3,.6,.9].forEach((frac,i)=>{
@@ -2648,7 +2664,7 @@ class Component extends DCLogic {
     });
     const step8=Math.max(1,Math.floor(joursCanal.length/8));
     joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
-    const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,width:'100%',style:{display:'block',height:'auto'}},mk);
+    const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},mk);
 
     // ---------- Conversion par jour (accueil -> estimation, GA4 uniquement) ----------
     const convPts = j => { const c = agg.convDaily[j]; return c && c[0] > 0 ? { home:c[0], est:c[1], pct:c[1]/c[0]*100 } : null; };
@@ -2662,7 +2678,7 @@ class Component extends DCLogic {
     const convSummary = convMoy==null ? '' : `Conversion moyenne ${dec(convMoy,1)} %`+(convMoyCmp!=null?` · période précédente ${dec(convMoyCmp,1)} % (${convMoy>=convMoyCmp?'+':'−'}${dec(Math.abs(convMoy-convMoyCmp),1)} pt)`:'');
     const v2Dates = [...new Set(st.sites.map(n=>this.data&&this.data[n]&&this.data[n].v2_date).filter(Boolean))];
     const v2Marker = v2Dates.length===1 && st.sites.every(n=>this.data&&this.data[n]&&this.data[n].v2_date) ? v2Dates[0] : null;
-    const CW=900,CH=250,CL=52,CR=16,CT=18,CB=40,cpw=CW-CL-CR,cph=CH-CT-CB;
+    const CW=900,CH=boxH('conv',900,250),CL=52,CR=16,CT=18,CB=40,cpw=CW-CL-CR,cph=CH-CT-CB;
     const ck=[];
     if (convHasData) {
       const maxPct = Math.max(10, ...convSerie.filter(Boolean).map(p=>p.pct), ...(cmp?Object.keys(cmp.convDaily).map(j=>{const c=cmp.convDaily[j]; return c[0]? c[1]/c[0]*100 : 0;}):[0]))*1.15;
@@ -2691,7 +2707,7 @@ class Component extends DCLogic {
       const stepX=Math.max(1,Math.floor(dates.length/8));
       dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
     }
-    const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,width:'100%',style:{display:'block',height:'auto'}},ck);
+    const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck);
 
     // avant / apres V2 : memes jours exacts et meme definition que le reste du
     // dashboard (funnelDaily) ; avant = 28 j avant la bascule, apres = depuis la
@@ -2747,7 +2763,7 @@ class Component extends DCLogic {
     const sessByDow=Array(7).fill(0), ldsByDow=Array(7).fill(0), cntByDow=Array(7).fill(0);
     dates.forEach(iso=>{ const dow=(new Date(iso).getUTCDay()+6)%7; sessByDow[dow]+=agg.repriseDaily[iso]||0; ldsByDow[dow]+=agg.leadsDaily[iso]||0; cntByDow[dow]++; });
     const sess = sessByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0), lds = ldsByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0);
-    const SW=760,SH=210,SL=48,SR=20,STp=14,SB=30,spw=SW-SL-SR,sph=SH-STp-SB;
+    const SW=760,SH=boxH('season',760,210),SL=48,SR=20,STp=14,SB=30,spw=SW-SL-SR,sph=SH-STp-SB;
     const maxSess = Math.max(1,...sess);
     const sstep=spw/7, sk=[];
     [0,.33,.66,1].forEach((frac,i)=>{
@@ -2764,7 +2780,7 @@ class Component extends DCLogic {
     let sd=`M${SL+sstep/2},${STp+sph-(lds[0]/maxLds)*sph}`;
     lds.forEach((v,i)=>{if(i)sd+=` L${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`;});
     if (!this.estLimite()) sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
-    const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,width:'100%',style:{display:'block',height:'auto'}},sk);
+    const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},sk);
 
     const browserTotal = [...agg.browser.values()].reduce((a,v)=>a+v.sessions,0) || 1;
     const browsers=[...agg.browser.entries()].sort((a,b)=>b[1].sessions-a[1].sessions).slice(0,5).map(([name,v])=>{
@@ -4490,7 +4506,7 @@ class Component extends DCLogic {
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:0, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:560, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
       tChipV:kPuce('#d78b35'), tIconV:kIcone('#d78b35',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})),
