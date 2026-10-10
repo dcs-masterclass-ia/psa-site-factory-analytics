@@ -845,6 +845,16 @@ def main():
           else f"index.json : ECRIT MAIS PUSH EN ECHEC — {detail}")
 
     chemin_etat = DATA / "pipeline.json"
+    # les sites « leads seuls » (pipeline/leads_seuls.py, sans GA4 donc absents
+    # de SITES) sont declares dans pipeline.json par leur propre module : un run
+    # complet ne doit jamais les en retirer.
+    if chemin_etat.exists():
+        try:
+            for nom, entree in (json.loads(chemin_etat.read_text()).get("sites") or {}).items():
+                if entree.get("statut") == "leads_seuls":
+                    etat["sites"].setdefault(nom, entree)
+        except (ValueError, OSError):
+            pass
     if a.sites and chemin_etat.exists():
         try:
             etat = fusionne_etat_partiel(json.loads(chemin_etat.read_text()), etat)

@@ -127,6 +127,16 @@ jobs:
           # retry/conflit, portee depuis l'ancienne etape bash.
           python -m pipeline.build "${ARGS[@]}"
 
+      - name: Sites leads back-office seulement (sans GA4)
+        # Fiat Pro, Leapmotor, Fiat PL, Lancia LU : leads BO sans propriete GA4,
+        # donc hors de pipeline.build -- voir pipeline/leads_seuls.py. Un echec
+        # ici ne bloque rien : le fichier de la veille est conserve.
+        if: ${{ always() && inputs.simulation != 'oui' && inputs.sites == '' }}
+        continue-on-error: true
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+        run: python -m pipeline.leads_seuls --ecrire
+
       - name: Signaler un échec de contrôle
         if: ${{ always() && inputs.simulation != 'oui' }}
         run: |
