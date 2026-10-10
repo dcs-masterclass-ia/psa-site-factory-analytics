@@ -265,3 +265,34 @@ card/surface vs. several floating pieces), not just the fragment handed
 over. The one allowed substitution is swapping the app's own real brand
 logos/assets in for generic reference placeholders — call that out
 explicitly when done.
+
+## Incident : couper l'accès d'un compte (2026-10-10)
+
+Le dashboard ne revérifie pas Google à chaque requête : un compte désactivé
+chez Google reste connecté jusqu'à 1 h (durée de la session). Pour couper
+tout de suite : (1) désactiver le compte chez Google ; (2) retirer
+l'adresse de `ALLOWED_EMAILS` / `LIMITED_EMAILS` dans les variables Vercel
+(`vercel env rm …` puis `vercel env add …`), puis `vercel redeploy <url prod>`
+— `middleware.js` revérifie ces listes à chaque requête. Si le token du
+back-office a fuité : le renouveler côté BO, puis mettre à jour le secret
+GitHub `LEADS_EXTRACT_TOKEN`.
+
+## Déploiement : ce qui est public (2026-10-09)
+
+`vercel.json` a `outputDirectory: "public"`, dossier **généré au build** par
+`scripts/fetch-data.sh` (liste blanche de fichiers + copie de `data/`, sans
+`data/history` ni `data/kamia`). Les sources restent à la racine pour le dev
+local et les tests. `middleware.js` et `api/` restent à la racine (Vercel ne
+les détecte qu'à cet endroit) mais ne sont plus servis. Tout nouveau fichier
+que le navigateur doit charger doit être ajouté à la liste du `cp` dans
+`scripts/fetch-data.sh`, sinon il sera 404 en prod.
+
+## Historique profond (2026-10-09)
+
+`python -m pipeline.history leads|ga4|gsc` (workflow `history.yml`) écrit
+dans `data/history/<source>/<site>.csv.gz` du repo de données : leads BO
+depuis 2020 (agrégés par jour, sans donnée personnelle), GA4 depuis la
+création des propriétés (2022), Search Console 16 mois fusionnés avec
+l'existant (à relancer de temps en temps pour archiver). Jamais déployé ni
+servi par le dashboard. Pas de GSC pour Spoticar, Stellantis &You, Alfa DE,
+DS GB (propriété absente du compte de service) ni Citroën PT (403).
