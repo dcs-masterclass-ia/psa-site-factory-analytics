@@ -81,6 +81,121 @@ def _mois_complets(ctx, x):
     return out
 
 
+def _serie(ctx, f, nb=4, mini=SEUIL_BASE):
+    """[(année, valeur)] de la même période sur les années passées (valeurs >= mini) puis l'année courante en dernier."""
+    per = ctx.per
+    out = []
+    for k in range(nb, -1, -1):
+        v = f(type(per)(per.type, per.annee - k, per.indice))
+        if v is not None and v >= mini:
+            out.append((per.annee - k, v))
+    return out
+
+
+def _rang(serie):
+    """Place de la dernière valeur : 'bas' (plus bas de la série), 'haut', ou None ; + année de référence."""
+    if len(serie) < 3:
+        return None, None
+    cur = serie[-1][1]
+    passees = serie[:-1]
+    if cur <= min(v for _, v in passees):
+        return "bas", serie[0][0]
+    if cur >= max(v for _, v in passees):
+        return "haut", serie[0][0]
+    return None, None
+
+
+def _historique(ctx, x, m):
+    """Contexte long : même période sur les années passées (leads, sessions, conversion), 12 mois glissants, Search Console, V2.
+    -> (constats, lectures, signaux) ; signaux = {'sessions': 'bas'|'haut'|None, 'leads': ..., 'conv': ...}"""
+    t, d, F = ctx.t, ctx.d, x.fr
+    per = ctx.per
+    c, l, sig = [], [], {}
+    traj = lambda serie, fmt=t.nb: " → ".join(f"{a} : {fmt(v)}" for a, v in serie)
+    # leads
+    sl = _serie(ctx, x.L)
+    if len(sl) >= 3:
+        r, a0 = _rang(sl)
+        sig["leads"] = r
+        fin = F(" (plus bas niveau de la série)", " (lowest level in the series)") if r == "bas" else F(" (plus haut niveau de la série)", " (highest level in the series)") if r == "haut" else ""
+        c.append(F(f"Historique des leads, même période : {traj(sl)}{fin}.", f"Lead history, same period: {traj(sl)}{fin}."))
+    # sessions (séries GA4 : seulement les années entièrement couvertes)
+    premier = d.premier_jour_trafic()
+    ss = [(a, v) for a, v in _serie(ctx, x.S) if premier and f"{a}-{per.debut.month:02d}-01" >= premier]
+    if len(ss) >= 3:
+        r, a0 = _rang(ss)
+        sig["sessions"] = r
+        fin = F(" (plus bas niveau de la série)", " (lowest level in the series)") if r == "bas" else F(" (plus haut niveau de la série)", " (highest level in the series)") if r == "haut" else ""
+        c.append(F(f"Historique des sessions : {traj(ss)}{fin}.", f"Session history: {traj(ss)}{fin}."))
+    # conversion quotidienne GA4 (estimation ÷ accueil) : années où l'étape estimation existe
+    cv = []
+    for k in range(4, -1, -1):
+        p = type(per)(per.type, per.annee - k, per.indice)
+        a, e = d.funnel(p, m)
+        if a >= SEUIL_BASE and e > 0:
+            cv.append((p.annee, e / a * 100))
+    if len(cv) >= 3:
+        r, _ = _rang(cv)
+        sig["conv"] = r
+        fin = F(" (plus haut niveau de la série)", " (highest level in the series)") if r == "haut" else F(" (plus bas niveau de la série)", " (lowest level in the series)") if r == "bas" else ""
+        c.append(F(f"Historique du taux de conversion (estimations ÷ visiteurs de l'accueil) : {traj(cv, lambda v: t.pct(v, 1))}{fin}.",
+                   f"Conversion history (estimates ÷ home visitors): {traj(cv, lambda v: t.pct(v, 1))}{fin}."))
+    # 12 mois glissants
+    dernier = d.dernier_jour_leads()
+    if dernier:
+        from datetime import date
+        fin = date.fromisoformat(dernier)
+        a1 = fin.year * 12 + fin.month - 1
+        def somme(debut, n):
+            tot = 0
+            for k in range(debut, debut + n):
+                a, mo = divmod(k, 12)
+                tot += d.leads_mensuels(a, m)[mo]
+            return tot
+        # derniers 12 mois complets (le mois du dernier jour n'est complet que si c'est le dernier jour du mois)
+        import calendar
+        fin_complet = a1 if fin.day == calendar.monthrange(fin.year, fin.month)[1] else a1 - 1
+        r12, p12 = somme(fin_complet - 11, 12), somme(fin_complet - 23, 12)
+        v12 = _var(r12, p12)
+        if v12 is not None:
+            c.append(F(f"12 mois glissants : {t.nb(r12)} leads ({t.pct(v12, 0, signe=True)} vs les 12 mois précédents).", f"Rolling 12 months: {t.nb(r12)} leads ({t.pct(v12, 0, signe=True)} vs previous 12 months)."))
+            sig["roulant"] = v12
+    # Search Console
+    g0 = d.gsc(per, m)
+    if g0:
+        parts = []
+        for cle, p in ctx.refs:
+            g1 = d.gsc(p, m)
+            if g1 and g1[1] >= SEUIL_BASE:
+                vc, vi = _var(g0[0], g1[0]), _var(g0[1], g1[1])
+                parts.append(F(f"clics {t.pct(vc, 0, signe=True) if vc is not None else 'n.s.'}, impressions {t.pct(vi, 0, signe=True) if vi is not None else 'n.s.'}, position {t.dec(g0[2], 1)} (vs {t.dec(g1[2], 1)}) vs {ctx.et(p)}",
+                               f"clicks {t.pct(vc, 0, signe=True) if vc is not None else 'n.s.'}, impressions {t.pct(vi, 0, signe=True) if vi is not None else 'n.s.'}, position {t.dec(g0[2], 1)} (vs {t.dec(g1[2], 1)}) vs {ctx.et(p)}"))
+        if parts:
+            c.append(F("Search Console (visibilité naturelle) : ", "Search Console (organic visibility): ") + " ; ".join(parts) + ".")
+            sig["gsc"] = True
+    # V2
+    if m:
+        v2 = d.v2_dates(m)
+        if v2:
+            ds = ", ".join(f"{p} {v[8:10]}/{v[5:7]}/{v[:4]}" for p, v in sorted(v2.items()))
+            dans = any(per.debut.isoformat() <= v <= per.fin.isoformat() for v in v2.values())
+            c.append(F(f"Parcours V2 déployé : {ds}.", f"V2 journey deployed: {ds}.") + (F(" Basculement pendant la période : les mesures mélangent ancien et nouveau parcours.", " Switch during the period: measures mix old and new journey.") if dans else ""))
+            if dans:
+                l.append(F("Point d'attention : la bascule V2 a eu lieu pendant la période ; comparer les périodes avant/après (diapositive V2) avant de conclure sur la tendance.", "Watch point: the V2 switch happened during the period; compare before/after (V2 slide) before concluding on the trend."))
+    # lectures issues de l'historique
+    if sig.get("sessions") == "bas":
+        l.append(F("Point d'attention : l'audience est au plus bas niveau de l'historique disponible pour cette période ; le recul n'est pas une simple variation ponctuelle.", "Watch point: audience is at its lowest level in the available history for this period; the decline is not a one-off variation."))
+    if sig.get("sessions") == "bas" and sig.get("leads") not in ("bas", None) and sig.get("conv") == "haut":
+        l.append(F("Les leads résistent grâce à une conversion au plus haut de l'historique : l'efficacité du parcours compense en partie la baisse d'audience.", "Leads hold thanks to conversion at its historical high: journey efficiency partly offsets the audience decline."))
+    if sig.get("conv") == "bas":
+        l.append(F("Point d'attention : la conversion est au plus bas de l'historique ; le parcours est à auditer en priorité.", "Watch point: conversion is at its historical low; the journey should be audited first."))
+    if sig.get("roulant") is not None and sig["roulant"] <= -SEUIL_ECART:
+        l.append(F("La tendance de fond (12 mois glissants) est elle aussi en baisse : le recul ne se limite pas à cette période.", "The underlying trend (rolling 12 months) is also down: the decline is not limited to this period."))
+    elif sig.get("roulant") is not None and sig["roulant"] >= SEUIL_ECART:
+        l.append(F("La tendance de fond (12 mois glissants) est en hausse : la période s'inscrit dans une dynamique plus large.", "The underlying trend (rolling 12 months) is up: the period is part of a broader momentum."))
+    return c, l, sig
+
+
 def analyse_marque(ctx, m):
     """-> {"message","constats","lectures","recommandations"} ou None si le volume est trop faible."""
     x = _Marque(ctx, m)
@@ -197,6 +312,8 @@ def analyse_marque(ctx, m):
                 if sc2.get("Autre", 0) / tc2 * 100 >= 30:
                     l.append(F(f"Point d'attention : {t.pct(sc2['Autre'] / tc2 * 100, 0)} des leads n'ont pas de source identifiée (« Autre ») ; l'analyse par source est partielle.",
                                f"Watch point: {t.pct(sc2['Autre'] / tc2 * 100, 0)} of leads have no identified source (“Other”); source analysis is partial."))
+        hc, hl, sig = _historique(ctx, x, m)
+        l.extend(hl)
         # --- message clé
         seas = ""
         if norme is True:
@@ -216,6 +333,10 @@ def analyse_marque(ctx, m):
                             f"Leads {t.pct(vl, 0, signe=True)} vs {ctx.et(pa)}: {sens} shared between audience and leads/sessions ratio{seas}.")
         elif vl is not None:
             message = F(f"Leads stables ({t.pct(vl, 0, signe=True)} vs {ctx.et(pa)}){seas}.", f"Leads stable ({t.pct(vl, 0, signe=True)} vs {ctx.et(pa)}){seas}.")
+        if message and sig.get("sessions") == "bas":
+            message += F(" Audience au plus bas de l'historique pour cette période.", " Audience at its historical low for this period.")
+        elif message and sig.get("conv") == "haut":
+            message += F(" Conversion au plus haut de l'historique.", " Conversion at its historical high.")
         # --- lectures
         if dom == "trafic" and contrib and abs(dtot) >= SEUIL_BASE:
             k0, v0 = contrib[0]
@@ -260,7 +381,7 @@ def analyse_marque(ctx, m):
             r.append(F("Maintenir le suivi : surveiller le ratio leads/sessions et le premier canal, avec une alerte à ±10 %.", "Keep monitoring: track the leads/sessions ratio and the top channel, with an alert at ±10%."))
         r.append(F("Valider ces lectures avec l'équipe marque (campagnes, évolutions du site) avant la prochaine édition.", "Validate these readings with the brand team (campaigns, site changes) before the next edition."))
     return {"message": message or F("Pas de période de référence : lecture descriptive uniquement.", "No reference period: descriptive reading only."),
-            "constats": c[:8], "lectures": (l or [F("Aucun signal d'alerte sur la période.", "No warning signal over the period.")])[:4], "recommandations": r[:4]}
+            "historique": hc if pa is not None else [], "constats": c[:8], "lectures": (l or [F("Aucun signal d'alerte sur la période.", "No warning signal over the period.")])[:6], "recommandations": r[:4]}
 
 
 def marque(ctx, m):
@@ -349,7 +470,19 @@ def globale(ctx):
         if mes and nb_h:
             meil = sorted(((v, m) for m, v in mes.items() if v >= SEUIL_ECART), reverse=True)[:3]
             r.append(F(f"Documenter et partager les pratiques de {', '.join(ctx.nom(m) for _, m in meil)}.", f"Document and share the practices of {', '.join(ctx.nom(m) for _, m in meil)}."))
+    hc, hl, sig = _historique(ctx, x, None)
+    l.extend(hl)
+    if sig.get("sessions") == "bas":
+        message += F(" Audience au plus bas de l'historique pour cette période.", " Audience at its historical low for this period.")
+    prec = ctx.brief.get("_edition_precedente")
+    if prec and prec.get("etapes"):
+        et = prec["etapes"]
+        n = lambda st: sum(1 for e in et if (e.get("statut") or "a_faire") == st)
+        c.append(F(f"Suivi de l'édition précédente ({prec['periode']}) : {len(et)} actions, {n('fait')} faites, {n('en_cours')} en cours, {n('a_faire')} à faire, {n('bloque')} bloquées.",
+                   f"Follow-up of the previous edition ({prec['periode']}): {len(et)} actions, {n('fait')} done, {n('en_cours')} in progress, {n('a_faire')} to do, {n('bloque')} blocked."))
+        for e in [e for e in et if (e.get("statut") or "a_faire") in ("bloque", "a_faire", "en_cours")][:2]:
+            l.append(F(f"Action encore ouverte : « {e.get('item', '')[:100]} » ({e.get('responsable') or '—'}).", f"Action still open: “{e.get('item', '')[:100]}” ({e.get('responsable') or '—'})."))
     if ctx.brief.get("commentaire"):
         c.append(F("Contexte du DKAM : ", "DKAM context: ") + ctx.brief["commentaire"][:300])
     r.append(F("Valider ces lectures avec les marques (campagnes, évolutions des sites) avant la prochaine édition.", "Validate these readings with the brands (campaigns, site changes) before the next edition."))
-    return {"message": message, "constats": c[:8], "lectures": (l or [F("Aucun signal d'alerte global sur la période.", "No global warning signal over the period.")])[:4], "recommandations": r[:4]}
+    return {"message": message, "historique": hc, "constats": c[:8], "lectures": (l or [F("Aucun signal d'alerte global sur la période.", "No global warning signal over the period.")])[:6], "recommandations": r[:4]}

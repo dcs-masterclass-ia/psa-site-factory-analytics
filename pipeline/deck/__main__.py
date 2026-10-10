@@ -23,6 +23,25 @@ def _maj_statut(chemin, id_, **champs):
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 
 
+def _edition_precedente(chemin, brief):
+    """Dernier brief du même client, même périmètre et même périodicité, portant sur la période précédente : ses actions et leur statut."""
+    from .periodes import depuis_brief
+    try:
+        per = depuis_brief(brief["periode"])
+        prec = per.precedente()
+        with open(chemin, encoding="utf-8") as f:
+            briefs = json.load(f).get("briefs", [])
+        cand = [b for b in briefs if b.get("id") != brief.get("id") and b.get("client") == brief.get("client")
+                and sorted((b.get("perimetre") or {}).get("pays", [])) == sorted(brief["perimetre"]["pays"])
+                and depuis_brief(b["periode"]) == prec and b.get("prochainesEtapes")]
+        if not cand:
+            return None
+        b = max(cand, key=lambda x: x.get("updatedAt") or 0)
+        return {"periode": prec.etiquette(brief.get("langue", "fr")), "etapes": b["prochainesEtapes"]}
+    except Exception:
+        return None
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--brief")
@@ -39,6 +58,7 @@ def main():
             return
         with open(a.briefs, encoding="utf-8") as f:
             brief = next(b for b in json.load(f)["briefs"] if b["id"] == a.id)
+        brief["_edition_precedente"] = _edition_precedente(a.briefs, brief)
         os.makedirs(a.sortie_dir, exist_ok=True)
         sortie = os.path.join(a.sortie_dir, f"{a.id}.pptx")
     else:

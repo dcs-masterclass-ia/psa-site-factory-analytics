@@ -487,14 +487,22 @@ def diapo_analyse(ctx, titre, r):
     box.fill.solid(); box.fill.fore_color.rgb = g.rgb("1F3F7A"); box.line.fill.background(); box.shadow.inherit = False
     g.texte(s, X0 + 0.2, 1.58, X1 - X0 - 0.4, 0.7, r.get("message") or "", taille=15, gras=True, couleur="FFFFFF", ancre=MSO_ANCHOR.MIDDLE)
     cols = [("Ce que disent les chiffres" if fr else "What the numbers say", r["constats"]),
-            ("Lecture et points d'attention" if fr else "Reading and watch points", r["lectures"]),
-            ("Recommandations" if fr else "Recommendations", r["recommandations"])]
-    larg = [5.0, 3.9, 3.35]
+            ("Lecture et points d'attention" if fr else "Reading and watch points", r["lectures"])]
     x = X0
-    for (tit, lignes), w in zip(cols, larg):
+    for (tit, lignes), w in zip(cols, (6.4, 6.05)):
         if lignes:
-            g.encadre(s, x, 2.5, w - 0.2, 4.5, tit, lignes, taille=11)
+            g.encadre(s, x, 2.5, w - 0.25, 4.5, tit, lignes, taille=12)
         x += w
+    if r.get("historique") or r.get("recommandations"):
+        s2 = nouvelle(ctx, titre + (" (suite)" if fr else " (continued)"), ctx.perimetre, ctx.t["source_bo_ga4"],
+                      notes=("Contexte historique : mêmes périodes des années passées (leads BO depuis 2020, GA4 depuis 2022), 12 mois glissants, Search Console, V2. " + note_definitions(ctx)))
+        cols2 = [("Contexte et historique" if fr else "Context and history", r.get("historique") or []),
+                 ("Recommandations" if fr else "Recommendations", r["recommandations"])]
+        x = X0
+        for (tit, lignes), w in zip(cols2, (7.0, 5.45)):
+            if lignes:
+                g.encadre(s2, x, 1.6, w - 0.25, 5.3, tit, lignes, taille=12.5)
+            x += w
     return s
 
 

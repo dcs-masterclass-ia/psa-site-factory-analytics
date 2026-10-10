@@ -153,6 +153,69 @@ class Donnees:
         jours = [j for (_, j) in self._acq]
         return bool(jours) and min(jours) <= periode.debut.isoformat()
 
+    # ------------------------------------------------------------------ contexte historique
+    def _charge_funnel(self):
+        if getattr(self, "_funnel", None) is not None:
+            return
+        d = defaultdict(lambda: [0, 0])
+        for nom, marque, _ in self.sites:
+            for r in _lignes(self.hist / "ga4_funnel" / f"{slug(nom)}.csv.gz"):
+                v = d[(marque, r["date"])]
+                v[0] += int(r["accueil"] or 0); v[1] += int(r["estimation"] or 0)
+        self._funnel = d
+
+    def funnel(self, periode, marque=None):
+        """(visiteurs de l'accueil, estimations) cumulés par jour sur la période (série quotidienne GA4, cohérente d'une année à l'autre)."""
+        self._charge_funnel()
+        deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
+        a = e = 0
+        for (m, jour), (x, y) in self._funnel.items():
+            if (marque is None or m == marque) and deb <= jour <= fin:
+                a += x; e += y
+        return a, e
+
+    def premier_jour_trafic(self):
+        self._charge_trafic()
+        return min((j for (_, j) in self._trafic), default=None)
+
+    def gsc(self, periode, marque=None):
+        """(clics, impressions, position moyenne pondérée par les impressions) Search Console sur la période, ou None si non couvert."""
+        if not hasattr(self, "_gsc"):
+            self._gsc = defaultdict(lambda: [0, 0, 0.0])
+            self._gsc_min = {}
+            for nom, m, _ in self.sites:
+                for r in _lignes(self.hist / "gsc_daily" / f"{slug(nom)}.csv.gz"):
+                    v = self._gsc[(m, r["date"])]
+                    imp = int(r["impressions"] or 0)
+                    v[0] += int(r["clics"] or 0); v[1] += imp; v[2] += float(r["position"] or 0) * imp
+                    self._gsc_min[m] = min(self._gsc_min.get(m, "9999"), r["date"])
+        deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
+        c = i = 0; pos = 0.0
+        for (m, jour), v in self._gsc.items():
+            if (marque is None or m == marque) and deb <= jour <= fin:
+                c += v[0]; i += v[1]; pos += v[2]
+        premier = self._gsc_min.get(marque) if marque else min(self._gsc_min.values(), default=None)
+        if not i or not premier or premier > deb:
+            return None
+        return c, i, pos / i
+
+    def v2_dates(self, marque):
+        """{pays: 'AAAA-MM-JJ'} des sites de la marque passés en V2 (data/<site>.json -> v2_date)."""
+        import json
+        out = {}
+        for nom, m, pays in self.sites:
+            if m != marque:
+                continue
+            f = self.hist.parent / f"{slug(nom)}.json"
+            if f.exists():
+                try:
+                    v = json.load(open(f, encoding="utf-8")).get("v2_date")
+                except Exception:
+                    v = None
+                if v:
+                    out[pays] = v
+        return out
+
     # ------------------------------------------------------------------ trafic
     def _charge_trafic(self):
         """(marque, jour) -> {canal: [sessions, engagées]}  (sites de reprise, groupe de canaux principal)"""
