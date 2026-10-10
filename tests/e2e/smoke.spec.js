@@ -211,3 +211,20 @@ test("thème : suit la préférence système, bascule manuelle, mémorisé", asy
   await page.locator('[title^="Automatique"]').click();
   await expect.poll(theme).toBe("light");                   // retour au système (clair ici)
 });
+
+test("GA4 > Analyses détaillées : navigation par questions, contribution en cascade, même hauteur partout", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await expect(page.getByText("Pourquoi ça bouge ?")).toBeVisible();
+  await expect(page.getByText("Contribution à l'évolution des estimations")).toBeVisible();
+  const hauteur = async () => page.evaluate(() => { const t = [...document.querySelectorAll("span")].find((s) => s.textContent.trim() === "Analyses détaillées"); return Math.round(t.parentElement.nextElementSibling.nextElementSibling.getBoundingClientRect().height); });
+  const h0 = await hauteur();
+  for (const [theme, vue] of [["Acquisition", "Sources"], ["Conversion", "Par jour"], ["Conversion", "Canal × device"], ["Audience", "Jour & navigateurs"], ["Évolution", "Sessions par canal"]]) {
+    await page.getByText(theme, { exact: true }).first().click();
+    await page.getByText(vue, { exact: true }).first().click();
+    await page.waitForTimeout(500);
+    expect(await hauteur()).toBe(h0);
+  }
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

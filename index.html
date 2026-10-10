@@ -150,6 +150,8 @@
 
   .login-foot{font-size:12.5px;font-weight:500;color:#9a9fa6}
 /* Onglet Présentations : transitions douces sur les puces, cases et boutons (classes dédiées : un style modifié en JS ne casse plus les sélecteurs) */
+.ga-view{transition:background-color .3s cubic-bezier(.22,.9,.3,1),color .3s cubic-bezier(.22,.9,.3,1)}
+.ga-view:hover{color:#5b43d6}
 .pr-chip{transition:background-color .42s cubic-bezier(.22,.9,.3,1),border-color .42s cubic-bezier(.22,.9,.3,1),color .42s cubic-bezier(.22,.9,.3,1),transform .3s cubic-bezier(.22,.9,.3,1),box-shadow .42s cubic-bezier(.22,.9,.3,1);animation:prPuceIn .45s cubic-bezier(.22,.9,.3,1) backwards;will-change:transform}
 .pr-chip:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(124,99,238,.14)}
 .pr-chip:active{transform:translateY(0) scale(.96);box-shadow:none}
@@ -534,18 +536,43 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
 
       <div>
-        <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:11px;margin-bottom:10px;flex-wrap:wrap">
           <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyses détaillées</span>
           <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:13px;padding:4px;flex-wrap:wrap">
-            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+            <sc-for list="{{ gaThemes }}" as="t" hint-placeholder-count="4">
               <span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.name }}</span>
             </sc-for>
           </div>
+          <span style="font-size:13px;color:#9a9fa6">{{ gaThemeQuestion }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;margin:0 0 12px 2px;flex-wrap:wrap">
+          <sc-for list="{{ gaViews }}" as="v" hint-placeholder-count="4">
+            <span class="ga-view" onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.name }}</span>
+          </sc-for>
         </div>
 
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
 
-          <sc-if value="{{ isSources }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ isContrib }}" hint-placeholder-val="{{ true }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipT }}">{{ tIconT }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Contribution à l'évolution des estimations<span class="dc-info" tabindex="0">i<span class="dc-tip">Pourquoi les estimations (étape finale du tunnel) ont varié entre les deux périodes : effet de l'audience (visiteurs de la page d'accueil) puis de chaque étape du tunnel. Chaque effet est la part de l'écart attribuée par décomposition logarithmique ; leur somme redonne exactement l'écart. Axe tronqué : seules les barres d'évolution sont à lire.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ contribRange }}</div>
+              </div>
+              </div>
+            </div>
+            <sc-if value="{{ contribHas }}" hint-placeholder-val="{{ true }}">
+              <div id="cbContrib" style="flex:1;min-height:240px;position:relative">{{ contribChart }}</div>
+            </sc-if>
+            <sc-if value="{{ !contribHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ contribEmpty }}</div>
+            </sc-if>
+            <sc-if value="{{ contribInsight }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ contribInsight }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSources }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipS }}">{{ tIconS }}</span><div>
@@ -590,6 +617,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </sc-for>
             </div>
             <div id="cbTrend" style="flex:1;min-height:220px;position:relative">{{ multiChart }}</div>
+          <sc-if value="{{ insTrend }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insTrend }}</div></sc-if>
           </div>
           </sc-if>
 
@@ -615,6 +643,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-if value="{{ !convHasData }}" hint-placeholder-val="{{ false }}">
               <div style="padding:34px 0;font-size:14px;color:#9a9fa6;text-align:center">La conversion quotidienne n'est pas encore disponible sur cette période : elle apparaît après le prochain rafraîchissement des données.</div>
             </sc-if>
+<sc-if value="{{ insConv }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insConv }}</div></sc-if>
           </div>
           </sc-if>
 
@@ -688,6 +717,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="{{ row.d3 }}"><span style="font-size:15px;font-weight:600">{{ row.v3 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g3 }}</span></div>
               </div>
             </sc-for>
+          <sc-if value="{{ insDevice }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insDevice }}</div></sc-if>
           </div>
           </sc-if>
 
@@ -721,6 +751,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </div>
             </div>
+          <sc-if value="{{ insAudience }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insAudience }}</div></sc-if>
           </div>
           </sc-if>
         </div>
@@ -1986,7 +2017,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 <script type="text/x-dc" data-dc-script data-props="{}">
 const AGG_MEMO = new WeakMap(), RANK_MEMO = new WeakMap();   // résultats de aggregate()/rankSites() par jeu de données : un clic sans rapport (ex. Présentations) ne les recalcule plus
 class Component extends DCLogic {
-  state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'sources', hidden:{},
+  state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'contrib', hidden:{},
             scTab:'pages', cmpDim:'pages', apiState:'idle',
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
             cmpCustomStart:null, cmpCustomEnd:null,
@@ -1996,7 +2027,7 @@ class Component extends DCLogic {
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   /* hauteur des graphiques de « Analyses détaillées » : le conteneur remplit la carte (même hauteur pour tous les onglets), le viewBox suit son rapport largeur/hauteur */
   measureBoxes() {
-    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason' };
+    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib' };
     const prev = this._boxes || {};
     let changed = false; const next = Object.assign({}, prev);
     for (const [k, id] of Object.entries(ids)) {
@@ -2788,8 +2819,87 @@ class Component extends DCLogic {
       return { name, pct:pct+' %', bar:`width:${pct}%;height:100%;border-radius:4px;background:#b6a5f8` };
     });
 
-    const tabDefs=[['sources','Sources'],['trend','Tendance'],['conv','Conversion'],['v2','Avant / après V2'],['device','Canal × device'],['audience','Audience & saisonnalité']].filter(t=>!(this.estLimite()&&t[0]==='v2'));
-    const tabs=tabDefs.map(t=>({name:t[1],pick:()=>set({tab:t[0]}),style:this.tabStyle(st.tab===t[0])}));
+    // ---- Contribution à l'évolution des estimations (tunnel, deux périodes) : décomposition logarithmique audience + 5 étapes
+    const FACT_NOMS=["Audience","Accueil → Version","Version → Km","Km → Coordonnées","Coordonnées → PDV","PDV → Estimation"];
+    const stepsU=a=>a&&a.funnelSteps&&a.funnelSteps.length===6?a.funnelSteps.map(x=>x.users):null;
+    const cuA=stepsU(agg), cuR=stepsU(cmp);
+    const contribHas=!!(cuA&&cuR&&cuA.every(v=>v>0)&&cuR.every(v=>v>0));
+    const fmtJ2=iso=>iso.slice(8,10)+'/'+iso.slice(5,7);
+    const contribRange=cmpRange?`${fmtJ2(debut)}→${fmtJ2(fin)} vs ${fmtJ2(cmpRange.debut)}→${fmtJ2(cmpRange.fin)}`:'Aucune comparaison active';
+    const contribEmpty=!cmp?"Active une période de comparaison dans le calendrier (période précédente ou année précédente) pour voir ce qui explique l'évolution.":"Le tunnel n'a pas assez de données sur l'une des deux périodes pour décomposer l'évolution.";
+    let contribChart=null, contribInsight='';
+    if (contribHas) {
+      const Ec=cuA[5], Er=cuR[5], Dl=Ec-Er;
+      const lg=[Math.log(cuA[0]/cuR[0])];
+      for (let k=1;k<6;k++) lg.push(Math.log((cuA[k]/cuA[k-1])/(cuR[k]/cuR[k-1])));
+      const Lsum=lg.reduce((a,b)=>a+b,0);
+      const eff=lg.map(v=>Math.abs(Lsum)<1e-9?0:Dl*v/Lsum);
+      const lev=[Er]; eff.forEach((e,i)=>lev.push(lev[i]+e)); // niveaux cumulés
+      const allv=[Er,Ec,...lev];
+      let lo=Math.min(...allv), hi=Math.max(...allv);
+      const span=Math.max(hi-lo,hi*0.04);
+      const yMin=Math.max(0,lo-span*0.6), yMax=hi+span*0.35;
+      const WW=900, WH=boxH('contrib',900,300), CL2=62, CR2=16, CT2=26, CB2=46, cwid=WW-CL2-CR2, chei=WH-CT2-CB2;
+      const yy=v=>CT2+chei-(v-yMin)/(yMax-yMin)*chei;
+      const nb=8, slot=cwid/nb, bw=Math.min(64,slot*0.62), ck2=[];
+      [0,1,2,3].forEach(i=>{ const v=yMin+(yMax-yMin)*i/3; ck2.push(h('line',{key:'g'+i,x1:CL2,y1:yy(v),x2:CL2+cwid,y2:yy(v),stroke:'#f0f0f2',strokeWidth:1})); ck2.push(h('text',{key:'t'+i,x:CL2-10,y:yy(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(Math.round(v)))); });
+      const bar=(i,v0,v1,fill,label,sub,tip)=>{
+        const x=CL2+i*slot+(slot-bw)/2, ya=yy(Math.max(v0,v1)), yb=yy(Math.min(v0,v1)), hh=Math.max(2,yb-ya);
+        ck2.push(h('rect',{key:'b'+i,x,y:ya,width:bw,height:hh,rx:5,fill},h('title',null,tip)));
+        ck2.push(h('text',{key:'v'+i,x:x+bw/2,y:ya-6,textAnchor:'middle',fontSize:11,fontWeight:600,fill:'#2f2f33',fontFamily:F},label));
+        const parts=sub.split(' → ');
+        ck2.push(h('text',{key:'s'+i,x:x+bw/2,y:WH-26,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[0]+(parts.length>1?' →':'')));
+        if (parts.length>1) ck2.push(h('text',{key:'s2'+i,x:x+bw/2,y:WH-13,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[1]));
+      };
+      bar(0,yMin,Er,'#c9ccd3',this.fmt(Er),'Période de comparaison','Estimations de la période de comparaison : '+this.fmt(Er));
+      eff.forEach((e,i)=>{
+        const rateTip=i===0?`Visiteurs de l'accueil : ${this.fmt(cuR[0])} → ${this.fmt(cuA[0])}`:`${FACT_NOMS[i]} : ${dec(cuR[i]/cuR[i-1]*100,1)} % → ${dec(cuA[i]/cuA[i-1]*100,1)} %`;
+        bar(i+1,lev[i],lev[i+1],e>=0?'#3fae7a':'#e8544a',(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e))),FACT_NOMS[i],rateTip+' · effet '+(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e)))+' estimations');
+        const xa=CL2+(i+1)*slot-(slot-bw)/2, xb=CL2+(i+1)*slot+(slot-bw)/2;
+        ck2.push(h('line',{key:'c'+i,x1:xa,y1:yy(lev[i]),x2:xb,y2:yy(lev[i]),stroke:'#cfd1d6',strokeWidth:1,strokeDasharray:'3 3'}));
+      });
+      bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle','Estimations de la période actuelle : '+this.fmt(Ec));
+      if (yMin>0) ck2.push(h('text',{key:'cut',x:CL2,y:12,fontSize:10,fill:'#b3b7bd',fontFamily:F},'Axe tronqué : lire les barres d\'évolution'));
+      contribChart=h('svg',{viewBox:`0 0 ${WW} ${WH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck2);
+      const iMax=eff.reduce((m,e,i)=>Math.abs(e)>Math.abs(eff[m])?i:m,0);
+      const evo=Er?Dl/Er*100:null;
+      contribInsight=`Estimations ${this.fmt(Er)} → ${this.fmt(Ec)}${evo!=null?' ('+(evo>=0?'+':'−')+dec(Math.abs(evo),1)+' %)':''} : le facteur principal est « ${FACT_NOMS[iMax]} » (${eff[iMax]>=0?'+':'−'}${this.fmt(Math.abs(Math.round(eff[iMax])))}).`;
+    }
+    // ---- bandeaux « À retenir » des vues existantes
+    const signedPct=v=>(v>=0?'+':'−')+dec(Math.abs(v),1)+' %';
+    let insTrend='';
+    if (cmp&&tousCanaux.length){
+      const totC={}; Object.values(cmp.canal).forEach(dd=>{ for (const [c,v] of Object.entries(dd)) totC[c]=(totC[c]||0)+v; });
+      const mv=tousCanaux.filter(c=>(totC[c]||0)>=100).map(c=>({c,d:totalParCanal[c]-totC[c],p:(totalParCanal[c]-totC[c])/totC[c]*100})).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+      if (mv.length) insTrend=`${mv[0].c} : ${signedPct(mv[0].p)} vs la période de comparaison (${mv[0].d>=0?'+':'−'}${this.fmt(Math.abs(mv[0].d))} sessions)`+(mv[1]?` · ${mv[1].c} : ${signedPct(mv[1].p)}`:'')+'.';
+    }
+    let insConv='';
+    { const pts=convSerie.map((p,i)=>p&&p.home>=100?{d:dates[i],pct:p.pct}:null).filter(Boolean);
+      if (pts.length>=3){ const best=pts.reduce((a,b)=>b.pct>a.pct?b:a), low=pts.reduce((a,b)=>b.pct<a.pct?b:a);
+        insConv=`Meilleur jour : ${fmtJ2(best.d)} (${dec(best.pct,1)} %) · plus bas : ${fmtJ2(low.d)} (${dec(low.pct,1)} %) · écart de ${dec(best.pct-low.pct,1)} pt.`; } }
+    let insDevice='';
+    { const cells=[]; canauxDevice.forEach(c=>['desktop','mobile','tablet'].forEach(dv=>{ const r=agg.convCanalDevice.get(c+'|'+dv); if (r&&r.sessions>=500) cells.push({n:c+' × '+({desktop:'desktop',mobile:'mobile',tablet:'tablette'})[dv],t:r.conversions/r.sessions*100}); }));
+      if (cells.length>=3){ const b=cells.reduce((a,x)=>x.t>a.t?x:a), w=cells.reduce((a,x)=>x.t<a.t?x:a); insDevice=`Meilleure conversion : ${b.n} (${dec(b.t,1)} %) · plus faible : ${w.n} (${dec(w.t,1)} %) — parmi les combinaisons de plus de 500 sessions.`; } }
+    let insAudience='';
+    { const tot=sess.reduce((a,b)=>a+b,0)/7;
+      if (tot>=1){ const pk=sess.indexOf(Math.max(...sess)), lw=sess.indexOf(Math.min(...sess));
+        const nomsJ=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+        insAudience=`Pic le ${nomsJ[pk]} (${signedPct((sess[pk]/tot-1)*100)} vs la moyenne), creux le ${nomsJ[lw]} (${signedPct((sess[lw]/tot-1)*100)}) — sessions du site de reprise.`; } }
+    // ---- navigation des analyses détaillées : 4 questions (thèmes) -> vues, du constat vers l'explication
+    const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend']],
+                     ['acquisition','Acquisition',"D'où vient le trafic ?",['sources']],
+                     ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','device','v2']],
+                     ['audience','Audience','Qui sont les visiteurs ?',['audience']]];
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',sources:'Sources',conv:'Par jour',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
+    const gaOk=v=>!(this.estLimite()&&v==='v2');
+    const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
+    const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
+    const gaThemes=GA_THEMES.map(t=>({name:t[1],style:this.tabStyle(t===gaTheme),
+      pick:()=>{ const last=(st.gaLast||{})[t[0]]; const target=(last&&t[3].includes(last)&&gaOk(last))?last:t[3].filter(gaOk)[0]; set({tab:target,gaLast:Object.assign({},st.gaLast,{[gaTheme[0]]:gaCur})}); }}));
+    const gaViews=gaTheme[3].filter(gaOk).map(v=>({name:GA_LABELS[v],pick:()=>set({tab:v}),
+      style:`display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;${v===gaCur?'background:#f1eefe;color:#5b43d6;font-weight:600':'color:#6d727a'}`}));
+    const gaThemeQuestion=gaTheme[2];
+
     // libelle honnete : le graphe trace la vraie periode selectionnee dans
     // le calendrier, jamais fixe a "12 mois" quelle que soit la selection.
     // fmtFr n'est defini que plus bas dans cette fonction (const, TDZ) --
@@ -4506,13 +4616,13 @@ class Component extends DCLogic {
       convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:560, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
+      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
       tChipV:kPuce('#d78b35'), tIconV:kIcone('#d78b35',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})),
       tChipD:kPuce('#3b76e8'), tIconD:kIcone('#3b76e8',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})),
       tChipA:kPuce('#7c63ee'), tIconA:kIcone('#7c63ee',h('circle',{cx:9,cy:8,r:3.5}),h('path',{d:'M2.5 20a6.5 6.5 0 0113 0'}),h('path',{d:'M17 5a3.5 3.5 0 010 7M21.5 20a6.5 6.5 0 00-4-6'})),
-      funChip:kPuce('#7c63ee'), funIcon:kIcone('#7c63ee',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), convChip:kPuce('#7c63ee'), convIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, tabs,
+      funChip:kPuce('#7c63ee'), funIcon:kIcone('#7c63ee',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), convChip:kPuce('#7c63ee'), convIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), convRangeLabel, convSummary, trendRangeLabel, v2, matrix, allMatrix, seasonChart, browsers, 
       matrixCount:allMatrix.length,
       openMatrix:matrixCtl.openIt, closeMatrix:matrixCtl.closeIt, matrixModal:matrixCtl.isOpen,
       matrixBackdropStyle:matrixStyles.backdrop, matrixPanelStyle:matrixStyles.panel,
@@ -4520,7 +4630,8 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isSources:st.tab==='sources', isTrend:st.tab==='trend', isConv:st.tab==='conv', isV2:st.tab==='v2', isDevice:st.tab==='device', isAudience:st.tab==='audience',
+      isContrib:gaCur==='contrib', isSources:gaCur==='sources', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', gaThemes, gaViews, gaThemeQuestion,
+      contribHas, contribChart, contribRange, contribEmpty, contribInsight, insTrend, insConv, insDevice, insAudience,
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };
   }
