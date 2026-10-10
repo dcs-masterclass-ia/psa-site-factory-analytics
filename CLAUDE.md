@@ -337,3 +337,22 @@ gabarit `pipeline/deck/gabarit_autobiz.pptx`) → `presentations/out/<id>.pptx` 
 regroupées (`GROUPES_SOURCES` dans `pipeline/deck/donnees.py`), la diapo détaille le regroupement. Tests Python :
 `python -m unittest tests.py.test_deck`. Règles de calcul : `docs/presentations-definitions.md`. Tests :
 `node --test tests/api/presentations.test.js`, `tests/e2e/presentations.spec.js`.
+
+## GA4 — « Analyses détaillées » : organisation par questions (2026-10-11)
+
+Navigation à deux niveaux, du constat vers l'explication (`GA_THEMES` dans `index.html`) :
+**Évolution** « Pourquoi ça bouge ? » (Contribution en cascade · Sessions par canal · Années passées · Événements) ·
+**Acquisition** « D'où vient le trafic ? » (Sources · Campagnes · Qualité du trafic) ·
+**Conversion** « Où et chez qui convertit-on ? » (Par jour · Fuites du tunnel · Canal × device · Avant / après V2) ·
+**Audience** « Qui sont les visiteurs ? » (Jour & navigateurs) · **Pilotage** « Où va-t-on ? » (Alertes · Objectifs, ce dernier réservé au profil complet).
+Chaque vue suit le même gabarit : en-tête (icône, titre, info-bulle, sous-titre), visuel qui remplit la carte, bandeau « À retenir » calculé
+(`ins*`). La carte a une hauteur minimale commune (`tabMinH`) et les graphiques SVG sont mesurés (`measureBoxes`, ids `cb*`) pour la remplir.
+Une nouvelle vue = une entrée dans `GA_THEMES` + `GA_LABELS`, un bloc `<sc-if value="{{ isX }}">`, ses variables dans `renderVals` et son bandeau `ins`.
+Données ajoutées aux JSON de site (jamais de lead) : `convCanalDevice[].engagees` (sessions engagées), `utmMonth` (top 20 source/médium × campagne par mois),
+`funnelSeg` (entonnoir mensuel par appareil et canal), `histMonth` (totaux mensuels GA4 depuis 2022, dérivés de `data/history` par `pipeline/hist_month.py`).
+Les campagnes / sessions engagées se rattrapent par 3 mois anciens et par site à chaque rafraîchissement (`rattrapage` dans `pipeline/build.py`).
+Le calendrier d'événements (`api/events.js`, `events/events.json`) pose des repères sur les courbes et alimente l'analyse des présentations ;
+les objectifs (`api/objectifs.js`, profil complet) comparent le réalisé, l'attendu à date (saisonnalité N-1) et la projection ; les alertes
+(`pipeline/alertes.py`, étape de `refresh.yml`, `api/alertes.js`) sont des règles à seuils réglables, sans IA ; Teams seulement si le secret
+`ALERTES_WEBHOOK_URL` existe et que « notifier » est actif. Les dossiers de travail du repo de données (presentations, tickets, events, objectifs,
+alertes) ne sont jamais servis en statique (`scripts/fetch-data.sh`).
