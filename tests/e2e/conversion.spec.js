@@ -148,3 +148,19 @@ test("graphique Search Console : deux axes, moyenne 7 j, bulle de survol et past
   await expect(page.locator('svg path[stroke="#3b76e8"][stroke-width="2.8"]')).toHaveCount(0);
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("Tableau : prévision, année sur année, saisonnalité, ruptures, qualité", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title^="Tableau"]').first().click();
+  for (const t of ["Prévision", "Année sur année", "Saisonnalité", "Ruptures de tendance", "Qualité des leads", "Marques reprises", "Marchés des sites"]) {
+    await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
+  }
+  await expect(page.getByText(/Projection fin \d{4}/).first()).toBeVisible();
+  // bascule Sites -> Marques sans erreur, objectif cliquable
+  await page.getByText("Marques", { exact: true }).first().click();
+  await expect(page.getByText("Accélérations", { exact: true })).toBeVisible();
+  await page.locator("span", { hasText: /^\d,\d{2} M$/ }).first().click().catch(() => {});
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

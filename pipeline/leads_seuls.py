@@ -27,7 +27,7 @@ import json
 import re
 import time
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pipeline import leads_extract
 from pipeline.build import DATA, PARIS, _commit_et_pousse, _configure_git, mois_a_traiter
@@ -118,7 +118,8 @@ def main():
     if inconnus:
         raise SystemExit(f"pas des sites « leads seuls » (absents du back-office ou deja dans sites.py) : {inconnus}")
     mois_liste = mois_a_traiter()
-    dernier_jour = datetime.now(PARIS).strftime("%Y-%m-%d")
+    # veille (jamais le jour en cours, partiel) : meme convention que les autres sites
+    dernier_jour = (datetime.now(PARIS) - timedelta(days=1)).strftime("%Y-%m-%d")
     if not a.ecrire:
         print(f"Mode simulation. {len(cibles)} site(s) : {', '.join(cibles)}")
     else:

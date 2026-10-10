@@ -1191,6 +1191,81 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
+      <sc-if value="{{ tbHasAdvanced }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Prévision</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Projection des leads valides du périmètre : réel depuis janvier + reste de l'année d'après les jours de l'an dernier × la croissance des 90 derniers jours. Testée sur 2022-2025 (parc entier) : écart de −0,6 % à +1,1 % sur le total annuel.</span></span>
+          <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
+          <span style="font-size:13px;color:#9a9fa6">{{ fcNote }}</span>
+        </div>
+        <sc-if value="{{ fcOk }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ fcChip }}">{{ fcIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Cumul de leads sur l'année</div><div style="font-size:12.5px;color:#9a9fa6">Réel, projection et fourchette, comparés à l'an dernier</div></div></div><div style="display:flex;gap:14px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #7c63ee"></span>Réel</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px dashed #7c63ee"></span>Projection</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #b3b7bd"></span>Année précédente</span></div>
+            </div>
+            <div>{{ tbForecastChart }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+            <sc-for list="{{ fcKpis }}" as="k" hint-placeholder-count="2">
+              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;flex:1;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+                <span style="{{ k.chip }}">{{ k.icon }}</span>
+                <div style="min-width:0;flex:1">
+                  <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a">{{ k.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ k.tip }}</span></span></div>
+                  <div style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2">{{ k.value }}</div>
+                  <div style="font-size:12.5px;color:#9a9fa6">{{ k.sub }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;flex:1.15">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="{{ capChip }}">{{ capIcon }}</span><span style="font-size:14px;color:#6d727a">{{ capTitle }}</span><span class="dc-info" tabindex="0" style="margin-left:0">i<span class="dc-tip">{{ capTip }}</span></span></div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ tbCaps }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-size:22px;font-weight:600;color:#121214">{{ capNeeded }}</span><span style="font-size:12.5px;color:#9a9fa6">nécessaires</span></div>
+              <div style="height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden;margin:9px 0 6px"><div style="height:100%;width:{{ capPct }}%;border-radius:4px;background:linear-gradient(90deg,#7c63ee,#a996f4)"></div></div>
+              <div style="font-size:12.5px;color:#9a9fa6">atteint : {{ capDate }} · {{ capSubTxt }}</div>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ !fcOk }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)"><div style="font-size:14px;color:#9a9fa6;text-align:center;padding:22px 0">{{ fcNote }}</div></div>
+        </sc-if>
+        </div>
+        <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Année sur année</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads valides par mois, trois dernières années, d'après l'historique profond du back-office (data/leads_mensuel.json). L'écart affiché au-dessus des mois est celui de l'année en cours contre la précédente, mois complets seulement.</span></span>
+          <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
+          <span style="font-size:13px;color:#9a9fa6">historique depuis 2021</span>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ yoyChip }}">{{ yoyIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Leads par mois</div><div style="font-size:12.5px;color:#9a9fa6">Mois complets : écart de l'année en cours vs la précédente</div></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><sc-for list="{{ yoyLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="{{ l.dot }}"></span>{{ l.label }}</span></sc-for></div>
+            </div>
+            <div>{{ tbYoyChart }}</div>
+          </div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ annChip }}">{{ annIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Totaux annuels</div><div style="font-size:12.5px;color:#9a9fa6">Leads valides, évolution vs l'année précédente</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 74px;gap:10px;padding:0 4px 6px;font-size:12.5px;color:#9a9fa6"><span>Année</span><span style="text-align:right">Leads</span><span style="text-align:right">Évol.</span></div>
+            <sc-for list="{{ annualRows }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 1fr 74px;gap:10px;align-items:center;padding:0 4px;min-height:40px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                <span style="font-size:14px;color:#2f2f33">{{ r.year }}</span><span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.total }}</span><span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </div>
+      </div>
+      </sc-if>
+
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyse du portefeuille</span>
@@ -1367,6 +1442,80 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
           </div>
         </div>
+      <sc-if value="{{ tbHasAdvanced }}" hint-placeholder-val="{{ true }}">
+        <div>
+        <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Tendances et qualité</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Saisonnalité (jours et mois), ruptures de tendance par site ou marque, et qualité des leads (doublons, tests).</span></span>
+          <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
+          <span style="font-size:13px;color:#9a9fa6">{{ ruptNote }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px;align-items:stretch">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ seaChip }}">{{ seaIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Saisonnalité</div><div style="font-size:12.5px;color:#9a9fa6">Écart de chaque jour à la moyenne, 12 derniers mois</div></div></div>
+            </div>
+            <sc-for list="{{ weekdayRows }}" as="d" hint-placeholder-count="7">
+              <div style="display:grid;grid-template-columns:44px 70px minmax(100px,1fr) 56px;gap:10px;align-items:center;padding:0 4px;min-height:34px;border-top:1px solid #f2f2f4">
+                <span style="font-size:14px;color:#121214">{{ d.name }}</span><span style="font-size:13.5px;color:#6d727a;text-align:right">{{ d.avg }}</span>
+                <div style="position:relative;height:16px"><span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#e4e4e8"></span><span style="{{ d.bar }}"></span></div>
+                <span style="{{ d.idxStyle }}">{{ d.idx }}</span>
+              </div>
+            </sc-for>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">{{ seasonLabel }}</div>
+            <sc-if value="{{ monthSeasonOk }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:5px;align-items:flex-end;height:96px">
+              <sc-for list="{{ monthSeasonRows }}" as="m" hint-placeholder-count="12">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%" title="{{ m.pct }}">
+                  <span style="{{ m.bar }};width:100%"></span><span style="font-size:10px;color:#8a8f98;margin-top:4px">{{ m.name }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ rupChip }}">{{ rupIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Ruptures de tendance</div><div style="font-size:12.5px;color:#9a9fa6">Croissance vs N-1 : 30 derniers jours contre 90 jours</div></div></div><div style="display:flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ ruptTabs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 62px 54px 54px 62px;gap:8px;padding:0 4px 6px;font-size:12px;color:#9a9fa6"><span>Décrochages</span><span style="text-align:right">Leads 30 j</span><span style="text-align:right">vs N-1</span><span style="text-align:right">90 j</span><span style="text-align:right">Écart</span></div>
+            <sc-for list="{{ ruptDown }}" as="r" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 62px 54px 54px 62px;gap:8px;align-items:center;padding:0 4px;min-height:36px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:13px;color:#6d727a;text-align:right">{{ r.vol }}</span>
+                <span style="font-size:13px;color:#2f2f33;text-align:right">{{ r.y30 }}</span><span style="font-size:13px;color:#9a9fa6;text-align:right">{{ r.y90 }}</span><span style="{{ r.gapStyle }}">{{ r.gap }}</span>
+              </div>
+            </sc-for>
+            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 62px 54px 54px 62px;gap:8px;padding:12px 4px 6px;font-size:12px;color:#9a9fa6"><span>Accélérations</span><span></span><span></span><span></span><span></span></div>
+            <sc-for list="{{ ruptUp }}" as="r" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 62px 54px 54px 62px;gap:8px;align-items:center;padding:0 4px;min-height:36px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:13px;color:#6d727a;text-align:right">{{ r.vol }}</span>
+                <span style="font-size:13px;color:#2f2f33;text-align:right">{{ r.y30 }}</span><span style="font-size:13px;color:#9a9fa6;text-align:right">{{ r.y90 }}</span><span style="{{ r.gapStyle }}">{{ r.gap }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ quaChip }}">{{ quaIcon }}</span>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Qualité des leads</div><div style="font-size:12.5px;color:#9a9fa6">Doublons et tests écartés, 3 derniers mois</div></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px">
+              <sc-for list="{{ qualKpis }}" as="k" hint-placeholder-count="3">
+                <div style="background:#f8f8fa;border-radius:12px;padding:10px 12px"><div style="font-size:12px;color:#8a8f98">{{ k.label }}</div><div style="font-size:19px;font-weight:600;color:#121214">{{ k.value }}</div><div style="font-size:11.5px;color:#9a9fa6">{{ k.sub }}</div></div>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 64px minmax(80px,1fr) 52px;gap:10px;padding:0 4px 6px;font-size:12px;color:#9a9fa6"><span>Site</span><span style="text-align:right">Bruts</span><span>Doublons</span><span style="text-align:right">Tests</span></div>
+            <sc-for list="{{ qualTop }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 64px minmax(80px,1fr) 52px;gap:10px;align-items:center;padding:0 4px;min-height:38px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                <span style="font-size:13.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:13px;color:#6d727a;text-align:right">{{ r.brut }}</span>
+                <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ r.bar }}"></span></span><span style="font-size:13px;font-weight:600;color:#121214;min-width:42px;text-align:right">{{ r.dbl }}</span></span>
+                <span style="font-size:13px;color:#6d727a;text-align:right">{{ r.test }}</span>
+              </div>
+            </sc-for>
+            <div style="font-size:12px;color:#9a9fa6;margin-top:10px">{{ qualNote }}</div>
+          </div>
+        </div>
+        </div>
+      </sc-if>
       </div>
       </sc-if>
     </div>
@@ -1567,6 +1716,7 @@ class Component extends DCLogic {
         try { loaded[s] = await (await fetch(urlData(slug(s)))).json(); } catch (e) {}
       }));
       this.data = loaded;
+      if (!limite) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
       // mode embarque (colonne du mode "Comparer") : un seul site, meme
       // source/periode que la vue parente, sans rail ni en-tete.
       const qp = new URLSearchParams(location.search);
@@ -3081,6 +3231,226 @@ class Component extends DCLogic {
       ? `${deviceLabelFr(deviceRowsSorted[0][0])} représente ${Math.round(deviceRowsSorted[0][1]/(devTotal||1)*100)} % du volume de leads back-office (${this.fmt(deviceRowsSorted[0][1])} leads), le premier appareil du portefeuille sur la période.`
       : 'Aucune donnée d’appareil disponible sur la période.';
 
+    // ---------- Tableau : prévision et analyses avancées (10/10/2026) ----------
+    // Méthode de prévision validée sur l'historique (parc entier, 2022-2025 :
+    // écart de -0,6 % à +1,1 % sur le total annuel) : croissance des 90 derniers
+    // jours vs la même période de l'an dernier, appliquée au reste de l'année
+    // d'après les jours de l'an dernier. Fourchette = croissances 30 j / 90 j /
+    // depuis janvier. Rien n'est inventé : tout vient de leads[mois].daily (BO).
+    const tb_pad2=n=>String(n).padStart(2,'0');
+    const tb_addDaysIso=(iso,n)=>{ const t=new Date(iso+'T00:00:00Z'); t.setUTCDate(t.getUTCDate()+n); return t.toISOString().slice(0,10); };
+    const tb_yAgo=iso=>(parseInt(iso.slice(0,4),10)-1)+iso.slice(4);
+    this._siteDailyCache = this._siteDailyCache||{};
+    const tb_siteDailyTb = name => {
+      if (this._siteDailyCache[name]) return this._siteDailyCache[name];
+      const out={}, Lq=(this.data[name]||{}).leads||{};
+      for (const m of Object.keys(Lq)) { if(!/^\d{4}-\d{2}$/.test(m)) continue; const dl=Lq[m].daily||[]; for(let i=0;i<dl.length;i++) out[m+'-'+tb_pad2(i+1)]=dl[i]||0; }
+      return this._siteDailyCache[name]=out;
+    };
+    const tb_mapOf = names => { const o={}; names.forEach(n=>{ const m=tb_siteDailyTb(n); for (const k in m) o[k]=(o[k]||0)+m[k]; }); return o; };
+    const tb_sumR=(map,a,b)=>{ let t=0,d=a; while(d<=b){ t+=map[d]||0; d=tb_addDaysIso(d,1); } return t; };
+    const tb_sumPrev=(map,a,b)=>{ let t=0,d=a; while(d<=b){ t+=map[tb_yAgo(d)]||0; d=tb_addDaysIso(d,1); } return t; };
+    const tb_growthR=(map,a,b)=>{ const cur=tb_sumR(map,a,b), prev=tb_sumPrev(map,a,b); return {cur,prev,ratio:prev?cur/prev:null}; };
+    const tb_perim = tb_mapOf(st.sites||[]);
+    const tb_perimDays = Object.keys(tb_perim).sort();
+    let tb_lastDay = tb_perimDays.length ? tb_perimDays[tb_perimDays.length-1] : null;
+    if (tb_lastDay) { // derniers jours incomplets (journée en cours, sites pas encore à jour) : écartés tant qu'ils sont bien sous la normale
+      for (let k=0;k<7;k++){
+        const pv=[8,9,10,11,12,13,14].map(i=>tb_perim[tb_addDaysIso(tb_lastDay,-i)]||0), mv=pv.reduce((a,b)=>a+b,0)/7;
+        if (mv>0 && (tb_perim[tb_lastDay]||0) < mv*0.5) tb_lastDay = tb_addDaysIso(tb_lastDay,-1); else break;
+      }
+    }
+    const tb_MOIS_C=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const tb_fmtJ=iso=>parseInt(iso.slice(8,10),10)+' '+tb_MOIS_C[parseInt(iso.slice(5,7),10)-1];
+    const tb_fmtK=v=>v>=1e6?dec(v/1e6,2)+' M':v>=1e4?Math.round(v/1000)+' k':this.fmt(Math.round(v));
+    const tb_SEUIL_PREV = 5000;
+    let fc=null;
+    if (tb_lastDay) {
+      const Y=tb_lastDay.slice(0,4), a0=Y+'-01-01', dec31=Y+'-12-31';
+      const ytd=tb_sumR(tb_perim,a0,tb_lastDay);
+      const g30=tb_growthR(tb_perim,tb_addDaysIso(tb_lastDay,-29),tb_lastDay), g90=tb_growthR(tb_perim,tb_addDaysIso(tb_lastDay,-89),tb_lastDay), gy=tb_growthR(tb_perim,a0,tb_lastDay);
+      if (g30.ratio!=null && g90.ratio!=null && gy.ratio!=null) {
+        const rs=[g30.ratio,g90.ratio,gy.ratio], central=g90.ratio, rLow=Math.min(...rs), rHigh=Math.max(...rs);
+        const restDates=[]; for (let d=tb_addDaysIso(tb_lastDay,1); d<=dec31; d=tb_addDaysIso(d,1)) restDates.push(d);
+        const prevRest=restDates.map(d=>tb_perim[tb_yAgo(d)]||0);
+        const tot=(r)=>ytd+prevRest.reduce((a,b)=>a+b,0)*r;
+        const mEnd=tb_lastDay.slice(0,7); let prevMonthRest=0, nbMonthRest=0;
+        restDates.forEach((d,i)=>{ if(d.slice(0,7)===mEnd){ prevMonthRest+=prevRest[i]; nbMonthRest++; } });
+        const mStart=mEnd+'-01', ytdMonth=tb_sumR(tb_perim,mStart,tb_lastDay);
+        fc={ Y, ytd, central, rLow, rHigh, restDates, prevRest, last30: g30.cur,
+             yearC:tot(central), yearL:tot(rLow), yearH:tot(rHigh),
+             monthC:ytdMonth+prevMonthRest*central, monthL:ytdMonth+prevMonthRest*rLow, monthH:ytdMonth+prevMonthRest*rHigh,
+             monthLabel:tb_MOIS_C[parseInt(mEnd.slice(5),10)-1], g30:g30.ratio, g90:g90.ratio, gy:gy.ratio,
+             perDay:g30.cur/30, restDays:restDates.length, prevYtd:gy.prev };
+      }
+    }
+    const fcOk = !!fc;
+    const fcPetit = fcOk && fc.ytd < tb_SEUIL_PREV;
+    const fcYear = fcOk ? fc.yearC : 0;
+    const tb_pctS=r=>(r>=1?'+':'−')+dec(Math.abs(r-1)*100,0)+' %';
+    const tb_bandeS = (a,b)=>tb_fmtK(a)+' – '+tb_fmtK(b);
+    // objectif : trois paliers ronds autour de la projection
+    const pow=fcOk?Math.pow(10,Math.floor(Math.log10(fcYear))-2)*5:1;
+    const capVals = fcOk ? [0.95,1,1.05].map(f=>Math.max(pow,Math.round(fcYear*f/pow)*pow)).filter((v,i,a)=>a.indexOf(v)===i) : [];
+    const capIdx = Math.min(st.tbCap!=null?st.tbCap:Math.min(1,capVals.length-1), Math.max(0,capVals.length-1));
+    const cap = capVals[capIdx]||0;
+    const tbCaps = capVals.map((v,i)=>({ label:tb_fmtK(v), pick:()=>set({tbCap:i}),
+      style:'font-size:12.5px;font-weight:500;border-radius:999px;padding:4px 11px;cursor:pointer;white-space:nowrap;'+(i===capIdx?'background:#121214;color:#fff':'background:#f6f6f8;color:#6d727a') }));
+    let capNeeded='—', capDate='—', capPct=0, capSub='';
+    if (fcOk && cap) {
+      const restNeed=Math.max(0,cap-fc.ytd);
+      capNeeded=fc.restDays?this.fmt(Math.round(restNeed/fc.restDays))+' / jour':'—';
+      capPct=Math.min(100,fc.ytd/cap*100);
+      let cum=fc.ytd, hit=null; for (let i=0;i<fc.restDates.length;i++){ cum+=fc.prevRest[i]*fc.central; if(cum>=cap){ hit=fc.restDates[i]; break; } }
+      capDate = fc.ytd>=cap ? 'déjà atteint' : (hit?tb_fmtJ(hit):'non atteint en '+fc.Y);
+      capSub = 'rythme actuel : '+this.fmt(Math.round(fc.perDay))+' / jour';
+    }
+    // courbe cumulée : année précédente, réel, projection + fourchette
+    const tbForecastChart = (()=>{
+      if (!fcOk) return '';
+      const Y=fc.Y, W=860,H=250,GL=48,GR=18,GT=14,GB=28, pw=W-GL-GR, ph=H-GT-GB;
+      const days=[]; for (let d=Y+'-01-01'; d<=Y+'-12-31'; d=tb_addDaysIso(d,1)) days.push(d);
+      const n=days.length, lastI=days.indexOf(tb_lastDay);
+      const prevC=[], actC=[], cenC=[], lowC=[], higC=[]; let cp=0, ca=0;
+      days.forEach((d,i)=>{ cp+=tb_perim[tb_yAgo(d)]||0; prevC.push(cp); if(i<=lastI){ ca+=tb_perim[d]||0; actC.push(ca); } });
+      let c1=ca,c2=ca,c3=ca; for (let i=lastI+1;i<n;i++){ const p=tb_perim[tb_yAgo(days[i])]||0; c1+=p*fc.central; c2+=p*fc.rLow; c3+=p*fc.rHigh; cenC[i]=c1; lowC[i]=c2; higC[i]=c3; }
+      cenC[lastI]=lowC[lastI]=higC[lastI]=ca;
+      const ymax=Math.max(prevC[n-1],higC[n-1]||0,ca)*1.06;
+      const X=i=>GL+i/(n-1)*pw, Yv=v=>GT+ph-(v/ymax)*ph;
+      const el=[];
+      for (let k=0;k<=4;k++){ const v=ymax/1.06*k/4; el.push(h('line',{key:'g'+k,x1:GL,y1:Yv(v),x2:GL+pw,y2:Yv(v),stroke:'#f0f0f3',strokeWidth:1}), h('text',{key:'gt'+k,x:GL-8,y:Yv(v)+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
+      for (let m=0;m<12;m++){ const i=days.indexOf(Y+'-'+tb_pad2(m+1)+'-01'); el.push(h('text',{key:'mx'+m,x:X(i)+2,y:H-8,fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_MOIS_C[m])); }
+      const path=(arr,from,to)=>{ let d=''; for(let i=from;i<=to;i++){ if(arr[i]==null) continue; d+=(d?'L':'M')+X(i).toFixed(1)+','+Yv(arr[i]).toFixed(1)+' '; } return d; };
+      const band=(()=>{ let top='',bot=''; for(let i=lastI;i<n;i++) top+=(top?'L':'M')+X(i).toFixed(1)+','+Yv(higC[i]).toFixed(1)+' '; for(let i=n-1;i>=lastI;i--) bot+='L'+X(i).toFixed(1)+','+Yv(lowC[i]).toFixed(1)+' '; return top+bot+'Z'; })();
+      el.push(h('path',{key:'band',d:band,fill:'#7c63ee',opacity:.13}));
+      el.push(h('path',{key:'prev',d:path(prevC,0,n-1),fill:'none',stroke:'#b3b7bd',strokeWidth:1.8,strokeLinejoin:'round'}));
+      el.push(h('path',{key:'cen',d:path(cenC,lastI,n-1),fill:'none',stroke:'#7c63ee',strokeWidth:2.2,strokeDasharray:'6 5'}));
+      el.push(h('path',{key:'act',d:path(actC,0,lastI),fill:'none',stroke:'#7c63ee',strokeWidth:2.6,strokeLinejoin:'round'}));
+      el.push(h('circle',{key:'dl',cx:X(lastI),cy:Yv(ca),r:4.5,fill:'#7c63ee',stroke:'#fff',strokeWidth:2}));
+      el.push(h('text',{key:'te',x:X(n-1)-4,y:Yv(cenC[n-1])-9,textAnchor:'end',fontSize:12,fontWeight:600,fill:'#5b43d6',fontFamily:F},'≈ '+tb_fmtK(cenC[n-1])));
+      if (cap && cap<ymax) { el.push(h('line',{key:'cap',x1:GL,y1:Yv(cap),x2:GL+pw,y2:Yv(cap),stroke:'#e08a33',strokeWidth:1.2,strokeDasharray:'2 4'}), h('text',{key:'capt',x:GL+4,y:Yv(cap)-5,fontSize:10.5,fill:'#c4842a',fontFamily:F},'objectif '+tb_fmtK(cap))); }
+      const hv=st.tbHover;
+      for (let w=0; w*7<n; w++){ const i=Math.min(n-1,w*7+3); el.push(h('rect',{key:'hit'+w,x:X(w*7)-1,y:GT,width:7/(n-1)*pw+1,height:ph,fill:'transparent',style:{cursor:'crosshair'},onMouseEnter:()=>set({tbHover:i}),onMouseLeave:()=>set({tbHover:null})})); }
+      if (hv!=null && hv<n){
+        const reel=hv<=lastI, v=reel?actC[hv]:cenC[hv], tw=190, tx=X(hv)+14+tw>W-GR?X(hv)-14-tw:X(hv)+14;
+        el.push(h('line',{key:'hl',x1:X(hv),y1:GT,x2:X(hv),y2:GT+ph,stroke:'#c9cbd2'}), h('circle',{key:'hc',cx:X(hv),cy:Yv(v),r:4,fill:'#7c63ee',stroke:'#fff',strokeWidth:1.8}),
+          h('g',{key:'ht',pointerEvents:'none',transform:'translate('+tx+','+(GT+4)+')'},[
+            h('rect',{key:'r',width:tw,height:70,rx:10,fill:'#141414',opacity:.96}),
+            h('text',{key:'d',x:12,y:19,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},tb_fmtJ(days[hv])+(reel?'':' · projection')),
+            h('text',{key:'a',x:12,y:39,fontSize:13.5,fontWeight:600,fill:'#cfc4ff',fontFamily:F},(reel?'Cumul ':'Projeté ')+this.fmt(Math.round(v))),
+            h('text',{key:'p',x:12,y:57,fontSize:11.5,fill:'#c4c7d0',fontFamily:F},(parseInt(Y,10)-1)+' : '+this.fmt(Math.round(prevC[hv])))]));
+      }
+      return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},el);
+    })();
+    const fcKpis = !fcOk ? [] : [
+      {label:'Projection fin '+fc.Y,chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})),value:tb_fmtK(fc.yearC),sub:'fourchette '+tb_bandeS(fc.yearL,fc.yearH),tip:'Réel depuis janvier + reste de l\'année d\'après l\'an dernier × croissance des 90 derniers jours ('+tb_pctS(fc.g90)+'). Fourchette : croissance des 30 derniers jours ('+tb_pctS(fc.g30)+') à celle depuis janvier ('+tb_pctS(fc.gy)+').'},
+      {label:'Projection fin '+fc.monthLabel,chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),value:tb_fmtK(fc.monthC),sub:'fourchette '+tb_bandeS(fc.monthL,fc.monthH),tip:'Même méthode, limitée aux jours restants du mois.'}
+    ];
+    const capTitle = 'Objectif '+(cap?tb_fmtK(cap):'—');
+    const capTip = 'Leads par jour nécessaires pour atteindre l\'objectif d\'ici fin d\'année, comparés au rythme des 30 derniers jours. La date est celle à laquelle la projection centrale franchit le cap.';
+    const fcNote = !fcOk ? 'Prévision indisponible : il faut au moins 90 jours de leads et l\'année précédente sur ce périmètre.'
+      : (fcPetit ? 'Périmètre étroit : projection indicative (la méthode a été validée sur le parc entier).' : 'Méthode validée sur 2022-2025 (parc entier) : écart entre −0,6 % et +1,1 % sur le total annuel. Fourchette = croissances 30 j / 90 j / depuis janvier.');
+
+    // ---- année sur année (historique profond : data/leads_mensuel.json) ----
+    const lm = this._leadsMensuel && this._leadsMensuel.sites;
+    const ym = {}; // 'AAAA-MM' -> valides
+    (st.sites||[]).forEach(n=>{
+      if (lm && lm[n]) { for (const m in lm[n]) ym[m]=(ym[m]||0)+lm[n][m][0]; }
+      else { const sd=tb_siteDailyTb(n); for (const d in sd) { const m=d.slice(0,7); ym[m]=(ym[m]||0)+sd[d]; } }
+    });
+    const yoyYears = tb_lastDay ? [parseInt(tb_lastDay.slice(0,4),10)-2, parseInt(tb_lastDay.slice(0,4),10)-1, parseInt(tb_lastDay.slice(0,4),10)] : [];
+    const yearTot = y=>{ let t=0; for (let m=1;m<=12;m++) t+=ym[y+'-'+tb_pad2(m)]||0; return t; };
+    const lastMonthI = tb_lastDay ? parseInt(tb_lastDay.slice(5,7),10) : 12;
+    const tbYoyChart = (()=>{
+      if (!tb_lastDay) return '';
+      const W=860,H=230,GL=48,GR=10,GT=14,GB=26, pw=W-GL-GR, ph=H-GT-GB, cols=['#d9d2fb','#a996f4','#6c4fe0'];
+      let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); }); ymax*=1.12;
+      const el=[]; const bw=pw/12;
+      for (let k=0;k<=4;k++){ const v=ymax/1.12*k/4, yy=GT+ph-(v/ymax)*ph; el.push(h('line',{key:'g'+k,x1:GL,y1:yy,x2:GL+pw,y2:yy,stroke:'#f0f0f3'}), h('text',{key:'gt'+k,x:GL-8,y:yy+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
+      for (let m=1;m<=12;m++){ const x0=GL+(m-1)*bw+bw*0.14, w=bw*0.72/3;
+        yoyYears.forEach((y,j)=>{ const v=ym[y+'-'+tb_pad2(m)]||0; if(!v) return; const partial=(y===yoyYears[2]&&m===lastMonthI); const hh=v/ymax*ph;
+          el.push(h('rect',{key:'b'+m+'_'+j,x:x0+j*w,y:GT+ph-hh,width:w-2,height:hh,rx:2.5,fill:cols[j],opacity:partial?.55:1})); });
+        el.push(h('text',{key:'mx'+m,x:GL+(m-1)*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_MOIS_C[m-1]));
+        const a=ym[yoyYears[2]+'-'+tb_pad2(m)], b=ym[yoyYears[1]+'-'+tb_pad2(m)];
+        if (a && b && m<lastMonthI) el.push(h('text',{key:'dl'+m,x:GL+(m-1)*bw+bw/2,y:GT+ph-Math.max(a,b)/ymax*ph-6,textAnchor:'middle',fontSize:10,fontWeight:600,fill:a>=b?'#2b8f62':'#a33c39',fontFamily:F},(a>=b?'+':'−')+Math.round(Math.abs(a/b-1)*100)+'%'));
+      }
+      return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},el);
+    })();
+    const yoyLegend = yoyYears.map((y,j)=>({ label:String(y)+(j===2?' (en cours)':''), dot:'width:10px;height:10px;border-radius:3px;display:inline-block;background:'+['#d9d2fb','#a996f4','#6c4fe0'][j] }));
+    const annualRows = (()=>{
+      if (!tb_lastDay) return [];
+      const Y=parseInt(tb_lastDay.slice(0,4),10), rows=[]; let prev=null;
+      const first=Math.max(2021, Y-5);
+      for (let y=first;y<=Y;y++){ const t=yearTot(y); if(!t) continue;
+        const cur=y===Y; const d=prev?((t/prev-1)*100):null;
+        rows.push({ year:String(y)+(cur?' · cumul':''), total:this.fmt(t), delta:cur?'—':(d==null?'—':(d>=0?'+':'−')+dec(Math.abs(d),1)+' %'), deltaStyle:'font-size:13.5px;font-weight:600;text-align:right;color:'+(cur||d==null?'#9a9fa6':d>=0?'#2b8f62':'#a33c39') });
+        if (!cur) prev=t; else if (fcOk) { const dd=prev?((fc.yearC/prev-1)*100):null; rows.push({ year:Y+' · projection', total:'≈ '+this.fmt(Math.round(fc.yearC/1000)*1000), delta:dd==null?'—':(dd>=0?'+':'−')+dec(Math.abs(dd),1)+' %', deltaStyle:'font-size:13.5px;font-weight:600;text-align:right;color:'+(dd>=0?'#2b8f62':'#a33c39') }); }
+      }
+      return rows;
+    })();
+
+    // ---- saisonnalité : jours de la semaine (365 j) et mois (années complètes) ----
+    const tb_JOURS_C=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const weekdayRows = (()=>{
+      if (!tb_lastDay) return [];
+      const sums=[0,0,0,0,0,0,0], cnt=[0,0,0,0,0,0,0];
+      for (let i=0;i<364;i++){ const d=tb_addDaysIso(tb_lastDay,-i); const wd=(new Date(d+'T00:00:00Z').getUTCDay()+6)%7; if(tb_perim[d]==null) continue; sums[wd]+=tb_perim[d]; cnt[wd]++; }
+      const avg=sums.map((s,i)=>cnt[i]?s/cnt[i]:0), all=avg.reduce((a,b)=>a+b,0)/7||1;
+      return avg.map((v,i)=>{ const idx=(v/all-1)*100, w=Math.min(48,Math.abs(idx)/40*48);
+        return { name:tb_JOURS_C[i], avg:this.fmt(Math.round(v)), idx:(Math.round(Math.abs(idx))===0?'':(idx>=0?'+':'−'))+Math.round(Math.abs(idx))+' %',
+          idxStyle:'font-size:13px;font-weight:600;text-align:right;color:'+(idx>=0?'#2b8f62':'#a33c39'),
+          bar:`position:absolute;top:3px;height:10px;border-radius:3px;${idx>=0?`left:50%;width:${w}%;background:#3fae7a`:`right:50%;width:${w}%;background:#e8544a`}` }; });
+    })();
+    const monthSeason = (()=>{
+      if (!tb_lastDay) return {rows:[],ok:false};
+      const Y=parseInt(tb_lastDay.slice(0,4),10), ys=[Y-3,Y-2,Y-1].filter(y=>yearTot(y)>0);
+      if (ys.length<2) return {rows:[],ok:false};
+      const share=Array.from({length:12},(_,m)=>ys.reduce((a,y)=>a+(ym[y+'-'+tb_pad2(m+1)]||0)/yearTot(y),0)/ys.length*100);
+      const mx=Math.max(...share);
+      return {ok:true, label:ys[0]+'–'+ys[ys.length-1], rows:share.map((v,m)=>({ name:tb_MOIS_C[m], pct:dec(v,1)+' %', bar:`display:block;height:${Math.max(4,v/mx*70)}px;border-radius:4px 4px 0 0;background:${m+1===lastMonthI?'#6c4fe0':'#c9bdf7'}`, hot:m+1===lastMonthI })) };
+    })();
+    const seasonLabel = monthSeason.ok ? 'Poids de chaque mois dans l\'année, moyenne '+monthSeason.label : 'Historique insuffisant sur ce périmètre pour la saisonnalité mensuelle';
+
+    // ---- ruptures : décrochages / accélérations (30 j vs 90 j, chacun vs N-1) ----
+    const ruptMode = st.tbRupt==='marque' ? 'marque' : 'site';
+    const ruptGroups = {};
+    (st.sites||[]).forEach(n=>{ const k=ruptMode==='marque'?marqueDeSiteTb(n):n; (ruptGroups[k]=ruptGroups[k]||[]).push(n); });
+    const ruptAll = [];
+    if (tb_lastDay) Object.keys(ruptGroups).forEach(k=>{
+      const mp=tb_mapOf(ruptGroups[k]);
+      const g30=tb_growthR(mp,tb_addDaysIso(tb_lastDay,-29),tb_lastDay), g90=tb_growthR(mp,tb_addDaysIso(tb_lastDay,-89),tb_lastDay);
+      if (g30.cur<300 || g30.prev<150 || g90.prev<450) return;
+      ruptAll.push({ name:ruptMode==='marque'?titleCase(k):k, cur:g30.cur, y30:(g30.ratio-1)*100, y90:(g90.ratio-1)*100, gap:(g30.ratio-g90.ratio)*100 });
+    });
+    const mkRupt = r=>({ name:r.name, vol:this.fmt(r.cur), y30:(r.y30>=0?'+':'−')+(Math.abs(r.y30)>=1000?'>1000':Math.round(Math.abs(r.y30)))+' %', y90:(r.y90>=0?'+':'−')+(Math.abs(r.y90)>=1000?'>1000':Math.round(Math.abs(r.y90)))+' %',
+      gap:(r.gap>=0?'+':'−')+dec(Math.abs(r.gap),0)+' pts', gapStyle:'font-size:13.5px;font-weight:600;text-align:right;white-space:nowrap;color:'+(r.gap>=0?'#2b8f62':'#a33c39') });
+    const ruptDown = ruptAll.filter(r=>r.gap<=-8).sort((a,b)=>a.gap-b.gap).slice(0,5).map(mkRupt);
+    const ruptUp = ruptAll.filter(r=>r.gap>=8).sort((a,b)=>b.gap-a.gap).slice(0,5).map(mkRupt);
+    const ruptTabs = [['site','Sites'],['marque','Marques']].map(([k,l])=>({ label:l, pick:()=>set({tbRupt:k}),
+      style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;'+(ruptMode===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
+    const ruptNote = ruptAll.length ? ruptAll.length+' '+(ruptMode==='marque'?'marques':'sites')+' analysés (≥ 300 leads sur 30 j, ≥ 150 N-1)' : 'Aucun groupe avec assez de volume et d\'historique N-1.';
+
+    // ---- qualité des leads (doublons / tests par site, 3 derniers mois) ----
+    const qualRows = [];
+    let qBrut=0,qDbl=0,qTest=0;
+    if (lm && tb_lastDay) {
+      const mm=[0,1,2].map(i=>{ const d=new Date(tb_lastDay.slice(0,7)+'-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth()-i); return d.toISOString().slice(0,7); });
+      (st.sites||[]).forEach(n=>{
+        if (!lm[n]) return; let v=0,dd=0,t=0,p=0; mm.forEach(m=>{ const a=lm[n][m]; if(a){ v+=a[0]; dd+=a[1]; t+=a[2]; p+=a[3]; } });
+        const brut=v+dd+t+p; qBrut+=brut; qDbl+=dd; qTest+=t+p;
+        if (brut>=300) qualRows.push({ name:n, brut, dbl:dd/brut*100, test:(t+p)/brut*100 });
+      });
+    }
+    const qualOk = qBrut>0;
+    const qualTop = qualRows.sort((a,b)=>b.dbl-a.dbl).slice(0,6).map(r=>({ name:r.name, brut:this.fmt(r.brut), dbl:dec(r.dbl,1)+' %', test:dec(r.test,1)+' %',
+      bar:`display:block;width:${Math.min(100,r.dbl/(qualRows[0].dbl||1)*100)}%;height:100%;border-radius:4px;background:${r.dbl>=12?'#e8544a':r.dbl>=7?'#e8a33d':'#3fae7a'}` }));
+    const qualKpis = [
+      {label:'Part de doublons',value:qualOk?dec(qDbl/qBrut*100,1)+' %':'—',sub:'des leads bruts, 3 derniers mois'},
+      {label:'Tests et preview',value:qualOk?dec(qTest/qBrut*100,1)+' %':'—',sub:'exclus des leads valides'},
+      {label:'Leads valides',value:qualOk?dec((1-(qDbl+qTest)/qBrut)*100,1)+' %':'—',sub:this.fmt(qBrut)+' leads bruts'}
+    ];
+    const qualNote = lm ? (qualRows.length?'Sites avec au moins 300 leads bruts, triés par part de doublons.':'Aucun site avec assez de volume sur le périmètre.') : 'Agrégat mensuel indisponible (data/leads_mensuel.json).';
+
     // ---------- header : marque + calendrier ----------
     // périmètre : arbre à cases à cocher groupé par marché (23/09/2026) --
     // cocher un marché coche/décoche tous ses sites d'un coup ; plusieurs
@@ -3307,6 +3677,13 @@ class Component extends DCLogic {
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
       tbLeads:this.fmt(tbLeadsV), tbLeadsDelta, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      fcChip:kPuce('#7c63ee'), fcIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), capChip:kPuce('#d78b35'), capIcon:kIcone('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:0.8})),
+      yoyChip:kPuce('#3b76e8'), yoyIcon:kIcone('#3b76e8',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})),
+      annChip:kPuce('#3fae7a'), annIcon:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),
+      seaChip:kPuce('#e08a33'), seaIcon:kIcone('#e08a33',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2'})),
+      rupChip:kPuce('#e8544a'), rupIcon:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'}),h('path',{d:'M17 6h4v4'})),
+      quaChip:kPuce('#3fae7a'), quaIcon:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
+      tbCaps, capTitle, capTip, capNeeded, capDate, capSubTxt:capSub, fcOk, fcKpis, fcNote, tbForecastChart, tbYoyChart, yoyLegend, annualRows, weekdayRows, monthSeasonRows:monthSeason.rows, monthSeasonOk:monthSeason.ok, seasonLabel, ruptTabs, ruptDown, ruptUp, ruptNote, qualOk, qualTop, qualKpis, qualNote, capPct:capPct.toFixed(1), tbHasAdvanced:!!tb_lastDay,
       listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
       cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
       cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
