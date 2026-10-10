@@ -1163,8 +1163,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="font-size:13px;color:#9a9fa6">{{ rangeLabel }} · toutes marques</span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between">
-              <div style="font-size:15px;color:#6d727a;margin-bottom:4px">Leads back-office</div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px"><span style="{{ tbChip }}">{{ tbIcon }}</span>Leads back-office</div>
               <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
                 <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ tbLeads }}</span>
                 <span style="{{ tbLeadsDelta.style }}margin-bottom:10px">{{ tbLeadsDelta.text }}</span>
@@ -1178,8 +1178,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
               <sc-for list="{{ tbKpis }}" as="kpi" hint-placeholder-count="3">
-                <div style="background:#fff;border:1px solid #efeff1;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:11px;min-width:0;overflow:hidden">
-                  <div style="flex:1 1 auto;min-width:132px">
+                <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+                  <span style="{{ kpi.chip }}">{{ kpi.icon }}</span>
+                  <div style="flex:1 1 auto;min-width:120px">
                     <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
                     <div style="font-size:23px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ kpi.value }}</div>
                   </div>
@@ -1199,27 +1200,31 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:15px;align-items:stretch">
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:4px">
-                <div>
-                  <div style="font-size:16px;font-weight:600;color:#121214">Marques reprises : volume</div>
-                  <div style="font-size:13.5px;color:#9a9fa6">Écart de part de volume à la médiane des marques listées</div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="{{ cBrandChip }}">{{ cBrandIcon }}</span>
+                  <div>
+                    <div style="font-size:15px;font-weight:600;color:#121214">Marques reprises</div>
+                    <div style="font-size:12.5px;color:#9a9fa6">Marque du véhicule que le client revend · <span style="color:#6d727a">{{ brandCountLabel }}</span></div>
+                  </div>
                 </div>
-                <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:3px">
+                <div style="display:flex;align-items:center;gap:4px;background:#f2f2f5;border-radius:11px;padding:3px">
                   <span onClick="{{ sortVolume }}" style="{{ brandSortVol }}">Volume</span>
-                  <span onClick="{{ sortPerf }}" style="{{ brandSortPerf }}">Alphabétique</span>
+                  <span onClick="{{ sortPerf }}" style="{{ brandSortPerf }}">A–Z</span>
                 </div>
               </div>
-              <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:10px 6px;font-size:13px;color:#9a9fa6">
-                <span>Marque</span><span style="text-align:right">Leads</span><span style="text-align:center">Écart médiane</span><span style="text-align:right">Part</span>
+              <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:0 6px 8px;font-size:12.5px;color:#9a9fa6">
+                <span>Marque</span><span style="text-align:right">Leads</span><span style="text-align:center">Écart à la médiane</span><span style="text-align:right">Part</span>
               </div>
+              <div style="min-height:{{ listMinH }}px">
               <sc-for list="{{ brandPerf }}" as="b" hint-placeholder-count="6">
-                <div style="display:grid;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                <div style="display:grid;gap:12px;align-items:center;padding:0 6px;min-height:44px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s;grid-template-columns:minmax(96px,1fr) 74px minmax(120px,1.3fr) 78px" style-hover="background:#f6f7fb">
                   <span style="display:flex;align-items:center;gap:8px;min-width:0">
                     <span style="{{ b.rankStyle }}">{{ b.rank }}</span>
-                    <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span>
+                    <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.name }}</span>
                   </span>
-                  <span style="font-size:15px;color:#2f2f33;text-align:right">{{ b.leads }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ b.leads }}</span>
                   <div style="position:relative;height:16px">
                     <span style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#e4e4e8"></span>
                     <span style="{{ b.divBar }}"></span>
@@ -1227,125 +1232,135 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <span style="{{ b.rateStyle }}">{{ b.rate }}</span>
                 </div>
               </sc-for>
-              <div style="margin-top:auto;padding-top:16px">
-                <div style="display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
-                  <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
+              </div>
+              <div style="margin-top:auto;padding-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;padding:11px 13px;background:#f7f5ff;border:1px solid #ece8fd">
+                  <span style="width:20px;height:20px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                     <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
                     <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
                   </span>
                   <span style="min-width:0">
-                    <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LECTURE</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ brandInsight }}</span>
+                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#7c63ee;margin-bottom:2px">KAMIA · LECTURE</span>
+                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ brandInsight }}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
-              <div style="font-size:16px;font-weight:600;color:#121214">Pays : volume &amp; qualité d'entrée</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:4px">Volume, part du portefeuille et part des leads saisis avec immatriculation</div>
-              <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:10px 6px;font-size:13px;color:#9a9fa6">
-                <span>Pays</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">Avec plaque</span>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="{{ cCtryChip }}">{{ cCtryIcon }}</span>
+                  <div>
+                    <div style="font-size:15px;font-weight:600;color:#121214">Marchés des sites</div>
+                    <div style="font-size:12.5px;color:#9a9fa6">Pays du site de reprise · <span style="color:#6d727a">{{ countryCountLabel }}</span></div>
+                  </div>
+                </div>
+                <span style="font-size:11.5px;font-weight:500;border-radius:999px;padding:3px 10px;white-space:nowrap;background:#eef7f2;color:#2b8f62">avec immatriculation</span>
               </div>
+              <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 70px minmax(110px,1.2fr);align-items:center;gap:12px;padding:0 6px 8px;font-size:12.5px;color:#9a9fa6">
+                <span>Marché</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">Avec plaque</span>
+              </div>
+              <div style="min-height:{{ listMinH }}px">
               <sc-for list="{{ countryPerf }}" as="c" hint-placeholder-count="5">
-                <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 86px minmax(90px,1fr);align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                <div style="display:grid;gap:12px;align-items:center;padding:0 6px;min-height:44px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s;grid-template-columns:minmax(80px,1fr) 70px 70px minmax(110px,1.2fr)" style-hover="background:#f6f7fb">
                   <span style="display:flex;align-items:center;gap:8px;min-width:0">
                     <span style="{{ c.dot }}"></span>
-                    <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                    <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
                   </span>
-                  <span style="font-size:15px;color:#2f2f33;text-align:right">{{ c.leads }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ c.leads }}</span>
                   <span style="{{ c.delayStyle }}">{{ c.delay }}</span>
-                  <span style="min-width:0">
-                    <span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
-                      <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ c.bar }}"></span></span>
-                      <span style="font-size:14px;font-weight:600;color:#121214;white-space:nowrap">{{ c.rate }}</span>
-                    </span>
-                    <span style="display:block;font-size:12.5px;color:#9a9fa6;text-align:right;margin-top:3px">{{ c.lost }} manuel</span>
+                  <span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                    <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ c.bar }}"></span></span>
+                    <span style="font-size:13.5px;font-weight:600;color:#121214;white-space:nowrap;min-width:44px;text-align:right">{{ c.rate }}</span>
                   </span>
                 </div>
               </sc-for>
-              <div style="margin-top:auto;padding-top:16px">
-                <div style="display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
-                  <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
+              </div>
+              <div style="margin-top:auto;padding-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;padding:11px 13px;background:#f7f5ff;border:1px solid #ece8fd">
+                  <span style="width:20px;height:20px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                     <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
                     <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
                   </span>
                   <span style="min-width:0">
-                    <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · À TRAITER</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ countryInsight }}</span>
+                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#7c63ee;margin-bottom:2px">KAMIA · À TRAITER</span>
+                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ countryInsight }}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
-              <div style="font-size:16px;font-weight:600;color:#121214">Projet d'achat</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">{{ noProjectPct }} % des leads n'ont pas de projet d'achat déclaré</div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="{{ cProjChip }}">{{ cProjIcon }}</span>
+                  <div>
+                    <div style="font-size:15px;font-weight:600;color:#121214">Projet d'achat</div>
+                    <div style="font-size:12.5px;color:#9a9fa6">{{ noProjectPct }} % des leads sans projet d'achat déclaré</div>
+                  </div>
+                </div>
+              </div>
               <div style="display:flex;align-items:center;gap:22px;flex-wrap:wrap">
                 <div style="width:140px;flex:none">{{ tbProjectDonut }}</div>
-                <div style="flex:1 1 190px;min-width:0;display:flex;flex-direction:column;gap:11px">
+                <div style="flex:1 1 190px;min-width:0;display:flex;flex-direction:column;gap:12px">
                   <sc-for list="{{ projectPerf }}" as="p" hint-placeholder-count="3">
                     <div>
-                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:3px">
                         <span style="{{ p.dot }}"></span>
-                        <span style="flex:1;min-width:0;font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
-                        <span style="font-size:15px;font-weight:600;color:#121214;white-space:nowrap">{{ p.value }}</span>
+                        <span style="flex:1;min-width:0;font-size:14.5px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                        <span style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap">{{ p.value }}</span>
                       </div>
-                      <div style="display:flex;align-items:center;gap:10px;padding-left:21px">
-                        <span style="font-size:13px;color:#9a9fa6;white-space:nowrap">{{ p.detail }}</span>
-                      </div>
+                      <div style="padding-left:21px;font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ p.detail }}</div>
                     </div>
                   </sc-for>
                 </div>
               </div>
-              <div style="margin-top:auto;padding-top:16px">
-                <div style="display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
-                  <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
+              <div style="margin-top:auto;padding-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;padding:11px 13px;background:#f7f5ff;border:1px solid #ece8fd">
+                  <span style="width:20px;height:20px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                     <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
                     <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
                   </span>
                   <span style="min-width:0">
-                    <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LEVIER</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ projectInsight }}</span>
+                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#7c63ee;margin-bottom:2px">KAMIA · LEVIER</span>
+                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ projectInsight }}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
-              <div style="font-size:16px;font-weight:600;color:#121214">Appareil : répartition des leads</div>
-              <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:16px">Part du volume de leads back-office par type d'appareil</div>
-              <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                  <span style="{{ cDevChip }}">{{ cDevIcon }}</span>
+                  <div>
+                    <div style="font-size:15px;font-weight:600;color:#121214">Appareils</div>
+                    <div style="font-size:12.5px;color:#9a9fa6">Part des leads par type d'appareil</div>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:18px">
                 <sc-for list="{{ devicePerf }}" as="d" hint-placeholder-count="3">
                   <div>
                     <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:7px">
-                      <span style="font-size:15px;color:#121214;flex:1;min-width:0">{{ d.name }}</span>
-                      <span style="font-size:15px;font-weight:600;color:#121214;white-space:nowrap">{{ d.value }}</span>
-                      <span style="font-size:13px;color:#9a9fa6;white-space:nowrap">{{ d.pct }}</span>
+                      <span style="font-size:14.5px;color:#121214;flex:1;min-width:0">{{ d.name }}</span>
+                      <span style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap">{{ d.value }}</span>
+                      <span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;min-width:84px;text-align:right">{{ d.pct }}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <span style="flex:1;height:10px;border-radius:5px;background:#f2f2f4;overflow:hidden"><span style="{{ d.bar }}"></span></span>
-                    </div>
+                    <span style="display:block;height:10px;border-radius:5px;background:#f2f2f4;overflow:hidden"><span style="{{ d.bar }}"></span></span>
                   </div>
                 </sc-for>
               </div>
-              <div style="margin-top:auto;padding-top:16px">
-                <div style="display:flex;align-items:flex-start;gap:11px;border-radius:16px;padding:13px 15px;background:linear-gradient(150deg,#1b1636,#33215a);box-shadow:0 10px 24px rgba(43,25,90,.22)">
-                  <span style="width:22px;height:22px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
+              <div style="margin-top:auto;padding-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:10px;border-radius:12px;padding:11px 13px;background:#f7f5ff;border:1px solid #ece8fd">
+                  <span style="width:20px;height:20px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                     <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
                     <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
                   </span>
                   <span style="min-width:0">
-                    <span style="display:block;font-size:11px;font-weight:600;letter-spacing:.07em;color:#cfc4ff;margin-bottom:3px">KAMIA · LECTURE</span>
-                    <span style="display:block;font-size:14px;line-height:1.5;color:#f3f0ff">{{ deviceInsight }}</span>
+                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#7c63ee;margin-bottom:2px">KAMIA · LECTURE</span>
+                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ deviceInsight }}</span>
                   </span>
                 </div>
               </div>
@@ -2914,7 +2929,7 @@ class Component extends DCLogic {
     // ces notions n'existent nulle part dans l'extraction back-office
     // reelle (verifie sur pipeline/leads_extract.py) -- jamais inventees ici.
     const titleCase=s=>s.toLowerCase().split(' ').map(w=>w?w[0].toUpperCase()+w.slice(1):w).join(' ');
-    const paysDeSiteTb=n=>n.split(' ').slice(-1)[0];
+    const paysDeSiteTb=n=>{ const p=n.split(' ').slice(-1)[0]; return p==='GB'?'UK':p; };
     const marqueDeSiteTb=n=>n.split(' ').slice(0,-1).join(' ');
 
     const boAgg = this.aggregateLeadsBreakdown(debut, fin);
@@ -2936,20 +2951,20 @@ class Component extends DCLogic {
       const vals = this._allSites.map(n=>{
         const bo = this.aggregateLeadsBreakdown.call({state:{sites:[n]},data:this.data}, debut, fin);
         return bo.entryTotal ? bo.entryAvec/bo.entryTotal*100 : null;
-      }).filter(x=>x!=null).sort((a,b)=>a-b);
+      }).filter(x=>x!=null&&x>0).sort((a,b)=>a-b);
       if (vals.length) {
         const mid=Math.floor(vals.length/2);
         const med = vals.length%2 ? vals[mid] : (vals[mid-1]+vals[mid])/2;
-        medianEntryLabel = 'médiane parc : '+dec(med,1)+' % avec immatriculation';
+        medianEntryLabel = 'médiane des sites qui collectent la plaque : '+dec(med,1)+' %';
       }
     }
 
     const tbLeadsV = boLeads;
     const tbLeadsDelta = deltaBadge(boLeads, cmp&&cmp.leads);
     const tbKpis=[
-      {label:'Leads back-office',info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
-      {label:'Part avec immatriculation',info:"Part des leads du back-office saisis avec une plaque d'immatriculation, sur la période. Écart en points avec la période de comparaison.",value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(entryPct, entryPctCmp))},
-      {label:'Part mobile',info:"Part des leads du back-office déposés depuis un mobile, sur la période. Écart en points avec la période de comparaison.",value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(mobilePct, mobilePctCmp))}
+      {label:'Leads back-office',chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
+      {label:'Part avec immatriculation',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('rect',{x:3,y:7,width:18,height:10,rx:2}),h('path',{d:'M7 11h4M7 14h2'})),info:"Part des leads du back-office saisis avec une plaque d'immatriculation, sur la période. Écart en points avec la période de comparaison.",value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(entryPct, entryPctCmp))},
+      {label:'Part mobile',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('rect',{x:7,y:2,width:10,height:20,rx:2}),h('path',{d:'M11 18h2'})),info:"Part des leads du back-office déposés depuis un mobile, sur la période. Écart en points avec la période de comparaison.",value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(mobilePct, mobilePctCmp))}
     ];
     // meme carte "hero" large que le taux de conversion GA4 -- meme
     // correctif de largeur/hauteur de viewBox (cf. rateSpark).
@@ -2962,20 +2977,31 @@ class Component extends DCLogic {
     // la mediane des marques listees (jamais un "taux de traitement").
     const brandTotal = Array.from(boAgg.brand.values()).reduce((a,b)=>a+b,0) || 1;
     const brandRows = Array.from(boAgg.brand.entries()).map(([name,c])=>({name,leads:c,share:c/brandTotal*100}));
-    const sortedBrandRows = brandRows.slice().sort((a,b)=> (st.brandSort==='perf') ? a.name.localeCompare(b.name) : b.leads-a.leads).slice(0,8);
+    const TOPN = 8;
+    const brandsByVol = brandRows.slice().sort((a,b)=>b.leads-a.leads);
+    const brandTop = brandsByVol.slice(0,TOPN);
+    const brandRest = brandsByVol.slice(TOPN);
+    const sortedBrandRows = (st.brandSort==='perf') ? brandTop.slice().sort((a,b)=>a.name.localeCompare(b.name)) : brandTop;
     const shareSorted = sortedBrandRows.map(r=>r.share).sort((a,b)=>a-b);
     const shareMedian = shareSorted.length ? (shareSorted.length%2 ? shareSorted[Math.floor(shareSorted.length/2)] : (shareSorted[shareSorted.length/2-1]+shareSorted[shareSorted.length/2])/2) : 0;
     const maxDevBrand = Math.max(1, ...sortedBrandRows.map(r=>Math.abs(r.share-shareMedian)));
     const brandPerf = sortedBrandRows.map((r,i)=>{
       const dev=r.share-shareMedian, w=Math.abs(dev)/maxDevBrand*48;
       return {
-        name:titleCase(r.name), rank:i+1, leads:this.fmt(r.leads),
-        rankStyle:`width:20px;height:20px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:${i<2?'#fff':'#8a8f98'};background:${i<2?'#7c63ee':'#f2f2f4'}`,
+        name:titleCase(r.name), rank:st.brandSort==='perf'?'·':i+1, leads:this.fmt(r.leads),
+        rankStyle:`width:20px;height:20px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:${i<2&&st.brandSort!=='perf'?'#fff':'#8a8f98'};background:${i<2&&st.brandSort!=='perf'?'#7c63ee':'#f2f2f4'}`,
         divBar:`position:absolute;top:3px;height:10px;border-radius:3px;${dev>=0?`left:50%;width:${w}%;background:#3fae7a`:`right:50%;width:${w}%;background:#e8544a`}`,
         rate:dec(r.share,1)+' %',
         rateStyle:`font-size:14.5px;font-weight:600;text-align:right;white-space:nowrap;color:${dev>=0?'#2b8f62':'#a33c39'}`
       };
     });
+    if (brandRest.length) {
+      const rl=brandRest.reduce((a,r)=>a+r.leads,0);
+      brandPerf.push({ name:'Autres ('+brandRest.length+' marques)', rank:'+', leads:this.fmt(rl),
+        rankStyle:'width:20px;height:20px;flex:none;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;color:#8a8f98;background:#f2f2f4',
+        divBar:'display:none', rate:dec(rl/brandTotal*100,1)+' %', rateStyle:'font-size:14.5px;font-weight:500;text-align:right;white-space:nowrap;color:#6d727a' });
+    }
+    const brandCountLabel = brandRows.length>TOPN ? 'Top '+TOPN+' sur '+brandRows.length+' marques' : brandRows.length+' marque'+(brandRows.length>1?'s':'');
     const brandInsight = sortedBrandRows.length
       ? `${titleCase(sortedBrandRows[0].name)} concentre ${dec(sortedBrandRows[0].share,1)} % des véhicules repris (${this.fmt(sortedBrandRows[0].leads)} leads), la marque la plus représentée du portefeuille sur la période.`
       : 'Aucune donnée de marque disponible sur la période.';
@@ -2989,23 +3015,32 @@ class Component extends DCLogic {
     Object.keys(sitesParPays).forEach(pays=>{
       const a = this.aggregate.call({state:{sites:sitesParPays[pays]},data:this.data}, debut, fin);
       const bo = this.aggregateLeadsBreakdown.call({state:{sites:sitesParPays[pays]},data:this.data}, debut, fin);
-      countryRows.push({ name:pays, leads:a.leads, entryPct: bo.entryTotal?bo.entryAvec/bo.entryTotal*100:null, manuel: bo.entryTotal-bo.entryAvec });
+      countryRows.push({ name:pays, leads:a.leads, entryPct: bo.entryTotal?bo.entryAvec/bo.entryTotal*100:null, manuel: bo.entryTotal-bo.entryAvec, avec:bo.entryAvec, tot:bo.entryTotal });
     });
     countryRows.sort((a,b)=>b.leads-a.leads);
     const countryTotal = countryRows.reduce((a,c)=>a+c.leads,0) || 1;
-    const countryPerf = countryRows.map(c=>({
+    const mkCountry = c=>({
       name:c.name, leads:this.fmt(c.leads),
-      dot:`width:9px;height:9px;flex:none;border-radius:5px;background:${c.entryPct==null?'#c2c5cb':c.entryPct>=90?'#3fae7a':c.entryPct>=75?'#e8a33d':'#e8544a'}`,
+      dot:`width:9px;height:9px;flex:none;border-radius:5px;background:${c.entryPct==null||c.entryPct===0?'#c2c5cb':c.entryPct>=90?'#3fae7a':c.entryPct>=75?'#e8a33d':'#e8544a'}`,
       delayStyle:'font-size:14.5px;text-align:right;white-space:nowrap;color:#2f2f33',
       delay:dec(c.leads/countryTotal*100,1)+' %',
       rate:c.entryPct==null?'—':dec(c.entryPct,1)+' %',
       bar:c.entryPct==null?'display:block;width:0%;height:100%;border-radius:4px;background:#e2e2e6':`display:block;width:${c.entryPct}%;height:100%;border-radius:4px;background:#3fae7a`,
       lost:c.entryPct==null?'—':this.fmt(c.manuel)
-    }));
-    const worstCt = countryRows.filter(c=>c.entryPct!=null).sort((a,b)=>a.entryPct-b.entryPct)[0];
-    const countryInsight = worstCt
-      ? `${worstCt.name} a la plus faible part d'entrées avec immatriculation du portefeuille (${dec(worstCt.entryPct,1)} %) : plus de friction à la qualification qu'ailleurs.`
-      : 'Donnée insuffisante pour comparer les pays sur cette période.';
+    });
+    const countryTop = countryRows.slice(0,TOPN), countryRest = countryRows.slice(TOPN);
+    const countryPerf = countryTop.map(mkCountry);
+    if (countryRest.length) {
+      const tl=countryRest.reduce((a,c)=>a+c.leads,0), ta=countryRest.reduce((a,c)=>a+(c.avec||0),0), tt=countryRest.reduce((a,c)=>a+(c.tot||0),0);
+      countryPerf.push(mkCountry({name:'Autres ('+countryRest.length+' marchés)', leads:tl, entryPct:tt?ta/tt*100:null, manuel:tt-ta}));
+    }
+    const countryCountLabel = countryRows.length>TOPN ? 'Top '+TOPN+' sur '+countryRows.length+' marchés' : countryRows.length+' marché'+(countryRows.length>1?'s':'');
+    const nonCollecte = countryRows.filter(c=>c.entryPct===0).map(c=>c.name);
+    const worstCt = countryRows.filter(c=>c.entryPct!=null&&c.entryPct>0).sort((a,b)=>a.entryPct-b.entryPct)[0];
+    const countryInsight = (nonCollecte.length
+        ? `${nonCollecte.slice(0,4).join(', ')}${nonCollecte.length>4?' +'+(nonCollecte.length-4):''} : aucune immatriculation saisie, le champ n'est sans doute pas collecté sur ces marchés. `
+        : '')
+      + (worstCt ? `Parmi les marchés qui la collectent, ${worstCt.name} est le plus bas (${dec(worstCt.entryPct,1)} %).` : (nonCollecte.length ? '' : 'Donnée insuffisante pour comparer les marchés sur cette période.'));
 
     // projet d'achat (reel : "VN"/"VO"/"No purchase project") -- jamais de
     // panier moyen ni de valeur atelier, absents du back-office.
@@ -3017,7 +3052,7 @@ class Component extends DCLogic {
       const DC=2*Math.PI*54; let off=0;
       const donutArcs=projRows.map((p,i)=>{
         const frac=p.count/ptot, el=h('circle',{key:'d'+i,cx:70,cy:70,r:54,fill:'none',stroke:projColors[p.name]||'#c8c8ce',strokeWidth:22,
-          strokeDasharray:`${DC*frac-3} ${DC}`,strokeDashoffset:-DC*off,transform:'rotate(-90 70 70)'});
+          strokeDasharray:`${Math.max(0.01,DC*frac-3)} ${DC}`,strokeDashoffset:-DC*off,transform:'rotate(-90 70 70)'});
         off+=frac; return el;
       });
       return h('svg',{viewBox:'0 0 140 140',width:'100%',style:{display:'block',height:'auto',maxWidth:'150px',margin:'0 auto'}},
@@ -3272,7 +3307,12 @@ class Component extends DCLogic {
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
       tbLeads:this.fmt(tbLeadsV), tbLeadsDelta, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
-      brandPerf, brandInsight, countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
+      listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
+      cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
+      cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
+      cProjChip:kPuce('#d78b35'), cProjIcon:kIcone('#d78b35',h('path',{d:'M12 3v18M17 7H9.5a2.5 2.5 0 000 5h5a2.5 2.5 0 010 5H6'})),
+      cDevChip:kPuce('#7c63ee'), cDevIcon:kIcone('#7c63ee',h('rect',{x:7,y:2,width:10,height:20,rx:2}),h('path',{d:'M11 18h2'})),
+      countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
       scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, pagesCanaux, cChip:kPuce('#7c63ee'), cIcon:kIcone('#7c63ee',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})), qChip:kPuce('#3b76e8'), qIcon:kIcone('#3b76e8',h('circle',{cx:11,cy:11,r:7}),h('path',{d:'M21 21l-4.3-4.3'})), pChip:kPuce('#7c63ee'), pIcon:kIcone('#7c63ee',h('path',{d:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'}),h('path',{d:'M14 3v5h5'})), scQueries, allQueries, pageInsightText, queryInsight,
