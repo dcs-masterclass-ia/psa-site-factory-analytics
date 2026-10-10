@@ -37,18 +37,22 @@ class Textes(unittest.TestCase):
 
 
 class Analyse(unittest.TestCase):
-    def test_chiffres_hors_faits_ecartes(self):
-        from pipeline.deck.analyse import phrases_verifiees
-        faits = {"leads": 13343, "evol": "−3 %"}
-        res, n = phrases_verifiees({"constats": ["Les leads atteignent 13 343 (−3 %) au T3.", "Il y en a 99 999."], "lectures": [], "recommandations": []}, faits)
-        self.assertEqual(res["constats"], ["Les leads atteignent 13 343 (−3 %) au T3."])
-        self.assertEqual(n, 1)
-
-    def test_sans_cle_pas_de_diapo(self):
+    def test_regles_sans_ia(self):
+        """L'analyse est calculée (aucun appel réseau) et ne cite que des chiffres issus des données."""
+        from pipeline.deck.construit import Ctx
         from pipeline.deck import analyse
-        os.environ.pop("ANTHROPIC_API_KEY", None)
-        with self.assertRaises(RuntimeError):
-            analyse.analyse({"a": 1}, "fr", "x")
+        from pipeline.deck.donnees import Donnees
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["BE"], "marques": []},
+                     "comparaisons": {"precedente": True, "n1": True}, "modules": ["analyse"]}
+            d = Donnees(["BE"], None, hist=tmp)
+            ctx = Ctx(brief, d)
+            self.assertTrue(analyse.globale(ctx)["constats"][0].startswith("0 leads T3-2026"))
+
+    def test_variation_base_faible(self):
+        from pipeline.deck.analyse import _var
+        self.assertIsNone(_var(50, 40))
+        self.assertAlmostEqual(_var(110, 100), 10)
 
 
 class Construction(unittest.TestCase):

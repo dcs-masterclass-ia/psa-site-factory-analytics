@@ -476,66 +476,20 @@ def contacts(ctx):
 
 
 # ------------------------------------------------------------------ analyse (rédigée par Claude sur les faits calculés)
-def _evol(ctx, cur, ref):
-    return ctx.t.evol(cur, ref)[0]
-
-
-def faits_marque(ctx, m):
-    t, d = ctx.t, ctx.d
-    out = {"perimetre": ctx.perimetre, "marque": ctx.nom(m), "periode": ctx.et(ctx.per), "regle": "« n.s. » = base de comparaison inférieure à 100 : pas de pourcentage"}
-    for cle, p in [("courante", ctx.per)] + [(c, p) for c, p in ctx.refs]:
-        e = {"periode": ctx.et(p), "leads_total": d.leads_total(p, m), "leads_par_projet": d.leads(p, m),
-             "canaux_sessions": dict(sorted(d.canaux(p, m).items(), key=lambda kv: -kv[1])[:8])}
-        u = d.utilisateurs(p, m)
-        if u:
-            e.update({"utilisateurs": u["utilisateurs"], "in_journey": u["in_journey"], "hot_leads": u["hot_leads"]})
-        if d.acquisition_disponible(p):
-            e["leads_par_source"] = {sg: sum(v.values()) for sg, v in d.sources(p, m).items() if sum(v.values())}
-        out[cle if cle == "courante" else "reference_" + cle] = e
-    cur = out["courante"]
-    for cle, p in ctx.refs:
-        r = out["reference_" + cle]
-        out["evolutions_vs_" + cle] = {"leads": _evol(ctx, cur["leads_total"], r["leads_total"]),
-                                       "sessions": _evol(ctx, sum(cur["canaux_sessions"].values()), sum(r["canaux_sessions"].values())),
-                                       **({"hot_leads": _evol(ctx, cur["hot_leads"], r["hot_leads"])} if "hot_leads" in cur and "hot_leads" in r else {})}
-    if "in_journey" in cur and cur["utilisateurs"]:
-        out["taux"] = {"in_journey_sur_utilisateurs_pct": round(cur["in_journey"] / cur["utilisateurs"] * 100), 
-                       **({"hot_leads_sur_in_journey_pct": round(cur["hot_leads"] / cur["in_journey"] * 100)} if cur["in_journey"] else {})}
-    return out
-
-
-def faits_global(ctx):
-    d = ctx.d
-    out = {"perimetre": ctx.perimetre, "periode": ctx.et(ctx.per), "regle": "« n.s. » = base de comparaison inférieure à 100 : pas de pourcentage", "marques": {}}
-    for m in d.marques:
-        f = faits_marque(ctx, m)
-        out["marques"][ctx.nom(m)] = {"leads": f["courante"]["leads_total"], "evolutions": {k: v for k, v in f.items() if k.startswith("evolutions_vs_")},
-                                      "leads_par_projet": f["courante"]["leads_par_projet"]}
-    tot = d.leads_total(ctx.per)
-    out["total"] = {"leads": tot, "periodes_reference": {ctx.et(p): d.leads_total(p) for _, p in ctx.refs},
-                    "evolutions": {c: _evol(ctx, tot, d.leads_total(p)) for c, p in ctx.refs}}
-    if ctx.brief.get("commentaire"):
-        out["commentaire_du_dkam"] = ctx.brief["commentaire"]
-    return out
-
-
-def diapo_analyse(ctx, titre, faits, sujet):
-    """Une diapositive « Analyse » (constats / lectures / recommandations) ; None si l'analyse n'a pas pu être produite."""
-    try:
-        r = an.analyse(faits, ctx.langue, sujet)
-    except Exception as e:                          # clé absente, réseau, texte invérifiable : on n'invente rien
-        ctx.avertissements.append(f"Analyse « {sujet} » non générée : {str(e)[:120]}")
+def diapo_analyse(ctx, titre, r):
+    """Une diapositive « Analyse » (constats / lectures / recommandations) à partir du résultat des règles (analyse.py)."""
+    if not r:
         return None
     fr = ctx.langue == "fr"
     s = nouvelle(ctx, titre, ctx.perimetre, ctx.t["source_bo_ga4"],
-                 notes=("Analyse rédigée par IA à partir des seuls chiffres de cette présentation ; les causes sont des hypothèses. À relire avant envoi. " + note_definitions(ctx)))
+                 notes=("Analyse calculée par règles à partir des seuls chiffres de cette présentation ; les causes sont des hypothèses à confirmer. " + note_definitions(ctx)))
     cols = [("Ce que disent les chiffres" if fr else "What the numbers say", r["constats"]),
             ("Lecture et points d'attention" if fr else "Reading and watch points", r["lectures"]),
             ("Recommandations" if fr else "Recommendations", r["recommandations"])]
     w, gap = 4.0, 0.2
     for i, (tit, lignes) in enumerate(cols):
         if lignes:
-            g.encadre(s, X0 + i * (w + gap), 1.6, w, 5.2, tit, lignes, taille=12)
+            g.encadre(s, X0 + i * (w + gap), 1.6, w, 5.2, tit, lignes, taille=14)
     return s
 
 
@@ -573,7 +527,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         if autres:
             projets_groupe(ctx, "autres", autres)
     if "analyse" in m and (avoir_global or avoir_projets):
-        diapo_analyse(ctx, "Analyse — vue d'ensemble" if ctx.langue == "fr" else "Analysis — overview", faits_global(ctx), "vue d'ensemble")
+        diapo_analyse(ctx, "Analyse — vue d'ensemble" if ctx.langue == "fr" else "Analysis — overview", an.globale(ctx))
     if avoir_marques or "analyse" in m:
         sommaire(ctx, sections, "marques")
         for marque in ctx.d.marques:
@@ -585,11 +539,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
             if "sources" in m:
                 sources_marque(ctx, marque)
             if "analyse" in m:
-                f = faits_marque(ctx, marque)
-                if f["courante"]["leads_total"] + sum(f["courante"]["canaux_sessions"].values()) >= 100:     # volume trop faible : pas d'analyse
-                    diapo_analyse(ctx, f"{ctx.nom(marque)} — " + ("Analyse" if ctx.langue == "fr" else "Analysis"), f, ctx.nom(marque))
-        if "analyse" in m:
-            ctx.avertissements.append("Analyses rédigées par IA à partir des chiffres de la présentation : à relire avant envoi.")
+                diapo_analyse(ctx, f"{ctx.nom(marque)} — " + ("Analyse" if ctx.langue == "fr" else "Analysis"), an.marque(ctx, marque))
         if "cta" in m:
             ctx.avertissements.append("Module « CTA du site » : non généré (à venir).")
     if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
