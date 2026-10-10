@@ -19,6 +19,8 @@
  *   GET  /api/presentations                          -> { briefs, templates, moi }
  *   POST /api/presentations {action:"save", brief}   crée (sans id) ou met à jour
  *   POST /api/presentations {action:"delete", id}    l'auteur seulement
+ *   POST /api/presentations {action:"generate", id}  declenche le workflow presentation.yml (GITHUB_TOKEN, scope Actions)
+ *   GET  /api/presentations?fichier=<id>             telecharge le PPTX genere (presentations/out/<id>.pptx)
  *   POST /api/presentations {action:"save_template", template:{id?, nom, description, config}}
  *   POST /api/presentations {action:"delete_template", id}   l'auteur seulement
  *
@@ -29,7 +31,7 @@
 const crypto = require("crypto");
 const { verifySessionFromRequest } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
-const { readJson, writeJson } = require("./_lib/store");
+const { readJson, writeJson, readBinary } = require("./_lib/store");
 
 const FILE = "presentations/briefs.json";
 const FILE_TPL = "presentations/templates.json";
@@ -113,6 +115,17 @@ module.exports = async function handler(req, res) {
   const email = String(session.email).toLowerCase();
 
   try {
+    if (req.method === "GET" && req.query && req.query.fichier) {
+      const id = txt(req.query.fichier, 40);
+      if (!/^B-[a-z0-9]+$/.test(id)) { res.status(400).json({ error: "Identifiant invalide." }); return; }
+      const buf = await readBinary(`presentations/out/${id}.pptx`);
+      if (!buf) { res.status(404).json({ error: "Presentation introuvable (pas encore generee ?)." }); return; }
+      res.setHeader("content-type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+      res.setHeader("content-disposition", `attachment; filename="presentation-${id}.pptx"`);
+      res.setHeader("cache-control", "no-store");
+      res.status(200).send(buf);
+      return;
+    }
     if (req.method === "GET") {
       const [{ data }, { data: dt }] = await Promise.all([readJson(FILE), readJson(FILE_TPL)]);
       const briefs = (data && Array.isArray(data.briefs)) ? data.briefs : [];
@@ -181,6 +194,26 @@ module.exports = async function handler(req, res) {
       }
       await ecrit(briefs, sha, `brief ${brief.id} — ${email}`);
       res.status(200).json({ ok: true, brief });
+      return;
+    }
+
+    if (body.action === "generate") {
+      const id = txt(body.id, 40);
+      const b = briefs.find(x => x.id === id);
+      if (!b) { res.status(404).json({ error: "Brief introuvable : enregistre-le d'abord." }); return; }
+      if (b.statut === "demandee" && now - (b.demandeeLe || 0) < 10 * 60 * 1000) { res.status(429).json({ error: "Une génération est déjà en cours pour ce brief." }); return; }
+      const token = process.env.GITHUB_TOKEN;
+      if (!token) throw new Error("GITHUB_TOKEN non configure");
+      const repo = process.env.GITHUB_REPO || "dcs-masterclass-ia/psa-site-factory-analytics";
+      const d = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/presentation.yml/dispatches`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" },
+        body: JSON.stringify({ ref: process.env.VERCEL_GIT_COMMIT_REF || "main", inputs: { brief_id: id } }),
+      });
+      if (d.status !== 204) throw new Error("dispatch presentation.yml : " + d.status + " " + (await d.text()));
+      Object.assign(b, { statut: "demandee", demandeeLe: now, demandeePar: email, updatedAt: now });
+      await ecrit(briefs, sha, `brief ${id} — generation demandee`);
+      res.status(200).json({ ok: true, brief: b });
       return;
     }
 

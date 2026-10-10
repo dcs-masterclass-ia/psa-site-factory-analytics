@@ -99,4 +99,14 @@ async function writeJson(filePath, dataObj, message, knownSha) {
   throw new Error(`store.writeJson(${filePath}) : conflit de version persistant apres 3 tentatives.`);
 }
 
-module.exports = { readJson, writeJson, REPO, BRANCH };
+/** Lit un fichier binaire (ex. PPTX genere) ; renvoie un Buffer, ou null si absent. */
+async function readBinary(filePath) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${encodeURIComponent(filePath).replace(/%2F/g, "/")}?ref=${encodeURIComponent(BRANCH)}`, {
+    headers: { ...authHeaders(), Accept: "application/vnd.github.raw+json" },
+  });
+  if (r.status === 404) return null;
+  if (!r.ok) throw new Error(`store.readBinary(${filePath}) : ${r.status}`);
+  return Buffer.from(await r.arrayBuffer());
+}
+
+module.exports = { readJson, writeJson, readBinary, REPO, BRANCH };

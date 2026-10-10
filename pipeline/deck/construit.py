@@ -371,6 +371,15 @@ def leads_marque(ctx, m):
     return s
 
 
+def composition_sources(ctx):
+    """Phrase qui détaille ce que contient chaque groupe de sources (les valeurs brutes du back-office regroupées)."""
+    from .donnees import GROUPES_SOURCES
+    parts = [f"{g} = {', '.join(v)}" for g, v in GROUPES_SOURCES.items()]
+    tete = "Regroupement des sources (valeurs brutes du back-office) : " if ctx.langue == "fr" else "Source grouping (raw back-office values): "
+    autre = " ; autres valeurs → Autre." if ctx.langue == "fr" else "; any other value → Other."
+    return tete + " ; ".join(parts) + autre
+
+
 def sources_marque(ctx, m):
     t, d, per = ctx.t, ctx.d, ctx.per
     periodes = ctx.periodes
@@ -413,7 +422,8 @@ def sources_marque(ctx, m):
         txt = (f"Meilleur taux New cars : {best[0][1]} ({t.pct(best[0][0], 0)} de {t.nb(best[0][2])} leads)." if ctx.langue == "fr"
                else f"Highest New cars rate: {best[0][1]} ({t.pct(best[0][0], 0)} of {t.nb(best[0][2])} leads).")
         g.encadre(s, X0, Y0 + 0.2 + 0.42 * len(lignes) + 0.1, 12.4, 0.8, None,
-                  [txt, ("(%) = part de chaque projet dans les leads de la source." if ctx.langue == "fr" else "(%) = share of each project in the source's leads.")], taille=11.5)
+                  [txt, ("(%) = part de chaque projet dans les leads de la source." if ctx.langue == "fr" else "(%) = share of each project in the source's leads."),
+                   composition_sources(ctx)], taille=10.5)
     return s
 
 

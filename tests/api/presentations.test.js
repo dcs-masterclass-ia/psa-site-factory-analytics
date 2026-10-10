@@ -8,13 +8,14 @@ const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
 let fichier = null, fichierTpl = null, sha = 0, session = null;
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async p => { const f = p.includes("templates") ? fichierTpl : fichier; return { data: f ? JSON.parse(JSON.stringify(f)) : null, sha: String(sha) }; },
-  writeJson: async (p, d) => { const c = JSON.parse(JSON.stringify(d)); if (p.includes("templates")) fichierTpl = c; else fichier = c; sha++; return { sha: String(sha) }; } } };
+  writeJson: async (p, d) => { const c = JSON.parse(JSON.stringify(d)); if (p.includes("templates")) fichierTpl = c; else fichier = c; sha++; return { sha: String(sha) }; },
+  readBinary: async () => null } };
 const vraiAuth = require(authPath);
 require.cache[authPath].exports = { ...vraiAuth, verifySessionFromRequest: () => session };
 const handler = require(path.join(racine, "api/presentations.js"));
-const appelle = (method, body) => new Promise(resolve => {
+const appelle = (method, body, query) => new Promise(resolve => {
   const res = { code: 200, setHeader() {}, status(c) { this.code = c; return this; }, json(o) { resolve({ code: this.code, body: o }); } };
-  handler({ method, body, headers: {} }, res);
+  handler({ method, body, query, headers: {} }, res);
 });
 const brief = { titre: "Stellantis BELUX T3-2026", client: "Stellantis", langue: "en", perimetre: { pays: ["be", "LU"], marques: ["Peugeot", "Citroën"] },
   periode: { type: "trimestre", annee: 2026, indice: 3 }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "inconnu"],
@@ -110,4 +111,26 @@ test("modèles : validation, suppression par l'auteur seulement", async () => {
   assert.equal((await appelle("POST", { action: "delete_template", id: c.body.template.id })).code, 200);
   assert.equal(fichierTpl.templates.length, 0);
   assert.equal((await appelle("POST", { action: "delete_template", id: "M-nope" })).code, 404);
+});
+
+test("génération : déclenche le workflow, passe le brief en « demandée », refuse un double clic", async () => {
+  process.env.GITHUB_TOKEN = "t";
+  const appels = [];
+  const vraiFetch = global.fetch;
+  global.fetch = async (url, o) => { appels.push({ url, body: JSON.parse(o.body) }); return { status: 204, text: async () => "" }; };
+  try {
+    const c = await appelle("POST", { action: "save", brief });
+    const g = await appelle("POST", { action: "generate", id: c.body.brief.id });
+    assert.equal(g.code, 200);
+    assert.equal(g.body.brief.statut, "demandee");
+    assert.match(appels[0].url, /workflows\/presentation\.yml\/dispatches$/);
+    assert.deepEqual(appels[0].body.inputs, { brief_id: c.body.brief.id });
+    assert.equal((await appelle("POST", { action: "generate", id: c.body.brief.id })).code, 429);
+    assert.equal((await appelle("POST", { action: "generate", id: "B-inconnu" })).code, 404);
+  } finally { global.fetch = vraiFetch; }
+});
+
+test("téléchargement : identifiant invalide refusé, fichier absent = 404", async () => {
+  assert.equal((await appelle("GET", null, { fichier: "../etc" })).code, 400);
+  assert.equal((await appelle("GET", null, { fichier: "B-abc" })).code, 404);
 });

@@ -1,0 +1,75 @@
+name: Générer une présentation (PowerPoint)
+
+# Déclenché par le dashboard (onglet Présentations, bouton « Générer ») :
+# lit le brief dans le repo de données privé, construit le PPTX
+# (pipeline/deck) et le dépose dans presentations/out/<id>.pptx du même repo,
+# puis passe le brief en « generee » (ou « echec »). Le dashboard le sert par
+# /api/presentations?fichier=<id>, jamais en accès public.
+on:
+  workflow_dispatch:
+    inputs:
+      brief_id:
+        description: "Identifiant du brief (B-…)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: presentation-${{ inputs.brief_id }}
+  cancel-in-progress: false
+
+jobs:
+  generer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt python-pptx
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."; exit 1; fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      - name: Générer le PowerPoint
+        env:
+          BRIEF_ID: ${{ inputs.brief_id }}
+        run: python -m pipeline.deck --briefs data/presentations/briefs.json --id "$BRIEF_ID" --sortie-dir data/presentations/out
+
+      - name: Marquer l'échec
+        if: failure()
+        env:
+          BRIEF_ID: ${{ inputs.brief_id }}
+        run: python -m pipeline.deck --briefs data/presentations/briefs.json --id "$BRIEF_ID" --echec || true
+
+      - name: Publier dans le repo de données
+        if: always()
+        env:
+          BRIEF_ID: ${{ inputs.brief_id }}
+        run: |
+          cd data
+          git config user.name "converge-bot"
+          git config user.email "converge-bot@users.noreply.github.com"
+          git add presentations
+          git diff --cached --quiet && exit 0
+          git commit -qm "chore(presentations): génération $BRIEF_ID"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1

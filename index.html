@@ -1806,7 +1806,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:12px;color:#9a9fa6;line-height:1.5;margin-top:10px">Source : back-office autobiz (leads) et GA4 (trafic), même périmètre sur toutes les diapositives.</div>
               <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
                 <span onClick="{{ prSaveFn }}" style="{{ prSaveStyle }}">{{ prSaveLabel }}</span>
-                <span style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#f2f2f5;color:#9a9fa6;cursor:not-allowed" title="Le générateur de PowerPoint est en cours de construction">Générer le PowerPoint · bientôt</span>
+                <span onClick="{{ prGenFn }}" style="{{ prGenStyle }}">{{ prGenLabel }}</span>
+                <sc-if value="{{ prGenPret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prDlFn }}" style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#eaf6ef;color:#2b8f62;cursor:pointer">{{ prDlLabel }}</span></sc-if>
+                <sc-if value="{{ prGenInfo }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;line-height:1.5;text-align:center">{{ prGenInfo }}</div></sc-if>
                 <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;text-align:center">Nouveau brief vide</span></sc-if>
               </div>
               <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px">
@@ -1841,6 +1843,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="flex:1;min-width:220px"><div style="font-size:14.5px;font-weight:500;color:#121214">{{ b.titre }}</div><div style="font-size:12.5px;color:#9a9fa6">{{ b.client }} · {{ b.meta }}</div></div>
                 <span style="font-size:11px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:3px 10px">{{ b.statut }}</span>
                 <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ b.qui }}</span>
+                <sc-if value="{{ b.pret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.dl }}" style="font-size:13px;font-weight:600;color:#2b8f62;cursor:pointer">Télécharger le PPTX</span></sc-if>
                 <span onClick="{{ b.open }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Ouvrir</span>
                 <span onClick="{{ b.dup }}" style="font-size:13px;color:#6d727a;cursor:pointer">Dupliquer</span>
                 <sc-if value="{{ b.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.del }}" style="{{ b.delStyle }}">{{ b.delLabel }}</span></sc-if>
@@ -4189,6 +4192,8 @@ class Component extends DCLogic {
       remove:()=>prSet({prochainesEtapes:pr.prochainesEtapes.filter((_,j)=>j!==i)}) }));
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
     const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
+    const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
+    const prEnCours = !!(prCur&&prCur.statut==='demandee');
     const prValide = (pr.titre.trim().length>=3||true) && pr.client.trim().length>0 && pr.pays.length>0 && pr.modules.length>0 && !st.prBusy;
     const prSave = async () => {
       if (!prValide) return;
@@ -4199,6 +4204,29 @@ class Component extends DCLogic {
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
         this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
+        return j.brief;
+      } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); return null; }
+    };
+    const prTelecharge = async id => {
+      try {
+        const r = await fetch('/api/presentations?fichier='+encodeURIComponent(id));
+        if (!r.ok) { let j=null; try{ j=await r.json(); }catch(e){} throw new Error((j&&j.error)||('Erreur '+r.status)); }
+        const url = URL.createObjectURL(await r.blob()); const a=document.createElement('a'); a.href=url; a.download='presentation-'+id+'.pptx'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+      } catch(e) { this.setState({prMsg:{ok:false,text:e.message}}); }
+    };
+    const prSuivi = () => {   // tant qu'une génération est demandée, on relit la liste toutes les 20 s
+      if (this._prPoll) return;
+      this._prPoll = setInterval(async ()=>{ await prCharge(); const l=(this._pr&&this._pr.list)||[]; if (!l.some(b=>b.statut==='demandee')) { clearInterval(this._prPoll); this._prPoll=null; } }, 20000);
+    };
+    const prGenere = async () => {
+      if (!prValide) return;
+      const brief = await prSave(); if (!brief) return;
+      set({prBusy:true});
+      try {
+        const j = await prApi({action:'generate', id:brief.id});
+        const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
+        this.setState({prBusy:false, prMsg:{ok:true,text:'Génération lancée : compte 2 à 4 minutes, le bouton Télécharger apparaît ici dès que c\'est prêt.'}});
+        prSuivi();
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
@@ -4207,7 +4235,8 @@ class Component extends DCLogic {
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
       meta:prLabelPeriode(b.periode)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
-      qui:String(b.auteur||'').split('@')[0]+' · '+prFmtDate(b.updatedAt), statut:b.statut==='generee'?'Générée':b.statut==='demandee'?'Demandée':'Brouillon',
+      qui:String(b.auteur||'').split('@')[0]+' · '+prFmtDate(b.updatedAt), statut:b.statut==='generee'?'Générée':b.statut==='demandee'?'Génération en cours':b.statut==='echec'?'Échec':'Brouillon',
+      pret:b.statut==='generee'&&!!b.fichier, dl:()=>prTelecharge(b.id),
       open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null}),
       dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)'}), prTab:'nouveau', prMsg:{ok:true,text:'Copie du brief « '+b.titre+' » : modifie puis enregistre.'}}),
       delLabel:st.prDel===b.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDel===b.id?'#c24a44':'#9a9fa6')+';'+(st.prDel===b.id?'font-weight:600':''),
@@ -4335,6 +4364,10 @@ class Component extends DCLogic {
       prPlanRows:prPlan.rows, prPlanTotal:prPlan.total+' diapositives', prSaveFn:prSave,
       prSaveLabel:st.prBusy?'Enregistrement…':(pr.id?'Mettre à jour le brief':'Enregistrer le brief'),
       prSaveStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
+      prGenFn:prGenere, prGenLabel:prEnCours?'Génération en cours…':'Générer le PowerPoint',
+      prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prValide&&!prEnCours?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
+      prGenPret:!!(prCur&&prCur.statut==='generee'&&prCur.fichier), prDlFn:()=>prCur&&prTelecharge(prCur.id), prDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
+      prGenInfo:prCur&&prCur.statut==='echec'?'La dernière génération a échoué : relance, et préviens-moi si ça se répète.':(prCur&&prCur.avertissements&&prCur.avertissements.length&&prCur.statut==='generee'?prCur.avertissements.join(' · '):''),
       prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
       prChipA:kPuce('#7c63ee'), prIconA:kIcone('#7c63ee',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M12 16v4M8 20h8'})),
       prChipB:kPuce('#3b76e8'), prIconB:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
