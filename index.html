@@ -1201,12 +1201,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         <sc-if value="{{ fcOk }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ fcChip }}">{{ fcIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Cumul de leads sur l'année</div><div style="font-size:12.5px;color:#9a9fa6">Réel, projection et fourchette, comparés à l'an dernier</div></div></div><div style="display:flex;gap:14px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #7c63ee"></span>Réel</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px dashed #7c63ee"></span>Projection</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #b3b7bd"></span>Année précédente</span></div>
             </div>
-            <div>{{ tbForecastChart }}</div>
+            <div style="flex:1;display:flex;align-items:center"><div style="width:100%">{{ tbForecastChart }}</div></div>
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
             <sc-for list="{{ fcKpis }}" as="k" hint-placeholder-count="2">
@@ -1242,14 +1242,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <span style="font-size:13px;color:#9a9fa6">historique depuis 2021</span>
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ yoyChip }}">{{ yoyIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Leads par mois</div><div style="font-size:12.5px;color:#9a9fa6">Mois complets : écart de l'année en cours vs la précédente</div></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><sc-for list="{{ yoyLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="{{ l.dot }}"></span>{{ l.label }}</span></sc-for></div>
             </div>
-            <div>{{ tbYoyChart }}</div>
+            <div style="flex:1;display:flex;align-items:center"><div style="width:100%">{{ tbYoyChart }}</div></div>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ annChip }}">{{ annIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Totaux annuels</div><div style="font-size:12.5px;color:#9a9fa6">Leads valides, évolution vs l'année précédente</div></div></div>
@@ -1449,8 +1449,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <span style="flex:1;height:1px;background:#e8e8ec;min-width:20px"></span>
           <span style="font-size:13px;color:#9a9fa6">{{ ruptNote }}</span>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+        <div class="tb-tend" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px;align-items:stretch">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ seaChip }}">{{ seaIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Saisonnalité</div><div style="font-size:12.5px;color:#9a9fa6">Écart de chaque jour à la moyenne, 12 derniers mois</div></div></div>
@@ -1464,16 +1464,16 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-for>
             <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">{{ seasonLabel }}</div>
             <sc-if value="{{ monthSeasonOk }}" hint-placeholder-val="{{ true }}">
-            <div style="display:flex;gap:5px;align-items:flex-end;height:96px">
+            <div style="display:flex;gap:5px;align-items:stretch;flex:1;min-height:110px">
               <sc-for list="{{ monthSeasonRows }}" as="m" hint-placeholder-count="12">
-                <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%" title="{{ m.pct }}">
-                  <span style="{{ m.bar }};width:100%"></span><span style="font-size:10px;color:#8a8f98;margin-top:4px">{{ m.name }}</span>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center" title="{{ m.pct }}">
+                  <div style="flex:1;width:100%;display:flex;align-items:flex-end"><span style="{{ m.bar }};width:100%"></span></div><span style="font-size:10px;color:#8a8f98;margin-top:4px">{{ m.name }}</span>
                 </div>
               </sc-for>
             </div>
             </sc-if>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ rupChip }}">{{ rupIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Ruptures de tendance</div><div style="font-size:12.5px;color:#9a9fa6">Croissance vs N-1 : 30 derniers jours contre 90 jours</div></div></div><div style="display:flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ ruptTabs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
@@ -1493,7 +1493,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </sc-for>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ quaChip }}">{{ quaIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Qualité des leads</div><div style="font-size:12.5px;color:#9a9fa6">Doublons et tests écartés, 3 derniers mois</div></div></div>
@@ -1511,7 +1511,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="font-size:13px;color:#6d727a;text-align:right">{{ r.test }}</span>
               </div>
             </sc-for>
-            <div style="font-size:12px;color:#9a9fa6;margin-top:10px">{{ qualNote }}</div>
+            <div style="font-size:12px;color:#9a9fa6;margin-top:auto;padding-top:10px">{{ qualNote }}</div>
           </div>
         </div>
         </div>
@@ -3363,7 +3363,7 @@ class Component extends DCLogic {
     const lastMonthI = tb_lastDay ? parseInt(tb_lastDay.slice(5,7),10) : 12;
     const tbYoyChart = (()=>{
       if (!tb_lastDay) return '';
-      const W=860,H=230,GL=48,GR=10,GT=14,GB=26, pw=W-GL-GR, ph=H-GT-GB, cols=['#d9d2fb','#a996f4','#6c4fe0'];
+      const W=860,H=330,GL=48,GR=10,GT=22,GB=26, pw=W-GL-GR, ph=H-GT-GB, cols=['#d9d2fb','#a996f4','#6c4fe0'];
       let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); }); ymax*=1.12;
       const el=[]; const bw=pw/12;
       for (let k=0;k<=4;k++){ const v=ymax/1.12*k/4, yy=GT+ph-(v/ymax)*ph; el.push(h('line',{key:'g'+k,x1:GL,y1:yy,x2:GL+pw,y2:yy,stroke:'#f0f0f3'}), h('text',{key:'gt'+k,x:GL-8,y:yy+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
@@ -3407,7 +3407,7 @@ class Component extends DCLogic {
       if (ys.length<2) return {rows:[],ok:false};
       const share=Array.from({length:12},(_,m)=>ys.reduce((a,y)=>a+(ym[y+'-'+tb_pad2(m+1)]||0)/yearTot(y),0)/ys.length*100);
       const mx=Math.max(...share);
-      return {ok:true, label:ys[0]+'–'+ys[ys.length-1], rows:share.map((v,m)=>({ name:tb_MOIS_C[m], pct:dec(v,1)+' %', bar:`display:block;height:${Math.max(4,v/mx*70)}px;border-radius:4px 4px 0 0;background:${m+1===lastMonthI?'#6c4fe0':'#c9bdf7'}`, hot:m+1===lastMonthI })) };
+      return {ok:true, label:ys[0]+'–'+ys[ys.length-1], rows:share.map((v,m)=>({ name:tb_MOIS_C[m], pct:dec(v,1)+' %', bar:`display:block;height:${Math.max(4,v/mx*100)}%;border-radius:4px 4px 0 0;background:${m+1===lastMonthI?'#6c4fe0':'#c9bdf7'}`, hot:m+1===lastMonthI })) };
     })();
     const seasonLabel = monthSeason.ok ? 'Poids de chaque mois dans l\'année, moyenne '+monthSeason.label : 'Historique insuffisant sur ce périmètre pour la saisonnalité mensuelle';
 
@@ -3442,7 +3442,7 @@ class Component extends DCLogic {
       });
     }
     const qualOk = qBrut>0;
-    const qualTop = qualRows.sort((a,b)=>b.dbl-a.dbl).slice(0,6).map(r=>({ name:r.name, brut:this.fmt(r.brut), dbl:dec(r.dbl,1)+' %', test:dec(r.test,1)+' %',
+    const qualTop = qualRows.sort((a,b)=>b.dbl-a.dbl).slice(0,8).map(r=>({ name:r.name, brut:this.fmt(r.brut), dbl:dec(r.dbl,1)+' %', test:dec(r.test,1)+' %',
       bar:`display:block;width:${Math.min(100,r.dbl/(qualRows[0].dbl||1)*100)}%;height:100%;border-radius:4px;background:${r.dbl>=12?'#e8544a':r.dbl>=7?'#e8a33d':'#3fae7a'}` }));
     const qualKpis = [
       {label:'Part de doublons',value:qualOk?dec(qDbl/qBrut*100,1)+' %':'—',sub:'des leads bruts, 3 derniers mois'},
