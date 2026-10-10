@@ -158,6 +158,23 @@ class Donnees:
         jours = [j for (_, j) in self._acq]
         return bool(jours) and min(jours) <= periode.debut.isoformat()
 
+    # ------------------------------------------------------------------ calendrier d'événements (data/events/events.json, saisi dans le dashboard)
+    def evenements(self, periode, marque=None):
+        """Événements dont la date tombe dans la période et qui concernent les sites du périmètre (et la marque donnée) : [{date, titre, type}]."""
+        if getattr(self, "_events", None) is None:
+            self._events = []
+            f = self.hist.parent / "events" / "events.json"
+            if f.exists():
+                try:
+                    import json
+                    self._events = json.load(open(f, encoding="utf-8")).get("events", [])
+                except Exception:
+                    self._events = []
+        noms = {nom for nom, m, _ in self.sites if marque is None or m == marque}
+        deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
+        out = [e for e in self._events if deb <= (e.get("date") or "") <= fin and (not e.get("sites") or noms & set(e["sites"]))]
+        return sorted(out, key=lambda e: e["date"])
+
     # ------------------------------------------------------------------ contexte historique
     def _charge_funnel(self):
         if getattr(self, "_funnel", None) is not None:

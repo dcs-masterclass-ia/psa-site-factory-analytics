@@ -184,11 +184,21 @@ def _historique(ctx, x, m):
             c.append(F(f"Parcours V2 déployé : {ds}.", f"V2 journey deployed: {ds}.") + (F(" Basculement pendant la période : les mesures mélangent ancien et nouveau parcours.", " Switch during the period: measures mix old and new journey.") if dans else ""))
             if dans:
                 l.append(F("Point d'attention : la bascule V2 a eu lieu pendant la période ; comparer les périodes avant/après (diapositive V2) avant de conclure sur la tendance.", "Watch point: the V2 switch happened during the period; compare before/after (V2 slide) before concluding on the trend."))
+    # événements saisis dans le calendrier (campagne lancée, bouton ajouté, bascule V2…) : le contexte terrain que les chiffres seuls n'ont pas
+    evs = d.evenements(per, m)
+    if evs:
+        liste = " ; ".join(f"{e['date'][8:10]}/{e['date'][5:7]} {e['titre']}" for e in evs[:4])
+        c.append(F(f"Événements de la période (calendrier) : {liste}{' …' if len(evs) > 4 else ''}.", f"Events in the period (calendar): {liste}{' …' if len(evs) > 4 else ''}."))
+        sig["evenements"] = evs
     # lectures issues de l'historique
     if sig.get("sessions") == "bas":
         l.append(F("Point d'attention : l'audience est au plus bas niveau de l'historique disponible pour cette période ; le recul n'est pas une simple variation ponctuelle.", "Watch point: audience is at its lowest level in the available history for this period; the decline is not a one-off variation."))
     if sig.get("sessions") == "bas" and sig.get("leads") not in ("bas", None) and sig.get("conv") == "haut":
         l.append(F("Les leads résistent grâce à une conversion au plus haut de l'historique : l'efficacité du parcours compense en partie la baisse d'audience.", "Leads hold thanks to conversion at its historical high: journey efficiency partly offsets the audience decline."))
+    if sig.get("evenements"):
+        e0 = sig["evenements"][0]
+        l.append(F(f"À rapprocher des chiffres : « {e0['titre']} » ({e0['date'][8:10]}/{e0['date'][5:7]}) a eu lieu pendant la période ; son effet est à confirmer avec l'équipe marque.",
+                   f"To relate to the figures: “{e0['titre']}” ({e0['date'][8:10]}/{e0['date'][5:7]}) took place during the period; its effect is to be confirmed with the brand team."))
     if sig.get("conv") == "bas":
         l.append(F("Point d'attention : la conversion est au plus bas de l'historique ; le parcours est à auditer en priorité.", "Watch point: conversion is at its historical low; the journey should be audited first."))
     if sig.get("roulant") is not None and sig["roulant"] <= -SEUIL_ECART:
@@ -735,6 +745,10 @@ def s_leads_marque(ctx, m):
     h = _tendance_longue(ctx, x, m)
     if h:
         a.append(h)
+    evs = d.evenements(per, m)
+    if evs:
+        a.append(F(f"Événement(s) de la période : {'; '.join(e['date'][8:10] + '/' + e['date'][5:7] + ' ' + e['titre'] for e in evs[:2])}.",
+                   f"Event(s) in the period: {'; '.join(e['date'][8:10] + '/' + e['date'][5:7] + ' ' + e['titre'] for e in evs[:2])}."))
     c = d.leads(per, m)
     if Lc >= SEUIL_BASE and c["SANS"] + c["VN"] + c.get("VO", 0) >= 0:
         ti = c.get("SANS", 0)

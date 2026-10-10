@@ -55,6 +55,20 @@ class Analyse(unittest.TestCase):
         self.assertAlmostEqual(_var(110, 100), 10)
 
 
+class Evenements(unittest.TestCase):
+    def test_filtre_periode_et_sites(self):
+        import json
+        from pipeline.deck.donnees import Donnees
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "events")); os.makedirs(os.path.join(tmp, "history"))
+            json.dump({"events": [{"date": "2026-09-20", "titre": "Campagne", "sites": []}, {"date": "2026-09-25", "titre": "V2 Peugeot", "sites": ["PEUGEOT BE"]},
+                                  {"date": "2026-06-01", "titre": "Avant", "sites": []}]}, open(os.path.join(tmp, "events", "events.json"), "w"))
+            d = Donnees(["BE"], None, hist=os.path.join(tmp, "history"))
+            p = Periode("trimestre", 2026, 3)
+            self.assertEqual([e["titre"] for e in d.evenements(p)], ["Campagne", "V2 Peugeot"])
+            self.assertEqual([e["titre"] for e in d.evenements(p, "CITROEN")], ["Campagne"])      # l'événement Peugeot ne concerne pas Citroën
+
+
 class Construction(unittest.TestCase):
     def test_fumee_sans_donnees(self):
         """Un brief minimal produit un fichier PPTX même sans historique (modules vides, avertissements)."""
