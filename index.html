@@ -149,17 +149,18 @@
   .login-help a{font-weight:600}
 
   .login-foot{font-size:12.5px;font-weight:500;color:#9a9fa6}
-/* Onglet Présentations : transitions douces sur les puces, cases et boutons (les nœuds persistent entre deux rendus, la transition s'applique) */
-[style*="padding:6px 13px"][style*="border-radius:10px"]{transition:background-color .28s cubic-bezier(.4,0,.2,1),border-color .28s cubic-bezier(.4,0,.2,1),color .28s cubic-bezier(.4,0,.2,1),transform .18s cubic-bezier(.4,0,.2,1),box-shadow .28s cubic-bezier(.4,0,.2,1);animation:prPuceIn .32s cubic-bezier(.2,.8,.2,1) both;will-change:transform}
-[style*="padding:6px 13px"][style*="border-radius:10px"]:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(124,99,238,.14)}
-[style*="padding:6px 13px"][style*="border-radius:10px"]:active{transform:translateY(0) scale(.96);box-shadow:none}
-[style*="width:20px;height:20px;flex:none;border-radius:6px"]{transition:background-color .25s cubic-bezier(.4,0,.2,1),border-color .25s cubic-bezier(.4,0,.2,1),transform .18s cubic-bezier(.4,0,.2,1)}
-[style*="width:20px;height:20px;flex:none;border-radius:6px"]:active{transform:scale(.88)}
-[style*="height:42px;border-radius:12px"]{transition:background .35s cubic-bezier(.4,0,.2,1),color .25s ease,transform .18s cubic-bezier(.4,0,.2,1),box-shadow .25s ease,filter .2s ease}
-[style*="height:42px;border-radius:12px"]:hover{filter:brightness(.97);box-shadow:0 4px 14px rgba(40,30,90,.12)}
-[style*="height:42px;border-radius:12px"]:active{transform:scale(.985)}
-@keyframes prPuceIn{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
-@media (prefers-reduced-motion:reduce){[style*="padding:6px 13px"][style*="border-radius:10px"],[style*="width:20px;height:20px;flex:none;border-radius:6px"],[style*="height:42px;border-radius:12px"]{transition:none!important;animation:none!important}}
+/* Onglet Présentations : transitions douces sur les puces, cases et boutons (classes dédiées : un style modifié en JS ne casse plus les sélecteurs) */
+.pr-chip{transition:background-color .42s cubic-bezier(.22,.9,.3,1),border-color .42s cubic-bezier(.22,.9,.3,1),color .42s cubic-bezier(.22,.9,.3,1),transform .3s cubic-bezier(.22,.9,.3,1),box-shadow .42s cubic-bezier(.22,.9,.3,1);animation:prPuceIn .45s cubic-bezier(.22,.9,.3,1) backwards;will-change:transform}
+.pr-chip:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(124,99,238,.14)}
+.pr-chip:active{transform:translateY(0) scale(.96);box-shadow:none}
+.pr-chip:nth-child(2){animation-delay:.02s}.pr-chip:nth-child(3){animation-delay:.04s}.pr-chip:nth-child(4){animation-delay:.06s}.pr-chip:nth-child(n+5){animation-delay:.08s}
+.pr-box{transition:background-color .35s cubic-bezier(.22,.9,.3,1),border-color .35s cubic-bezier(.22,.9,.3,1),transform .25s cubic-bezier(.22,.9,.3,1)}
+.pr-box:active{transform:scale(.88)}
+.pr-btn{transition:background .5s cubic-bezier(.22,.9,.3,1),color .3s ease,transform .25s cubic-bezier(.22,.9,.3,1),box-shadow .3s ease,filter .25s ease}
+.pr-btn:hover{filter:brightness(.97);box-shadow:0 4px 14px rgba(40,30,90,.12)}
+.pr-btn:active{transform:scale(.985)}
+@keyframes prPuceIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.pr-chip,.pr-box,.pr-btn{transition:none!important;animation:none!important}}
 </style>
 
 <x-dc>
@@ -1757,30 +1758,30 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:15px;align-items:start">
           <div style="display:flex;flex-direction:column;gap:15px;min-width:0">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Partir d'un modèle</div><div style="font-size:12.5px;color:#9a9fa6">Applique une configuration enregistrée sur la dernière période complète</div></div></div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTplChips }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTplChips }}" as="c" hint-placeholder-count="3"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Cadrage</div><div style="font-size:12.5px;color:#9a9fa6">Le titre et le client apparaissent sur la couverture</div></div></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Titre du brief</div><input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="{{ prTitreAuto }}" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Client</div><input type="text" value="{{ prClient }}" onInput="{{ onPrClient }}" placeholder="Stellantis" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Langue de la présentation</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Langue de la présentation</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipB }}">{{ prIconB }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Périmètre et période</div><div style="font-size:12.5px;color:#9a9fa6">Un seul périmètre pour toute la présentation</div></div></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays <span style="color:#b3b7bd">· clic = un seul, Cmd / Maj + clic = en ajouter ou en retirer, BELUX = BE + LU</span></div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap"><span onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pr-chip" onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Périodicité</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Période : {{ prPeriodeLabel }}</div>
               <div style="display:flex;gap:18px;flex-wrap:wrap">
-                <sc-if value="{{ prHasIndice }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prIndiceChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div></sc-if>
-                <div style="display:flex;gap:8px"><sc-for list="{{ prAnneesChips }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+                <sc-if value="{{ prHasIndice }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prIndiceChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div></sc-if>
+                <div style="display:flex;gap:8px"><sc-for list="{{ prAnneesChips }}" as="c" hint-placeholder-count="3"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               </div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipC }}">{{ prIconC }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite</div></div></div>
               <sc-for list="{{ prModulesRows }}" as="m" hint-placeholder-count="8">
                 <div onClick="{{ m.pick }}" style="{{ m.rowStyle }}">
-                  <span style="{{ m.box }}"><sc-if value="{{ m.check }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
+                  <span class="pr-box" style="{{ m.box }}"><sc-if value="{{ m.check }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
                   <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:14.5px;font-weight:500;color:#121214">{{ m.titre }}</span><span style="{{ m.badgeStyle }}">{{ m.badge }}</span></div>
                     <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5;margin-top:2px">{{ m.desc }}</div>
                     <sc-if value="{{ m.hasNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#c4842a;margin-top:2px">{{ m.note }}</div></sc-if></div>
@@ -1830,8 +1831,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid #e8e8ec;padding-top:10px;margin-top:4px"><span style="font-size:13px;color:#6d727a">Total estimé</span><span style="font-size:18px;font-weight:600;color:#121214">{{ prPlanTotal }}</span></div>
               <div style="font-size:12px;color:#9a9fa6;line-height:1.5;margin-top:10px">Source : back-office autobiz (leads) et GA4 (trafic), même périmètre sur toutes les diapositives.</div>
               <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
-                <span onClick="{{ prSaveFn }}" style="{{ prSaveStyle }}">{{ prSaveLabel }}</span>
-                <span onClick="{{ prGenFn }}" style="{{ prGenStyle }}">{{ prGenLabel }}</span>
+                <span class="pr-btn" onClick="{{ prSaveFn }}" style="{{ prSaveStyle }}">{{ prSaveLabel }}</span>
+                <span class="pr-btn" onClick="{{ prGenFn }}" style="{{ prGenStyle }}">{{ prGenLabel }}</span>
                 <sc-if value="{{ prGenPret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prDlFn }}" style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#eaf6ef;color:#2b8f62;cursor:pointer">{{ prDlLabel }}</span></sc-if>
                 <sc-if value="{{ prGenInfo }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;line-height:1.5;text-align:center">{{ prGenInfo }}</div></sc-if>
                 <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;text-align:center">Nouveau brief vide</span></sc-if>
@@ -1981,6 +1982,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{}">
+const AGG_MEMO = new WeakMap(), RANK_MEMO = new WeakMap();   // résultats de aggregate()/rankSites() par jeu de données : un clic sans rapport (ex. Présentations) ne les recalcule plus
 class Component extends DCLogic {
   state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'sources', hidden:{},
             scTab:'pages', cmpDim:'pages', apiState:'idle',
@@ -2103,6 +2105,17 @@ class Component extends DCLogic {
      GA4 pour cette premiere passe "vraies donnees, module par module"). */
   decale(iso, n) { const d = new Date(iso); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
   aggregate(debutIso, finIso) {
+    const data = this.data;
+    if (!data || typeof data !== 'object' || !this.state || !Array.isArray(this.state.sites)) return Component.prototype._aggregateImpl.call(this, debutIso, finIso);
+    let m = AGG_MEMO.get(data); if (!m) { m = new Map(); AGG_MEMO.set(data, m); }
+    const k = this.state.sites.join('\u0001') + '|' + debutIso + '|' + finIso;
+    if (m.has(k)) return m.get(k);
+    const r = Component.prototype._aggregateImpl.call(this, debutIso, finIso);
+    if (m.size > 300) m.clear();
+    m.set(k, r);
+    return r;
+  }
+  _aggregateImpl(debutIso, finIso) {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), browser:new Map(), newVsReturning:new Map(),
@@ -2204,6 +2217,17 @@ class Component extends DCLogic {
   /* rang du site sur le taux de conversion parmi tout le parc -- reutilise
      aggregate() sur un site a la fois, comme l'ancien front reel. */
   rankSites(debutIso, finIso) {
+    if (this.data && typeof this.data === 'object') {
+      let m = RANK_MEMO.get(this.data); if (!m) { m = new Map(); RANK_MEMO.set(this.data, m); }
+      const k = debutIso + '|' + finIso;
+      if (m.has(k)) return m.get(k);
+      const r = this._rankSitesImpl(debutIso, finIso);
+      m.set(k, r);
+      return r;
+    }
+    return this._rankSitesImpl(debutIso, finIso);
+  }
+  _rankSitesImpl(debutIso, finIso) {
     const arr = this._allSites.map(n => {
       const a = this.aggregate.call({ state:{sites:[n]}, data:this.data }, debutIso, finIso);
       const f = a.funnelSteps && a.funnelSteps.length ? a.funnelSteps : null;
@@ -4174,16 +4198,23 @@ class Component extends DCLogic {
     const prTog = (arr,v)=>arr.includes(v)?arr.filter(x=>x!==v):arr.concat([v]);
     const prChip = on => 'font-size:13px;font-weight:500;border-radius:10px;padding:6px 13px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a');
     const prMulti = e => !!(e && (e.metaKey||e.ctrlKey||e.shiftKey));   // clic simple = cette seule entrée ; Cmd/Ctrl/Maj + clic = ajouter ou retirer
-    const prPaysChips = prPaysDispo.map(p=>({ label:p, pick:e=>prSet({pays:(prMulti(e)?(pr.pays.includes(p)&&pr.pays.length>1?pr.pays.filter(x=>x!==p):pr.pays.includes(p)?pr.pays:pr.pays.concat([p])):[p]), marques:[]}), style:prChip(pr.pays.includes(p)) }));
-    const prBelux = { label:'BELUX', pick:()=>prSet({pays:['BE','LU'],marques:[]}), style:prChip(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')) };
-    const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:()=>prSet({marques:[]}), style:prChip(!pr.marques.length) }]
-      .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:e=>prSet({marques:(prMulti(e)?(()=>{ const r=prTog(pr.marques,m); return r.length>=prMarquesDispo.length?[]:r; })():(pr.marques.length===1&&pr.marques[0]===m?[]:[m]))}), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
+
+    // réponse visuelle immédiate : la puce cliquée passe en « active » tout de suite (transition CSS), le recalcul complet de la page est différé après le premier rendu
+    const prSetStyle = (el,on) => { el.style.borderColor=on?'#7c63ee':'#ececee'; el.style.background=on?'#f1eefe':'#fff'; el.style.color=on?'#5b43d6':'#6d727a'; };
+    const prPick = (e, fn, single) => {
+      try { const el = e && e.currentTarget; if (single && el && el.parentElement) [...el.parentElement.children].forEach(c => { if ((c.getAttribute('style')||'').indexOf('padding:6px 13px')>-1) prSetStyle(c, c===el); }); } catch(_) {}
+      requestAnimationFrame(()=>setTimeout(fn, 0));
+    };
+    const prPaysChips = prPaysDispo.map(p=>({ label:p, pick:e=>prPick(e,()=>prSet({pays:(prMulti(e)?(pr.pays.includes(p)&&pr.pays.length>1?pr.pays.filter(x=>x!==p):pr.pays.includes(p)?pr.pays:pr.pays.concat([p])):[p]), marques:[]}), !prMulti(e)), style:prChip(pr.pays.includes(p)) }));
+    const prBelux = { label:'BELUX', pick:e=>prPick(e,()=>prSet({pays:['BE','LU'],marques:[]}),true), style:prChip(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')) };
+    const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:e=>prPick(e,()=>prSet({marques:[]}),true), style:prChip(!pr.marques.length) }]
+      .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:e=>prPick(e,()=>prSet({marques:(prMulti(e)?(()=>{ const r=prTog(pr.marques,m); return r.length>=prMarquesDispo.length?[]:r; })():(pr.marques.length===1&&pr.marques[0]===m?[]:[m]))}), !prMulti(e)&&!(pr.marques.length===1&&pr.marques[0]===m)), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
     const prCy = new Date(todayIso+'T00:00:00Z').getUTCFullYear();
-    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:()=>prSet({periode:prDernierePeriode(k)}), style:prChip(per.type===k) }));
+    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:prDernierePeriode(k)}),true), style:prChip(per.type===k) }));
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
-      .map(([v,l])=>({ label:l, pick:()=>prSet({periode:Object.assign({},per,{indice:v})}), style:prChip(per.indice===v) }));
-    const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:()=>prSet({periode:Object.assign({},per,{annee:a})}), style:prChip(per.annee===a) }));
-    const prLangues = [['fr','Français'],['en','English']].map(([k,l])=>({ label:l, pick:()=>prSet({langue:k}), style:prChip(pr.langue===k) }));
+      .map(([v,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{indice:v})}),true), style:prChip(per.indice===v) }));
+    const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{annee:a})}),true), style:prChip(per.annee===a) }));
+    const prLangues = [['fr','Français'],['en','English']].map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({langue:k}),true), style:prChip(pr.langue===k) }));
     const PR_PREC = {mois:'vs mois précédent',trimestre:'vs trimestre précédent',semestre:'vs semestre précédent'};
     const PR_N1 = {mois:'vs même mois N-1',trimestre:'vs même trimestre N-1',semestre:'vs même semestre N-1',annee:'vs année précédente'};
     const prCompar = (per.type==='annee'?[]:[{ label:PR_PREC[per.type], pick:()=>prSet({precedente:!pr.precedente}), style:prChip(pr.precedente) }])
