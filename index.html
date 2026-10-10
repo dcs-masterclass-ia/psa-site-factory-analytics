@@ -572,6 +572,43 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
 
+          <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ glChip }}">{{ glIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Objectifs annuels de leads<span class="dc-info" tabindex="0">i<span class="dc-tip">Leads valides du back-office, cumulés depuis le 1er janvier, face à l'objectif annuel de chaque site. « Attendu à date » suit la saisonnalité de l'année précédente (part de l'année déjà écoulée) ; la projection prolonge le rythme des 90 derniers jours sur le reste de l'année, comme la Prévision du Tableau.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ glSubtitle }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <span class="pr-btn" onClick="{{ glToggleEdit }}" style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#f1eefe;color:#5b43d6">{{ glEditLabel }}</span>
+              <sc-if value="{{ glEditing }}" hint-placeholder-val="{{ false }}"><span class="pr-btn" onClick="{{ glSave }}" style="{{ glSaveStyle }}">{{ glSaveLabel }}</span></sc-if>
+            </div>
+            <sc-if value="{{ glMsgOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-bottom:8px">{{ glMsg }}</div></sc-if>
+            <sc-if value="{{ glHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 120px 100px minmax(0,1.5fr) 100px 120px 110px;align-items:center;gap:10px;padding:8px;font-size:13.5px;color:#9a9fa6">
+                <span>Site</span><span style="text-align:right">Objectif</span><span style="text-align:right">Réalisé</span><span>Avancement</span><span style="text-align:right">Attendu</span><span style="text-align:right">Projection</span><span style="text-align:center">Trajectoire</span>
+              </div>
+              <sc-for list="{{ glRows }}" as="r" hint-placeholder-count="6">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) 120px 100px minmax(0,1.5fr) 100px 120px 110px;align-items:center;gap:10px;padding:6px 8px;border-top:1px solid #f2f2f4" style-hover="background:#f6f7fb">
+                  <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;{{ r.nameWeight }}">{{ r.name }}</span>
+                  <sc-if value="{{ r.edit }}" hint-placeholder-val="{{ false }}"><input type="number" value="{{ r.draft }}" onInput="{{ r.onDraft }}" placeholder="—" style="font-family:Poppins,sans-serif;font-size:13.5px;border:1px solid #ddd8fb;border-radius:8px;padding:5px 7px;width:100%;box-sizing:border-box;text-align:right;background:#fff" /></sc-if>
+                  <sc-if value="{{ !r.edit }}" hint-placeholder-val="{{ true }}"><span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.cible }}</span></sc-if>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ytd }}</span>
+                  <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;position:relative;overflow:hidden"><div style="{{ r.bar }}"></div><div style="{{ r.mark }}"></div></div><span style="font-size:13.5px;font-weight:600;color:#121214;min-width:44px;text-align:right">{{ r.pct }}</span></div>
+                  <span style="font-size:14px;color:#6d727a;text-align:right">{{ r.attendu }}</span>
+                  <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.proj }}</span>
+                  <span style="{{ r.statStyle }}">{{ r.stat }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !glHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ glEmpty }}</div>
+            </sc-if>
+            <sc-if value="{{ insGoals }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insGoals }}</div></sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ isEvents }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
@@ -2201,6 +2238,12 @@ class Component extends DCLogic {
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
+  async objCharge(force) {
+    if (this.estLimite() || (this._obj && this._obj.loaded && !force)) return;
+    try { const r = await fetch('/api/objectifs'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status); this._obj = { loaded:true, annees:j.annees||{} }; }
+    catch (e) { this._obj = { loaded:true, annees:{}, err:true }; }
+    this.setState({ objTick:Date.now() });
+  }
   /* calendrier d'événements (api/events.js) : chargé une fois, lecture seule pour le profil limité */
   async evCharge(force) {
     if (this._ev && this._ev.loaded && !force) return;
@@ -2230,6 +2273,7 @@ class Component extends DCLogic {
   componentDidUpdate() { this.measureBoxes(); }
   componentDidMount() {
     this.evCharge();
+    setTimeout(()=>this.objCharge(), 1500);
     window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
     this.wireLogin();
     this.boot();
@@ -3247,12 +3291,13 @@ class Component extends DCLogic {
     const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist','events']],
                      ['acquisition','Acquisition',"D'où vient le trafic ?",['sources','utm','quality']],
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
-                     ['audience','Audience','Qui sont les visiteurs ?',['audience']]];
-    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs'};
-    const gaOk=v=>!(this.estLimite()&&v==='v2');
+                     ['audience','Audience','Qui sont les visiteurs ?',['audience']],
+                     ['pilotage','Pilotage','Où va-t-on ?',['goals']]];
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs',goals:'Objectifs'};
+    const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'));
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
-    const gaThemes=GA_THEMES.map(t=>({name:t[1],style:this.tabStyle(t===gaTheme),
+    const gaThemes=GA_THEMES.filter(t=>t[3].some(gaOk)).map(t=>({name:t[1],style:this.tabStyle(t===gaTheme),
       pick:()=>{ const last=(st.gaLast||{})[t[0]]; const target=(last&&t[3].includes(last)&&gaOk(last))?last:t[3].filter(gaOk)[0]; set({tab:target,gaLast:Object.assign({},st.gaLast,{[gaTheme[0]]:gaCur})}); }}));
     const gaViews=gaTheme[3].filter(gaOk).map(v=>({name:GA_LABELS[v],pick:()=>set({tab:v}),
       style:`display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;${v===gaCur?'background:#f1eefe;color:#5b43d6;font-weight:600':'color:#6d727a'}`}));
@@ -4295,6 +4340,53 @@ class Component extends DCLogic {
     const fcNote = !fcOk ? 'Prévision indisponible : il faut au moins 90 jours de leads et l\'année précédente sur ce périmètre.'
       : (fcPetit ? 'Périmètre étroit : projection indicative (la méthode a été validée sur le parc entier).' : 'Méthode validée sur 2022-2025 (parc entier) : écart entre −0,6 % et +1,1 % sur le total annuel. Fourchette = croissances 30 j / 90 j / depuis janvier.');
 
+    // ---- Objectifs annuels de leads (profil complet) : réalisé, attendu à date (saisonnalité N-1), projection
+    const objAn=tb_lastDay?tb_lastDay.slice(0,4):String(anCourant);
+    const glCibles=((this._obj&&this._obj.annees)||{})[objAn]||{};
+    const glEditing=!!st.glEdit&&!this.estLimite();
+    const glDraft=st.glDraft||{};
+    const glNames=(st.sites||[]).slice().sort((a,b)=>(glCibles[b]||0)-(glCibles[a]||0)||a.localeCompare(b));
+    const lmS=this._leadsMensuel&&this._leadsMensuel.sites;
+    const glAnneeEcoulee=n=>{ if (!lmS||!lmS[n]||!tb_lastDay) return null;       // part de l'année N-1 déjà écoulée à la même date, d'après les leads mensuels
+      const Y1=String(parseInt(objAn,10)-1); let tot=0, ytd=0; const mo=parseInt(tb_lastDay.slice(5,7),10), dd=parseInt(tb_lastDay.slice(8,10),10);
+      for (let m=1;m<=12;m++){ const v=(lmS[n][Y1+'-'+tb_pad2(m)]||[0])[0]; tot+=v; if (m<mo) ytd+=v; else if (m===mo) ytd+=v*dd/new Date(Date.UTC(parseInt(Y1,10),m,0)).getUTCDate(); }
+      return tot>0?{share:ytd/tot,tot}:null; };
+    const glCalc=n=>{ const cible=glCibles[n]||0, map=tb_siteDailyTb(n), a0=objAn+'-01-01';
+      const ytd=tb_lastDay?tb_sumR(map,a0,tb_lastDay):0, ae=glAnneeEcoulee(n);
+      const g90=tb_lastDay?tb_growthR(map,tb_addDaysIso(tb_lastDay,-89),tb_lastDay):{ratio:null};
+      let proj=null; if (tb_lastDay&&g90.ratio!=null){ let rest=0; for (let d=tb_addDaysIso(tb_lastDay,1); d<=objAn+'-12-31'; d=tb_addDaysIso(d,1)) rest+=map[tb_yAgo(d)]||0; proj=ytd+rest*g90.ratio; }
+      const attendu=cible&&ae?cible*ae.share:(cible&&tb_lastDay?cible*(Date.UTC(+objAn,+tb_lastDay.slice(5,7)-1,+tb_lastDay.slice(8,10))-Date.UTC(+objAn,0,1))/86400000/365:null);
+      return {n,cible,ytd,attendu,proj}; };
+    const glAll=glNames.map(glCalc);
+    const glWith=glAll.filter(r=>r.cible>0);
+    const glRowsBase=(glEditing?glAll:glWith).slice(0,12);
+    const glStat=r=>{ if (!r.cible||r.proj==null) return ['—','#9a9fa6','#f2f2f5']; const q=r.proj/r.cible; return q>=1?['En avance','#1f7a4d','#e8f6ee']:q>=0.97?['Dans la cible','#1f7a4d','#e8f6ee']:q>=0.9?['À risque','#a15c07','#fdf3e3']:['En retard','#a33c39','#fdecec']; };
+    const glRows=glRowsBase.map(r=>{ const st2=glStat(r), pct=r.cible?r.ytd/r.cible*100:null, att=r.cible&&r.attendu?r.attendu/r.cible*100:null;
+      return { name:r.n, nameWeight:r.cible?'font-weight:500':'', edit:glEditing, draft:glDraft[r.n]!=null?glDraft[r.n]:(r.cible||''), onDraft:e=>set({glDraft:Object.assign({},glDraft,{[r.n]:e.target.value})}),
+        cible:r.cible?this.fmt(r.cible):'—', ytd:this.fmt(r.ytd), pct:pct==null?'—':dec(pct,0)+' %',
+        bar:`position:absolute;left:0;top:0;height:100%;width:${Math.min(100,pct||0).toFixed(1)}%;border-radius:4px;background:#b6a5f8`,
+        mark:att==null?'display:none':`position:absolute;top:-1px;height:10px;width:2px;background:#d78b35;left:${Math.min(99.5,att).toFixed(1)}%`,
+        attendu:r.attendu?this.fmt(Math.round(r.attendu)):'—', proj:r.proj==null?'—':'≈ '+this.fmt(Math.round(r.proj/100)*100),
+        stat:st2[0], statStyle:`font-size:12px;font-weight:600;text-align:center;border-radius:999px;padding:4px 8px;color:${st2[1]};background:${st2[2]}` }; });
+    const glHas=glRows.length>0&&!!tb_lastDay;
+    const glEmpty=this.estLimite()?"Les objectifs reposent sur les leads du back-office, non accessibles à ce profil.":(this._obj&&this._obj.err)?"Les objectifs ne sont pas disponibles ici (API indisponible en local).":"Aucun objectif défini pour cette sélection. Clique sur « Définir les objectifs » pour saisir la cible annuelle de leads de chaque site.";
+    const glSubtitle=`Année ${objAn} · ${glWith.length} site${glWith.length>1?'s':''} avec objectif${tb_lastDay?' · à jour au '+tb_fmtJ(tb_lastDay):''}`;
+    const glToggleEdit=()=>set({glEdit:!st.glEdit,glDraft:{},glMsg:null});
+    const glEditLabel=glEditing?'Annuler':'Définir les objectifs';
+    const glMsg=st.glMsg||'', glMsgOn=!!st.glMsg;
+    const glSaveLabel=st.glBusy?'Enregistrement…':'Enregistrer', glSaveStyle='display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#121214;color:#fff';
+    const glSave=async()=>{ if (st.glBusy) return; const cibles={}; Object.keys(glDraft).forEach(k=>{ const v=String(glDraft[k]).trim(); cibles[k]=v===''?null:Number(v); });
+      if (!Object.keys(cibles).length) { set({glEdit:false}); return; }
+      set({glBusy:true,glMsg:null});
+      try { const r=await fetch('/api/objectifs',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'save',annee:objAn,cibles})}); const j=await r.json(); if (!r.ok) throw new Error(j&&j.error||('Erreur '+r.status));
+        this._obj={loaded:true,annees:j.annees}; set({glBusy:false,glEdit:false,glDraft:{},glMsg:null}); }
+      catch(e) { set({glBusy:false,glMsg:e.message}); } };
+    let insGoals='';
+    if (glHas&&glWith.length) { const T=glWith.reduce((a,r)=>({c:a.c+r.cible,y:a.y+r.ytd,at:a.at+(r.attendu||0),p:a.p+(r.proj==null?0:r.proj),np:a.np+(r.proj==null?0:1)}),{c:0,y:0,at:0,p:0,np:0});
+      const risk=glWith.filter(r=>r.proj!=null).map(r=>({n:r.n,q:r.proj/r.cible})).sort((a,b)=>a.q-b.q)[0];
+      insGoals=`Ensemble : ${dec(T.y/T.c*100,0)} % de l'objectif atteint (${dec(T.at/T.c*100,0)} % attendu à date), projection ≈ ${this.fmt(Math.round(T.p/1000)*1000)} sur ${this.fmt(T.c)} d'objectif.`+(risk&&risk.q<0.97?` Site le plus en retard : ${risk.n} (projection à ${dec(risk.q*100,0)} % de son objectif).`:''); }
+    const glIcon=kIcone('#7c63ee',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:5}),h('circle',{cx:12,cy:12,r:1.2})), glChip=kPuce('#7c63ee');
+
     // ---- année sur année (historique profond : data/leads_mensuel.json) ----
     const lm = this._leadsMensuel && this._leadsMensuel.sites;
     const ym = {}; // 'AAAA-MM' -> valides
@@ -4988,7 +5080,8 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isContrib:gaCur==='contrib', isEvents:gaCur==='events', isHist:gaCur==='hist',
+      isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isEvents:gaCur==='events',
+      glHas, glRows, glEmpty, glSubtitle, glToggleEdit, glEditLabel, glEditing, glMsg, glMsgOn, glSaveLabel, glSaveStyle, glSave, insGoals, glIcon, glChip, isHist:gaCur==='hist',
       evHas, evRows, evEmpty, evSubtitle, evFormOpen, evToggleForm, evFormLabel, evTypeChips, evScopeChips, evMsg, evMsgOn, evSaveLabel, evSaveStyle, evSave, insEvents, evIcon, evChip, evCanWrite,
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,

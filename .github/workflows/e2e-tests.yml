@@ -42,7 +42,7 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: node --test api/tickets.test.js api/presentations.test.js api/events.test.js
+      - run: node --test api/tickets.test.js api/presentations.test.js api/events.test.js api/objectifs.test.js
         working-directory: tests
       - uses: actions/setup-python@v5
         with:
