@@ -193,3 +193,21 @@ test.describe("pivot pages -> requêtes", () => {
     expect(pageErrors, `erreurs JS sur le pivot pages->requêtes : ${pageErrors.join(" | ")}`).toEqual([]);
   });
 });
+
+test("thème : suit la préférence système, bascule manuelle, mémorisé", async ({ page, context }) => {
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  const theme = () => page.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/", { waitUntil: "networkidle" });
+  expect(await theme()).toBe("dark");                       // suit macOS en sombre
+  await page.emulateMedia({ colorScheme: "light" });
+  await expect.poll(theme).toBe("light");                   // suit le changement en direct
+  await page.locator('[title="Sombre"]').click();
+  expect(await theme()).toBe("dark");                       // choix manuel
+  await page.emulateMedia({ colorScheme: "light" });
+  expect(await theme()).toBe("dark");                       // le manuel prime sur le système
+  await page.reload({ waitUntil: "networkidle" });
+  expect(await theme()).toBe("dark");                       // mémorisé
+  await page.locator('[title^="Automatique"]').click();
+  await expect.poll(theme).toBe("light");                   // retour au système (clair ici)
+});

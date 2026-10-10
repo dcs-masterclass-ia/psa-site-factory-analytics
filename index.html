@@ -6,6 +6,22 @@
 <title>Converge — Reprise</title>
 <link rel="icon" type="image/png" href="./favicon.png">
 <script>
+/* Thème : "system" (suit macOS / Windows / navigateur en direct), "light" ou
+   "dark". Choix mémorisé dans localStorage. Appliqué avant le premier rendu
+   pour éviter un flash clair au chargement. */
+(function () {
+  var K = "psf_theme", pref = "system", mq = null;
+  try { pref = localStorage.getItem(K) || "system"; } catch (e) {}
+  try { mq = window.matchMedia("(prefers-color-scheme: dark)"); } catch (e) {}
+  function resolu() { return pref === "dark" || (pref === "system" && mq && mq.matches) ? "dark" : "light"; }
+  function applique() { document.documentElement.setAttribute("data-theme", resolu()); }
+  applique();
+  if (mq) { var cb = function () { if (pref === "system") applique(); }; if (mq.addEventListener) mq.addEventListener("change", cb); else if (mq.addListener) mq.addListener(cb); }
+  window.__getTheme = function () { return pref; };
+  window.__setTheme = function (p) { pref = p; try { localStorage.setItem(K, p); } catch (e) {} applique(); };
+})();
+</script>
+<script>
 /* Session de 1 h max (api/auth.js) : sur toute reponse 401 des routes
    same-origin, ou des que le cookie d'identite expire, on efface ce cookie
    (sans quoi l'ecran de connexion ne s'afficherait pas) puis on recharge.
@@ -142,6 +158,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 html,body{margin:0;height:100%;background:#f4f4f6;font-family:Poppins,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+/* ---- thème sombre (10/10/2026) : inversion « intelligente » de toute la page.
+   html.data-theme=dark inverse la luminosité et fait tourner la teinte de
+   180° (les couleurs gardent leur identité), puis les éléments qui doivent
+   garder leurs vraies couleurs (logos colorés, orbe KamIA, cadres Google /
+   comparaison) sont ré-inversés. Les couleurs du code restent celles du mode
+   clair : un seul jeu de styles à maintenir. */
+html[data-theme="dark"]{filter:invert(.92) hue-rotate(180deg) saturate(1.18) brightness(1.06);background:#fff}
+html[data-theme="dark"] [data-keep],
+html[data-theme="dark"] [data-fab],
+html[data-theme="dark"] iframe,
+html[data-theme="dark"] #dc-tipbox,
+html[data-theme="dark"] [style*="background:#0c1120"]{filter:invert(1) hue-rotate(180deg)}
+html[data-theme="dark"] [data-fab] [style*="background:#0c1120"],
+html[data-theme="dark"] [data-keep] [style*="background:#0c1120"]{filter:none}
+
 a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 .dc-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:none;border-radius:50%;background:#ecebf4;color:#6d727a;font-size:11px;font-weight:600;font-style:normal;letter-spacing:0;text-transform:none;line-height:1;cursor:help;vertical-align:middle;margin-left:7px}
 .dc-info:hover,.dc-info:focus{background:#d9d2fb;color:#4a36b0;outline:none}
@@ -180,20 +211,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <span style="font-size:9.5px;font-weight:600;letter-spacing:.08em;color:#b3b7bd;flex:none">DATA</span>
 
     <div onClick="{{ pickGA }}" style="{{ srcGA }}" style-hover="background:#f4f4f6" title="Google Analytics 4">
-      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
+      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <div onClick="{{ pickSC }}" style="{{ srcSC }}" style-hover="background:#f4f4f6" title="Search Console">
-      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
+      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <div onClick="{{ pickPS }}" style="{{ srcPS }}" style-hover="background:#f4f4f6" title="PageSpeed Insights">
-      <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
+      <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickTB }}" style="{{ srcTB }}" style-hover="background:#f4f4f6" title="Tableau">
-      <img src="https://img.icons8.com/color/512/tableau-software.png" alt="" width="22" height="22" style="display:block;object-fit:contain">
+      <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <div onClick="{{ pickGCP }}" style="{{ srcGCP }}" style-hover="background:#f4f4f6" title="Google Cloud Platform">
-      <svg width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M14.4 8.1h-.7l2.2-2.2-.1-.9A8 8 0 0 0 3.4 8.6l.7-.1 4.4-.7.3-.3a4.5 4.5 0 0 1 5.7-.5z" fill="#ea4335"/><path d="M19.5 8.6a8 8 0 0 0-2.4-3.9l-3.1 3.1a4.5 4.5 0 0 1 1.7 3.5v.6a2.2 2.2 0 0 1 0 4.4h-4.4l-.5.5v2.6l.5.5h4.4a5.8 5.8 0 0 0 3.8-10.3z" fill="#4285f4"/><path d="M6.9 20h4.4v-3.6H6.9a2.2 2.2 0 0 1-.9-.2l-.6.2-2.2 2.2-.2.6A5.7 5.7 0 0 0 6.9 20z" fill="#34a853"/><path d="M6.9 8.3a5.8 5.8 0 0 0-3.5 10.4l2.6-2.6a2.2 2.2 0 0 1 .9-4.2c.6 0 1.2.2 1.6.6l2.6-2.6a5.8 5.8 0 0 0-4.2-1.6z" fill="#fbbc05"/></svg>
+      <svg data-keep width="23" height="23" viewBox="0 0 24 24" fill="none"><path d="M14.4 8.1h-.7l2.2-2.2-.1-.9A8 8 0 0 0 3.4 8.6l.7-.1 4.4-.7.3-.3a4.5 4.5 0 0 1 5.7-.5z" fill="#ea4335"/><path d="M19.5 8.6a8 8 0 0 0-2.4-3.9l-3.1 3.1a4.5 4.5 0 0 1 1.7 3.5v.6a2.2 2.2 0 0 1 0 4.4h-4.4l-.5.5v2.6l.5.5h4.4a5.8 5.8 0 0 0 3.8-10.3z" fill="#4285f4"/><path d="M6.9 20h4.4v-3.6H6.9a2.2 2.2 0 0 1-.9-.2l-.6.2-2.2 2.2-.2.6A5.7 5.7 0 0 0 6.9 20z" fill="#34a853"/><path d="M6.9 8.3a5.8 5.8 0 0 0-3.5 10.4l2.6-2.6a2.2 2.2 0 0 1 .9-4.2c.6 0 1.2.2 1.6.6l2.6-2.6a5.8 5.8 0 0 0-4.2-1.6z" fill="#fbbc05"/></svg>
     </div>
 
     </sc-if>
@@ -319,6 +350,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
         </sc-if>
+      </div>
+
+      <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
+        <sc-for list="{{ themeOpts }}" as="t" hint-placeholder-count="3">
+          <span onClick="{{ t.pick }}" title="{{ t.title }}" aria-label="{{ t.title }}" style="{{ t.style }}">{{ t.icon }}</span>
+        </sc-for>
       </div>
 
       <div style="display:flex;align-items:center;gap:9px;height:34px;padding:0 18px;border-radius:12px;background:#141414;color:#fff;font-size:14.5px;font-weight:500;cursor:pointer" style-hover="background:#2e2e32">
@@ -1595,7 +1632,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
   </div>
 
   <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
-  <div data-chrome="chat" onClick="{{ toggleChat }}" style="{{ chatFabStyle }}" style-hover="transform:scale(1.04)">
+  <div data-chrome="chat" data-fab onClick="{{ toggleChat }}" style="{{ chatFabStyle }}" style-hover="transform:scale(1.04)">
     <span style="width:26px;height:26px;border-radius:50%;position:relative;overflow:hidden;flex:none;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
       <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1.2px)"></span>
       <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
@@ -1612,7 +1649,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
   <div data-chrome="chat" style="{{ chatPanelOuterStyle }}">
   <div style="{{ chatPanelInnerStyle }}">
 
-    <div style="flex:none;padding:16px 18px;background:linear-gradient(150deg,#1b1636,#33215a);color:#fff">
+    <div data-keep style="flex:none;padding:16px 18px;background:linear-gradient(150deg,#1b1636,#33215a);color:#fff">
       <div style="display:flex;align-items:center;gap:12px">
         <span style="width:38px;height:38px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 6px 14px -6px rgba(109,92,246,.55)">
           <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(2px)"></span>
@@ -1721,6 +1758,7 @@ class Component extends DCLogic {
   componentWillUnmount() {
     if (this._onOutsideClick) document.removeEventListener('mousedown', this._onOutsideClick);
   }
+  setTheme(k) { if (window.__setTheme) window.__setTheme(k); this.setState({ theme:k }); }
   estLimite() {
     // profil GA4 / Search Console / PageSpeed uniquement : sert seulement a
     // masquer l'interface ; l'acces reel est refuse cote serveur
@@ -3830,6 +3868,8 @@ class Component extends DCLogic {
       tbCaps, capTitle, capTip, capNeeded, capDate, capSubTxt:capSub, fcOk, fcKpis, fcNote, tbForecastChart, tbYoyChart, yoyLegend, annualRows, weekdayRows, monthSeasonRows:monthSeason.rows, monthSeasonOk:monthSeason.ok, seasonLabel, ruptTabs, ruptDown, ruptUp, ruptNote, qualOk, qualTop, qualKpis, qualNote, capPct:capPct.toFixed(1), tbHasAdvanced:!!tb_lastDay,
       tbGridAlign:(countryRows.length>=4?'stretch':'start'),
       ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
+      themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
+        style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
       listMinH:9*44, brandPerf, brandInsight, brandCountLabel, countryCountLabel, tbChip:kPuce('#7c63ee'), tbIcon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),
       cBrandChip:kPuce('#3b76e8'), cBrandIcon:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5}),h('path',{d:'M7 11l1.5-4h7L17 11'})),
       cCtryChip:kPuce('#3fae7a'), cCtryIcon:kIcone('#3fae7a',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
