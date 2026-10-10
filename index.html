@@ -841,10 +841,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
               <span onClick="{{ openQueries }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ queryCount }} requêtes</span>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;font-size:11.5px;color:#6d727a">
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
+              </span>
             </div>
             <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
               <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
@@ -883,16 +885,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
               <span onClick="{{ openPages }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ pageCount }} pages</span>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-              <span style="font-size:12px;color:#9a9fa6;margin-right:2px">Canal des leads</span>
-              <sc-for list="{{ pagesCanaux }}" as="c" hint-placeholder-count="5">
-                <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span>
-              </sc-for>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;padding:0 0 8px;font-size:11.5px;color:#6d727a">
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#2b8f62"></span>Positif</span>
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#e8a33d"></span>Moyen</span>
-              <span style="display:inline-flex;align-items:center;gap:5px;background:#f6f6f8;border-radius:999px;padding:3px 9px"><span style="width:7px;height:7px;border-radius:4px;display:inline-block;background:#a33c39"></span>Négatif</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:12px;color:#9a9fa6">Leads par canal</span>
+                <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:12px;padding:3px">
+                  <sc-for list="{{ pagesCanaux }}" as="c" hint-placeholder-count="5">
+                    <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
+              </span>
             </div>
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
               <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
@@ -2893,7 +2899,7 @@ class Component extends DCLogic {
     };
     const pagesCanaux = [['o','Organique'],['p','Payant'],['d','Direct'],['a','Autres'],['t','Tous canaux']].map(([k,label])=>({
       label, pick:()=>set({pagesCanal:k}),
-      style:'font-size:12.5px;font-weight:500;border-radius:999px;padding:5px 12px;cursor:pointer;white-space:nowrap;'+(pagesCanal===k?'background:#121214;color:#fff':'background:#f6f6f8;color:#6d727a'),
+      style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;white-space:nowrap;'+(pagesCanal===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98'),
     }));
     const allPages = pagesSorted.map(mkPageRow);
     const scPages = allPages.slice(0,6);
