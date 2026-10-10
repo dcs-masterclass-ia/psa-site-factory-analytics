@@ -164,3 +164,19 @@ test("Tableau : prévision, année sur année, saisonnalité, ruptures, qualité
   await page.locator("span", { hasText: /^\d,\d{2} M$/ }).first().click().catch(() => {});
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("Search Console, Pages : l'URL est un lien vers la vraie page (nouvel onglet) + loupe pour les requêtes", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("CITROEN FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "CITROEN FR" }).first().click();
+  await page.keyboard.press("Escape"); await page.mouse.click(5, 5);
+  await page.locator('div[title="Search Console"]').first().click();
+  const lien = page.locator('a[title="Ouvrir la page dans un nouvel onglet"]').first();
+  await expect(lien).toBeVisible();
+  expect(await lien.getAttribute("href")).toMatch(/^https:\/\/.+/);
+  expect(await lien.getAttribute("target")).toBe("_blank");
+  expect(await lien.getAttribute("rel")).toContain("noopener");
+  await expect(page.locator('span[title="Voir les requêtes de cette page"]').first()).toBeVisible();
+});
