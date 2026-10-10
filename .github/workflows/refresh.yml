@@ -137,6 +137,15 @@ jobs:
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
         run: python -m pipeline.leads_seuls --ecrire
 
+      - name: Alertes proactives GA4 (seuils réglables, sans IA)
+        # lit les JSON de site déjà assemblés + alertes/config.json (seuils du dashboard) et publie data/alertes.json ;
+        # poste les nouvelles alertes sur Teams seulement si le secret ALERTES_WEBHOOK_URL existe ET que « notifier » est actif.
+        if: ${{ always() && inputs.simulation != 'oui' && inputs.sites == '' }}
+        continue-on-error: true
+        env:
+          ALERTES_WEBHOOK_URL: ${{ secrets.ALERTES_WEBHOOK_URL }}
+        run: python -m pipeline.alertes --ecrire
+
       - name: Signaler un échec de contrôle
         if: ${{ always() && inputs.simulation != 'oui' }}
         run: |

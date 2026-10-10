@@ -572,6 +572,44 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
 
+          <sc-if value="{{ isAlerts }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ alChip }}">{{ alIcon }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Alertes proactives<span class="dc-info" tabindex="0">i<span class="dc-tip">Calculées chaque nuit sur les 7 derniers jours de données, comparés aux 28 jours précédents : chute des sessions du site de reprise, baisse du taux de conversion, fuite sur une étape du tunnel, données en retard. Les seuils se règlent ici ; ils s'appliquent à la prochaine analyse.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ alSubtitle }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+              <sc-if value="{{ alCanWrite }}" hint-placeholder-val="{{ true }}"><span class="pr-btn" onClick="{{ alToggle }}" style="display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#f1eefe;color:#5b43d6">{{ alToggleLabel }}</span></sc-if>
+            </div>
+            <div style="font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin-bottom:10px">{{ alSeuils }}</div>
+            <sc-if value="{{ alFormOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;background:#f7f6fe;border-radius:14px;padding:12px 14px;margin-bottom:12px;align-items:end">
+                <sc-for list="{{ alFields }}" as="f" hint-placeholder-count="5"><div><div style="font-size:12px;color:#8a8f98;margin-bottom:4px">{{ f.label }}</div><input type="number" step="any" value="{{ f.value }}" onInput="{{ f.on }}" style="font-family:Poppins,sans-serif;font-size:13.5px;border:1px solid #ececee;border-radius:9px;padding:7px 9px;width:100%;box-sizing:border-box;background:#fff" /></div></sc-for>
+                <div style="display:flex;gap:8px;align-items:center"><span class="pr-chip" onClick="{{ alNotifPick }}" style="{{ alNotifStyle }}">{{ alNotifLabel }}</span><span class="pr-btn" onClick="{{ alSave }}" style="{{ alSaveStyle }}">{{ alSaveLabel }}</span></div>
+                <sc-if value="{{ alMsgOn }}" hint-placeholder-val="{{ false }}"><div style="grid-column:1/-1;font-size:13px;color:#c24a44">{{ alMsg }}</div></sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{ alHas }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto">
+                <sc-for list="{{ alRows }}" as="a" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid #f2f2f4;border-radius:10px" style-hover="background:#f6f7fb">
+                    <span style="{{ a.dot }}"></span>
+                    <span style="width:130px;flex:none;font-size:14px;font-weight:500;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.site }}</span>
+                    <div style="flex:1;min-width:0"><div style="font-size:14px;color:#121214">{{ a.titre }}</div><div style="font-size:12.5px;color:#6d727a">{{ a.detail }}</div></div>
+                    <span style="flex:none;font-size:12px;color:#9a9fa6">{{ a.depuis }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !alHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ alEmpty }}</div>
+            </sc-if>
+            <sc-if value="{{ insAlerts }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insAlerts }}</div></sc-if>
+          </div>
+          </sc-if>
+
           <sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
@@ -2238,6 +2276,12 @@ class Component extends DCLogic {
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
+  async alCharge(force) {
+    if (this._al && this._al.loaded && !force) return;
+    try { const r = await fetch('/api/alertes'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status); this._al = Object.assign({ loaded:true }, j); }
+    catch (e) { this._al = { loaded:true, err:true, config:null, alertes:[], peutEcrire:false }; }
+    this.setState({ alTick:Date.now() });
+  }
   async objCharge(force) {
     if (this.estLimite() || (this._obj && this._obj.loaded && !force)) return;
     try { const r = await fetch('/api/objectifs'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status); this._obj = { loaded:true, annees:j.annees||{} }; }
@@ -2274,6 +2318,7 @@ class Component extends DCLogic {
   componentDidMount() {
     this.evCharge();
     setTimeout(()=>this.objCharge(), 1500);
+    setTimeout(()=>this.alCharge(), 1200);
     window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
     this.wireLogin();
     this.boot();
@@ -3287,13 +3332,43 @@ class Component extends DCLogic {
     if (evInRange.length) { const f=evInRange.slice(0,3).map(e=>fmtJE(e.date).slice(0,5)+' '+e.titre); insEvents=`Dans la période : ${f.join(' · ')}${evInRange.length>3?' · …':''}.`; }
     const evIcon=kIcone('#d78b35',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'}),h('path',{d:'M8 15h.01M12 15h.01M16 15h.01'})), evChip=kPuce('#d78b35');
 
+    // ---- Alertes proactives (pipeline/alertes.py, seuils réglables)
+    const alState=this._al||{loaded:false,alertes:[],config:null};
+    const alCfg=alState.config||{sessionsPct:25,convPts:1.5,etapePts:5,fraicheurJours:3,volumeMin:500,notifier:false};
+    const alCanWrite=!!alState.peutEcrire;
+    const alSel=new Set(st.sites||[]);
+    const alAll=(alState.alertes||[]).filter(a=>alSel.has(a.site));
+    const alNb={haute:alAll.filter(a=>a.severite==='haute').length,moyenne:alAll.filter(a=>a.severite!=='haute').length};
+    const alRows=alAll.slice(0,40).map(a=>({ site:a.site, titre:a.titre, detail:a.detail, depuis:'depuis le '+a.depuis.slice(8,10)+'/'+a.depuis.slice(5,7),
+      dot:`flex:none;width:10px;height:10px;border-radius:5px;background:${a.severite==='haute'?'#e8544a':'#d78b35'}` }));
+    const alHas=alRows.length>0;
+    const alEmpty=alState.err?"Les alertes ne sont pas disponibles ici (API indisponible en local).":(alState.genere?"Aucune alerte active sur cette sélection : tous les indicateurs surveillés sont dans leurs seuils.":"Les alertes arrivent avec la prochaine analyse nocturne.");
+    const alSubtitle=alState.genere?`${alAll.length} alerte${alAll.length>1?'s':''} sur la sélection · analyse du ${alState.genere.slice(8,10)}/${alState.genere.slice(5,7)}`:'En attente de la première analyse';
+    const alSeuils=`Seuils : sessions −${alCfg.sessionsPct} % · conversion −${String(alCfg.convPts).replace('.',',')} pt · étape du tunnel −${alCfg.etapePts} pt · données en retard après ${alCfg.fraicheurJours} j · volume minimum ${this.fmt(alCfg.volumeMin)} · notification Teams ${alCfg.notifier?'active':'désactivée'}`;
+    const alFormOpen=!!st.alOpen&&alCanWrite;
+    const alDraft=Object.assign({},alCfg,st.alDraft||{});
+    const alSetD=patch=>set({alDraft:Object.assign({},alDraft,patch),alMsg:null});
+    const alFields=[['sessionsPct','Chute des sessions (%)'],['convPts','Chute de conversion (pt)'],['etapePts','Chute d\'étape (pt)'],['fraicheurJours','Retard des données (jours)'],['volumeMin','Volume minimum (7 j)']].map(([k,l])=>({label:l,value:alDraft[k],on:e=>alSetD({[k]:e.target.value})}));
+    const alToggle=()=>set({alOpen:!st.alOpen,alDraft:{},alMsg:null}), alToggleLabel=alFormOpen?'Fermer':'Régler les seuils';
+    const alNotifLabel=alDraft.notifier?'Teams : activé':'Teams : désactivé', alNotifPick=()=>alSetD({notifier:!alDraft.notifier});
+    const alNotifStyle=this.prChipLite(!!alDraft.notifier);
+    const alMsg=st.alMsg||'', alMsgOn=!!st.alMsg;
+    const alSaveLabel=st.alBusy?'Enregistrement…':'Enregistrer', alSaveStyle='display:inline-flex;align-items:center;height:34px;padding:0 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#121214;color:#fff';
+    const alSave=async()=>{ if (st.alBusy) return; set({alBusy:true,alMsg:null});
+      try { const cfg={}; ['sessionsPct','convPts','etapePts','fraicheurJours','volumeMin'].forEach(k=>{ cfg[k]=Number(String(alDraft[k]).replace(',','.')); }); cfg.notifier=!!alDraft.notifier;
+        const r=await fetch('/api/alertes',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({action:'save_config',config:cfg})}); const j=await r.json(); if (!r.ok) throw new Error(j&&j.error||('Erreur '+r.status));
+        this._al=Object.assign({},this._al,{config:j.config}); set({alBusy:false,alOpen:false,alDraft:{},alMsg:null}); }
+      catch(e) { set({alBusy:false,alMsg:e.message}); } };
+    let insAlerts='';
+    if (alAll.length) { const sites=[...new Set(alAll.map(a=>a.site))]; insAlerts=`${alNb.haute} alerte${alNb.haute>1?'s':''} haute${alNb.haute>1?'s':''} et ${alNb.moyenne} moyenne${alNb.moyenne>1?'s':''} sur ${sites.length} site${sites.length>1?'s':''}`+(alNb.haute?` — les plus importantes : ${alAll.filter(a=>a.severite==='haute').slice(0,2).map(a=>a.site+' ('+a.titre.toLowerCase()+')').join(', ')}.`:'.'); }
+    const alIcon=kIcone('#e8544a',h('path',{d:'M12 4.5 21.5 19.5H3z'}),h('path',{d:'M12 10v4M12 17h.01'})), alChip=kPuce('#e8544a');
     // ---- navigation des analyses détaillées : 4 questions (thèmes) -> vues, du constat vers l'explication
     const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist','events']],
                      ['acquisition','Acquisition',"D'où vient le trafic ?",['sources','utm','quality']],
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
                      ['audience','Audience','Qui sont les visiteurs ?',['audience']],
-                     ['pilotage','Pilotage','Où va-t-on ?',['goals']]];
-    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs',goals:'Objectifs'};
+                     ['pilotage','Pilotage','Où va-t-on ?',['alerts','goals']]];
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs',goals:'Objectifs',alerts:'Alertes'};
     const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'));
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
@@ -5080,7 +5155,8 @@ class Component extends DCLogic {
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
       kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
-      isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isEvents:gaCur==='events',
+      isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isAlerts:gaCur==='alerts',
+      alHas, alRows, alEmpty, alSubtitle, alSeuils, alFormOpen, alFields, alToggle, alToggleLabel, alNotifLabel, alNotifPick, alNotifStyle, alMsg, alMsgOn, alSaveLabel, alSaveStyle, alSave, insAlerts, alIcon, alChip, alCanWrite, isEvents:gaCur==='events',
       glHas, glRows, glEmpty, glSubtitle, glToggleEdit, glEditLabel, glEditing, glMsg, glMsgOn, glSaveLabel, glSaveStyle, glSave, insGoals, glIcon, glChip, isHist:gaCur==='hist',
       evHas, evRows, evEmpty, evSubtitle, evFormOpen, evToggleForm, evFormLabel, evTypeChips, evScopeChips, evMsg, evMsgOn, evSaveLabel, evSaveStyle, evSave, insEvents, evIcon, evChip, evCanWrite,
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',

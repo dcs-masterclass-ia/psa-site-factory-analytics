@@ -21,9 +21,16 @@ test("objectifs annuels : tableau d'avancement et saisie d'une cible", async ({ 
     cibles = Object.assign({}, cibles, Object.fromEntries(Object.entries(body.cibles).filter(([, v]) => v)));
     return route.fulfill({ json: { ok: true, annees: { [annee]: cibles } } });
   });
-  await page.goto("/?sites=PEUGEOT%20FR", { waitUntil: "networkidle" });
-  await page.waitForTimeout(2200);
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("PEUGEOT FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "PEUGEOT FR" }).first().click();
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await page.waitForTimeout(1500);
   await page.getByText("Pilotage", { exact: true }).first().click();
+  await page.getByText("Objectifs", { exact: true }).first().click();
   await expect(page.getByText("Objectifs annuels de leads")).toBeVisible();
   await expect(page.getByText("PEUGEOT FR", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/% de l'objectif atteint/)).toBeVisible();

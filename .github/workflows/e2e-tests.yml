@@ -42,14 +42,14 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      - run: node --test api/tickets.test.js api/presentations.test.js api/events.test.js api/objectifs.test.js
+      - run: node --test api/tickets.test.js api/presentations.test.js api/events.test.js api/objectifs.test.js api/alertes.test.js
         working-directory: tests
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install python-pptx google-analytics-data
         working-directory: .
-      - run: python -m unittest tests.py.test_deck
+      - run: python -m unittest tests.py.test_deck tests.py.test_alertes
         working-directory: .
       - run: npm test
 
