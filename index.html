@@ -1778,7 +1778,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipC }}">{{ prIconC }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite</div></div></div>
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div onClick="{{ prContenuToggle }}" style="{{ prContenuHead }}"><span style="{{ prChipC }}">{{ prIconC }}</span><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">{{ prContenuSub }}</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="{{ prContenuChev }}"><path d="M6 9l6 6 6-6"/></svg></div>
+              <div style="{{ prContenuWrap }}"><div style="overflow:hidden;min-height:0">
               <sc-for list="{{ prModulesRows }}" as="m" hint-placeholder-count="8">
                 <div onClick="{{ m.pick }}" style="{{ m.rowStyle }}">
                   <span class="pr-box" style="{{ m.box }}"><sc-if value="{{ m.check }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
@@ -1788,6 +1789,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ m.slides }}</span>
                 </div>
               </sc-for>
+              </div></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipD }}">{{ prIconE }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Points ouverts</div><div style="font-size:12.5px;color:#9a9fa6">Une diapositive par point (ex. déploiement d'une fonctionnalité, anomalie de tracking)</div></div></div>
               <sc-for list="{{ prPoints }}" as="p" hint-placeholder-count="2">
@@ -4255,6 +4257,7 @@ class Component extends DCLogic {
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
     const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
+    const prContenuOpen = !!st.prContenuOpen;   // module « Contenu » replié par défaut
     const prEnCours = !!(prCur&&prCur.statut==='demandee');
     // progression estimée (la durée réelle n'est pas connue d'avance) : monte vite puis ralentit, plafonne à 95 % tant que le fichier n'est pas prêt
     const prPct = prEnCours ? Math.min(95, Math.round(100*(1-Math.exp(-Math.max(0,Date.now()-(prCur.demandeeLe||Date.now()))/90000)))) : 0;
@@ -4434,6 +4437,11 @@ class Component extends DCLogic {
       prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prEnCours?'background:linear-gradient(90deg,#b9aef7 '+prPct+'%,#efecfd '+prPct+'%);color:#2d2470;cursor:progress;transition:background .8s linear':prValide?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
       prGenPret:!!(prCur&&prCur.statut==='generee'&&prCur.fichier), prDlFn:()=>prCur&&prTelecharge(prCur.id), prDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
       prGenInfo:prCur&&prCur.statut==='echec'?'La dernière génération a échoué : relance, et préviens-moi si ça se répète.':(prCur&&prCur.avertissements&&prCur.avertissements.length&&prCur.statut==='generee'?prCur.avertissements.join(' · '):''),
+      prContenuToggle:()=>set({prContenuOpen:!prContenuOpen}),
+      prContenuHead:'display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-bottom:'+(prContenuOpen?14:0)+'px;transition:margin-bottom .38s cubic-bezier(.22,.9,.3,1)',
+      prContenuSub:prContenuOpen?'Coche les modules à inclure ; le plan se met à jour à droite':(pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non')).length+' module'+(pr.modules.length>1?'s':'')+' sélectionné'+(pr.modules.length>1?'s':'')+' · '+prPlan.total+' diapositives · cliquer pour modifier'),
+      prContenuChev:'flex:none;transition:transform .38s cubic-bezier(.22,.9,.3,1);transform:rotate('+(prContenuOpen?180:0)+'deg)',
+      prContenuWrap:'display:grid;grid-template-rows:'+(prContenuOpen?'1fr':'0fr')+';transition:grid-template-rows .38s cubic-bezier(.22,.9,.3,1),visibility 0s linear '+(prContenuOpen?'0s':'.38s')+';visibility:'+(prContenuOpen?'visible':'hidden'),
       prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
       prChipA:kPuce('#7c63ee'), prIconA:kIcone('#7c63ee',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M12 16v4M8 20h8'})),
       prChipB:kPuce('#3b76e8'), prIconB:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),

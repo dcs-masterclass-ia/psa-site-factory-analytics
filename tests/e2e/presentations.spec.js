@@ -24,6 +24,10 @@ test("créer un brief : plan calculé, validation, enregistrement", async ({ pag
   await expect(page.getByText("Plan de la présentation")).toBeVisible();
   await expect(page.getByText(/BELUX \(Belgique \+ Luxembourg\) · T\d-\d{4}/)).toBeVisible();
   await expect(page.getByText(/^\d+ diapositives$/)).toBeVisible();
+  // le module « Contenu » est replié par défaut (résumé visible), on le déplie
+  await expect(page.getByText(/\d+ modules? sélectionnés? · \d+ diapositives/)).toBeVisible();
+  await expect(page.getByText("Données CRM non disponibles dans Converge")).toBeHidden();
+  await page.getByText("Contenu", { exact: true }).click();
   // module indisponible : non cochable, absent du plan
   await expect(page.getByText("Données CRM non disponibles dans Converge")).toBeVisible();
 
