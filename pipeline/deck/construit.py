@@ -206,10 +206,11 @@ def leads_par_marque(ctx, cle, ref):
     s = nouvelle(ctx, f"{t['leads']} — {ctx.et(per)} {libelle_ref(ctx, cle)}", f"{ctx.perimetre} · {ctx.et(per)} / {ctx.et(ref)}", source_bo(ctx),
                  notes=note_definitions(ctx))
     perso = [None] + [[f"{t.nb(c)}\n{t.evol(c, r)[0]}" if t.evol(c, r)[2] is not None else t.nb(c) for c, r in zip(cur, rf)]]
-    g.colonnes(s, X0, Y0, 8.9, 5.3, [ctx.nom(m) for m in marques],
+    g.colonnes(s, X0, Y0, 8.9, 4.2, [ctx.nom(m) for m in marques],
                [(ctx.et(ref), rf, g.COULEURS_PERIODES[1]), (ctx.et(per), cur, g.COULEURS_PERIODES[2])],
                libelles_perso={1: perso[1]}, taille=10, fmt=t.nb)
-    g.encadre(s, 9.55, Y0 + 0.1, 3.4, 5.0, None, commentaire_evolutions(ctx, [ctx.nom(m) for m in marques], cur, rf, f"({ctx.et(ref)})"), taille=11)
+    g.encadre(s, 9.55, Y0 + 0.1, 3.4, 4.0, None, commentaire_evolutions(ctx, [ctx.nom(m) for m in marques], cur, rf, f"({ctx.et(ref)})"), taille=10.5)
+    bandeau(ctx, s, an.s_leads_marques(ctx, cle, ref))
     return s
 
 
@@ -235,7 +236,8 @@ def leads_mensuels(ctx, projet=None):
         vals = d.leads_mensuels(a, projet=projet)
         series.append((str(a), complets(a, vals), couleur))
     cats = MOIS_COURTS[ctx.langue]
-    g.colonnes(s, X0, Y0, 12.4, 5.3, cats, series, taille=10, largeur_barre=40, fmt=t.nb)
+    g.colonnes(s, X0, Y0, 12.4, 4.2, cats, series, taille=10, largeur_barre=40, fmt=t.nb)
+    bandeau(ctx, s, an.s_mensuel(ctx, projet))
     return s
 
 
@@ -263,8 +265,9 @@ def vue_ensemble_table(ctx):
     lignes.append([t["total"], t.nb(tot_s)] + [t.evol(tot_s, v)[0] for v in tot_sr] + [t.nb(tot_l)] + [t.evol(tot_l, v)[0] for v in tot_lr])
     nc = len(ent)
     lw = [2.4] + [(12.4 - 2.4) / (nc - 1)] * (nc - 1)
-    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=lw, taille=11, hauteur_ligne=0.33, gras_derniere=True)
-    g.texte(s, X0, 6.55, 12.4, 0.3, t["base_faible"], taille=9.5, couleur=g.GRIS, italique=True)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=lw, taille=10.5, hauteur_ligne=0.27, gras_derniere=True)
+    g.texte(s, X0, 6.85, 12.4, 0.25, t["base_faible"], taille=9, couleur=g.GRIS, italique=True)
+    bandeau(ctx, s, an.s_table(ctx))
     return s
 
 
@@ -279,7 +282,7 @@ def projets_groupe(ctx, nom_groupe, marques):
     def graphique(x, p):
         series = [(t[pj], [d.leads(p, m)[pj] for m in marques], g.COULEURS_PROJETS[pj]) for pj in PROJETS]
         g.texte(s, x, Y0, larg, 0.3, ctx.et(p), taille=13, gras=True, couleur=g.BLEU, align=PP_ALIGN.CENTER)
-        g.colonnes(s, x, Y0 + 0.3, larg, 4.1, [ctx.nom(m) for m in marques], series, empile=True, taille=10, fmt=t.nb)
+        g.colonnes(s, x, Y0 + 0.3, larg, 3.0, [ctx.nom(m) for m in marques], series, empile=True, taille=10, fmt=t.nb)
     graphique(X0, ref if ref else per)
     if ref:
         graphique(X0 + larg + 0.2, per)
@@ -295,7 +298,8 @@ def projets_groupe(ctx, nom_groupe, marques):
             if tr >= 100:
                 ligne += f" ({t.pts(taux - t.taux(r['VN'], tr))} {libelle_ref(ctx, 'n1' if ref == ctx.per.n1() else 'prec')})"
         lignes.append(ligne)
-    g.encadre(s, X0, Y0 + 4.5, 12.4, 0.95, ("Part de leads New cars" if ctx.langue == "fr" else "New cars leads share"), [" · ".join(lignes) or "—"], taille=10.5)
+    g.encadre(s, X0, Y0 + 3.45, 12.4, 0.8, ("Part de leads New cars" if ctx.langue == "fr" else "New cars leads share"), [" · ".join(lignes) or "—"], taille=10)
+    bandeau(ctx, s, an.s_projets(ctx, marques))
     return s
 
 
@@ -332,7 +336,7 @@ def trafic_marque(ctx, m):
         cats = top + ([t["autre"]] if reste else [])
         vals = [canaux[c] for c in top] + ([reste] if reste else [])
         g.texte(s, X0, 3.0, 4.6, 0.3, ("Trafic par canal" if ctx.langue == "fr" else "Traffic by channel"), taille=12, gras=True, couleur=g.BLEU)
-        g.anneau(s, X0 - 0.1, 3.25, 5.0, 3.0, cats, vals, taille=9)
+        g.anneau(s, X0 - 0.1, 3.25, 5.0, 2.4, cats, vals, taille=9)
         ent = [t["canal"], t["sessions_col"]] + [libelle_ref(ctx, c) for c, _ in ctx.refs]
         lignes = [ent]
         for c in ordre[:7]:
@@ -342,16 +346,18 @@ def trafic_marque(ctx, m):
             lignes.append(row)
         lignes.append([t["total"], t.nb(tot)] + [t.evol(tot, sum(d.canaux(p, m).values()))[0] for _, p in ctx.refs])
         nc = len(ent)
-        g.tableau(s, 5.5, 3.1, 7.4, lignes, largeurs=[3.0] + [(7.4 - 3.0) / (nc - 1)] * (nc - 1), taille=10, hauteur_ligne=0.285, gras_derniere=True)
+        g.tableau(s, 5.5, 3.1, 7.4, lignes, largeurs=[3.0] + [(7.4 - 3.0) / (nc - 1)] * (nc - 1), taille=10, hauteur_ligne=0.25, gras_derniere=True)
         # commentaire calculé sous le tableau
         phrase = [f"{t['sessions']} : {t.nb(tot)} — {ordre[0]} {t.pct(canaux[ordre[0]] / tot * 100, 0)}"
                   + (f", {ordre[1]} {t.pct(canaux[ordre[1]] / tot * 100, 0)}" if len(ordre) > 1 else "")]
         for cle, p in ctx.refs:
             lc = commentaire_evolutions(ctx, ordre[:6], [canaux[c] for c in ordre[:6]], [d.canaux(p, m).get(c, 0) for c in ordre[:6]], f"({ctx.et(p)})", 2)
             phrase += [x for x in lc if isinstance(x, str)][:2]
-        g.encadre(s, 5.5, 6.0, 7.4, 0.9, None, phrase[:3], taille=10)
+        if "analyse" not in ctx.modules:
+            g.encadre(s, 5.5, 6.0, 7.4, 0.9, None, phrase[:3], taille=10)
     else:
         g.texte(s, X0, 3.2, 12, 0.5, "Aucun trafic mesuré sur cette période." if ctx.langue == "fr" else "No traffic measured over this period.", taille=13, couleur=g.GRIS)
+    bandeau(ctx, s, an.s_trafic(ctx, m))
     return s
 
 
@@ -360,7 +366,7 @@ def leads_marque(ctx, m):
     periodes = ctx.periodes
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['leads']} {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx))
     series = [(t[pj], [d.leads(p, m)[pj] for p in periodes], g.COULEURS_PROJETS[pj]) for pj in PROJETS]
-    g.colonnes(s, X0, Y0, 6.2, 5.3, [ctx.et(p) for p in periodes], series, empile=True, taille=11, fmt=t.nb)
+    g.colonnes(s, X0, Y0, 6.2, 4.2, [ctx.et(p) for p in periodes], series, empile=True, taille=11, fmt=t.nb)
     tots = [d.leads_total(p, m) for p in periodes]
     lignes = [(f"{t['leads']} {ctx.et(per)} : {t.nb(tots[-1])}", True)]
     for (cle, p), tr in zip(ctx.refs, [d.leads_total(p, m) for _, p in ctx.refs]):
@@ -374,7 +380,8 @@ def leads_marque(ctx, m):
             if tr >= 100 and tots[-1] >= 100:
                 l2 += f" ({t.pts(taux - t.taux(r['VN'], tr))} {libelle_ref(ctx, cle)})"
         lignes.append(l2)
-    g.encadre(s, 7.0, Y0 + 0.1, 5.9, 5.0, None, lignes, taille=12)
+    g.encadre(s, 7.0, Y0 + 0.1, 5.9, 4.0, None, lignes, taille=12)
+    bandeau(ctx, s, an.s_leads_marque(ctx, m))
     return s
 
 
@@ -416,21 +423,11 @@ def sources_marque(ctx, m):
         for i in range(len(src)):
             row.append(t.nb(tot_pj[i][k]))
     lignes.append(row)
-    nc = len(ents := ent1)
-    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[1.9] + [(12.4 - 1.9) / (nc - 1)] * (nc - 1), taille=9.5, hauteur_ligne=0.42, gras_derniere=True)
-    # commentaire : meilleure source New cars (part de VN dans la source, volume suffisant)
-    best = []
-    for sg in ORDRE_SOURCES:
-        v = src[-1][sg]; tt = sum(v.values())
-        if tt >= 50:
-            best.append((v["VN"] / tt * 100, sg, tt))
-    best.sort(reverse=True)
-    if best:
-        txt = (f"Meilleur taux New cars : {best[0][1]} ({t.pct(best[0][0], 0)} de {t.nb(best[0][2])} leads)." if ctx.langue == "fr"
-               else f"Highest New cars rate: {best[0][1]} ({t.pct(best[0][0], 0)} of {t.nb(best[0][2])} leads).")
-        g.encadre(s, X0, Y0 + 0.2 + 0.42 * len(lignes) + 0.1, 12.4, 0.8, None,
-                  [txt, ("(%) = part de chaque projet dans les leads de la source." if ctx.langue == "fr" else "(%) = share of each project in the source's leads."),
-                   composition_sources(ctx)], taille=10.5)
+    nc = len(ent1)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[1.9] + [(12.4 - 1.9) / (nc - 1)] * (nc - 1), taille=9.5, hauteur_ligne=0.34, gras_derniere=True)
+    note = ("(%) = part de chaque projet dans les leads de la source. " if ctx.langue == "fr" else "(%) = share of each project in the source's leads. ") + composition_sources(ctx)
+    g.texte(s, X0, 6.62, 12.4, 0.5, note, taille=8.5, couleur=g.GRIS, italique=True)
+    bandeau(ctx, s, an.s_sources(ctx, m), y=5.35, h=1.2)
     return s
 
 
@@ -475,7 +472,20 @@ def contacts(ctx):
     return s
 
 
-# ------------------------------------------------------------------ analyse (rédigée par Claude sur les faits calculés)
+# ------------------------------------------------------------------ analyse / recommandation sur chaque diapositive de résultats
+def bandeau(ctx, s, res, y=5.75, h=1.2):
+    """Encadrés « Analyse » (bleu) et « Recommandation » (orange) en bas d'une diapositive qui affiche des résultats ; rien si le module est désactivé."""
+    if "analyse" not in ctx.modules or not res:
+        return
+    a, r = res
+    fr = ctx.langue == "fr"
+    if a:
+        g.encadre(s, X0, y, 6.1, h, "Analyse" if fr else "Analysis", a, taille=10.5, couleur=g.BLEU)
+    if r:
+        g.encadre(s, X0 + 6.3, y, 6.1, h, "Recommandation" if fr else "Recommendation", r, taille=10.5, couleur=g.ORANGE)
+
+
+# ------------------------------------------------------------------ analyse globale (calculée par règles)
 def diapo_analyse(ctx, titre, r):
     """Une diapositive « Analyse » (constats / lectures / recommandations) à partir du résultat des règles (analyse.py)."""
     if not r:
@@ -512,7 +522,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     m = ctx.modules
     avoir_global = "global" in m
     avoir_projets = "projets" in m
-    avoir_marques = bool(m & {"trafic_marque", "sources", "cta", "analyse"})
+    avoir_marques = bool(m & {"trafic_marque", "sources", "cta"})
     sections = []
     if avoir_global or avoir_projets:
         sections.append(("global", ctx.t["vue_globale"]))
@@ -541,7 +551,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
             projets_groupe(ctx, "autres", autres)
     if "analyse" in m and (avoir_global or avoir_projets):
         diapo_analyse(ctx, "Analyse — vue d'ensemble" if ctx.langue == "fr" else "Analysis — overview", an.globale(ctx))
-    if avoir_marques or "analyse" in m:
+    if avoir_marques:
         sommaire(ctx, sections, "marques")
         for marque in ctx.d.marques:
             if ctx.d.leads_total(ctx.per, marque) + sum(ctx.d.canaux(ctx.per, marque).values()) == 0:
@@ -551,8 +561,6 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
                 leads_marque(ctx, marque)
             if "sources" in m:
                 sources_marque(ctx, marque)
-            if "analyse" in m:
-                diapo_analyse(ctx, f"{ctx.nom(marque)} — " + ("Analyse" if ctx.langue == "fr" else "Analysis"), an.marque(ctx, marque))
         if "cta" in m:
             ctx.avertissements.append("Module « CTA du site » : non généré (à venir).")
     if "points_ouverts" in m and (brief.get("pointsOuverts") or []):

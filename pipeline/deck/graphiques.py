@@ -223,13 +223,13 @@ def tableau(slide, x, y, w, lignes, largeurs=None, taille=10, hauteur_ligne=0.3,
     return gf
 
 
-def encadre(slide, x, y, w, h, titre, lignes, taille=11.5):
+def encadre(slide, x, y, w, h, titre, lignes, taille=11.5, couleur=None):
     """Encadré de commentaires (filet orange à gauche), pour les analyses calculées. La hauteur s'ajuste au contenu (h = maximum)."""
     cpl = max(20, int(w * 72 / (taille * 0.5)))           # caractères par ligne (approx.)
     nb = sum(max(1, -(-len(l if isinstance(l, str) else l[0]) // cpl)) for l in lignes)
     h = min(h, (0.34 if titre else 0.05) + nb * (taille * 1.45 / 72) + 0.1 * len(lignes) + 0.1)
     barre = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(0.05), Inches(h))
-    barre.fill.solid(); barre.fill.fore_color.rgb = rgb(ORANGE); barre.line.fill.background(); barre.shadow.inherit = False
+    barre.fill.solid(); barre.fill.fore_color.rgb = rgb(couleur or ORANGE); barre.line.fill.background(); barre.shadow.inherit = False
     if titre:
-        texte(slide, x + 0.15, y, w - 0.15, 0.32, titre, taille=12, gras=True, couleur=BLEU)
+        texte(slide, x + 0.15, y, w - 0.15, 0.32, titre, taille=12, gras=True, couleur=couleur or BLEU)
     puces(slide, x + 0.1, y + (0.34 if titre else 0), w - 0.1, h - (0.34 if titre else 0), lignes, taille=taille)

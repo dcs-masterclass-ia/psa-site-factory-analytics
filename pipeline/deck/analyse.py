@@ -13,6 +13,8 @@ Règle d'or : aucun pourcentage sous 100 de base (« n.s. »), aucune cause affi
 
 import math
 
+from .donnees import PROJETS
+
 SEUIL_BASE = 100
 SEUIL_ECART = 10          # % : variation significative
 SEUIL_PTS = 3             # points de part : glissement de mix significatif
@@ -486,3 +488,283 @@ def globale(ctx):
         c.append(F("Contexte du DKAM : ", "DKAM context: ") + ctx.brief["commentaire"][:300])
     r.append(F("Valider ces lectures avec les marques (campagnes, évolutions des sites) avant la prochaine édition.", "Validate these readings with the brands (campaigns, site changes) before the next edition."))
     return {"message": message, "historique": hc, "constats": c[:8], "lectures": (l or [F("Aucun signal d'alerte global sur la période.", "No global warning signal over the period.")])[:6], "recommandations": r[:4]}
+
+
+# =====================================================================================================================
+# Analyse par diapositive : chaque diapositive qui affiche des résultats porte son « Analyse » et sa « Recommandation »
+# =====================================================================================================================
+def _coupe(txt, n=210):
+    return txt if len(txt) <= n else txt[:n].rsplit(" ", 1)[0] + "…"
+
+
+def _fin(res):
+    a, r = res
+    return [_coupe(x) for x in a if x][:2], [_coupe(x) for x in r if x][:2]
+
+
+def _tendance_longue(ctx, x, m):
+    """Phrase d'historique courte (même période, années passées) pour les leads, ou None."""
+    F, t = x.fr, ctx.t
+    sl = _serie(ctx, x.L)
+    if len(sl) < 3:
+        return None
+    r, _ = _rang(sl)
+    suite = " → ".join(f"{a} : {t.nb(v)}" for a, v in sl[-4:])
+    fin = F(" (plus bas de la série)", " (lowest of the series)") if r == "bas" else F(" (plus haut de la série)", " (highest of the series)") if r == "haut" else ""
+    return F(f"Même période, années passées : {suite}{fin}.", f"Same period, past years: {suite}{fin}.")
+
+
+def s_leads_marques(ctx, cle, ref):
+    """Diapo « leads par marque » vs une référence."""
+    d, t = ctx.d, ctx.t
+    x = _Marque(ctx, None)
+    F = x.fr
+    per = ctx.per
+    Lc, Lr = x.L(per), x.L(ref)
+    a, r = [], []
+    v = _var(Lc, Lr)
+    dm = sorted(((d.leads_total(per, m) - d.leads_total(ref, m), m) for m in d.marques))
+    tot = Lc - Lr
+    if v is not None:
+        a.append(F(f"Leads {t.pct(v, 0, signe=True)} vs {ctx.et(ref)} ({_sg(t, tot)}).", f"Leads {t.pct(v, 0, signe=True)} vs {ctx.et(ref)} ({_sg(t, tot)})."))
+    else:
+        a.append(F("Base de comparaison trop faible pour un pourcentage global.", "Comparison base too small for an overall percentage."))
+    if abs(tot) >= 30 and len(d.marques) >= 3:
+        mv = [(vv, m) for vv, m in (dm if tot < 0 else dm[::-1]) if vv * tot > 0][:2]
+        if mv:
+            part = sum(vv for vv, _ in mv) / tot * 100
+            a.append(F(f"{' et '.join(ctx.nom(m) for _, m in mv)} portent {t.pct(min(part, 100), 0)} de l'écart ({', '.join(_sg(t, vv) for vv, _ in mv)} leads).",
+                       f"{' and '.join(ctx.nom(m) for _, m in mv)} account for {t.pct(min(part, 100), 0)} of the gap ({', '.join(_sg(t, vv) for vv, _ in mv)} leads)."))
+    if cle == "prec":
+        sais = _saisonnier(x, per)
+        if sais and v is not None:
+            lo, hi = min(sais), max(sais)
+            dans = (lo - 5) <= v <= (hi + 5)
+            a.append(F(f"Saisonnalité : les 2 années passées, cette période a évolué de {t.pct(lo, 0, signe=True)} à {t.pct(hi, 0, signe=True)} ; {'dans' if dans else 'hors de'} la norme cette année.",
+                       f"Seasonality: past 2 years this period moved {t.pct(lo, 0, signe=True)} to {t.pct(hi, 0, signe=True)}; {'within' if dans else 'outside'} the norm this year."))
+    else:
+        h = _tendance_longue(ctx, x, None)
+        if h:
+            a.append(h)
+    bas = [(vv, m) for vv, m in dm if vv < 0 and _var(d.leads_total(per, m), d.leads_total(ref, m)) is not None and _var(d.leads_total(per, m), d.leads_total(ref, m)) <= -SEUIL_ECART]
+    haut = [(vv, m) for vv, m in dm[::-1] if vv > 0 and _var(d.leads_total(per, m), d.leads_total(ref, m)) is not None and _var(d.leads_total(per, m), d.leads_total(ref, m)) >= SEUIL_ECART]
+    if bas:
+        r.append(F(f"Prioriser un plan d'action sur {', '.join(ctx.nom(m) for _, m in bas[:3])} (voir leur détail dans la section marques).", f"Prioritise an action plan on {', '.join(ctx.nom(m) for _, m in bas[:3])} (see brand section)."))
+    if haut:
+        r.append(F(f"Documenter ce qui fonctionne chez {', '.join(ctx.nom(m) for _, m in haut[:3])} et le déployer ailleurs.", f"Document what works at {', '.join(ctx.nom(m) for _, m in haut[:3])} and roll it out elsewhere."))
+    if not r:
+        r.append(F("Maintenir le suivi : aucune marque ne s'écarte de façon significative.", "Keep monitoring: no brand deviates significantly."))
+    return _fin((a, r))
+
+
+def s_mensuel(ctx, projet=None):
+    """Diapo « leads par mois » (tous projets ou New cars)."""
+    d, t = ctx.d, ctx.t
+    F = ctx.t.l == "fr" and (lambda a, b: a) or (lambda a, b: b)
+    dernier = d.dernier_jour_leads()
+    from .periodes import Periode, MOIS_COURTS
+    a_, r_ = [], []
+    cur, ref = [], []
+    for mo in range(1, 13):
+        if not dernier or Periode("mois", ctx.per.annee, mo).fin.isoformat() > dernier:
+            continue
+        cur.append((mo, d.leads_mensuels(ctx.per.annee, projet=projet)[mo - 1], d.leads_mensuels(ctx.per.annee - 1, projet=projet)[mo - 1]))
+    lib = MOIS_COURTS[ctx.langue]
+    ev = [(mo, _var(c, rr), c) for mo, c, rr in cur if _var(c, rr) is not None]
+    if not ev:
+        return [], []
+    baisses = [e for e in ev if e[1] <= -SEUIL_ECART]
+    hausses = [e for e in ev if e[1] >= SEUIL_ECART]
+    a_.append(F(f"{len(baisses)} mois sur {len(ev)} sont en baisse vs {ctx.per.annee - 1}, {len(hausses)} en hausse (seuil ±{SEUIL_ECART} %).", f"{len(baisses)} of {len(ev)} months are down vs {ctx.per.annee - 1}, {len(hausses)} up (threshold ±{SEUIL_ECART}%)."))
+    pire = min(ev, key=lambda e: e[1]); mieux = max(ev, key=lambda e: e[1])
+    a_.append(F(f"Meilleur mois : {lib[mieux[0] - 1]} ({t.pct(mieux[1], 0, signe=True)}) ; plus faible : {lib[pire[0] - 1]} ({t.pct(pire[1], 0, signe=True)}).", f"Best month: {lib[mieux[0] - 1]} ({t.pct(mieux[1], 0, signe=True)}); weakest: {lib[pire[0] - 1]} ({t.pct(pire[1], 0, signe=True)})."))
+    if len(ev) >= 3:
+        k = 3
+        dernier3 = sum(e[1] for e in ev[-k:]) / k
+        avant = sum(e[1] for e in ev[:-k]) / max(1, len(ev) - k) if len(ev) > k else None
+        if avant is not None and abs(dernier3 - avant) >= 5:
+            a_.append(F(f"Les {k} derniers mois s'écartent de N-1 de {t.pct(dernier3, 0, signe=True)} en moyenne, contre {t.pct(avant, 0, signe=True)} avant : dynamique {'qui s’améliore' if dernier3 > avant else 'qui se dégrade'}.",
+                        f"The last {k} months deviate from last year by {t.pct(dernier3, 0, signe=True)} on average vs {t.pct(avant, 0, signe=True)} before: momentum {'improving' if dernier3 > avant else 'deteriorating'}."))
+    if baisses:
+        r_.append(F(f"Cibler les mois en retrait ({', '.join(lib[e[0] - 1] for e in baisses[:3])}) : calendrier média et temps forts à planifier.", f"Target lagging months ({', '.join(lib[e[0] - 1] for e in baisses[:3])}): plan media calendar and key moments."))
+    if hausses:
+        r_.append(F(f"Reproduire les leviers des mois forts ({', '.join(lib[e[0] - 1] for e in hausses[:3])}).", f"Replicate the levers of strong months ({', '.join(lib[e[0] - 1] for e in hausses[:3])})."))
+    if not r_:
+        r_.append(F("Courbe alignée sur N-1 : maintenir le suivi mensuel.", "Curve in line with last year: keep monthly follow-up."))
+    return _fin((a_, r_))
+
+
+def s_table(ctx):
+    """Diapo « trafic & leads » (ratio leads/sessions par marque)."""
+    d, t = ctx.d, ctx.t
+    F = ctx.t.l == "fr" and (lambda a, b: a) or (lambda a, b: b)
+    per = ctx.per
+    rows = []
+    for m in d.marques:
+        S, L = sum(d.canaux(per, m).values()), d.leads_total(per, m)
+        if S >= SEUIL_BASE and L >= 30:
+            rows.append((L / S * 100, m, S, L))
+    a, r = [], []
+    if len(rows) >= 2:
+        rows.sort(reverse=True)
+        a.append(F(f"Ratio leads/sessions : {ctx.nom(rows[0][1])} {t.dec(rows[0][0], 1)} % (le plus élevé), {ctx.nom(rows[-1][1])} {t.dec(rows[-1][0], 1)} % (le plus bas).", f"Leads/sessions ratio: {ctx.nom(rows[0][1])} {t.dec(rows[0][0], 1)}% (highest), {ctx.nom(rows[-1][1])} {t.dec(rows[-1][0], 1)}% (lowest)."))
+        r.append(F(f"Comparer le parcours de {ctx.nom(rows[-1][1])} à celui de {ctx.nom(rows[0][1])} pour identifier ce qui explique l'écart de conversion.", f"Compare {ctx.nom(rows[-1][1])}'s journey with {ctx.nom(rows[0][1])}'s to explain the conversion gap."))
+    if ctx.refs:
+        p = ctx.refs[0][1]
+        div = []
+        for m in d.marques:
+            vs = _var(sum(d.canaux(per, m).values()), sum(d.canaux(p, m).values()))
+            vl = _var(d.leads_total(per, m), d.leads_total(p, m))
+            if vs is not None and vl is not None and abs(vs - vl) >= 20:
+                div.append((m, vs, vl))
+        for m, vs, vl in div[:2]:
+            a.append(F(f"{ctx.nom(m)} : sessions {t.pct(vs, 0, signe=True)} mais leads {t.pct(vl, 0, signe=True)} vs {ctx.et(p)} : le trafic ne suffit pas à expliquer les leads.", f"{ctx.nom(m)}: sessions {t.pct(vs, 0, signe=True)} but leads {t.pct(vl, 0, signe=True)} vs {ctx.et(p)}: traffic alone doesn't explain leads."))
+        if div:
+            r.append(F(f"Creuser {ctx.nom(div[0][0])} : écart entre audience et leads (qualité du trafic, parcours, périmètre de mesure).", f"Dig into {ctx.nom(div[0][0])}: gap between audience and leads (traffic quality, journey, measurement scope)."))
+    return _fin((a, r))
+
+
+def s_projets(ctx, marques):
+    d, t = ctx.d, ctx.t
+    F = ctx.t.l == "fr" and (lambda a, b: a) or (lambda a, b: b)
+    per = ctx.per
+    ref = ctx.refs[-1][1] if ctx.refs else None
+    a, r = [], []
+    shifts = []
+    for m in marques:
+        c = d.leads(per, m); tc = sum(c.values())
+        if tc < SEUIL_BASE:
+            continue
+        sh = c["VN"] / tc * 100
+        if ref:
+            rr = d.leads(ref, m); tr = sum(rr.values())
+            if tr >= SEUIL_BASE:
+                shifts.append((sh - rr["VN"] / tr * 100, m, sh))
+    if shifts:
+        shifts.sort()
+        lo, hi = shifts[0], shifts[-1]
+        if abs(hi[0]) >= SEUIL_PTS or abs(lo[0]) >= SEUIL_PTS:
+            a.append(F(f"Part New cars : {ctx.nom(hi[1])} {t.pts(hi[0])} ({t.pct(hi[2], 0)}), {ctx.nom(lo[1])} {t.pts(lo[0])} ({t.pct(lo[2], 0)}) vs {ctx.et(ref)}.", f"New cars share: {ctx.nom(hi[1])} {t.pts(hi[0])} ({t.pct(hi[2], 0)}), {ctx.nom(lo[1])} {t.pts(lo[0])} ({t.pct(lo[2], 0)}) vs {ctx.et(ref)}."))
+        else:
+            a.append(F("Le mix des projets d'achat est stable sur les marques du groupe.", "The purchase-project mix is stable across the group's brands."))
+        if lo[0] <= -SEUIL_PTS:
+            r.append(F(f"Sur {ctx.nom(lo[1])}, la part New cars recule : vérifier la mise en avant de l'offre reprise + achat neuf sur le parcours.", f"On {ctx.nom(lo[1])} the New cars share is falling: check how the trade-in + new car offer is promoted in the journey."))
+    tot = {pj: sum(d.leads(per, m)[pj] for m in marques) for pj in PROJETS}
+    T = sum(tot.values())
+    if T >= SEUIL_BASE:
+        top = max(tot, key=tot.get)
+        a.append(F(f"Sur le groupe : {t[top]} représente {t.pct(tot[top] / T * 100, 0)} des {t.nb(T)} leads.", f"Across the group: {t[top]} is {t.pct(tot[top] / T * 100, 0)} of {t.nb(T)} leads."))
+    if not r:
+        r.append(F("Utiliser la part Trade-in only comme cible de qualification : ces leads n'ont pas de projet d'achat à ce stade.", "Use the Trade-in-only share as a qualification target: these leads have no purchase project yet."))
+    return _fin((a, r))
+
+
+def s_trafic(ctx, m):
+    d, t = ctx.d, ctx.t
+    x = _Marque(ctx, m)
+    F = x.fr
+    per = ctx.per
+    can = d.canaux(per, m)
+    S = sum(can.values())
+    a, r = [], []
+    if not S:
+        return [], []
+    if ctx.refs:
+        p = ctx.refs[0][1]
+        ref = d.canaux(p, m)
+        Sr = sum(ref.values())
+        v = _var(S, Sr)
+        delta = {k: can.get(k, 0) - ref.get(k, 0) for k in set(can) | set(ref)}
+        dtot = sum(delta.values())
+        k0, v0 = max(delta.items(), key=lambda kv: abs(kv[1]))
+        if v is not None:
+            a.append(F(f"Sessions {t.pct(v, 0, signe=True)} vs {ctx.et(p)} ({_sg(t, dtot)}) ; {k0} pèse {_sg(t, v0)}" + (F(f", soit {t.pct(abs(v0) / abs(dtot) * 100, 0)} de l'écart.", f", i.e. {t.pct(abs(v0) / abs(dtot) * 100, 0)} of the gap.") if dtot and v0 * dtot > 0 and abs(v0) <= abs(dtot) else "."),
+                       f"Sessions {t.pct(v, 0, signe=True)} vs {ctx.et(p)} ({_sg(t, dtot)}); {k0} weighs {_sg(t, v0)}."))
+            if abs(v0) >= SEUIL_BASE:
+                r.append(F(f"{'Faire le point avec l’équipe média sur' if v0 < 0 else 'Capitaliser sur'} {k0} : budget, ciblage, calendrier.", f"{'Review with the media team' if v0 < 0 else 'Build on'} {k0}: budget, targeting, calendar."))
+    u = d.utilisateurs(per, m)
+    if u and u["utilisateurs"] >= SEUIL_BASE and u["in_journey"]:
+        ent, est = u["in_journey"] / u["utilisateurs"] * 100, u["hot_leads"] / u["in_journey"] * 100
+        a.append(F(f"Parcours : {t.pct(ent, 0)} des utilisateurs entrent dans le tunnel, {t.pct(est, 0)} d'entre eux déposent une estimation.", f"Journey: {t.pct(ent, 0)} of users enter the funnel, {t.pct(est, 0)} of them submit an estimate."))
+        if ent < 40:
+            r.append(F("Tester une accroche et un appel à l'action plus visibles sur la première étape (entrée dans le tunnel faible).", "Test a more visible hook and call to action on the first step (low funnel entry)."))
+    sess_h = [(aa, v) for aa, v in _serie(ctx, x.S) if d.premier_jour_trafic() and f"{aa}-{per.debut.month:02d}-01" >= d.premier_jour_trafic()]
+    if len(sess_h) >= 3:
+        rg, _ = _rang(sess_h)
+        a.append(F("Sessions, même période : " + " → ".join(f"{aa} : {t.nb(v)}" for aa, v in sess_h[-4:]) + (" (plus bas de la série)." if rg == "bas" else " (plus haut de la série)." if rg == "haut" else "."),
+                   "Sessions, same period: " + " → ".join(f"{aa}: {t.nb(v)}" for aa, v in sess_h[-4:]) + (" (lowest of the series)." if rg == "bas" else " (highest of the series)." if rg == "haut" else ".")))
+    un = can.get("Unassigned", 0)
+    if un / S * 100 >= 10:
+        r.append(F(f"Corriger le balisage UTM : {t.pct(un / S * 100, 0)} des sessions sont « Unassigned ».", f"Fix UTM tagging: {t.pct(un / S * 100, 0)} of sessions are “Unassigned”."))
+    if not r:
+        r.append(F("Maintenir le suivi du premier canal et du taux d'entrée dans le tunnel (alerte à ±10 %).", "Keep tracking the top channel and funnel-entry rate (alert at ±10%)."))
+    return _fin((a, r))
+
+
+def s_leads_marque(ctx, m):
+    d, t = ctx.d, ctx.t
+    x = _Marque(ctx, m)
+    F = x.fr
+    per = ctx.per
+    Lc = x.L(per)
+    a, r = [], []
+    pa = ctx.refs[0][1] if ctx.refs else None
+    if pa is not None:
+        Lr = x.L(pa)
+        v = _var(Lc, Lr)
+        if v is not None:
+            pc, pr = x.proj(per), x.proj(pa)
+            dp = {k: pc[k] - pr[k] for k in pc}
+            kp = max(dp, key=lambda k: abs(dp[k]))
+            a.append(F(f"Leads {t.pct(v, 0, signe=True)} vs {ctx.et(pa)} ; le projet qui bouge le plus : {t[kp]} ({_sg(t, dp[kp])}).", f"Leads {t.pct(v, 0, signe=True)} vs {ctx.et(pa)}; biggest mover: {t[kp]} ({_sg(t, dp[kp])})."))
+            sais = _saisonnier(x, per)
+            if sais:
+                lo, hi = min(sais), max(sais)
+                dans = (lo - 5) <= v <= (hi + 5)
+                a.append(F(f"Saisonnalité (2 années passées : {t.pct(lo, 0, signe=True)} à {t.pct(hi, 0, signe=True)}) : {'dans' if dans else 'hors de'} la norme cette année.", f"Seasonality (past 2 years: {t.pct(lo, 0, signe=True)} to {t.pct(hi, 0, signe=True)}): {'within' if dans else 'outside'} the norm this year."))
+                if not dans:
+                    r.append(F("L'écart dépasse la saisonnalité : rechercher une cause propre à la période (campagne, site, parcours) avec l'équipe marque.", "The gap exceeds seasonality: look for a period-specific cause (campaign, site, journey) with the brand team."))
+            elif v <= -SEUIL_ECART:
+                r.append(F("Identifier avec l'équipe marque les causes du recul (campagnes, site, parcours) et fixer un objectif de rattrapage.", "Identify the causes of the decline with the brand team (campaigns, site, journey) and set a catch-up target."))
+    h = _tendance_longue(ctx, x, m)
+    if h:
+        a.append(h)
+    c = d.leads(per, m)
+    if Lc >= SEUIL_BASE and c["SANS"] + c["VN"] + c.get("VO", 0) >= 0:
+        ti = c.get("SANS", 0)
+        if ti / Lc * 100 >= 40:
+            r.append(F(f"{t.pct(ti / Lc * 100, 0)} des leads sont « Trade-in only » : travailler la qualification vers un projet d'achat.", f"{t.pct(ti / Lc * 100, 0)} of leads are “Trade-in only”: work on qualifying towards a purchase project."))
+    if not r:
+        r.append(F("Maintenir le suivi mensuel et partager les bonnes pratiques avec les autres marques.", "Keep monthly follow-up and share good practice with other brands."))
+    return _fin((a, r))
+
+
+def s_sources(ctx, m):
+    d, t = ctx.d, ctx.t
+    F = ctx.t.l == "fr" and (lambda a, b: a) or (lambda a, b: b)
+    per = ctx.per
+    if not d.acquisition_disponible(per):
+        return [], []
+    sc = {k: sum(v.values()) for k, v in d.sources(per, m).items()}
+    tc = sum(sc.values())
+    a, r = [], []
+    if tc < SEUIL_BASE:
+        return [], []
+    top = max(sc, key=sc.get)
+    a.append(F(f"Source principale : {top} ({t.pct(sc[top] / tc * 100, 0)} des {t.nb(tc)} leads).", f"Main source: {top} ({t.pct(sc[top] / tc * 100, 0)} of {t.nb(tc)} leads)."))
+    if ctx.refs and d.acquisition_disponible(ctx.refs[0][1]):
+        p = ctx.refs[0][1]
+        sr = {k: sum(v.values()) for k, v in d.sources(p, m).items()}
+        tr = sum(sr.values())
+        if tr >= SEUIL_BASE:
+            gs = [((sc[k] / tc - sr[k] / tr) * 100, k) for k in sc if k != "Autre"]
+            vv, k = max(gs, key=lambda z: abs(z[0]))
+            if abs(vv) >= SEUIL_PTS:
+                a.append(F(f"{k} passe de {t.pct(sr[k] / tr * 100, 0)} à {t.pct(sc[k] / tc * 100, 0)} des leads ({t.pts(vv)}) vs {ctx.et(p)}.", f"{k} goes from {t.pct(sr[k] / tr * 100, 0)} to {t.pct(sc[k] / tc * 100, 0)} of leads ({t.pts(vv)}) vs {ctx.et(p)}."))
+                r.append(F(f"{'Renforcer' if vv > 0 else 'Comprendre le recul de'} {k} : budget, messages et calendrier associés.", f"{'Reinforce' if vv > 0 else 'Understand the decline of'} {k}: associated budget, messages and calendar."))
+    if sc.get("Autre", 0) / tc * 100 >= 30:
+        a.append(F(f"{t.pct(sc['Autre'] / tc * 100, 0)} des leads sont sans source identifiée (« Autre ») : lecture partielle.", f"{t.pct(sc['Autre'] / tc * 100, 0)} of leads have no identified source (“Other”): partial reading."))
+        r.append(F("Fiabiliser le suivi des sources (balisage des campagnes) pour une analyse complète.", "Make source tracking reliable (campaign tagging) for a complete analysis."))
+    if not r:
+        r.append(F("Mesurer la qualité des leads par source (taux New cars) avant d'arbitrer les budgets.", "Measure lead quality by source (New cars rate) before arbitrating budgets."))
+    return _fin((a, r))
