@@ -213,7 +213,10 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # de plus par passage et par site, jusqu'à ce que tout l'historique en dispose.
         rattrapage = {m for m in reversed(mois_liste) if m not in d["utmMonth"]}
         rattrapage = set(sorted(rattrapage, reverse=True)[:3])
-        mois_a_retraiter = [m for m in mois_liste if m in recents or m in mois_manquants or m in rattrapage]
+        # idem pour les analyses SEO (6 derniers mois), 3 par passage et par site
+        rattrapage_seo = {m for m in mois_liste[-6:] if "positions" not in (d["searchMonth"].get(m) or {})}
+        rattrapage_seo = set(sorted(rattrapage_seo, reverse=True)[:3])
+        mois_a_retraiter = [m for m in mois_liste if m in recents or m in mois_manquants or m in rattrapage or m in rattrapage_seo]
     conserves = [m for m in mois_liste if m not in mois_a_retraiter]
     journal.append(
         f"mois retraités : {', '.join(mois_a_retraiter)}"
@@ -321,6 +324,16 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                                f"({total_recherche['impressions']} impressions)")
             except Exception as e:
                 journal.append(f"{mois} : recherche en erreur ({type(e).__name__})")
+            # analyses SEO du mois (appareils, positions, marque, gagnants/perdants, opportunités, cannibalisation, pages en déclin) :
+            # seulement les 6 derniers mois (poids du JSON), sur la liste complète des requêtes. Ne bloque jamais le reste.
+            if mois in mois_liste[-6:] and mois in d["searchMonth"]:
+                try:
+                    pm = ga4.bornes(f"{(date.fromisoformat(mois + '-01') - timedelta(days=1)).strftime('%Y-%m')}")
+                    d["searchMonth"][mois].update(search_console.analyse_mois(
+                        gsc_cli, gsc_site, deb, f_search_iso, pm[0], pm[1], s.nom.rsplit(" ", 1)[0]))
+                    journal.append(f"{mois} : analyses SEO calculées")
+                except Exception as e:
+                    journal.append(f"{mois} : analyses SEO en erreur ({type(e).__name__}: {str(e)[:80]})")
 
         # profils pour la detection, par jour -- meme requete etendue avec
         # newVsReturning + totalUsers pour alimenter aussi "Audience &
