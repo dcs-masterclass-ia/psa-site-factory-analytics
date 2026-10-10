@@ -47,7 +47,7 @@ class Analyse(unittest.TestCase):
                      "comparaisons": {"precedente": True, "n1": True}, "modules": ["analyse"]}
             d = Donnees(["BE"], None, hist=tmp)
             ctx = Ctx(brief, d)
-            self.assertTrue(analyse.globale(ctx)["constats"][0].startswith("0 leads T3-2026"))
+            self.assertTrue(analyse.globale(ctx)["constats"][0].startswith("0 leads sur T3-2026"))
 
     def test_variation_base_faible(self):
         from pipeline.deck.analyse import _var

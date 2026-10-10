@@ -483,13 +483,18 @@ def diapo_analyse(ctx, titre, r):
     fr = ctx.langue == "fr"
     s = nouvelle(ctx, titre, ctx.perimetre, ctx.t["source_bo_ga4"],
                  notes=("Analyse calculée par règles à partir des seuls chiffres de cette présentation ; les causes sont des hypothèses à confirmer. " + note_definitions(ctx)))
+    box = s.shapes.add_shape(1, Inches(X0), Inches(1.55), Inches(X1 - X0), Inches(0.75))
+    box.fill.solid(); box.fill.fore_color.rgb = g.rgb("1F3F7A"); box.line.fill.background(); box.shadow.inherit = False
+    g.texte(s, X0 + 0.2, 1.58, X1 - X0 - 0.4, 0.7, r.get("message") or "", taille=15, gras=True, couleur="FFFFFF", ancre=MSO_ANCHOR.MIDDLE)
     cols = [("Ce que disent les chiffres" if fr else "What the numbers say", r["constats"]),
             ("Lecture et points d'attention" if fr else "Reading and watch points", r["lectures"]),
             ("Recommandations" if fr else "Recommendations", r["recommandations"])]
-    w, gap = 4.0, 0.2
-    for i, (tit, lignes) in enumerate(cols):
+    larg = [5.0, 3.9, 3.35]
+    x = X0
+    for (tit, lignes), w in zip(cols, larg):
         if lignes:
-            g.encadre(s, X0 + i * (w + gap), 1.6, w, 5.2, tit, lignes, taille=14)
+            g.encadre(s, x, 2.5, w - 0.2, 4.5, tit, lignes, taille=11)
+        x += w
     return s
 
 
