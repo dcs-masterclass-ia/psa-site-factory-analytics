@@ -1731,6 +1731,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ prIsNew }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:15px;align-items:start">
           <div style="display:flex;flex-direction:column;gap:15px;min-width:0">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Partir d'un modèle</div><div style="font-size:12.5px;color:#9a9fa6">Applique une configuration enregistrée sur la dernière période complète</div></div></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTplChips }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+            </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Cadrage</div><div style="font-size:12.5px;color:#9a9fa6">Le titre et le client apparaissent sur la couverture</div></div></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Titre du brief</div><input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="{{ prTitreAuto }}" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Client</div><input type="text" value="{{ prClient }}" onInput="{{ onPrClient }}" placeholder="Stellantis" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
@@ -1740,8 +1743,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><span onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Trimestre</div>
-              <div style="display:flex;gap:18px;flex-wrap:wrap"><div style="display:flex;gap:8px"><sc-for list="{{ prTrims }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div><div style="display:flex;gap:8px"><sc-for list="{{ prAnnees }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Périodicité</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Période : {{ prPeriodeLabel }}</div>
+              <div style="display:flex;gap:18px;flex-wrap:wrap">
+                <sc-if value="{{ prHasIndice }}" hint-placeholder-val="{{ true }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prIndiceChips }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div></sc-if>
+                <div style="display:flex;gap:8px"><sc-for list="{{ prAnneesChips }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+              </div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
             </div>
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipC }}">{{ prIconC }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite</div></div></div>
@@ -1801,9 +1809,27 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#f2f2f5;color:#9a9fa6;cursor:not-allowed" title="Le générateur de PowerPoint est en cours de construction">Générer le PowerPoint · bientôt</span>
                 <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;text-align:center">Nouveau brief vide</span></sc-if>
               </div>
+              <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px">
+                <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Réutiliser cette configuration</div>
+                <div style="display:flex;gap:8px"><input type="text" value="{{ prTplNom }}" onInput="{{ onPrTplNom }}" placeholder="Nom du modèle" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /><span onClick="{{ prTplSaveFn }}" style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:10px;background:#f1eefe;color:#5b43d6;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Enregistrer</span></div>
+                <div style="font-size:11.5px;color:#b3b7bd;margin-top:6px;line-height:1.5">Le modèle garde le client, la langue, la périodicité, le périmètre, les modules et le contact. Pas la période, ni les points ouverts.</div>
+              </div>
             </div>
           </div>
         </div>
+        </sc-if>
+
+        <sc-if value="{{ prIsModeles }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div><div style="font-size:15px;font-weight:600;color:#121214">Modèles de présentation</div><div style="font-size:12.5px;color:#9a9fa6">Les modèles de base sont fournis ; enregistre les tiens depuis un brief (« Réutiliser cette configuration »).</div></div></div>
+            <sc-for list="{{ prTplRows }}" as="t" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 4px;border-top:1px solid #f2f2f4">
+                <div style="flex:1;min-width:240px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:14.5px;font-weight:500;color:#121214">{{ t.nom }}</span><sc-if value="{{ t.base }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:#7c63ee;background:#f1eefe;border-radius:999px;padding:2px 9px">Modèle de base</span></sc-if></div><div style="font-size:12.5px;color:#9a9fa6">{{ t.desc }}</div><div style="font-size:12px;color:#b3b7bd">{{ t.meta }}</div></div>
+                <span onClick="{{ t.use }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Utiliser</span>
+                <sc-if value="{{ t.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ t.del }}" style="{{ t.delStyle }}">{{ t.delLabel }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
         </sc-if>
 
         <sc-if value="{{ prIsList }}" hint-placeholder-val="{{ false }}">
@@ -4080,9 +4106,18 @@ class Component extends DCLogic {
     const prTitle = s => s.length<=3 ? s : s.toLowerCase().replace(/(^|[\s&])\S/g,c=>c.toUpperCase());
     const PR_GROUPES = { XP:['PEUGEOT','CITROEN','DS','OPEL'], XF:['FIAT','FIAT PRO','JEEP','ALFA ROMEO','ABARTH','LANCIA','LEAPMOTOR'] };
     const prGroupe = m => PR_GROUPES.XP.includes(m)?'XP':PR_GROUPES.XF.includes(m)?'XF':'Autres';
-    const prTrimDef = (()=>{ const d=new Date(todayIso+'T00:00:00Z'); let y=d.getUTCFullYear(), q=Math.floor(d.getUTCMonth()/3); if (q===0){ y-=1; q=4; } return {annee:y,trimestre:q}; })();
+    const PR_MOIS = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const PR_TYPES = [['mois','Mensuelle'],['trimestre','Trimestrielle'],['semestre','Semestrielle'],['annee','Annuelle']];
+    // dernière période COMPLÈTE de chaque périodicité (aujourd'hui exclu)
+    const prDernierePeriode = type => { const d=new Date(todayIso+'T00:00:00Z'); let y=d.getUTCFullYear(); const m=d.getUTCMonth();
+      if (type==='mois') { let k=m; if (k===0) { y-=1; k=12; } return {type,annee:y,indice:k}; }
+      if (type==='trimestre') { let q=Math.floor(m/3); if (q===0) { y-=1; q=4; } return {type,annee:y,indice:q}; }
+      if (type==='semestre') { let q=Math.floor(m/6); if (q===0) { y-=1; q=2; } return {type,annee:y,indice:q}; }
+      return {type:'annee',annee:y-1,indice:null}; };
+    const prNormPeriode = p => (p&&p.type) ? p : (p&&p.trimestre!=null ? {type:'trimestre',annee:p.annee,indice:p.trimestre} : prDernierePeriode('trimestre'));
+    const prLabelPeriode = p0 => { const p=prNormPeriode(p0); return p.type==='mois'?PR_MOIS[(p.indice||1)-1]+' '+p.annee : p.type==='trimestre'?'T'+p.indice+'-'+p.annee : p.type==='semestre'?'S'+p.indice+'-'+p.annee : String(p.annee); };
     const PR_MODULES = [
-      {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par marque (vs trimestre précédent / an dernier), leads par mois, leads New cars', dispo:'ok', base:6},
+      {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par marque (vs période précédente et N-1), tendance dans la période, leads New cars', dispo:'ok', base:6},
       {id:'projets',     titre:'Projets d\'achat',             desc:'New cars / Trade-in only / Used cars, par groupe de marques (XP, XF)', dispo:'ok', base:2},
       {id:'trafic_marque',titre:'Trafic et leads par marque',  desc:'Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads', dispo:'ok', parMarque:2},
       {id:'sources',     titre:'Sources d\'acquisition',       desc:'Display, Search, Emailing, Main-Website… par projet d\'achat, dans les diapositives de leads', dispo:'bientot', note:'Collecte de l\'historique en cours', base:0},
@@ -4092,10 +4127,11 @@ class Component extends DCLogic {
       {id:'prochaines_etapes',titre:'Prochaines étapes',       desc:'Tableau d\'actions : item, responsable, statut, échéance (saisi ci-dessous)', dispo:'ok', base:1}
     ];
     const prDef = {
-      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prTrimDef, qoq:true, yoy:true,
+      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null,
       modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:''
     };
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
+    const per = prNormPeriode(pr.periode);
     const prSet = patch => set({pr:Object.assign({}, pr, patch)});
     const prTab = st.prTab || 'nouveau';
     const prData = this._pr || {};
@@ -4108,11 +4144,17 @@ class Component extends DCLogic {
     const prBelux = { label:'BELUX', pick:()=>prSet({pays:['BE','LU'],marques:[]}), style:prChip(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')) };
     const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:()=>prSet({marques:[]}), style:prChip(!pr.marques.length) }]
       .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:()=>prSet({marques:prTog(pr.marques.length?pr.marques:prMarquesDispo,m)}), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
-    const prAnnees = [prTrimDef.annee-2,prTrimDef.annee-1,prTrimDef.annee].map(a=>({ label:String(a), pick:()=>prSet({periode:Object.assign({},pr.periode,{annee:a})}), style:prChip(pr.periode.annee===a) }));
-    const prTrims = [1,2,3,4].map(q=>({ label:'T'+q, pick:()=>prSet({periode:Object.assign({},pr.periode,{trimestre:q})}), style:prChip(pr.periode.trimestre===q) }));
+    const prCy = new Date(todayIso+'T00:00:00Z').getUTCFullYear();
+    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:()=>prSet({periode:prDernierePeriode(k)}), style:prChip(per.type===k) }));
+    const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
+      .map(([v,l])=>({ label:l, pick:()=>prSet({periode:Object.assign({},per,{indice:v})}), style:prChip(per.indice===v) }));
+    const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:()=>prSet({periode:Object.assign({},per,{annee:a})}), style:prChip(per.annee===a) }));
     const prLangues = [['fr','Français'],['en','English']].map(([k,l])=>({ label:l, pick:()=>prSet({langue:k}), style:prChip(pr.langue===k) }));
-    const prCompar = [{ label:'vs trimestre précédent', pick:()=>prSet({qoq:!pr.qoq}), style:prChip(pr.qoq) }, { label:'vs même trimestre N-1', pick:()=>prSet({yoy:!pr.yoy}), style:prChip(pr.yoy) }];
-    const prPeriodeLabel = 'T'+pr.periode.trimestre+'-'+pr.periode.annee;
+    const PR_PREC = {mois:'vs mois précédent',trimestre:'vs trimestre précédent',semestre:'vs semestre précédent'};
+    const PR_N1 = {mois:'vs même mois N-1',trimestre:'vs même trimestre N-1',semestre:'vs même semestre N-1',annee:'vs année précédente'};
+    const prCompar = (per.type==='annee'?[]:[{ label:PR_PREC[per.type], pick:()=>prSet({precedente:!pr.precedente}), style:prChip(pr.precedente) }])
+      .concat([{ label:PR_N1[per.type], pick:()=>prSet({n1:!pr.n1}), style:prChip(pr.n1) }]);
+    const prPeriodeLabel = prLabelPeriode(per);
     const prPerimetreLabel = pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU') ? 'BELUX (Belgique + Luxembourg)' : (pr.pays.join(' + ')||'—');
     const prTitreAuto = pr.client+' — '+(pr.pays.join('+')||'?')+' '+prPeriodeLabel;
     const prNb = pr.pointsOuverts.length;
@@ -4146,36 +4188,68 @@ class Component extends DCLogic {
       onEch:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{echeance:ev.target.value.slice(0,30)}):x)}),
       remove:()=>prSet({prochainesEtapes:pr.prochainesEtapes.filter((_,j)=>j!==i)}) }));
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
-    const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
+    const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prValide = (pr.titre.trim().length>=3||true) && pr.client.trim().length>0 && pr.pays.length>0 && pr.modules.length>0 && !st.prBusy;
     const prSave = async () => {
       if (!prValide) return;
       set({prBusy:true, prMsg:null});
       try {
-        const brief = { id:pr.id, titre:pr.titre.trim()||prTitreAuto, client:pr.client.trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:pr.periode,
-          comparaisons:{qoq:pr.qoq,yoy:pr.yoy}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire };
+        const brief = { id:pr.id, titre:pr.titre.trim()||prTitreAuto, client:pr.client.trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
         this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
-      periode:b.periode||prTrimDef, qoq:!!(b.comparaisons&&b.comparaisons.qoq), yoy:!!(b.comparaisons&&b.comparaisons.yoy), modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
+      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
       pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
-      meta:'T'+(b.periode&&b.periode.trimestre)+'-'+(b.periode&&b.periode.annee)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
+      meta:prLabelPeriode(b.periode)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
       qui:String(b.auteur||'').split('@')[0]+' · '+prFmtDate(b.updatedAt), statut:b.statut==='generee'?'Générée':b.statut==='demandee'?'Demandée':'Brouillon',
       open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null}),
       dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)'}), prTab:'nouveau', prMsg:{ok:true,text:'Copie du brief « '+b.titre+' » : modifie puis enregistre.'}}),
       delLabel:st.prDel===b.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDel===b.id?'#c24a44':'#9a9fa6')+';'+(st.prDel===b.id?'font-weight:600':''),
       canDel:b.auteur===((this._pr&&this._pr.moi)||''),
       del:async()=>{ if (st.prDel!==b.id) { set({prDel:b.id}); return; } try { await prApi({action:'delete',id:b.id}); this._pr=Object.assign({},this._pr,{list:this._pr.list.filter(x=>x.id!==b.id)}); this.setState({prDel:null, prMsg:null, pr:(pr.id===b.id?Object.assign({},pr,{id:null}):pr)}); } catch(e) { this.setState({prDel:null, prMsg:{ok:false,text:e.message}}); } } }));
-    const prTabs = [['nouveau','Nouveau brief'],['briefs','Briefs enregistrés'+(prRows.length?' ('+prRows.length+')':'')]].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs') prCharge(); },
+    const prTabs = [['nouveau','Nouveau brief'],['briefs','Briefs enregistrés'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(prTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
     const prMsg = st.prMsg||null;
     const prInput = 'font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%';
 
+    // ---- modèles : configuration réutilisable (sans période, points ouverts ni prochaines étapes)
+    const PR_TPL_BASE = [
+      {id:'base-trim',base:true,nom:'BELUX — reporting trimestriel',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources et CTA, points ouverts, prochaines étapes',
+        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','cta','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
+      {id:'base-mois',base:true,nom:'Synthèse mensuelle',description:'Vue globale et trafic / leads par marque, comparée au mois précédent et à N-1',
+        config:{client:'Stellantis',langue:'fr',periodicite:'mois',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','trafic_marque'],contact:{},commentaire:''}},
+      {id:'base-annee',base:true,nom:'Bilan annuel',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
+        config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}}
+    ];
+    const prTplAll = PR_TPL_BASE.concat(((this._pr&&this._pr.templates)||[]).map(t=>Object.assign({base:false},t)));
+    const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
+      set({ prTab:'nouveau', pr:Object.assign({}, prDef, { id:null, titre:'', client:c.client||prDef.client, langue:c.langue||'fr', pays:(c.perimetre&&c.perimetre.pays)||prDef.pays, marques:(c.perimetre&&c.perimetre.marques)||[],
+        periode:prDernierePeriode(c.periodicite||'trimestre'), precedente:!!(c.comparaisons&&c.comparaisons.precedente), n1:!!(c.comparaisons&&c.comparaisons.n1), modules:(c.modules||[]).filter(m=>dispo.includes(m)),
+        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], tplId:t.id }),
+        prMsg:{ok:true,text:'Modèle « '+t.nom+' » appliqué sur la dernière période complète. Ajuste puis enregistre le brief.'} }); };
+    const prTplChips = prTplAll.map(t=>({ label:t.nom, pick:()=>prApplyTpl(t), style:prChip(pr.tplId===t.id) }));
+    const prTplNom = st.prTplNom||'';
+    const prTplSave = async () => {
+      if (prTplNom.trim().length<3 || !pr.client.trim() || !pr.pays.length || !pr.modules.length) { set({prMsg:{ok:false,text:'Pour enregistrer un modèle : un nom (3 caractères minimum), un client, un pays et un module.'}}); return; }
+      set({prBusy:true, prMsg:null});
+      try {
+        const j = await prApi({action:'save_template', template:{ nom:prTplNom.trim(), description:'', config:{ client:pr.client.trim(), langue:pr.langue, periodicite:per.type, perimetre:{pays:pr.pays,marques:pr.marques},
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire } }});
+        const l=(this._pr&&this._pr.templates)||[]; this._pr=Object.assign({},this._pr,{templates:[j.template].concat(l.filter(x=>x.id!==j.template.id))});
+        this.setState({prBusy:false, prTplNom:'', prMsg:{ok:true,text:'Modèle « '+j.template.nom+' » enregistré : retrouve-le dans l\'onglet Modèles.'}});
+      } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
+    };
+    const prTplRows = prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1];
+      return { nom:t.nom, base:t.base, desc:t.description||'', meta:per2+' · '+(((c.perimetre&&c.perimetre.pays)||[]).join('+')||'—')+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · '+String(t.auteur||'').split('@')[0]),
+        use:()=>prApplyTpl(t), canDel:!t.base&&t.auteur===((this._pr&&this._pr.moi)||''),
+        delLabel:st.prDelTpl===t.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDelTpl===t.id?'#c24a44':'#9a9fa6')+';'+(st.prDelTpl===t.id?'font-weight:600':''),
+        del:async()=>{ if (st.prDelTpl!==t.id) { set({prDelTpl:t.id}); return; } try { await prApi({action:'delete_template',id:t.id}); this._pr=Object.assign({},this._pr,{templates:this._pr.templates.filter(x=>x.id!==t.id)}); this.setState({prDelTpl:null,prMsg:null}); } catch(e) { this.setState({prDelTpl:null,prMsg:{ok:false,text:e.message}}); } } }; });
     const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const channelsCtl=modalCtl('channelsModal'), channelsStyles=modalStyles(channelsCtl,'width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
@@ -4250,7 +4324,8 @@ class Component extends DCLogic {
       prTabs, prIsNew:prTab==='nouveau', prIsList:prTab==='briefs', prMsgOn:!!prMsg, prMsgText:prMsg?prMsg.text:'',
       prMsgStyle:prMsg?'font-size:13px;border-radius:10px;padding:9px 12px;'+(prMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44'):'',
       prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
-      prLangues, prBelux, prPaysChips, prMarquesChips, prAnnees, prTrims, prCompar, prPeriodeLabel, prPerimetreLabel,
+      prLangues, prBelux, prPaysChips, prMarquesChips, prTypesChips, prIndiceChips, prAnneesChips, prHasIndice:per.type!=='annee', prCompar, prPeriodeLabel, prPerimetreLabel,
+      prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
       prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },
       prEtapes, prAddEtape:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:'',responsable:'',statut:'a_faire',echeance:''}])}); },
       prContactNom:pr.contact.nom||'', onPrContactNom:e=>prSet({contact:Object.assign({},pr.contact,{nom:e.target.value.slice(0,80)})}),

@@ -41,7 +41,7 @@ test("créer un brief : plan calculé, validation, enregistrement", async ({ pag
   await page.getByText("Enregistrer le brief").click();
   await expect(page.getByText(/Brief enregistré/)).toBeVisible();
   expect(posts.length).toBe(1);
-  expect(posts[0]).toMatchObject({ action: "save", brief: { client: "Stellantis", perimetre: { pays: ["BE", "LU"] }, comparaisons: { qoq: true, yoy: true } } });
+  expect(posts[0]).toMatchObject({ action: "save", brief: { client: "Stellantis", perimetre: { pays: ["BE", "LU"] }, comparaisons: { precedente: true, n1: true } } });
   expect(posts[0].brief.modules).not.toContain("trafic_marque");
   expect(posts[0].brief.modules).not.toContain("crm");
   expect(posts[0].brief.pointsOuverts[0].titre).toBe("Pop-in");
@@ -51,8 +51,8 @@ test("créer un brief : plan calculé, validation, enregistrement", async ({ pag
 });
 
 test("briefs enregistrés : liste, ouverture dans le formulaire, duplication", async ({ page }) => {
-  const brief = { id: "B-x1", titre: "Stellantis BELUX T3-2026", client: "Stellantis", langue: "en", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { annee: 2026, trimestre: 3 },
-    comparaisons: { qoq: true, yoy: false }, modules: ["global", "projets"], contact: { nom: "B. Moumni" }, pointsOuverts: [], prochainesEtapes: [], statut: "brouillon",
+  const brief = { id: "B-x1", titre: "Stellantis BELUX T3-2026", client: "Stellantis", langue: "en", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { type: "trimestre", annee: 2026, indice: 3 },
+    comparaisons: { precedente: true, n1: false }, modules: ["global", "projets"], contact: { nom: "B. Moumni" }, pointsOuverts: [], prochainesEtapes: [], statut: "brouillon",
     auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() };
   await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [brief], moi: "e2e@autobiz.com" } }));
   await page.goto("/", { waitUntil: "networkidle" });
@@ -62,4 +62,46 @@ test("briefs enregistrés : liste, ouverture dans le formulaire, duplication", a
   await page.getByText("Dupliquer").click();
   await expect(page.getByText(/Copie du brief/)).toBeVisible();
   await expect(page.getByPlaceholder("Prénom Nom")).toHaveValue("B. Moumni");
+});
+
+test("périodicité : mensuel, semestre, annuel adaptent la période et les comparaisons", async ({ page }) => {
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "x" } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText("Mensuelle", { exact: true }).click();
+  await expect(page.getByText("vs mois précédent")).toBeVisible();
+  await expect(page.getByText(/^Période : (Janvier|Février|Mars|Avril|Mai|Juin|Juillet|Août|Septembre|Octobre|Novembre|Décembre) \d{4}$/)).toBeVisible();
+  await page.getByText("Semestrielle", { exact: true }).click();
+  await expect(page.getByText("vs semestre précédent")).toBeVisible();
+  await page.getByText("Annuelle", { exact: true }).click();
+  await expect(page.getByText("vs année précédente")).toBeVisible();
+  await expect(page.getByText(/vs (mois|trimestre|semestre) précédent/)).toHaveCount(0);   // pas de « précédente » pour une année
+  await page.getByText("Trimestrielle", { exact: true }).click();
+  await expect(page.getByText("vs même trimestre N-1")).toBeVisible();
+});
+
+test("modèles : modèle de base appliqué, enregistrement d'un modèle, onglet Modèles", async ({ page }) => {
+  const posts = [];
+  const tpls = [];
+  await page.route("**/api/presentations", async (route) => {
+    const req = route.request();
+    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: tpls, moi: "e2e@autobiz.com" } });
+    const body = req.postDataJSON(); posts.push(body);
+    const t = { ...body.template, id: "M-t1", auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() };
+    tpls.push(t);
+    return route.fulfill({ json: { ok: true, template: t } });
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText("Synthèse mensuelle", { exact: true }).first().click();       // modèle de base
+  await expect(page.getByText(/Modèle « Synthèse mensuelle » appliqué/)).toBeVisible();
+  await expect(page.getByText("vs mois précédent")).toBeVisible();                  // périodicité du modèle
+  await page.getByPlaceholder("Nom du modèle").fill("Mon mensuel BELUX");
+  await page.getByText("Enregistrer", { exact: true }).click();
+  await expect(page.getByText(/Modèle « Mon mensuel BELUX » enregistré/)).toBeVisible();
+  expect(posts[0]).toMatchObject({ action: "save_template", template: { nom: "Mon mensuel BELUX", config: { periodicite: "mois", client: "Stellantis" } } });
+  expect(posts[0].template.config.perimetre.pays).toEqual(["BE", "LU"]);
+  await page.getByText("Modèles", { exact: true }).click();
+  await expect(page.getByText("Mon mensuel BELUX").first()).toBeVisible();
+  await expect(page.getByText("Modèle de base").first()).toBeVisible();
 });

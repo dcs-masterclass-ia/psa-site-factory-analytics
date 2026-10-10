@@ -330,6 +330,6 @@ langue, périmètre pays/marques, trimestre, comparaisons QoQ/YoY, modules, poin
 ouverts, prochaines étapes, contact) + plan de présentation calculé en direct
 (nombre de diapositives). `api/presentations.js` stocke les briefs dans le repo de
 données privé (`presentations/briefs.json`) ; la route n'est pas dans `LIMITED_API`.
-Le générateur PPTX n'existe pas encore (bouton « Générer » désactivé) : il lira les
+Périodicité : mois / trimestre / semestre / année (`periode = {type, annee, indice}`) ; modèles enregistrables (`presentations/templates.json`, 3 modèles de base côté interface). Le générateur PPTX n'existe pas encore (bouton « Générer » désactivé) : il lira les
 briefs. Règles de calcul : `docs/presentations-definitions.md`. Tests :
 `node --test tests/api/presentations.test.js`, `tests/e2e/presentations.spec.js`.

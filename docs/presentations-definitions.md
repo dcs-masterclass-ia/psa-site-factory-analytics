@@ -8,8 +8,10 @@ incohérences. Les écarts avec lui sont attendus et listés plus bas.
 1. **Un seul périmètre par présentation**, affiché en pied de chaque diapositive. BELUX = Belgique (néerlandais + français)
    + Luxembourg, pour **toutes** les sources (GA4 comme back-office). Option possible : Belgique seule, ou Luxembourg seul,
    appliquée à toute la présentation, jamais à une diapositive isolée.
-2. **Périodes** : trimestres civils. QoQ = trimestre précédent, YoY = même trimestre de l'année précédente. Les deux
-   comparaisons utilisent exactement les mêmes définitions et le même périmètre que la période courante.
+2. **Périodes** : périodicité choisie par présentation — mensuelle, trimestrielle, semestrielle ou annuelle — sur des périodes
+   civiles complètes. Comparaisons : période précédente de même durée (mois, trimestre ou semestre précédent ; sans objet pour une année)
+   et même période de l'année précédente (N-1). Les deux comparaisons utilisent exactement les mêmes définitions et le même
+   périmètre que la période courante.
 3. **Une source par indicateur, toujours nommée** (« Source : back-office autobiz » ou « Source : GA4 »). On ne divise jamais
    un chiffre GA4 par un chiffre back-office.
 4. **Une unité par chaîne** : une chaîne de conversion n'enchaîne que des **utilisateurs distincts** (ou que des sessions).
@@ -55,3 +57,10 @@ Hot leads 2 903 / 2 968 · Citroën : In Journey 4 101 / 4 172, Hot leads 1 234 
   **Opel T3-2025** (−4 % en leads) : à investiguer.
 - Hot lead défini côté back-office (leads VN dont la marque d'achat = marque du site) : 1 574 pour Peugeot BELUX T3 ; non retenu
   (mesure différente), la marque d'achat reste en base (`leads_acq`).
+
+## 6. Modèles de présentation
+Un modèle enregistre la configuration réutilisable d'un brief : client, langue, périodicité, périmètre (pays, marques),
+comparaisons, modules et contact. Il n'enregistre ni la période (recalculée sur la dernière période complète à chaque
+utilisation) ni les points ouverts et prochaines étapes (propres à chaque édition). Trois modèles de base sont fournis
+(BELUX trimestriel, synthèse mensuelle, bilan annuel) ; les modèles de l'équipe sont stockés dans le repo de données privé
+(`presentations/templates.json`).
