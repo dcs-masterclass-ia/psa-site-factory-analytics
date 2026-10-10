@@ -26,7 +26,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, funnel_daily, funnel_weekly, ga4, insights, leads_extract, search_console, v2_report
+from pipeline import channel, detect, discover, funnel, funnel_daily, funnel_weekly, ga4, hist_month, insights, leads_extract, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -177,6 +177,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("rebondMonth", {})
     d.setdefault("landingMonth", {})
     d.setdefault("convCanalDevice", {})
+    d.setdefault("utmMonth", {})
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
@@ -260,6 +261,12 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             d["convCanalDevice"][mois] = funnel.conversion_par_canal_device(cli, s.propriete, hote_reprise, deb, f_iso)
         except Exception as e:
             journal.append(f"{mois} : conversion par canal/device en erreur ({type(e).__name__})")
+
+        # campagnes / UTM du mois (vue « Campagnes & UTM ») : sessions, engagees, estimations par source/medium x campagne.
+        try:
+            d["utmMonth"][mois] = ga4.sources_utm(cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)
+        except Exception as e:
+            journal.append(f"{mois} : campagnes/UTM en erreur ({type(e).__name__})")
 
         # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
         # on n'ecrase jamais un funnel existant par un echec : si les deux
@@ -433,7 +440,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice", "utmMonth"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 
@@ -550,6 +557,23 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"funnel quotidien : {len(quotidien)} jour(s)")
     except Exception as e:
         journal.append(f"funnel quotidien en erreur ({type(e).__name__}: {e})")
+
+    # funnel mensuel par appareil et par canal (vue « Fuites du tunnel ») : 6 requetes GA4 par site pour toute la fenetre.
+    try:
+        seg = funnel_daily.funnel_segments(cli, s.propriete, hote_reprise, date.fromisoformat(mois_liste[0] + "-01"), date.fromisoformat(jour_fiable()))
+        if seg:
+            d["funnelSeg"] = seg
+            journal.append(f"funnel par appareil/canal : {len(seg.get('device', {}))} mois")
+    except Exception as e:
+        journal.append(f"funnel par appareil/canal en erreur ({type(e).__name__}: {e})")
+
+    # historique mensuel derive de data/history (annees passees, records) : sans donnee personnelle.
+    try:
+        hm = hist_month.mensuel(s.slug)
+        if hm:
+            d["histMonth"] = hm
+    except Exception as e:
+        journal.append(f"historique mensuel en erreur ({type(e).__name__}: {e})")
 
     # avant / apres V2 : derive du funnel quotidien ci-dessus (meme definition que
     # le reste du dashboard), pour TOUS les sites ayant une date de bascule --

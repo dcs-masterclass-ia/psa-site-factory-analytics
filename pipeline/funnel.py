@@ -262,18 +262,19 @@ def conversion_par_canal_device(cli, pid, hote, debut, fin):
     vraie demande de reprise (c'est d'ailleurs la definition retenue pour
     les GA Leads du Looker Studio du projet, cf. commentaire plus haut)."""
     sessions = ga4._rapport(cli, pid, debut, fin,
-                            ["sessionDefaultChannelGroup", "deviceCategory"], ["sessions"],
+                            ["sessionDefaultChannelGroup", "deviceCategory"], ["sessions", "engagedSessions"],
                             ga4._egal("hostName", hote))
     conversions = ga4._rapport(cli, pid, debut, fin,
                                ["sessionDefaultChannelGroup", "deviceCategory"], ["eventCount"],
                                ga4._et(ga4._egal("hostName", hote), ga4._egal("eventName", EVENEMENT_ESTIMATION)))
     conv_map = {(c, d): int(n) for c, d, n in conversions}
     out = []
-    for c, d, s in sessions:
+    for c, d, s, eng in sessions:
         s = int(s)
         n = conv_map.get((c, d), 0)
         out.append({
             "canal": c, "device": d, "sessions": s, "conversions": n,
             "taux": round(n / s * 100, 2) if s else 0.0,
+            "engagees": int(eng),          # sessions engagées (qualité du trafic)
         })
     return sorted(out, key=lambda x: -x["sessions"])

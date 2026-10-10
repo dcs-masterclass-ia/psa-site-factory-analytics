@@ -117,7 +117,7 @@ def controle(nouveau, ancien=None, modele=None):
         # et `funnelDaily` (conversion quotidienne accueil -> estimation, courbe
         # du dashboard) et `landingMonth` (conversions par page d'atterrissage).
         # Toute AUTRE cle inattendue doit continuer de bloquer la publication.
-        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly", "audienceMonth", "funnelWeekly", "funnelDaily", "rebondMonth", "landingMonth", "convCanalDevice", "gscProperty"}
+        SCHEMA_ETENDU = {"anomaly", "canalQuotidien", "searchMonth", "insights", "v2Weekly", "audienceMonth", "funnelWeekly", "funnelDaily", "rebondMonth", "landingMonth", "convCanalDevice", "gscProperty", "utmMonth", "funnelSeg", "histMonth"}
         # cles liees a la bascule V2 : les 5 premieres sont saisies a la main
         # pour les sites deja passes en V2 (date de bascule, etapes/canaux
         # releves manuellement) et jamais produites par le pipeline

@@ -138,6 +138,18 @@ GROUPES_CANAUX = {
 }
 
 
+def sources_utm(cli, pid, hote, debut, fin, evenement, limite=20):
+    """Top des couples source/medium x campagne du mois : sessions, sessions engagees et estimations (evenement de conversion).
+    Sert la vue « Campagnes & UTM » : quelles campagnes generent vraiment des estimations."""
+    sess = _rapport(cli, pid, debut, fin, ["sessionSourceMedium", "sessionCampaignName"], ["sessions", "engagedSessions"], _egal("hostName", hote))
+    conv = _rapport(cli, pid, debut, fin, ["sessionSourceMedium", "sessionCampaignName"], ["eventCount"],
+                    _et(_egal("hostName", hote), _egal("eventName", evenement)))
+    cm = {(sm, c): int(n) for sm, c, n in conv}
+    lignes = [{"sm": sm[:60], "camp": c[:80], "sessions": int(s), "engagees": int(e), "conv": cm.get((sm, c), 0)} for sm, c, s, e in sess]
+    lignes.sort(key=lambda x: -x["sessions"])
+    return lignes[:limite]
+
+
 def groupe_canal(nom):
     return GROUPES_CANAUX.get(nom, "a")
 
