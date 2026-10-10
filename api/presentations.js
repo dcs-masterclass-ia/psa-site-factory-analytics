@@ -40,7 +40,7 @@ const TYPES_PERIODE = ["mois", "trimestre", "semestre", "annee"];
 const MAX_INDICE = { mois: 12, trimestre: 4, semestre: 2, annee: 0 };
 const MAX_BRIEFS = 200;
 const MAX_FILE_BYTES = 900 * 1024;
-const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "crm", "points_ouverts", "prochaines_etapes"];
+const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "crm", "analyse", "points_ouverts", "prochaines_etapes"];
 const LANGUES = ["fr", "en"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
 

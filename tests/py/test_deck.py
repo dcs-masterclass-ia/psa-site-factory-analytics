@@ -36,6 +36,21 @@ class Textes(unittest.TestCase):
         self.assertAlmostEqual(v, 10)
 
 
+class Analyse(unittest.TestCase):
+    def test_chiffres_hors_faits_ecartes(self):
+        from pipeline.deck.analyse import phrases_verifiees
+        faits = {"leads": 13343, "evol": "−3 %"}
+        res, n = phrases_verifiees({"constats": ["Les leads atteignent 13 343 (−3 %) au T3.", "Il y en a 99 999."], "lectures": [], "recommandations": []}, faits)
+        self.assertEqual(res["constats"], ["Les leads atteignent 13 343 (−3 %) au T3."])
+        self.assertEqual(n, 1)
+
+    def test_sans_cle_pas_de_diapo(self):
+        from pipeline.deck import analyse
+        os.environ.pop("ANTHROPIC_API_KEY", None)
+        with self.assertRaises(RuntimeError):
+            analyse.analyse({"a": 1}, "fr", "x")
+
+
 class Construction(unittest.TestCase):
     def test_fumee_sans_donnees(self):
         """Un brief minimal produit un fichier PPTX même sans historique (modules vides, avertissements)."""

@@ -52,6 +52,7 @@ jobs:
       - name: Générer le PowerPoint
         env:
           BRIEF_ID: ${{ inputs.brief_id }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python -m pipeline.deck --briefs data/presentations/briefs.json --id "$BRIEF_ID" --sortie-dir data/presentations/out
 
       - name: Marquer l'échec
