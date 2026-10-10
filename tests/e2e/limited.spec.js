@@ -42,8 +42,11 @@ test.describe("profil limite", () => {
       await expect(page.locator(`div[title="${t}"]`)).toHaveCount(0);
     }
     await expect(page.locator('[data-chrome="chat"]')).toHaveCount(0);
-    await expect(page.getByText("Avant / après V2")).toHaveCount(0);
-    await expect(page.getByText("Sources", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Acquisition", { exact: true }).first()).toBeVisible();
+    await page.getByText("Conversion", { exact: true }).first().click();
+    await expect(page.getByText("Fuites du tunnel", { exact: true })).toBeVisible();           // les vues GA4 restent accessibles
+    await expect(page.getByText("Avant / après V2")).toHaveCount(0);                            // sauf la comparaison V2
+    await expect(page.getByText("Pilotage", { exact: true })).toHaveCount(0);                   // et les objectifs (leads back-office)
     await expect(page.getByText("Indisponible sur ce profil.")).toBeVisible();
   });
 

@@ -24,7 +24,7 @@ test("la courbe de conversion par jour s'affiche pour un site avec funnelDaily",
   // courbe de la moyenne glissante : un <path> violet epais
   await expect(page.locator('svg path[stroke="#7c63ee"][stroke-width="2.8"]').first()).toBeVisible();
   await expect(page.getByText(/Conversion moyenne \d+,\d %/)).toBeVisible();
-  await page.locator('svg[viewBox="0 0 900 250"]').first().screenshot({ path: "test-results/conversion-citroen.png" });
+  await page.locator("#cbConv svg").first().screenshot({ path: "test-results/conversion-citroen.png" });
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
 
@@ -74,7 +74,8 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
   await page.locator('[data-testid="scope-item"]').filter({ hasText: "OPEL FR" }).first().click();
   await page.keyboard.press("Escape");
   await page.mouse.click(5, 5);
-  await page.getByText("Avant / après V2", { exact: true }).first().click();
+  await page.getByText("Conversion", { exact: true }).first().click();               // thème « Conversion »
+  await page.getByText("Avant / après V2", { exact: true }).first().click();         // vue du thème
   await expect(page.getByText("Parcours avant / après V2")).toBeVisible();
   await expect(page.getByText(/Avant : .+ \(\d+ j\) · Après : .+ \(\d+ j\)/)).toBeVisible();
   await expect(page.getByText("Visiteurs accueil / jour")).toBeVisible();
