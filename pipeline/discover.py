@@ -113,3 +113,24 @@ def deduire(liste, pays=None):
     journal.append(f"parent {hote_parent} ({sess_parent}, {part * 100:.0f}%)")
     journal.append(f"reprise {hote_reprise} ({sess_reprise})")
     return hote_parent, hote_reprise, journal
+
+
+# Marches ou une marque exploite PLUSIEURS sites de reprise dans la meme
+# propriete GA4 (un par langue). Constate le 10/10/2026 : Belgique, ex.
+# Peugeot BE = overname.peugeot.be (nl) 12 274 sessions + reprise.peugeot.be
+# (fr) 11 683 au T3-2026 ; seul le premier etait mesure, donc le trafic de
+# reprise belge etait sous-compte d'environ la moitie. Apres correction, le T3
+# Peugeot BE fait 23 595 sessions contre 23 620 dans le reporting client.
+MARCHES_MULTI_HOTES = {"BE"}
+
+
+def hotes_reprise_complets(liste, hote_reprise, pays=None):
+    """Hote de reprise principal + les autres hotes de reprise du meme marche
+    (separes par « | », lisible par ga4._egal). Un seul hote hors marches
+    multi-sites : comportement inchange."""
+    if not pays or pays.upper() not in MARCHES_MULTI_HOTES:
+        return hote_reprise
+    extras = [h for h, s in liste
+              if h != hote_reprise and not _exclu(h) and _est_reprise(h)
+              and s >= SESSIONS_MINIMALES and h.lower().endswith("." + pays.lower())]
+    return "|".join([hote_reprise] + extras)

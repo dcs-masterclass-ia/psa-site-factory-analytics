@@ -26,6 +26,12 @@ def client():
 
 
 def _egal(champ, valeur):
+    """Filtre d'egalite. Une valeur « a|b » est une liste : le champ doit valoir
+    l'une des valeurs (plusieurs hotes de reprise, ex. Belgique : overname + reprise)."""
+    if isinstance(valeur, str) and "|" in valeur:
+        return FilterExpression(filter=Filter(
+            field_name=champ,
+            in_list_filter=Filter.InListFilter(values=[v for v in valeur.split("|") if v])))
     return FilterExpression(filter=Filter(
         field_name=champ,
         string_filter=Filter.StringFilter(

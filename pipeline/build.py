@@ -145,6 +145,11 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # jamais reconstruite separement. gsc_sites est None si l'API Search
     # Console est indisponible pour toute l'execution (pas seulement ce site).
     gsc_site = search_console.propriete_pour_hote(gsc_sites, hote_reprise) if gsc_sites is not None else None
+    # Belgique : deux sites de reprise (nl + fr) -- GA4 les mesure ensemble,
+    # Search Console reste sur l'hote principal (une propriete par site).
+    hote_reprise = discover.hotes_reprise_complets(liste_hotes, hote_reprise, s.pays)
+    if "|" in hote_reprise:
+        journal.append(f"reprise multi-hotes : {hote_reprise}")
     if gsc_sites is not None:
         journal.append(f"recherche : propriete `{gsc_site}`" if gsc_site
                        else "recherche : aucune propriete Search Console pour cet hote")

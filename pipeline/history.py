@@ -127,9 +127,20 @@ def statut(l):
     return "valide"
 
 
+def _campagne(v):
+    """Les campagnes Google Ads sont des identifiants numeriques (cardinalite
+    explosive, sans interet pour un reporting) : regroupees. Le reste (« CTA »,
+    noms de campagnes e-mail...) est conserve."""
+    v = (v or "").strip()
+    if v.isdigit():
+        return "(id numerique)"
+    return v.lower()[:40]
+
+
 def collecte_leads(nom, depuis, fin, dry_run=False):
     depuis = depuis.replace(day=1)   # codes marketing agreges par mois : fenetre en mois entiers
     quotidien = Counter()
+    acq = Counter()      # acquisition : source, support (CTA), campagne, marque d'achat
     codes = Counter()
     for sid, st in L.SITE_EXTRACT[nom]:
         # un an par requete d'abord ; coupe automatiquement si trop lourd
@@ -143,6 +154,11 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
                 quotidien[(jour, sid, l.get(L.COL_SOURCE) or "", (l.get(L.COL_DEVICE) or "").lower(),
                            l.get(L.COL_FUEL) or "", l.get(L.COL_PROJECT) or "",
                            l.get(L.COL_BRAND) or "", s)] += 1
+                # acquisition (ajout du 10/10/2026, pour les presentations client) :
+                # SOURCE_ACQUISITION (Display, Search, Google Ads, sfmc, Main-Website...),
+                # SUPPORT (menu, footer, page offre...), CAMPAGNE, marque d'achat.
+                acq[(jour, sid, (l.get("SOURCE_ACQUISITION") or "").strip(), (l.get("SUPPORT") or "").strip().lower()[:30],
+                     _campagne(l.get("CAMPAGNE")), l.get(L.COL_PROJECT) or "", (l.get("PURCHASE BRAND") or "").strip().upper(), s)] += 1
                 if s == "valide":
                     codes[(jour[:7], l.get(L.COL_CODE) or "")] += 1
             time.sleep(1)
@@ -153,6 +169,7 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
     racine = (Path("/tmp/history") if dry_run else HIST)
     p1 = racine / "leads" / f"{slug}.csv.gz"
     p2 = racine / "leads_codes" / f"{slug}.csv.gz"
+    p3 = racine / "leads_acq" / f"{slug}.csv.gz"
     ent1 = ["date", "site_id", "source", "appareil", "carburant", "projet_achat",
             "marque_reprise", "statut", "n"]
     ecrit_csv_gz(p1, ent1, sorted(remplace_depuis(p1, sorted((*k, v) for k, v in quotidien.items()),
@@ -160,22 +177,34 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
     ecrit_csv_gz(p2, ["mois", "code_marketing", "valides"],
                  sorted(remplace_depuis(p2, sorted((*k, v) for k, v in codes.items()),
                                         depuis.isoformat()[:7])))
+    ent3 = ["date", "site_id", "source_acq", "support", "campagne", "projet_achat", "marque_achat", "statut", "n"]
+    ecrit_csv_gz(p3, ent3, sorted(remplace_depuis(p3, sorted((*k, v) for k, v in acq.items()), depuis.isoformat())))
     valides = sum(v for k, v in quotidien.items() if k[-1] == "valide")
     jours = sorted({k[0] for k in quotidien})
     print(f"{nom} : {sum(quotidien.values())} leads bruts, {valides} valides, du {jours[0]} au {jours[-1]}")
-    return [p1, p2]
+    return [p1, p2, p3]
 
 
 # =====================================================================
 # GA4
 # =====================================================================
 
+def hote_reprise_ga4(cli, s, d0, d1):
+    """Hote(s) de reprise : plusieurs en Belgique (nl + fr), cf. discover.hotes_reprise_complets."""
+    from pipeline import discover, ga4
+    try:
+        return discover.hotes_reprise_complets(ga4.hotes(cli, s.propriete, d0, d1), s.hote_reprise, s.pays)
+    except Exception:
+        return s.hote_reprise
+
+
 def collecte_ga4(s, depuis, fin, dry_run=False):
     from pipeline import funnel_daily, ga4
     cli = ga4.client()
     d0, d1 = depuis.isoformat(), fin.isoformat()
+    reprise = hote_reprise_ga4(cli, s, d0, d1)
     lignes = []
-    for lib, hote in (("parent", s.hote_parent), ("reprise", s.hote_reprise)):
+    for lib, hote in (("parent", s.hote_parent), ("reprise", reprise)):
         rows = ga4._rapport(cli, s.propriete, d0, d1,
                             ["date", "sessionDefaultChannelGroup", "deviceCategory"],
                             ["sessions", "activeUsers", "newUsers"],
@@ -187,12 +216,32 @@ def collecte_ga4(s, depuis, fin, dry_run=False):
     # funnel : par tranches d'un an (5 requetes GA4 par tranche)
     for a, b in _plages(depuis, fin, 366):
         try:
-            funnel.update(funnel_daily.funnel_quotidien(cli, s.propriete, s.hote_reprise, a, b))
+            funnel.update(funnel_daily.funnel_quotidien(cli, s.propriete, reprise, a, b))
         except Exception as e:
             print(f"  {s.nom} funnel {a}..{b} : {type(e).__name__} ({str(e)[:80]})")
         time.sleep(1)
     racine = (Path("/tmp/history") if dry_run else HIST)
     out = []
+    # sources de sessions du site de reprise (presentations client) : groupe de
+    # canaux principal (« Display », « Paid Search »...), source / support, sessions
+    # et sessions engagees. Sert aussi a isoler l'arrivee depuis le site de la marque.
+    src = []
+    for a, b in _plages(depuis, fin, 366):
+        try:
+            for r in ga4._rapport(cli, s.propriete, a.isoformat(), b.isoformat(),
+                                  ["date", "sessionPrimaryChannelGroup", "sessionSource", "sessionMedium"],
+                                  ["sessions", "engagedSessions"], ga4._egal("hostName", reprise)):
+                j = r[0]
+                if int(r[4]) > 0:
+                    src.append((f"{j[:4]}-{j[4:6]}-{j[6:]}", r[1], r[2], r[3], int(r[4]), int(r[5])))
+        except Exception as e:
+            print(f"  {s.nom} sources {a}..{b} : {type(e).__name__} ({str(e)[:80]})")
+        time.sleep(1)
+    if src:
+        p = racine / "ga4_sources" / f"{s.slug}.csv.gz"
+        ent = ["date", "canal_principal", "source", "support", "sessions", "sessions_engagees"]
+        ecrit_csv_gz(p, ent, sorted(remplace_depuis(p, src, d0)))
+        out.append(p)
     if lignes:
         p = racine / "ga4_sessions" / f"{s.slug}.csv.gz"
         ecrit_csv_gz(p, ["date", "site", "canal", "appareil", "sessions", "utilisateurs", "nouveaux_utilisateurs"],
