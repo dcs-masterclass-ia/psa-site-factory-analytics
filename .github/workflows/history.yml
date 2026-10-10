@@ -122,3 +122,7 @@ jobs:
           if [ -n "$IN_DEPUIS" ]; then ARGS+=(--depuis "$IN_DEPUIS"); fi
           if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
           python -m pipeline.history "${ARGS[@]}"
+
+      - name: Agréger les leads par mois (data/leads_mensuel.json, lu par le dashboard)
+        if: ${{ (inputs.source || '') == 'leads' || github.event.schedule == '20 3 * * *' }}
+        run: python -m pipeline.leads_mensuel
