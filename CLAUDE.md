@@ -367,3 +367,13 @@ Données : `searchMonth[mois]` reçoit, pour les 6 derniers mois ENTIERS, `devic
 (`pipeline/search_console.py` `analyse_mois`, calculé sur la liste complète des requêtes ; rattrapage de 3 mois par passage et par site). Les instantanés (gagnants,
 opportunités…) portent sur le dernier mois analysé de la période. Indexation : `pipeline/indexation.py` (API URL Inspection, 10 pages par site, workflow
 `indexation.yml` chaque lundi) -> `indexation.json` du repo de données, servi par `api/indexation.js`.
+
+## Présentations — parcours de création par étapes (2026-10-11)
+
+« Nouveau brief » est un parcours à 6 étapes (`prStepsDef` dans `index.html`) : 1 Choisir un modèle · 2 Cadrage (titre, langue, périmètre et période) · 3 Contenu ·
+4 Points ouverts · 5 Prochaines étapes · 6 Contact. Les étapes 1 à 3 sont obligatoires et se débloquent dans l'ordre ; 4 à 6 sont facultatives. Le contenu (étape 3)
+est verrouillé par défaut sur les modules recommandés du modèle (`reco`) : « Personnaliser » demande une confirmation, « Revenir au contenu recommandé » restaure.
+Une seule action principale à la fois : « Continuer » dans l'étape (plein tant que le brief n'est pas prêt), « Générer le PowerPoint » dans le panneau (actif quand 1 à 3
+sont terminées) ; « Enregistrer le brouillon » (= brief, onglet « Mes présentations ») et « Enregistrer comme modèle » sont des actions secondaires expliquées. Le client est
+toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés, mois et chiffres traduits (`pipeline/deck/textes.py`, `periodes.py`) ; les analyses rédigées
+(`analyse.py`) et quelques phrases de `construit.py` restent en français ou en anglais (repli anglais).

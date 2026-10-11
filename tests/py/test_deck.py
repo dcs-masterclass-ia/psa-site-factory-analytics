@@ -71,18 +71,19 @@ class Evenements(unittest.TestCase):
 
 class Construction(unittest.TestCase):
     def test_fumee_sans_donnees(self):
-        """Un brief minimal produit un fichier PPTX même sans historique (modules vides, avertissements)."""
+        """Un brief minimal produit un fichier PPTX même sans historique, dans chacune des 5 langues."""
         from pipeline.deck.construit import construit
         from pipeline.deck.donnees import Donnees
-        brief = {"titre": "Test", "client": "Stellantis", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3},
-                 "perimetre": {"pays": ["BE"], "marques": []}, "comparaisons": {"precedente": True, "n1": True},
-                 "modules": ["global", "points_ouverts", "nps", "utm", "analyse"], "contact": {}, "pointsOuverts": [], "prochainesEtapes": []}
-        with tempfile.TemporaryDirectory() as tmp:
-            d = Donnees(["BE"], None, hist=tmp)
-            d.utilisateurs = lambda *a, **k: {"utilisateurs": 0, "in_journey": 0, "hot_leads": 0}   # pas d'appel GA4
-            out = os.path.join(tmp, "t.pptx")
-            construit(brief, d, out)
-            self.assertGreater(os.path.getsize(out), 10000)
+        for langue in ("fr", "en", "it", "es", "de"):
+            brief = {"titre": "Test", "client": "Stellantis", "langue": langue, "periode": {"type": "trimestre", "annee": 2026, "indice": 3},
+                     "perimetre": {"pays": ["BE"], "marques": []}, "comparaisons": {"precedente": True, "n1": True},
+                     "modules": ["global", "points_ouverts", "nps", "utm", "analyse"], "contact": {}, "pointsOuverts": [], "prochainesEtapes": []}
+            with tempfile.TemporaryDirectory() as tmp:
+                d = Donnees(["BE"], None, hist=tmp)
+                d.utilisateurs = lambda *a, **k: {"utilisateurs": 0, "in_journey": 0, "hot_leads": 0}   # pas d'appel GA4
+                out = os.path.join(tmp, "t.pptx")
+                construit(brief, d, out)
+                self.assertGreater(os.path.getsize(out), 10000, langue)
 
 
 if __name__ == "__main__":

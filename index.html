@@ -2320,17 +2320,49 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ prMsgOn }}" hint-placeholder-val="{{ false }}"><div style="{{ prMsgStyle }}">{{ prMsgText }}</div></sc-if>
 
         <sc-if value="{{ prIsNew }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:15px;align-items:start">
-          <div style="display:flex;flex-direction:column;gap:15px;min-width:0">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Partir d'un modèle</div><div style="font-size:12.5px;color:#9a9fa6">Applique une configuration enregistrée sur la dernière période complète</div></div></div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTplChips }}" as="c" hint-placeholder-count="3"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);gap:15px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+          <div style="{{ stp1_cardStyle }}">
+            <div onClick="{{ stp1_toggle }}" style="{{ stp1_head }}">
+              <span style="{{ stp1_circle }}">{{ stp1_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Choisir un modèle</div><sc-if value="{{ stp1_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp1_sum }}</div></sc-if></div>
+              <span style="{{ stp1_statStyle }}">{{ stp1_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipA }}">{{ prIconA }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Cadrage</div><div style="font-size:12.5px;color:#9a9fa6">Le titre et le client apparaissent sur la couverture</div></div></div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Titre du brief</div><input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="{{ prTitreAuto }}" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Client</div><input type="text" value="{{ prClient }}" onInput="{{ onPrClient }}" placeholder="Stellantis" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" />
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Langue de la présentation</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+            <div style="{{ stp1_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5">Un modèle pré-remplit la langue, la période, le périmètre et le contenu de la présentation. Tu pourras tout ajuster ensuite.</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px">
+                  <sc-for list="{{ prTplCards }}" as="c" hint-placeholder-count="4">
+                    <div onClick="{{ c.pick }}" style="{{ c.style }}">
+                      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:14.5px;font-weight:600;color:#121214">{{ c.nom }}</span><sc-if value="{{ c.check }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:50%;background:#7c63ee;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span></sc-if></div>
+                      <div style="font-size:12.5px;color:#6d727a;line-height:1.5">{{ c.desc }}</div>
+                      <div style="font-size:11.5px;color:#9a9fa6;margin-top:auto;padding-top:4px">{{ c.badge }} · {{ c.meta }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ stp1_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px">Choisis un modèle pour continuer.</div></sc-if>
+
+            </div></div></div>
+          </div>
+          <div style="{{ stp2_cardStyle }}">
+            <div onClick="{{ stp2_toggle }}" style="{{ stp2_head }}">
+              <span style="{{ stp2_circle }}">{{ stp2_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Cadrage de la présentation</div><sc-if value="{{ stp2_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp2_sum }}</div></sc-if></div>
+              <span style="{{ stp2_statStyle }}">{{ stp2_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipB }}">{{ prIconB }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Périmètre et période</div><div style="font-size:12.5px;color:#9a9fa6">Un seul périmètre pour toute la présentation</div></div></div>
+            <div style="{{ stp2_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px">Titre de la présentation <span style="color:#e8544a">*</span></div>
+                <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5margin-top:-2px">Il apparaît sur la couverture. Ex. « Stellantis BELUX — Reporting T3-2026 ».</div>
+                <input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="Titre de la présentation" style="{{ prInputStyle }}" />
+                <sc-if value="{{ prTitreVide }}" hint-placeholder-val="{{ true }}"><div onClick="{{ prSuggest }}" style="display:inline-flex;margin-top:6px;font-size:12.5px;color:#3b76e8;cursor:pointer">Utiliser la proposition&nbsp;: {{ prTitreAutoTxt }}</div></sc-if>
+                <sc-if value="{{ prErrTitreOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#c24a44;margin-top:6px">{{ prErrTitre }}</div></sc-if>
+                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px;margin-top:18px">Langue de la présentation <span style="color:#e8544a">*</span></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="5"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+                <div style="font-size:12px;color:#9a9fa6;margin-top:6px">Libellés, mois et chiffres sont traduits ; les analyses rédigées restent en français ou en anglais.</div>
+                <div style="border-top:1px solid #f2f2f4;margin-top:18px;padding-top:16px">
+                  <div style="font-size:13.5px;font-weight:600;color:#121214;margin-bottom:2px">Périmètre et période</div>
+                  <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5">Un seul périmètre pour toute la présentation.</div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Pays <span style="color:#b3b7bd">· clic = un seul, Cmd / Maj + clic = en ajouter ou en retirer, BELUX = BE + LU</span></div>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pr-chip" onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
@@ -2342,9 +2374,37 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="display:flex;gap:8px"><sc-for list="{{ prAnneesChips }}" as="c" hint-placeholder-count="3"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               </div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Comparaisons</div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prCompar }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+
+                  <sc-if value="{{ prErrPaysOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#c24a44;margin-top:8px">{{ prErrPays }}</div></sc-if>
+                </div>
+                <sc-if value="{{ stp2_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px">Complète les champs signalés en rouge pour continuer.</div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp2_next }}" style="{{ stp2_nextStyle }}">{{ stp2_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
+          <div style="{{ stp3_cardStyle }}">
+            <div onClick="{{ stp3_toggle }}" style="{{ stp3_head }}">
+              <span style="{{ stp3_circle }}">{{ stp3_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><sc-if value="{{ stp3_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp3_sum }}</div></sc-if></div>
+              <span style="{{ stp3_statStyle }}">{{ stp3_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div onClick="{{ prContenuToggle }}" style="{{ prContenuHead }}"><span style="{{ prChipC }}">{{ prIconC }}</span><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Contenu</div><div style="font-size:12.5px;color:#9a9fa6">{{ prContenuSub }}</div></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="{{ prContenuChev }}"><path d="M6 9l6 6 6-6"/></svg></div>
-              <div style="{{ prContenuWrap }}"><div style="overflow:hidden;min-height:0">
+            <div style="{{ stp3_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <sc-if value="{{ prLocked }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><span style="{{ prContentTagStyle }}">{{ prContentTag }}</span><span style="font-size:12.5px;color:#9a9fa6">Structuré pour garantir une présentation cohérente.</span></div>
+                  <sc-for list="{{ prModLocked }}" as="m" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:flex-start;gap:12px;padding:9px 4px;border-top:1px solid #f2f2f4"><span style="flex:none;width:18px;height:18px;border-radius:5px;background:#e8f6ee;display:flex;align-items:center;justify-content:center;margin-top:2px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1f7a4d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;color:#121214">{{ m.titre }}</div><div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">{{ m.desc }}</div></div><span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ m.slides }}</span></div>
+                  </sc-for>
+                  <sc-if value="{{ prCanUnlockAsk }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap"><span onClick="{{ prAskUnlock }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Personnaliser le contenu</span><sc-if value="{{ prDiffReco }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prBackReco }}" style="font-size:13px;color:#6d727a;cursor:pointer">Revenir au contenu recommandé</span></sc-if></div></sc-if>
+                  <sc-if value="{{ prConfirm }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:12px;background:#fdf8ee;border:1px solid #f3e3bd;border-radius:14px;padding:14px 16px">
+                      <div style="font-size:13.5px;font-weight:600;color:#7a5410;margin-bottom:4px">Personnaliser le contenu ?</div>
+                      <div style="font-size:13px;color:#7a5410;line-height:1.55">Le contenu proposé est structuré pour garantir une présentation cohérente. En le personnalisant, vous pourriez modifier l'équilibre des informations ou la pertinence du message.</div>
+                      <div style="display:flex;gap:10px;margin-top:12px"><span class="pr-btn" onClick="{{ prDoUnlock }}" style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;background:#121214;color:#fff">Déverrouiller et personnaliser</span><span class="pr-btn" onClick="{{ prCancelUnlock }}" style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:10px;font-size:13.5px;cursor:pointer;color:#6d727a">Garder le contenu recommandé</span></div>
+                    </div>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ prUnlocked }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><span style="{{ prContentTagStyle }}">{{ prContentTag }}</span><span style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite.</span><span style="flex:1"></span><span onClick="{{ prBackReco }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Revenir au contenu recommandé</span></div>
               <sc-for list="{{ prModulesRows }}" as="m" hint-placeholder-count="8">
                 <div onClick="{{ m.pick }}" style="{{ m.rowStyle }}">
                   <span class="pr-box" style="{{ m.box }}"><sc-if value="{{ m.check }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></sc-if></span>
@@ -2354,9 +2414,23 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ m.slides }}</span>
                 </div>
               </sc-for>
-              </div></div>
+
+                </sc-if>
+                <sc-if value="{{ stp3_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px">Garde au moins un module dans la présentation.</div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp3_next }}" style="{{ stp3_nextStyle }}">{{ stp3_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
+          <div style="{{ stp4_cardStyle }}">
+            <div onClick="{{ stp4_toggle }}" style="{{ stp4_head }}">
+              <span style="{{ stp4_circle }}">{{ stp4_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Points ouverts</div><sc-if value="{{ stp4_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp4_sum }}</div></sc-if></div>
+              <span style="{{ stp4_statStyle }}">{{ stp4_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipD }}">{{ prIconE }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Points ouverts</div><div style="font-size:12.5px;color:#9a9fa6">Une diapositive par point (ex. déploiement d'une fonctionnalité, anomalie de tracking)</div></div></div>
+            <div style="{{ stp4_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Identifiez les sujets qui nécessitent encore une clarification, une validation ou une décision avec le client. Chaque point devient une diapositive.</div>
+                <div style="font-size:12.5px;color:#6d727a;line-height:1.55;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin:10px 0 12px"><b>Point ouvert</b> = un sujet à clarifier ou à trancher. Ce qu'il faudra <i>faire</i> après la réunion se met à l'étape suivante, « Prochaines étapes ».</div>
+                <sc-if value="{{ prHasPtEx }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:6px">Exemples — clique pour en ajouter un :</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><sc-for list="{{ prPtEx }}" as="x" hint-placeholder-count="4"><span onClick="{{ x.add }}" style="{{ exStyle }}">+ {{ x.label }}</span></sc-for></div></sc-if>
               <sc-for list="{{ prPoints }}" as="p" hint-placeholder-count="2">
                 <div style="border:1px solid #efeff1;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
                   <div style="display:flex;gap:8px"><input type="text" value="{{ p.titre }}" onInput="{{ p.onTitre }}" placeholder="Titre du point" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%" /><span onClick="{{ p.remove }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;align-self:center;white-space:nowrap">Retirer</span></div>
@@ -2364,8 +2438,21 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
               <span onClick="{{ prAddPoint }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter un point ouvert</span>
+                <sc-if value="{{ stp4_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px"></div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp4_next }}" style="{{ stp4_nextStyle }}">{{ stp4_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
+          <div style="{{ stp5_cardStyle }}">
+            <div onClick="{{ stp5_toggle }}" style="{{ stp5_head }}">
+              <span style="{{ stp5_circle }}">{{ stp5_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Prochaines étapes</div><sc-if value="{{ stp5_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp5_sum }}</div></sc-if></div>
+              <span style="{{ stp5_statStyle }}">{{ stp5_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipF }}">{{ prIconF }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Prochaines étapes</div><div style="font-size:12.5px;color:#9a9fa6">Tableau d'actions : clique sur le statut pour le changer</div></div></div>
+            <div style="{{ stp5_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Présentez les actions à engager après la réunion afin de clarifier les responsabilités, les échéances et les prochaines décisions. Elles forment un tableau d'actions en fin de présentation.</div>
+                <div style="font-size:12.5px;color:#6d727a;line-height:1.55;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin:10px 0 12px"><b>Prochaine étape</b> = une action à réaliser (qui, pour quand). Un sujet encore à clarifier avec le client se met plutôt dans « Points ouverts ». Clique sur le statut pour le changer.</div>
+                <sc-if value="{{ prHasEtEx }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:6px">Exemples — clique pour en ajouter un :</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><sc-for list="{{ prEtEx }}" as="x" hint-placeholder-count="4"><span onClick="{{ x.add }}" style="{{ exStyle }}">+ {{ x.label }}</span></sc-for></div></sc-if>
               <sc-for list="{{ prEtapes }}" as="e" hint-placeholder-count="2">
                 <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,.8fr) auto auto;gap:8px;align-items:center;margin-bottom:8px">
                   <input type="text" value="{{ e.item }}" onInput="{{ e.onItem }}" placeholder="Action" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" />
@@ -2376,38 +2463,72 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
               <span onClick="{{ prAddEtape }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter une action</span>
+                <sc-if value="{{ stp5_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px"></div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp5_next }}" style="{{ stp5_nextStyle }}">{{ stp5_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
+          <div style="{{ stp6_cardStyle }}">
+            <div onClick="{{ stp6_toggle }}" style="{{ stp6_head }}">
+              <span style="{{ stp6_circle }}">{{ stp6_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Contact</div><sc-if value="{{ stp6_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp6_sum }}</div></sc-if></div>
+              <span style="{{ stp6_statStyle }}">{{ stp6_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><span style="{{ prChipG }}">{{ prIconG }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contact et commentaire</div><div style="font-size:12.5px;color:#9a9fa6">Contact affiché en dernière diapositive</div></div></div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">Nom</div><input type="text" value="{{ prContactNom }}" onInput="{{ onPrContactNom }}" placeholder="Prénom Nom" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
-                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">Fonction</div><input type="text" value="{{ prContactFonction }}" onInput="{{ onPrContactFonction }}" placeholder="Digital Key Account Manager" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
-                <div><div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">E-mail</div><input type="text" value="{{ prContactEmail }}" onInput="{{ onPrContactEmail }}" placeholder="prenom.nom@autobiz.com" style="font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%" /></div>
-              </div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Commentaire libre (contexte, messages clés à faire passer)</div>
-              <textarea value="{{ prCommentaire }}" onInput="{{ onPrCommentaire }}" rows="4" placeholder="Ex. : insister sur la baisse du Display et la hausse du taux de leads New cars." style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%;resize:vertical;line-height:1.5"></textarea>
-            </div>
+            <div style="{{ stp6_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Affiché sur la dernière diapositive.</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">
+                  <input type="text" value="{{ prContactNom }}" onInput="{{ onPrContactNom }}" placeholder="Prénom Nom" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%" />
+                  <input type="text" value="{{ prContactFonction }}" onInput="{{ onPrContactFonction }}" placeholder="Fonction" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%" />
+                  <input type="text" value="{{ prContactEmail }}" onInput="{{ onPrContactEmail }}" placeholder="E-mail" style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%" />
+                </div>
+                <sc-if value="{{ prNoComment }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prShowCommentFn }}" style="display:inline-flex;margin-top:10px;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter un commentaire libre (contexte, messages clés)</span></sc-if>
+                <sc-if value="{{ prShowComment }}" hint-placeholder-val="{{ false }}"><textarea value="{{ prCommentaire }}" onInput="{{ onPrCommentaire }}" rows="3" placeholder="Ex. : insister sur la baisse du Display et la hausse du taux de leads New cars." style="font-family:Poppins,sans-serif;font-size:14px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 12px;outline:none;box-sizing:border-box;width:100%;resize:vertical;line-height:1.5;margin-top:10px"></textarea></sc-if>
+                <sc-if value="{{ stp6_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px"></div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp6_next }}" style="{{ stp6_nextStyle }}">{{ stp6_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
           </div>
 
           <div style="position:sticky;top:0;display:flex;flex-direction:column;gap:12px;min-width:0">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
-              <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:2px">Plan de la présentation</div>
-              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:12px">{{ prPerimetreLabel }} · {{ prPeriodeLabel }}</div>
-              <sc-for list="{{ prPlanRows }}" as="r" hint-placeholder-count="5">
-                <div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:8px 0;border-top:1px solid #f2f2f4"><div style="min-width:0"><div style="font-size:13.5px;color:#121214">{{ r.titre }}</div><div style="font-size:12px;color:#9a9fa6">{{ r.detail }}</div></div><span style="font-size:12.5px;color:#6d727a;white-space:nowrap">{{ r.count }}</span></div>
-              </sc-for>
-              <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid #e8e8ec;padding-top:10px;margin-top:4px"><span style="font-size:13px;color:#6d727a">Total estimé</span><span style="font-size:18px;font-weight:600;color:#121214">{{ prPlanTotal }}</span></div>
-              <div style="font-size:12px;color:#9a9fa6;line-height:1.5;margin-top:10px">Source : back-office autobiz (leads) et GA4 (trafic), même périmètre sur toutes les diapositives.</div>
-              <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
-                <span class="pr-btn" onClick="{{ prSaveFn }}" style="{{ prSaveStyle }}">{{ prSaveLabel }}</span>
-                <span class="pr-btn" onClick="{{ prGenFn }}" style="{{ prGenStyle }}">{{ prGenLabel }}</span>
-                <sc-if value="{{ prGenPret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prDlFn }}" style="display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14px;font-weight:600;background:#eaf6ef;color:#2b8f62;cursor:pointer">{{ prDlLabel }}</span></sc-if>
-                <sc-if value="{{ prGenInfo }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;line-height:1.5;text-align:center">{{ prGenInfo }}</div></sc-if>
-                <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;text-align:center">Nouveau brief vide</span></sc-if>
+              <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:12px">Plan de la présentation</div>
+              <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Modèle</span><span style="color:#121214;text-align:right">{{ prSumTpl }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Titre</span><span style="color:#121214;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ prSumTitre }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Langue</span><span style="color:#121214">{{ prSumLangue }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Périmètre</span><span style="color:#121214;text-align:right">{{ prPerimetreLabel }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Période</span><span style="color:#121214">{{ prPeriodeLabel }}</span></div>
               </div>
-              <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px">
-                <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:8px">Réutiliser cette configuration</div>
-                <div style="display:flex;gap:8px"><input type="text" value="{{ prTplNom }}" onInput="{{ onPrTplNom }}" placeholder="Nom du modèle" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /><span onClick="{{ prTplSaveFn }}" style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:10px;background:#f1eefe;color:#5b43d6;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Enregistrer</span></div>
-                <div style="font-size:11.5px;color:#b3b7bd;margin-top:6px;line-height:1.5">Le modèle garde le client, la langue, la périodicité, le périmètre, les modules et le contact. Pas la période, ni les points ouverts.</div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:1.5px solid #e8e8ec;padding-top:10px;margin-top:12px"><span style="font-size:13px;color:#6d727a">Total estimé</span><span style="font-size:20px;font-weight:600;color:#121214">{{ prPlanTotal }}</span></div>
+              <span onClick="{{ prPlanDetailToggle }}" style="display:inline-flex;margin-top:8px;font-size:12.5px;color:#3b76e8;cursor:pointer">{{ prPlanDetailLabel }}</span>
+              <sc-if value="{{ prPlanDetail }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:6px">
+                  <sc-for list="{{ prPlanRows }}" as="r" hint-placeholder-count="5"><div style="display:flex;gap:10px;align-items:baseline;justify-content:space-between;padding:6px 0;border-top:1px solid #f2f2f4"><div style="min-width:0"><div style="font-size:13px;color:#121214">{{ r.titre }}</div><div style="font-size:11.5px;color:#9a9fa6">{{ r.detail }}</div></div><span style="font-size:12px;color:#6d727a;white-space:nowrap">{{ r.count }}</span></div></sc-for>
+                  <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;margin-top:8px">Source : back-office autobiz (leads) et GA4 (trafic), même périmètre sur toutes les diapositives.</div>
+                </div>
+              </sc-if>
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#9a9fa6;margin-bottom:5px"><span>{{ prProgress }}</span></div>
+                <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ prProgressBar }}"></div></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+                <sc-if value="{{ prCtaDlOn }}" hint-placeholder-val="{{ false }}"><span class="pr-btn" onClick="{{ prDlFn }}" style="{{ prCtaDlStyle }}">{{ prCtaDlLabel }}</span></sc-if>
+                <span class="pr-btn" onClick="{{ prCtaGenFn }}" style="{{ prCtaGenStyle }}">{{ prCtaGenLabel }}</span>
+                <sc-if value="{{ prHasMissing }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#a15c07;line-height:1.5;text-align:center">{{ prMissingTxt }}</div></sc-if>
+                <sc-if value="{{ prGenInfo }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;line-height:1.5;text-align:center">{{ prGenInfo }}</div></sc-if>
+                <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;text-align:center">La génération enregistre automatiquement ta présentation, puis la prépare en 2 à 4 minutes.</div>
+              </div>
+              <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px;display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <span onClick="{{ prDraftFn }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">{{ prDraftLabel }}</span>
+                  <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;margin-top:2px">Garde cette présentation dans « Mes présentations » pour la reprendre plus tard, sans la générer.</div>
+                </div>
+                <div>
+                  <span onClick="{{ prTplFormToggle }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">{{ prTplFormLabel }}</span>
+                  <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;margin-top:2px">Crée un modèle pour tes prochaines présentations : il garde la langue, la périodicité, le périmètre, le contenu et le contact — pas la période, les points ouverts ni les prochaines étapes.</div>
+                  <sc-if value="{{ prTplFormOpen }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;margin-top:8px"><input type="text" value="{{ prTplNom }}" onInput="{{ onPrTplNom }}" placeholder="Nom du modèle" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /><span class="pr-btn" onClick="{{ prTplSaveFn }}" style="display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:10px;background:#121214;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Créer le modèle</span></div></sc-if>
+                </div>
+                <sc-if value="{{ prHasId }}" hint-placeholder-val="{{ false }}"><span onClick="{{ prNewFn }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer">Recommencer à zéro</span></sc-if>
               </div>
             </div>
           </div>
@@ -5259,7 +5380,7 @@ class Component extends DCLogic {
     ];
     const prDef = {
       id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null,
-      modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:''
+      modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:'', reco:null, tplNom:''
     };
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
     const per = prNormPeriode(pr.periode);
@@ -5288,14 +5409,14 @@ class Component extends DCLogic {
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
       .map(([v,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{indice:v})}),true), style:prChip(per.indice===v) }));
     const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{annee:a})}),true), style:prChip(per.annee===a) }));
-    const prLangues = [['fr','Français'],['en','English']].map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({langue:k}),true), style:prChip(pr.langue===k) }));
+    const prLangues = [['fr','Français'],['en','English'],['it','Italiano'],['es','Español'],['de','Deutsch']].map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({langue:k}),true), style:prChip(pr.langue===k) }));
     const PR_PREC = {mois:'vs mois précédent',trimestre:'vs trimestre précédent',semestre:'vs semestre précédent'};
     const PR_N1 = {mois:'vs même mois N-1',trimestre:'vs même trimestre N-1',semestre:'vs même semestre N-1',annee:'vs année précédente'};
     const prCompar = (per.type==='annee'?[]:[{ label:PR_PREC[per.type], pick:()=>prSet({precedente:!pr.precedente}), style:prChip(pr.precedente) }])
       .concat([{ label:PR_N1[per.type], pick:()=>prSet({n1:!pr.n1}), style:prChip(pr.n1) }]);
     const prPeriodeLabel = prLabelPeriode(per);
     const prPerimetreLabel = pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU') ? 'BELUX (Belgique + Luxembourg)' : (pr.pays.join(' + ')||'—');
-    const prTitreAuto = pr.client+' — '+(pr.pays.join('+')||'?')+' '+prPeriodeLabel;
+    const prTitreAuto = 'Stellantis — '+(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')?'BELUX':(pr.pays.join('+')||'?'))+' — Reporting '+prPeriodeLabel;
     const prNb = pr.pointsOuverts.length;
     const prSlidesOf = m => (m.base||0) + (m.parMarque?m.parMarque*prMarquesSel.length:0) + (m.pointsOuverts?Math.max(1,prNb):0);
     const prModulesRows = PR_MODULES.map(m=>{
@@ -5335,12 +5456,27 @@ class Component extends DCLogic {
     const prPct = prEnCours ? Math.min(95, Math.round(100*(1-Math.exp(-Math.max(0,Date.now()-(prCur.demandeeLe||Date.now()))/90000)))) : 0;
     if (prEnCours && !this._prTick) this._prTick = setInterval(()=>this.setState({prTick:Date.now()}), 1000);
     if (!prEnCours && this._prTick) { clearInterval(this._prTick); this._prTick = null; }
-    const prValide = (pr.titre.trim().length>=3||true) && pr.client.trim().length>0 && pr.pays.length>0 && pr.modules.length>0 && !st.prBusy;
+    // ---- parcours par étapes : modèle -> cadrage -> contenu (obligatoires), puis points ouverts, prochaines étapes, contact (facultatifs)
+    const prValidMods = pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
+    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = prValidMods.length>0;
+    const prS2ok = prTitreOk&&prLangueOk&&prPaysOk;
+    const prStepsDef = [
+      {n:1,titre:'Choisir un modèle',req:true,ok:prTplOk,unl:true},
+      {n:2,titre:'Cadrage de la présentation',req:true,ok:prS2ok,unl:prTplOk},
+      {n:3,titre:'Contenu',req:true,ok:prModsOk,unl:prTplOk&&prS2ok},
+      {n:4,titre:'Points ouverts',req:false,ok:pr.pointsOuverts.length>0,unl:prTplOk&&prS2ok&&prModsOk},
+      {n:5,titre:'Prochaines étapes',req:false,ok:pr.prochainesEtapes.length>0,unl:prTplOk&&prS2ok&&prModsOk},
+      {n:6,titre:'Contact',req:false,ok:!!(pr.contact.nom||pr.contact.email),unl:prTplOk&&prS2ok&&prModsOk}];
+    const prReady = prStepsDef.slice(0,3).every(x=>x.ok);
+    const prFirstTodo = prStepsDef.find(x=>x.req&&!x.ok);
+    const prStepOpen = (()=>{ const w=st.prStep; if (w===0) return 0; if (w&&prStepsDef[w-1]&&prStepsDef[w-1].unl) return w; return prFirstTodo?prFirstTodo.n:4; })();
+    const prTried = st.prTried||{};
+    const prValide = prReady && !st.prBusy;
     const prSave = async () => {
       if (!prValide) return;
       set({prBusy:true, prMsg:null});
       try {
-        const brief = { id:pr.id, titre:pr.titre.trim()||prTitreAuto, client:pr.client.trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
+        const brief = { id:pr.id, titre:pr.titre.trim(), client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
           comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
@@ -5372,28 +5508,30 @@ class Component extends DCLogic {
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
       periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
-      pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'' });
+      pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', reco:(b.modules||[]).slice(), tplNom:'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
       meta:prLabelPeriode(b.periode)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
       qui:String(b.auteur||'').split('@')[0]+' · '+prFmtDate(b.updatedAt), statut:b.statut==='generee'?'Générée':b.statut==='demandee'?'Génération en cours':b.statut==='echec'?'Échec':'Brouillon',
       pret:b.statut==='generee'&&!!b.fichier, dl:()=>prTelecharge(b.id),
-      open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null}),
-      dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)'}), prTab:'nouveau', prMsg:{ok:true,text:'Copie du brief « '+b.titre+' » : modifie puis enregistre.'}}),
+      open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null, prStep:undefined, prUnlock:false, prConfirm:false, prTried:{}}),
+      dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)',tplId:'copie',tplNom:'Copie de « '+b.titre+' »'}), prTab:'nouveau', prStep:undefined, prUnlock:false, prConfirm:false, prTried:{}, prMsg:{ok:true,text:'Copie de « '+b.titre+' » : modifie ce qu\'il faut, puis génère ou enregistre.'}}),
       delLabel:st.prDel===b.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDel===b.id?'#c24a44':'#9a9fa6')+';'+(st.prDel===b.id?'font-weight:600':''),
       canDel:b.auteur===((this._pr&&this._pr.moi)||''),
       del:async()=>{ if (st.prDel!==b.id) { set({prDel:b.id}); return; } try { await prApi({action:'delete',id:b.id}); this._pr=Object.assign({},this._pr,{list:this._pr.list.filter(x=>x.id!==b.id)}); this.setState({prDel:null, prMsg:null, pr:(pr.id===b.id?Object.assign({},pr,{id:null}):pr)}); } catch(e) { this.setState({prDel:null, prMsg:{ok:false,text:e.message}}); } } }));
-    const prTabs = [['nouveau','Nouveau brief'],['briefs','Briefs enregistrés'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },
+    const prTabs = [['nouveau','Nouveau brief'],['briefs','Mes présentations'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(prTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
     const prMsg = st.prMsg||null;
     const prInput = 'font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%';
 
     // ---- modèles : configuration réutilisable (sans période, points ouverts ni prochaines étapes)
     const PR_TPL_BASE = [
-      {id:'base-trim',base:true,nom:'Reporting trimestriel — pays',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources et CTA, points ouverts, prochaines étapes',
-        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','cta','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
+      {id:'base-trim',base:true,nom:'Reporting trimestriel — pays',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources, analyse et recommandation, points ouverts, prochaines étapes',
+        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-mois',base:true,nom:'Reporting mensuel — pays',description:'Modèle du reporting mensuel : vue globale par groupes de marques (hors Spoticar), projets d\'achat, trafic / CVR / part du site marque, leads et sources par marque, analyse et recommandation sur chaque diapositive, points ouverts, prochaines étapes, blocs NPS et UTM',
         config:{client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','analyse','points_ouverts','prochaines_etapes','nps','utm'],contact:{},commentaire:''}},
+      {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Une base minimale (vue globale, trafic par marque, analyse) à enrichir selon le besoin',
+        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','trafic_marque','analyse'],contact:{},commentaire:''}},
       {id:'base-annee',base:true,nom:'Bilan annuel',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
         config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}}
     ];
@@ -5401,18 +5539,18 @@ class Component extends DCLogic {
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
       set({ prTab:'nouveau', pr:Object.assign({}, prDef, { id:null, titre:'', client:c.client||prDef.client, langue:c.langue||'fr', pays:(c.perimetre&&c.perimetre.pays)||prDef.pays, marques:(c.perimetre&&c.perimetre.marques)||[],
         periode:prDernierePeriode(c.periodicite||'trimestre'), precedente:!!(c.comparaisons&&c.comparaisons.precedente), n1:!!(c.comparaisons&&c.comparaisons.n1), modules:(c.modules||[]).filter(m=>dispo.includes(m)),
-        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], tplId:t.id }),
-        prMsg:{ok:true,text:'Modèle « '+t.nom+' » appliqué sur la dernière période complète. Ajuste puis enregistre le brief.'} }); };
+        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
+        prStep:2, prUnlock:false, prConfirm:false, prTried:{}, prMsg:null }); };
     const prTplChips = prTplAll.map(t=>({ label:t.nom, pick:()=>prApplyTpl(t), style:prChip(pr.tplId===t.id) }));
     const prTplNom = st.prTplNom||'';
     const prTplSave = async () => {
-      if (prTplNom.trim().length<3 || !pr.client.trim() || !pr.pays.length || !pr.modules.length) { set({prMsg:{ok:false,text:'Pour enregistrer un modèle : un nom (3 caractères minimum), un client, un pays et un module.'}}); return; }
+      if (prTplNom.trim().length<3 || !pr.pays.length || !pr.modules.length) { set({prMsg:{ok:false,text:'Pour enregistrer un modèle : un nom (3 caractères minimum), au moins un pays et un module.'}}); return; }
       set({prBusy:true, prMsg:null});
       try {
-        const j = await prApi({action:'save_template', template:{ nom:prTplNom.trim(), description:'', config:{ client:pr.client.trim(), langue:pr.langue, periodicite:per.type, perimetre:{pays:pr.pays,marques:pr.marques},
+        const j = await prApi({action:'save_template', template:{ nom:prTplNom.trim(), description:'', config:{ client:(pr.client||'Stellantis').trim(), langue:pr.langue, periodicite:per.type, perimetre:{pays:pr.pays,marques:pr.marques},
           comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire } }});
         const l=(this._pr&&this._pr.templates)||[]; this._pr=Object.assign({},this._pr,{templates:[j.template].concat(l.filter(x=>x.id!==j.template.id))});
-        this.setState({prBusy:false, prTplNom:'', prMsg:{ok:true,text:'Modèle « '+j.template.nom+' » enregistré : retrouve-le dans l\'onglet Modèles.'}});
+        this.setState({prBusy:false, prTplNom:'', prTplForm:false, prMsg:{ok:true,text:'Modèle « '+j.template.nom+' » créé : tu le retrouveras à l\'étape « Choisir un modèle » des prochaines présentations.'}});
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prTplRows = prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1];
@@ -5420,6 +5558,82 @@ class Component extends DCLogic {
         use:()=>prApplyTpl(t), canDel:!t.base&&t.auteur===((this._pr&&this._pr.moi)||''),
         delLabel:st.prDelTpl===t.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDelTpl===t.id?'#c24a44':'#9a9fa6')+';'+(st.prDelTpl===t.id?'font-weight:600':''),
         del:async()=>{ if (st.prDelTpl!==t.id) { set({prDelTpl:t.id}); return; } try { await prApi({action:'delete_template',id:t.id}); this._pr=Object.assign({},this._pr,{templates:this._pr.templates.filter(x=>x.id!==t.id)}); this.setState({prDelTpl:null,prMsg:null}); } catch(e) { this.setState({prDelTpl:null,prMsg:{ok:false,text:e.message}}); } } }; });
+    // ---- interface du parcours (étapes déverrouillées une à une, contenu protégé, panneau de génération à une seule action principale)
+    const LANGUES_NOM={fr:'Français',en:'English',it:'Italiano',es:'Español',de:'Deutsch'};
+    const prStepSummary=n=>{ switch(n){
+      case 1: return pr.tplNom||(pr.id?'Brief existant':'');
+      case 2: return [pr.titre.trim()?'« '+pr.titre.trim()+' »':'', LANGUES_NOM[pr.langue]||'', prPerimetreLabel+' · '+prPeriodeLabel].filter(Boolean).join(' · ');
+      case 3: return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
+      case 4: return pr.pointsOuverts.length?pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':'')+' à traiter':'Aucun point ouvert';
+      case 5: return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
+      default: return pr.contact.nom||pr.contact.email||'Non renseigné'; } };
+    const PR_STAT_UI={locked:['Verrouillée','#9a9fa6','#f2f2f5'],todo:['À compléter','#a15c07','#fdf3e3'],open:['En cours','#5b43d6','#f1eefe'],done:['Terminée','#1f7a4d','#e8f6ee'],opt:['Facultatif','#6d727a','#f2f2f5']};
+    const prStepUi={};
+    prStepsDef.forEach(d=>{ const open=prStepOpen===d.n&&d.unl; const k=!d.unl?'locked':open?'open':d.ok?'done':(d.req?'todo':'opt'); const stt=PR_STAT_UI[k];
+      const next=prStepsDef.find(x=>x.n>d.n&&x.unl);
+      prStepUi['stp'+d.n]={ head:`display:flex;align-items:center;gap:12px;cursor:${d.unl?'pointer':'not-allowed'};user-select:none;${d.unl?'':'opacity:.55'}`,
+        circle:`flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;transition:background-color .3s ease,color .3s ease;${d.ok&&d.unl?'background:#3fae7a;color:#fff':open?'background:#7c63ee;color:#fff':'background:#f2f2f5;color:#8a8f98'}`,
+        num:d.ok&&d.unl?'✓':!d.unl?'🔒':String(d.n), sum:(!d.unl?'Termine l\'étape précédente pour la débloquer':(open&&!d.ok?'':prStepSummary(d.n))), showSum:!!(!d.unl||(!open&&(d.ok||!d.req))||(open&&d.ok)),
+        stat:stt[0], statStyle:`flex:none;font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 10px;color:${stt[1]};background:${stt[2]}`,
+        wrap:`display:grid;grid-template-rows:${open?'1fr':'0fr'};transition:grid-template-rows .38s cubic-bezier(.22,.9,.3,1),visibility 0s linear ${open?'0s':'.38s'};visibility:${open?'visible':'hidden'}`,
+        cardStyle:`background:#fff;border:1px solid ${open?'#cfc6fa':'#efeff1'};border-radius:16px;padding:16px 20px;transition:border-color .3s ease,box-shadow .3s ease;${open?'box-shadow:0 8px 24px rgba(124,99,238,.08)':''}`,
+        toggle:()=>{ if (d.unl) set({prStep:open?0:d.n}); },
+        err:!!(prTried[d.n]&&d.req&&!d.ok),
+        next:()=>{ if (d.req&&!d.ok) { set({prTried:Object.assign({},prTried,{[d.n]:true})}); return; } set({prStep:next?next.n:0}); },
+        nextLabel:d.n===6?'Terminer':(d.req?'Continuer':(d.ok?'Continuer':'Passer cette étape')),
+        nextStyle:`display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;${!prReady&&d.req?'background:#121214;color:#fff':'background:#fff;color:#4b4b4f;border:1px solid #e1e1e6'}` }; });
+    const prStepUiFlat={}; Object.keys(prStepUi).forEach(k=>{ Object.keys(prStepUi[k]).forEach(f=>{ prStepUiFlat[k+'_'+f]=prStepUi[k][f]; }); });
+    // étape 1 : cartes de modèles
+    const prTplCards=prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1]; const sel=pr.tplId===t.id;
+      return { nom:t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
+        pick:()=>prApplyTpl(t), style:`position:relative;cursor:pointer;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:5px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
+        check:sel }; });
+    // étape 2 : erreurs de champ
+    const prErrTitre=prTried[2]&&!prTitreOk?"Donne un titre d'au moins 3 caractères : il apparaît sur la couverture.":'';
+    const prErrPays=prTried[2]&&!prPaysOk?'Choisis au moins un pays.':'';
+    const prInputStyle='font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;border:1px solid '+(prErrTitre?'#e8544a':'#ececee')+';border-radius:12px;padding:10px 13px;outline:none;box-sizing:border-box;width:100%;transition:border-color .3s ease';
+    const prSuggest=()=>prSet({titre:prTitreAuto});
+    // étape 3 : contenu verrouillé par défaut
+    const prUnlocked=!!st.prUnlock, prConfirm=!!st.prConfirm;
+    const recoIds=((pr.reco&&pr.reco.length)?pr.reco:prDef.modules).filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
+    const prDiffReco=JSON.stringify(recoIds.slice().sort())!==JSON.stringify(prValidMods.slice().sort());
+    const prModLocked=prValidMods.map(id=>PR_MODULES.find(m=>m.id===id)).map(m=>({titre:m.titre,desc:m.desc,slides:prSlidesOf(m)+' diapo'+(prSlidesOf(m)>1?'s':'')}));
+    const prContentTag=prDiffReco?'Contenu personnalisé':'Contenu recommandé';
+    const prContentTagStyle=`font-size:11.5px;font-weight:600;border-radius:999px;padding:3px 10px;${prDiffReco?'color:#a15c07;background:#fdf3e3':'color:#1f7a4d;background:#e8f6ee'}`;
+    const prAskUnlock=()=>set({prConfirm:true});
+    const prCancelUnlock=()=>set({prConfirm:false});
+    const prDoUnlock=()=>set({prUnlock:true,prConfirm:false});
+    const prBackReco=()=>{ prSet({modules:recoIds}); set({prUnlock:false,prConfirm:false}); };
+    // étapes 4 et 5 : exemples cliquables
+    const PT_EX=['Validation d\'un planning de déploiement','Confirmation du périmètre des marques concernées','Arbitrage sur une évolution fonctionnelle','Décision attendue concernant une anomalie identifiée'];
+    const ET_EX=['Finaliser les validations fonctionnelles avant le 15 octobre','Organiser une réunion de cadrage avec les équipes techniques','Confirmer la date de mise en production','Partager le reporting de performance avec le client'];
+    const prPtEx=PT_EX.filter(x=>!pr.pointsOuverts.some(p=>p.titre===x)).map(x=>({label:x,add:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:x,texte:''}])}); }}));
+    const prEtEx=ET_EX.filter(x=>!pr.prochainesEtapes.some(p=>p.item===x)).map(x=>({label:x,add:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:x,responsable:'',statut:'a_faire',echeance:''}])}); }}));
+    const exStyle='font-size:12.5px;color:#5b43d6;background:#f7f5ff;border:1px dashed #cfc6fa;border-radius:999px;padding:5px 12px;cursor:pointer;transition:background-color .25s ease';
+    // étape 6 : commentaire libre replié
+    const prShowComment=!!(st.prShowComment||pr.commentaire);
+    // panneau « plan » : une seule action principale
+    const prMissing=[!prTplOk?'choisir un modèle':'',prTplOk&&!prTitreOk?'donner un titre (étape 2)':'',prTplOk&&!prPaysOk?'choisir un pays (étape 2)':'',prTplOk&&prS2ok&&!prModsOk?'garder au moins un module (étape 3)':''].filter(Boolean);
+    const prDoneReq=prTplOk?(prS2ok?(prModsOk?3:2):1):0;      // progression séquentielle : une étape ne compte que si les précédentes sont terminées
+    const prGenPretOk=!!(prCur&&prCur.statut==='generee'&&prCur.fichier);
+    const prPrimaryStyle=ok=>`display:flex;align-items:center;justify-content:center;height:46px;border-radius:12px;font-size:15px;font-weight:600;transition:background .5s cubic-bezier(.22,.9,.3,1),color .3s ease;${ok?'cursor:pointer':'cursor:not-allowed'};`;
+    const prCtaGenStyle=prEnCours?prPrimaryStyle(false)+`background:linear-gradient(90deg,#b9aef7 ${prPct}%,#efecfd ${prPct}%);color:#2d2470;cursor:progress`:(prReady?(prGenPretOk?prPrimaryStyle(true)+'background:#fff;color:#4b4b4f;border:1px solid #e1e1e6':prPrimaryStyle(true)+'background:#7c63ee;color:#fff'):prPrimaryStyle(false)+'background:#eaeaee;color:#9a9fa6');
+    const prCtaGenLabel=prEnCours?'Génération en cours… '+prPct+' %':(prGenPretOk?'Régénérer avec les modifications':'Générer le PowerPoint');
+    const prCtaDlStyle=prPrimaryStyle(true)+'background:#3fae7a;color:#fff';
+    const prDraft=()=>{ if (!prReady) { set({prTried:{1:true,2:true,3:true},prStep:prFirstTodo?prFirstTodo.n:prStepOpen}); return; } prSave(); };
+    const prPlanDetail=!!st.prPlanDetail;
+    const prUi=Object.assign({
+      prStepOpenN:prStepOpen, prTplCards, prErrTitre, prErrTitreOn:!!prErrTitre, prErrPays, prErrPaysOn:!!prErrPays, prInputStyle, prSuggest, prTitreAutoTxt:prTitreAuto, prTitreVide:!pr.titre.trim(),
+      prUnlocked, prLocked:!prUnlocked, prConfirm, prModLocked, prContentTag, prContentTagStyle, prAskUnlock, prCancelUnlock, prDoUnlock, prBackReco, prDiffReco, prCanUnlockAsk:!prUnlocked&&!prConfirm,
+      prPtEx, prEtEx, prHasPtEx:prPtEx.length>0, prHasEtEx:prEtEx.length>0, exStyle, prShowComment, prShowCommentFn:()=>set({prShowComment:true}), prNoComment:!prShowComment,
+      prMissingTxt:prMissing.length?'Il reste à : '+prMissing.join(', ')+'.':'', prHasMissing:prMissing.length>0, prProgress:prDoneReq+' / 3 étapes obligatoires', prProgressBar:`height:100%;border-radius:3px;background:${prReady?'#3fae7a':'#b6a5f8'};width:${(prDoneReq/3*100).toFixed(0)}%;transition:width .5s cubic-bezier(.22,.9,.3,1),background-color .4s ease`,
+      prCtaGenFn:prReady&&!prEnCours?prGenere:()=>{ if (!prReady) set({prTried:{1:true,2:true,3:true},prStep:prFirstTodo?prFirstTodo.n:prStepOpen}); }, prCtaGenStyle, prCtaGenLabel,
+      prCtaDlOn:prGenPretOk, prCtaDlStyle, prCtaDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
+      prDraftFn:prDraft, prDraftLabel:st.prBusy?'Enregistrement…':(pr.id?'Mettre à jour le brouillon':'Enregistrer le brouillon'),
+      prTplFormOpen:!!st.prTplForm, prTplFormToggle:()=>set({prTplForm:!st.prTplForm}), prTplFormLabel:st.prTplForm?'Annuler':'Enregistrer comme modèle',
+      prPlanDetail, prPlanDetailToggle:()=>set({prPlanDetail:!prPlanDetail}), prPlanDetailLabel:prPlanDetail?'Masquer le détail des diapositives':'Voir le détail des diapositives',
+      prSumTpl:pr.tplNom||(pr.id?'Brief existant':'—'), prSumLangue:LANGUES_NOM[pr.langue]||'—', prSumTitre:pr.titre.trim()||'Titre à renseigner', prSumTitreEmpty:!pr.titre.trim(),
+    }, prStepUiFlat);
     const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const channelsCtl=modalCtl('channelsModal'), channelsStyles=modalStyles(channelsCtl,'width:700px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
@@ -5509,6 +5723,7 @@ class Component extends DCLogic {
       prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prEnCours?'background:linear-gradient(90deg,#b9aef7 '+prPct+'%,#efecfd '+prPct+'%);color:#2d2470;cursor:progress;transition:background .8s linear':prValide?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
       prGenPret:!!(prCur&&prCur.statut==='generee'&&prCur.fichier), prDlFn:()=>prCur&&prTelecharge(prCur.id), prDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
       prGenInfo:prCur&&prCur.statut==='echec'?'La dernière génération a échoué : relance, et préviens-moi si ça se répète.':(prCur&&prCur.avertissements&&prCur.avertissements.length&&prCur.statut==='generee'?prCur.avertissements.join(' · '):''),
+      ...prUi,
       prContenuToggle:()=>set({prContenuOpen:!prContenuOpen}),
       prContenuHead:'display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-bottom:'+(prContenuOpen?14:0)+'px;transition:margin-bottom .38s cubic-bezier(.22,.9,.3,1)',
       prContenuSub:prContenuOpen?'Coche les modules à inclure ; le plan se met à jour à droite':(pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non')).length+' module'+(pr.modules.length>1?'s':'')+' sélectionné'+(pr.modules.length>1?'s':'')+' · '+prPlan.total+' diapositives · cliquer pour modifier'),

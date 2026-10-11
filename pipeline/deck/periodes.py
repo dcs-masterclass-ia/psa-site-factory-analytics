@@ -6,8 +6,19 @@ from datetime import date
 
 MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]
 MOIS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+MOIS_NOMS = {
+    "fr": MOIS_FR, "en": MOIS_EN,
+    "it": ["gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto", "settembre", "ottobre", "novembre", "dicembre"],
+    "es": ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"],
+    "de": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+}
+PREFIXE_TRIM = {"fr": "T", "en": "Q", "it": "T", "es": "T", "de": "Q"}
+PREFIXE_SEM = {"fr": "S", "en": "H", "it": "S", "es": "S", "de": "H"}
 MOIS_COURTS = {"fr": ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."],
-               "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
+               "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+               "it": ["gen", "feb", "mar", "apr", "mag", "giu", "lug", "ago", "set", "ott", "nov", "dic"],
+               "es": ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
+               "de": ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]}
 PAS = {"mois": 1, "trimestre": 3, "semestre": 6, "annee": 12}
 
 
@@ -36,11 +47,11 @@ class Periode:
 
     def etiquette(self, langue="fr"):
         if self.type == "mois":
-            return f"{(MOIS_EN if langue == 'en' else MOIS_FR)[self.indice - 1].capitalize()} {self.annee}"
+            return f"{MOIS_NOMS.get(langue, MOIS_FR)[self.indice - 1].capitalize()} {self.annee}"
         if self.type == "trimestre":
-            return f"Q{self.indice}-{self.annee}" if langue == "en" else f"T{self.indice}-{self.annee}"
+            return f"{PREFIXE_TRIM.get(langue, 'T')}{self.indice}-{self.annee}"
         if self.type == "semestre":
-            return f"H{self.indice}-{self.annee}" if langue == "en" else f"S{self.indice}-{self.annee}"
+            return f"{PREFIXE_SEM.get(langue, 'S')}{self.indice}-{self.annee}"
         return str(self.annee)
 
     def precedente(self):
