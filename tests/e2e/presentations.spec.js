@@ -24,6 +24,8 @@ test("parcours : les étapes se débloquent une à une, erreurs près des champs
   await ouvre(page);
   await expect(page.getByText("Termine l'étape précédente pour la débloquer").first()).toBeVisible();   // Cadrage, Contenu… verrouillés
   await expect(page.getByText("0 / 3 étapes obligatoires")).toBeVisible();
+  await expect(page.getByText("BELUX (Belgique + Luxembourg)")).toHaveCount(0);                    // rien de pré-sélectionné avant d'avoir choisi un modèle
+  await expect(page.getByText(/^\d+ diapositives$/)).toHaveCount(0);
   await expect(page.getByText("Il reste à : choisir un modèle.")).toBeVisible();                   // le CTA principal dit pourquoi il est inactif
   await choisitModele(page);
   await expect(page.getByText("1 / 3 étapes obligatoires")).toBeVisible();
