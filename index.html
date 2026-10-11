@@ -5390,7 +5390,7 @@ class Component extends DCLogic {
 
     // ---- modèles : configuration réutilisable (sans période, points ouverts ni prochaines étapes)
     const PR_TPL_BASE = [
-      {id:'base-trim',base:true,nom:'BELUX — reporting trimestriel',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources et CTA, points ouverts, prochaines étapes',
+      {id:'base-trim',base:true,nom:'Reporting trimestriel — pays',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources et CTA, points ouverts, prochaines étapes',
         config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','cta','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-mois',base:true,nom:'Reporting mensuel — pays',description:'Modèle du reporting mensuel : vue globale par groupes de marques (hors Spoticar), projets d\'achat, trafic / CVR / part du site marque, leads et sources par marque, analyse et recommandation sur chaque diapositive, points ouverts, prochaines étapes, blocs NPS et UTM',
         config:{client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','analyse','points_ouverts','prochaines_etapes','nps','utm'],contact:{},commentaire:''}},
