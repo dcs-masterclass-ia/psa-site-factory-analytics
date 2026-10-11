@@ -2330,13 +2330,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
             <div style="{{ stp1_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
-                <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5">Un modèle pré-remplit la langue, la période, le périmètre et le contenu de la présentation. Tu pourras tout ajuster ensuite.</div>
-                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px">
+                <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5">Survole un modèle pour voir son contenu. Tu pourras tout ajuster ensuite.</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
                   <sc-for list="{{ prTplCards }}" as="c" hint-placeholder-count="4">
-                    <div onClick="{{ c.pick }}" style="{{ c.style }}">
-                      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="font-size:14.5px;font-weight:600;color:#121214">{{ c.nom }}</span><sc-if value="{{ c.check }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:50%;background:#7c63ee;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span></sc-if></div>
-                      <div style="font-size:12.5px;color:#6d727a;line-height:1.5">{{ c.desc }}</div>
-                      <div style="font-size:11.5px;color:#9a9fa6;margin-top:auto;padding-top:4px">{{ c.badge }} · {{ c.meta }}</div>
+                    <div onClick="{{ c.pick }}" style="{{ c.style }}" title="{{ c.tip }}">
+                      <span style="font-size:14.5px;font-weight:600;color:#121214">{{ c.nom }}</span>
+                      <sc-if value="{{ c.check }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:50%;background:#7c63ee;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span></sc-if>
                     </div>
                   </sc-for>
                 </div>
@@ -5586,7 +5585,7 @@ class Component extends DCLogic {
     // étape 1 : cartes de modèles
     const prTplCards=prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1]; const sel=pr.tplId===t.id;
       return { nom:t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
-        pick:()=>prApplyTpl(t), style:`position:relative;cursor:pointer;border-radius:14px;padding:13px 15px;display:flex;flex-direction:column;gap:5px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
+        pick:()=>prApplyTpl(t), tip:(t.description?t.description+' — ':'')+per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), style:`position:relative;cursor:pointer;border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
         check:sel }; });
     // étape 2 : erreurs de champ
     const prErrTitre=prTried[2]&&!prTitreOk?"Donne un titre d'au moins 3 caractères : il apparaît sur la couverture.":'';
