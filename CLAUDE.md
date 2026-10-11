@@ -356,3 +356,14 @@ les objectifs (`api/objectifs.js`, profil complet) comparent le réalisé, l'att
 (`pipeline/alertes.py`, étape de `refresh.yml`, `api/alertes.js`) sont des règles à seuils réglables, sans IA ; Teams seulement si le secret
 `ALERTES_WEBHOOK_URL` existe et que « notifier » est actif. Les dossiers de travail du repo de données (presentations, tickets, events, objectifs,
 alertes) ne sont jamais servis en statique (`scripts/fetch-data.sh`).
+
+## Search Console — « Analyses détaillées » (2026-10-11)
+
+Même principe que GA4 (`SX_THEMES` dans `index.html`, 2 niveaux, carte de hauteur commune `tabMinH`, bandeau « À retenir » `insSx*`) :
+**Visibilité** « Où apparaît-on ? » (Positions · Appareils · Marque / hors marque) · **Requêtes** « Sur quoi est-on trouvé ? » (Top requêtes · Gagnantes & perdantes ·
+Opportunités · Cannibalisation) · **Pages** « Quelles pages performent ? » (Top pages · Pages en déclin · Du clic à l'estimation) · **Technique** (Indexation) ·
+**Comparer** (deux périodes, appel en direct). Les listes Requêtes / Pages / Comparer d'avant sont les vues « Top requêtes », « Top pages » et « Deux périodes ».
+Données : `searchMonth[mois]` reçoit, pour les 6 derniers mois ENTIERS, `devices`, `positions`, `marque`, `gagnants`, `perdants`, `opps`, `cannib`, `pagesDeclin`
+(`pipeline/search_console.py` `analyse_mois`, calculé sur la liste complète des requêtes ; rattrapage de 3 mois par passage et par site). Les instantanés (gagnants,
+opportunités…) portent sur le dernier mois analysé de la période. Indexation : `pipeline/indexation.py` (API URL Inspection, 10 pages par site, workflow
+`indexation.yml` chaque lundi) -> `indexation.json` du repo de données, servi par `api/indexation.js`.
