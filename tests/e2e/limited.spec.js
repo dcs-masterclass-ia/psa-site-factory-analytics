@@ -33,12 +33,12 @@ test.describe("profil limite", () => {
     expect(erreurs, erreurs.join(" | ")).toEqual([]);
   });
 
-  test("masque Tableau, GCP, KamIA et le sous-onglet V2", async ({ page }) => {
+  test("masque Pilotage des leads, KamIA et le sous-onglet V2", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
     for (const t of ["Google Analytics 4", "Search Console", "PageSpeed Insights"]) {
       await expect(page.locator(`div[title="${t}"]`).first()).toBeVisible();
     }
-    for (const t of ["Tableau", "Google Cloud Platform"]) {
+    for (const t of ["Pilotage des leads"]) {
       await expect(page.locator(`div[title="${t}"]`)).toHaveCount(0);
     }
     await expect(page.locator('[data-chrome="chat"]')).toHaveCount(0);

@@ -26,7 +26,7 @@ const NAV_TABS = {
 };
 const NAV_TITLE = {
   "GA4": "Google Analytics 4", "Search Console": "Search Console",
-  "PageSpeed": "PageSpeed Insights", "Tableau": "Tableau",
+  "PageSpeed": "PageSpeed Insights", "Tableau": "Pilotage des leads",
 };
 async function ouvrirOnglet(page, tab) {
   await page.locator(`div[title="${NAV_TITLE[tab]}"]`).first().click();

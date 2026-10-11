@@ -155,7 +155,7 @@ test("Tableau : prévision, année sur année, saisonnalité, ruptures, qualité
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.locator('div[title^="Tableau"]').first().click();
+  await page.locator('div[title="Pilotage des leads"]').first().click();
   for (const t of ["Prévision", "Année sur année", "Saisonnalité", "Ruptures de tendance", "Qualité des leads", "Marques reprises", "Marchés des sites"]) {
     await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
   }
