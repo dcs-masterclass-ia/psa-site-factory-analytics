@@ -64,5 +64,18 @@
     "api/perf-ticket.js": {
       "includeFiles": "data/**"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "psa-site-factory-dashboard.vercel.app"
+        }
+      ],
+      "destination": "https://converge-tradein.vercel.app/:path*",
+      "permanent": true
+    }
+  ]
 }
