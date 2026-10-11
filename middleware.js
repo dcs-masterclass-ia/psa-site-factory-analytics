@@ -78,7 +78,7 @@ function roleFor(email) {
 // Profil "limited" (GA4 / Search Console / PageSpeed) : jamais /data/* en
 // direct (il passe par /api/data, qui retire les leads back-office), et
 // seulement ces routes API.
-const LIMITED_API = ["/api/data", "/api/gsc-compare", "/api/gsc-page-queries", "/api/perf-ticket", "/api/tickets", "/api/events", "/api/alertes"];
+const LIMITED_API = ["/api/data", "/api/gsc-compare", "/api/gsc-page-queries", "/api/perf-ticket", "/api/tickets", "/api/events", "/api/alertes", "/api/indexation"];
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,

@@ -1,0 +1,60 @@
+name: Indexation des pages principales (Search Console)
+
+# Chaque lundi (et à la demande) : inspecte les 10 pages les plus cliquées de chaque site avec l'API URL Inspection et publie
+# data/indexation.json, lu par le dashboard (GSC > Technique > Indexation). Voir pipeline/indexation.py.
+on:
+  schedule:
+    - cron: "40 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      sites:
+        description: "Sites (séparés par des virgules ; vide = tous)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: indexation
+  cancel-in-progress: false
+
+jobs:
+  indexation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then echo "::error::Le secret GA4_SERVICE_ACCOUNT est vide ou absent."; exit 1; fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+      - name: Inspecter les pages
+        env:
+          IN_SITES: ${{ inputs.sites }}
+        run: |
+          ARGS=(--ecrire)
+          if [ -n "$IN_SITES" ]; then
+            ARGS+=(--sites)
+            IFS=',' read -ra SITES <<< "$IN_SITES"
+            for s in "${SITES[@]}"; do s="$(echo "$s" | sed 's/^ *//;s/ *$//')"; ARGS+=("$s"); done
+          fi
+          python -m pipeline.indexation "${ARGS[@]}"

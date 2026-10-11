@@ -326,7 +326,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                 journal.append(f"{mois} : recherche en erreur ({type(e).__name__})")
             # analyses SEO du mois (appareils, positions, marque, gagnants/perdants, opportunités, cannibalisation, pages en déclin) :
             # seulement les 6 derniers mois (poids du JSON), sur la liste complète des requêtes. Ne bloque jamais le reste.
-            if mois in mois_liste[-6:] and mois in d["searchMonth"]:
+            # mois entier seulement : un mois en cours (partiel) comparé à un mois complet fausserait gagnants/perdants et pages en déclin
+            if mois in mois_liste[-6:] and mois in d["searchMonth"] and f_search_effectif == f.replace("-", ""):
                 try:
                     pm = ga4.bornes(f"{(date.fromisoformat(mois + '-01') - timedelta(days=1)).strftime('%Y-%m')}")
                     d["searchMonth"][mois].update(search_console.analyse_mois(

@@ -49,6 +49,7 @@ test("module Pages (Search Console) : leads GA4 rattachés à la page d'atterris
   await page.keyboard.press("Escape");
   await page.mouse.click(5, 5);
   await page.locator('div[title="Search Console"]').first().click();
+  await page.getByText("Pages", { exact: true }).first().click();      // thème « Pages » (vue Top pages par défaut)
 
   await expect(page.getByText("Leads GA4", { exact: true }).first()).toBeVisible();
   // filtre canal : Organique par defaut, pastille active sombre ; "Tous canaux" = totaux
@@ -174,6 +175,7 @@ test("Search Console, Pages : l'URL est un lien vers la vraie page (nouvel ongle
   await page.locator('[data-testid="scope-item"]').filter({ hasText: "CITROEN FR" }).first().click();
   await page.keyboard.press("Escape"); await page.mouse.click(5, 5);
   await page.locator('div[title="Search Console"]').first().click();
+  await page.getByText("Pages", { exact: true }).first().click();      // thème « Pages » (vue Top pages par défaut)
   const lien = page.locator('a[title="Ouvrir la page dans un nouvel onglet"]').first();
   await expect(lien).toBeVisible();
   expect(await lien.getAttribute("href")).toMatch(/^https:\/\/.+/);

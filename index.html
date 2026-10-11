@@ -1091,7 +1091,390 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
 
         <div>
-          <div style="background:linear-gradient(135deg,#f3f6ff,#f7f3ff);border:1px solid #e3e8fb;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:10px;flex-wrap:wrap">
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Analyses détaillées</span>
+            <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:13px;padding:4px;flex-wrap:wrap">
+              <sc-for list="{{ sxThemes }}" as="t" hint-placeholder-count="5"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.name }}</span></sc-for>
+            </div>
+            <span style="font-size:13px;color:#9a9fa6">{{ sxThemeQuestion }}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;margin:0 0 12px 2px;flex-wrap:wrap">
+            <sc-for list="{{ sxViews }}" as="v" hint-placeholder-count="4"><span class="ga-view" onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.name }}</span></sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <sc-if value="{{ isSxPos }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcPos }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Distribution des positions<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des clics et des impressions selon la position moyenne de chaque requête (calcul sur toutes les requêtes du mois, pas seulement le top). Les positions 4-10 sont le gisement le plus rapide : une page de plus dans le top 3 change le volume de clics.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Toutes les requêtes · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxPosHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>{{ sxPosH0 }}</span><span>{{ sxPosH1 }}</span><span style="text-align:right">{{ sxPosH2 }}</span><span style="text-align:right">{{ sxPosH3 }}</span><span style="text-align:right">{{ sxPosH4 }}</span></div>
+              <sc-for list="{{ sxPosRows }}" as="r" hint-placeholder-count="4">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:48px;text-align:right">{{ r.share }}</span></div>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c2 }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c3 }}</span>
+                  <span style="{{ r.c4Style }}">{{ r.c4 }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxPosHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">La distribution des positions arrive avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insSxPos }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxPos }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxDev }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcDev }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Appareils<span class="dc-info" tabindex="0">i<span class="dc-tip">Clics, impressions, CTR et position moyenne de la recherche naturelle selon l'appareil. Mobile et desktop n'ont pas la même position : un écart important pointe un sujet d'ergonomie ou de contenu propre à un appareil.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Search Console · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxDevHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>{{ sxDevH0 }}</span><span>{{ sxDevH1 }}</span><span style="text-align:right">{{ sxDevH2 }}</span><span style="text-align:right">{{ sxDevH3 }}</span><span style="text-align:right">{{ sxDevH4 }}</span></div>
+              <sc-for list="{{ sxDevRows }}" as="r" hint-placeholder-count="4">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:48px;text-align:right">{{ r.share }}</span></div>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c2 }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c3 }}</span>
+                  <span style="{{ r.c4Style }}">{{ r.c4 }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxDevHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Les données par appareil arrivent avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insSxDev }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxDev }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxBrand }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcBrand }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Marque / hors marque<span class="dc-info" tabindex="0">i<span class="dc-tip">Les clics sur des requêtes qui contiennent le nom de la marque (« reprise peugeot ») viennent de gens qui connaissaient déjà la marque ; le hors-marque mesure l'acquisition réelle (« estimation voiture »). Classement sur toutes les requêtes du mois.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">Requêtes contenant le nom de la marque · mois touchés par la période</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxBrandHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>{{ sxBrandH0 }}</span><span>{{ sxBrandH1 }}</span><span style="text-align:right">{{ sxBrandH2 }}</span><span style="text-align:right">{{ sxBrandH3 }}</span><span style="text-align:right">{{ sxBrandH4 }}</span></div>
+              <sc-for list="{{ sxBrandRows }}" as="r" hint-placeholder-count="4">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.6fr) 100px 80px 110px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:48px;text-align:right">{{ r.share }}</span></div>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c2 }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.c3 }}</span>
+                  <span style="{{ r.c4Style }}">{{ r.c4 }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxBrandHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Le classement marque / hors marque arrive avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insSxBrand }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxBrand }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxQueries }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="{{ qChip }}">{{ qIcon }}</span>
+                <div>
+                  <div style="font-size:15px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
+                  <div style="font-size:12.5px;color:#9a9fa6">Top 6 par clics</div>
+                </div>
+              </div>
+              <span onClick="{{ openQueries }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ queryCount }} requêtes</span>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
+              <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
+            </div>
+            <sc-for list="{{ scQueries }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;font-weight:500;color:#121214"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
+              </div>
+            </sc-for>
+            <div style="margin-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px;margin-top:0">
+                  <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120">
+                    <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
+                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
+                    <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
+                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
+                  </span>
+                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · opportunité : {{ queryInsight }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#2b8f62;background:#eaf6ef;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">OPPORTUNITÉ</span>{{ queryInsight }}</span>
+                </div>
+              </div>
+          </div>
+
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxMov }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcMov }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Requêtes gagnantes et perdantes<span class="dc-info" tabindex="0">i<span class="dc-tip">Écart de clics de chaque requête entre le dernier mois analysé de la période et le mois précédent (toutes requêtes du mois). Les requêtes qui montent comme celles qui chutent sont à relier aux changements de contenu, de page ou d'offre.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxMovSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxMovHas }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;min-height:0">
+                <div style="display:flex;flex-direction:column;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:#1f7a4d;margin-bottom:6px">En progression</div>
+                  <sc-for list="{{ sxGain }}" as="r" hint-placeholder-count="6"><div style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) 110px 70px;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #f2f2f4"><span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:13.5px;color:#6d727a;text-align:right">{{ r.avant }} → {{ r.clics }}</span><span style="font-size:14px;font-weight:600;color:#1f7a4d;text-align:right">{{ r.delta }}</span></div></sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;min-width:0">
+                  <div style="font-size:13px;font-weight:600;color:#a33c39;margin-bottom:6px">En recul</div>
+                  <sc-for list="{{ sxLoss }}" as="r" hint-placeholder-count="6"><div style="flex:1;display:grid;grid-template-columns:minmax(0,1fr) 110px 70px;align-items:center;gap:8px;padding:6px 4px;border-top:1px solid #f2f2f4"><span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-size:13.5px;color:#6d727a;text-align:right">{{ r.avant }} → {{ r.clics }}</span><span style="font-size:14px;font-weight:600;color:#a33c39;text-align:right">{{ r.delta }}</span></div></sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !sxMovHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Les requêtes gagnantes et perdantes arrivent avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insSxMov }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxMov }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxOpp }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcOpp }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Opportunités SEO<span class="dc-info" tabindex="0">i<span class="dc-tip">Requêtes classées entre la 4e et la 15e position avec au moins 100 impressions et un CTR inférieur à celui d'une position top 3 (≈ 10 %). Le gain est le nombre de clics supplémentaires par mois si la requête passait en top 3 (impressions × (10 % − CTR actuel)). Estimation indicative, pas une prévision.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxOppSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxOppHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 100px 80px 80px 130px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Requête</span><span style="text-align:right">Impressions</span><span style="text-align:right">Position</span><span style="text-align:right">CTR</span><span style="text-align:right">Gain si top 3</span></div>
+              <sc-for list="{{ sxOppRows }}" as="r" hint-placeholder-count="8">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,2fr) 100px 80px 80px 130px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.title }}">{{ r.name }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.impr }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.ctr }}</span>
+                  <span style="font-size:14.5px;font-weight:600;color:#1f7a4d;text-align:right">{{ r.gain }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxOppHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Les opportunités SEO arrivent avec le prochain rafraîchissement des données.</div>
+            </sc-if>
+            <sc-if value="{{ insSxOpp }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxOpp }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxCan }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcCan }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Cannibalisation<span class="dc-info" tabindex="0">i<span class="dc-tip">Requêtes (au moins 200 impressions) pour lesquelles plusieurs pages du site se partagent les affichages, chacune pesant au moins 5 % des impressions de la requête. Quand deux pages se disputent la même requête, Google hésite et aucune des deux ne monte : une seule page devrait porter chaque requête.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxCanSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxCanHas }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto">
+                <sc-for list="{{ sxCanRows }}" as="r" hint-placeholder-count="8">
+                  <div style="{{ r.style }}"><span style="{{ r.nameStyle }}" title="{{ r.title }}">{{ r.name }}</span><span style="{{ r.aStyle }}">{{ r.a }}</span><span style="{{ r.bStyle }}">{{ r.b }}</span></div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ !sxCanHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Aucune cannibalisation détectée sur cette sélection (ou les données arrivent avec le prochain rafraîchissement).</div>
+            </sc-if>
+            <sc-if value="{{ insSxCan }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxCan }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxPages }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="{{ pChip }}">{{ pIcon }}</span>
+                <div>
+                  <div style="font-size:15px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
+                  <div style="font-size:12.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
+                </div>
+              </div>
+              <span onClick="{{ openPages }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ pageCount }} pages</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:12px;color:#9a9fa6">Leads par canal</span>
+                <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:12px;padding:3px">
+                  <sc-for list="{{ pagesCanaux }}" as="c" hint-placeholder-count="5">
+                    <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span>
+                  </sc-for>
+                </div>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
+                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
+              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
+            </div>
+            <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
+                <span style="display:flex;align-items:center;gap:8px;min-width:0">
+                  <a href="{{ r.href }}" target="_blank" rel="noopener noreferrer" style="{{ r.linkStyle }}font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" style-hover="text-decoration:underline" title="{{ r.linkTitle }}">{{ r.name }}</a>
+                  <span onClick="{{ r.pick }}" title="Voir les requêtes de cette page" style="flex:none;width:22px;height:22px;border-radius:7px;background:#eef3fe;display:inline-flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#dce7fc"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+                </span>
+                <span>{{ r.sparkClicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
+                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
+                <span style="{{ r.bounceStyle }}"><span style="{{ r.bounceDot }}"></span>{{ r.bounce }}</span>
+                <span style="{{ r.leadsStyle }}" title="{{ r.leadsTitle }}">{{ r.leads }}</span>
+                <span style="{{ r.convStyle }}">{{ r.conv }}</span>
+              </div>
+            </sc-for>
+            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA4 et Conv. proviennent de GA4, rapprochés par page. Leads GA4 et Conv. suivent le canal choisi au-dessus et rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
+            <div style="margin-top:14px">
+                <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px;margin-top:0">
+                  <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120">
+                    <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
+                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
+                    <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
+                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
+                  </span>
+                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · lecture : {{ pageInsightText }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#7c63ee;background:#f1eefe;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">LECTURE</span>{{ pageInsightText }}</span>
+                </div>
+              </div>
+          </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxDec }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcDec }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Pages en déclin<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages dont les clics baissent entre le dernier mois analysé de la période et le mois précédent (au moins 10 clics le mois précédent), avec l'évolution de leur position moyenne. Une page qui perd des clics en gardant sa position a un souci de CTR (titre, description) ; qui perd en position, un souci de contenu ou de concurrence.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxDecSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxDecHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 140px 90px 130px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Page</span><span style="text-align:right">Clics</span><span style="text-align:right">Écart</span><span style="text-align:right">Position</span></div>
+              <sc-for list="{{ sxDecRows }}" as="r" hint-placeholder-count="8">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,2fr) 140px 90px 130px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <a href="{{ r.href }}" target="_blank" rel="noopener noreferrer" style="font-size:14px;color:#3b76e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.title }}">{{ r.name }}</a>
+                  <span style="font-size:14px;color:#6d727a;text-align:right">{{ r.avant }} → {{ r.clics }}</span>
+                  <span style="font-size:14px;font-weight:600;color:#a33c39;text-align:right">{{ r.delta }}</span>
+                  <span style="font-size:14px;color:#2f2f33;text-align:right">{{ r.pos }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxDecHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Aucune page en déclin sur cette sélection (ou les données arrivent avec le prochain rafraîchissement).</div>
+            </sc-if>
+            <sc-if value="{{ insSxDec }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxDec }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxConv }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcConv }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Du clic à l'estimation<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour les pages principales : clics Search Console, sessions GA4 qui ont commencé sur la page (canal Organic Search) et estimations déclenchées. Le rapprochement se fait par URL ; « / » est exclu (page d'accueil commune au site parent et à l'outil de reprise).</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxConvSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxConvHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px">
+                <sc-for list="{{ sxConvTiles }}" as="t" hint-placeholder-count="3"><div style="background:#f7f6fe;border-radius:14px;padding:12px 14px"><div style="font-size:12.5px;color:#8a8f98;margin-bottom:2px">{{ t.label }}</div><div style="font-size:21px;font-weight:600;color:#121214">{{ t.value }}</div><div style="font-size:12px;color:#9a9fa6">{{ t.sub }}</div></div></sc-for>
+              </div>
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 110px 90px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Page</span><span style="text-align:right">Clics</span><span style="text-align:right">Sessions</span><span style="text-align:right">Estimations</span><span style="text-align:right">Conversion</span></div>
+              <sc-for list="{{ sxConvRows }}" as="r" hint-placeholder-count="6">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 110px 90px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.title }}">{{ r.name }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.clics }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.sessions }}</span>
+                  <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:44px;text-align:right">{{ r.est }}</span></div>
+                  <span style="font-size:14.5px;font-weight:500;color:#121214;text-align:right">{{ r.conv }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxConvHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">Pas encore de rapprochement GA4 par page sur cette sélection.</div>
+            </sc-if>
+            <sc-if value="{{ insSxConv }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxConv }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxIdx }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcIdx }}</span><div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Indexation des pages principales<span class="dc-info" tabindex="0">i<span class="dc-tip">Contrôle Google (API URL Inspection) des 10 pages les plus cliquées de chaque site, une fois par semaine : la page est-elle indexée, quand a-t-elle été explorée, Google retient-il la même URL canonique que celle déclarée ? Une page principale non indexée disparaît de la recherche.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ sxIdxSub }}</div>
+              </div>
+              </div>
+              <span style="flex:1"></span>
+            </div>
+            <sc-if value="{{ sxIdxHas }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 110px minmax(0,1.3fr) 110px 110px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Page</span><span>Statut</span><span>État de couverture</span><span style="text-align:right">Exploration</span><span style="text-align:center">Canonique</span></div>
+              <sc-for list="{{ sxIdxRows }}" as="r" hint-placeholder-count="8">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 110px minmax(0,1.3fr) 110px 110px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                  <div style="min-width:0"><div style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.url }}">{{ r.name }}</div><div style="font-size:12px;color:#9a9fa6">{{ r.site }}</div></div>
+                  <span style="{{ r.statStyle }}">{{ r.stat }}</span>
+                  <span style="font-size:13.5px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.etat }}</span>
+                  <span style="font-size:13.5px;color:#6d727a;text-align:right">{{ r.crawl }}</span>
+                  <span style="{{ r.canStyle }}">{{ r.can }}</span>
+                </div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ !sxIdxHas }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ sxIdxEmpty }}</div>
+            </sc-if>
+            <sc-if value="{{ insSxIdx }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insSxIdx }}</div></sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSxCompare }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+        <div>
+          <div style="flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
               <span style="{{ cChip }}">{{ cIcon }}</span>
               <div>
@@ -1151,108 +1534,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:15px;align-items:start">
-
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
-              <div style="display:flex;align-items:center;gap:10px;min-width:0">
-                <span style="{{ qChip }}">{{ qIcon }}</span>
-                <div>
-                  <div style="font-size:15px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
-                  <div style="font-size:12.5px;color:#9a9fa6">Top 6 par clics</div>
-                </div>
-              </div>
-              <span onClick="{{ openQueries }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ queryCount }} requêtes</span>
-            </div>
-            <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
-              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
-              </span>
-            </div>
-            <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:8px 4px;font-size:13.5px;color:#9a9fa6">
-              <span>Requête</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Position</span>
-            </div>
-            <sc-for list="{{ scQueries }}" as="r" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,2fr) 72px 100px 72px 84px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
-                <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14.5px;font-weight:500;color:#121214"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
-              </div>
-            </sc-for>
-            <div style="margin-top:14px">
-                <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px;margin-top:0">
-                  <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120">
-                    <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
-                    <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
-                  </span>
-                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · opportunité : {{ queryInsight }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#2b8f62;background:#eaf6ef;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">OPPORTUNITÉ</span>{{ queryInsight }}</span>
-                </div>
-              </div>
           </div>
+          </sc-if>
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;margin-bottom:12px;flex-wrap:wrap">
-              <div style="display:flex;align-items:center;gap:10px;min-width:0">
-                <span style="{{ pChip }}">{{ pIcon }}</span>
-                <div>
-                  <div style="font-size:15px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
-                  <div style="font-size:12.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
-                </div>
-              </div>
-              <span onClick="{{ openPages }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ pageCount }} pages</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
-              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-                <span style="font-size:12px;color:#9a9fa6">Leads par canal</span>
-                <div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:12px;padding:3px">
-                  <sc-for list="{{ pagesCanaux }}" as="c" hint-placeholder-count="5">
-                    <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span>
-                  </sc-for>
-                </div>
-              </div>
-              <span style="display:inline-flex;align-items:center;gap:14px;font-size:12px;color:#8a8f98">
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#2b8f62"></span>Positif</span>
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#e8a33d"></span>Moyen</span>
-                <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:4px;background:#a33c39"></span>Négatif</span>
-              </span>
-            </div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
-              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
-            </div>
-            <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
-                <span style="display:flex;align-items:center;gap:8px;min-width:0">
-                  <a href="{{ r.href }}" target="_blank" rel="noopener noreferrer" style="{{ r.linkStyle }}font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" style-hover="text-decoration:underline" title="{{ r.linkTitle }}">{{ r.name }}</a>
-                  <span onClick="{{ r.pick }}" title="Voir les requêtes de cette page" style="flex:none;width:22px;height:22px;border-radius:7px;background:#eef3fe;display:inline-flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#dce7fc"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
-                </span>
-                <span>{{ r.sparkClicks }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.clicksDot }}"></span>{{ r.clicks }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.imprDot }}"></span>{{ r.impressions }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.ctrDot }}"></span>{{ r.ctr }}</span>
-                <span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;font-size:14px;color:#2f2f33"><span style="{{ r.posDot }}"></span>{{ r.pos }}</span>
-                <span style="{{ r.bounceStyle }}"><span style="{{ r.bounceDot }}"></span>{{ r.bounce }}</span>
-                <span style="{{ r.leadsStyle }}" title="{{ r.leadsTitle }}">{{ r.leads }}</span>
-                <span style="{{ r.convStyle }}">{{ r.conv }}</span>
-              </div>
-            </sc-for>
-            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA4 et Conv. proviennent de GA4, rapprochés par page. Leads GA4 et Conv. suivent le canal choisi au-dessus et rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
-            <div style="margin-top:14px">
-                <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px;margin-top:0">
-                  <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120">
-                    <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
-                    <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
-                  </span>
-                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · lecture : {{ pageInsightText }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#7c63ee;background:#f1eefe;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">LECTURE</span>{{ pageInsightText }}</span>
-                </div>
-              </div>
           </div>
         </div>
 
@@ -2267,8 +2551,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 <script type="text/x-dc" data-dc-script data-props="{}">
 const AGG_MEMO = new WeakMap(), RANK_MEMO = new WeakMap();   // résultats de aggregate()/rankSites() par jeu de données : un clic sans rapport (ex. Présentations) ne les recalcule plus
 class Component extends DCLogic {
-  state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'contrib', hidden:{},
-            scTab:'pages', cmpDim:'pages', apiState:'idle',
+  state = { range:'30j', step:null, sort:'sessions', source:'ga', tab:'contrib', scTab:'pos', hidden:{},
+            cmpDim:'pages', apiState:'idle',
             brand:'Marché entier', brandOpen:false, calOpen:false, from:null, to:null, calViewYm:null,
             cmpCustomStart:null, cmpCustomEnd:null,
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
@@ -2281,6 +2565,12 @@ class Component extends DCLogic {
     try { const r = await fetch('/api/alertes'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status); this._al = Object.assign({ loaded:true }, j); }
     catch (e) { this._al = { loaded:true, err:true, config:null, alertes:[], peutEcrire:false }; }
     this.setState({ alTick:Date.now() });
+  }
+  async indexCharge(force) {
+    if (this._idx && this._idx.loaded && !force) return;
+    try { const r = await fetch('/api/indexation'); const j = await r.json(); if (!r.ok) throw new Error(j && j.error || r.status); this._idx = { loaded:true, genere:j.genere, sites:j.sites||{} }; }
+    catch (e) { this._idx = { loaded:true, err:true, sites:{} }; }
+    this.setState({ idxTick:Date.now() });
   }
   async objCharge(force) {
     if (this.estLimite() || (this._obj && this._obj.loaded && !force)) return;
@@ -2319,6 +2609,7 @@ class Component extends DCLogic {
     this.evCharge();
     setTimeout(()=>this.objCharge(), 1500);
     setTimeout(()=>this.alCharge(), 1200);
+    setTimeout(()=>this.indexCharge(), 1800);
     window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
     this.wireLogin();
     this.boot();
@@ -2606,10 +2897,13 @@ class Component extends DCLogic {
      resolution jour -- un mois est retenu des qu'il chevauche
      [debutIso,finIso], jamais interpole au jour. */
   aggregateSearch(debutIso, finIso) {
-    const out = { clics:0, impressions:0, posSum:0, queries:new Map(), monthly:{} };
+    const out = { clics:0, impressions:0, posSum:0, queries:new Map(), monthly:{},
+      devices:{}, positions:{'1-3':[0,0],'4-10':[0,0],'11-20':[0,0],'21+':[0,0]}, marque:{marque:[0,0],hors:[0,0]}, nbSeo:0,
+      gagnants:new Map(), perdants:new Map(), opps:[], cannib:[], pagesDeclin:[], moisRef:null };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.searchMonth) continue;
+      let lastSeo = null;
       for (const mois of Object.keys(d.searchMonth)) {
         if (mois === 'total') continue;
         // pas de this.finDuMois() ici : aggregateSearch est aussi appelee
@@ -2619,6 +2913,12 @@ class Component extends DCLogic {
         const debutMois = mois+'-01', finMois = new Date(Date.UTC(anMois, moisNum, 0)).toISOString().slice(0,10);
         if (finMois < debutIso || debutMois > finIso) continue;
         const sm = d.searchMonth[mois];
+        if (sm.positions) {       // analyses SEO du mois (pipeline : liste complète des requêtes)
+          out.nbSeo++; if (!lastSeo || mois > lastSeo) lastSeo = mois;
+          for (const [t, v] of Object.entries(sm.positions)) { const c = out.positions[t]; if (c) { c[0]+=v[0]; c[1]+=v[1]; } }
+          for (const k of ['marque','hors']) { out.marque[k][0]+=(sm.marque&&sm.marque[k]?sm.marque[k][0]:0); out.marque[k][1]+=(sm.marque&&sm.marque[k]?sm.marque[k][1]:0); }
+          for (const [dv, v] of Object.entries(sm.devices||{})) { const c = out.devices[dv] || { clics:0, impressions:0, posSum:0 }; c.clics+=v.clics||0; c.impressions+=v.impressions||0; c.posSum+=(v.position||0)*(v.impressions||0); out.devices[dv]=c; }
+        }
         out.clics += sm.clics||0; out.impressions += sm.impressions||0;
         out.posSum += (sm.position||0) * (sm.impressions||0);
         const cur = out.monthly[mois] || { clics:0, impressions:0, posSum:0 };
@@ -2629,6 +2929,18 @@ class Component extends DCLogic {
           qcur.clics += q.clics||0; qcur.impressions += q.impressions||0; qcur.posSum += (q.position||0)*(q.impressions||0);
           out.queries.set(q.requete, qcur);
         }
+      }
+      // instantanés (gagnants, perdants, opportunités, cannibalisation, pages en déclin) : dernier mois analysé de la période, par site
+      if (lastSeo) {
+        const sm = d.searchMonth[lastSeo];
+        if (!out.moisRef || lastSeo > out.moisRef) out.moisRef = lastSeo;
+        for (const [cle, src] of [['gagnants',sm.gagnants],['perdants',sm.perdants]]) for (const q of (src||[])) {
+          const cur = out[cle].get(q.requete) || { name:q.requete, clics:0, avant:0, impressions:0 };
+          cur.clics+=q.clics||0; cur.avant+=q.avant||0; cur.impressions+=q.impressions||0; out[cle].set(q.requete, cur);
+        }
+        (sm.opps||[]).forEach(o=>out.opps.push(Object.assign({site:s},o)));
+        (sm.cannib||[]).forEach(o=>out.cannib.push(Object.assign({site:s},o)));
+        (sm.pagesDeclin||[]).forEach(o=>out.pagesDeclin.push(Object.assign({site:s},o)));
       }
     }
     return out;
@@ -3884,6 +4196,115 @@ class Component extends DCLogic {
     }));
     const allPages = pagesSorted.map(mkPageRow);
     const scPages = allPages.slice(0,6);
+
+    // ---- Search Console : analyses détaillées organisées en 5 questions (visibilité, requêtes, pages, technique, comparaison)
+    const SX_THEMES=[['vis','Visibilité','Où apparaît-on ?',['pos','dev','brand']],
+                     ['req','Requêtes','Sur quoi est-on trouvé ?',['queries','mov','opp','can']],
+                     ['pag','Pages','Quelles pages performent ?',['pages','dec','conv']],
+                     ['tech','Technique','Est-on bien indexé ?',['idx']],
+                     ['cmp','Comparer',"Qu'est-ce qui a changé ?",['compare']]];
+    const SX_LABELS={pos:'Positions',dev:'Appareils',brand:'Marque / hors marque',queries:'Top requêtes',mov:'Gagnantes & perdantes',opp:'Opportunités',can:'Cannibalisation',pages:'Top pages',dec:'Pages en déclin',conv:"Du clic à l'estimation",idx:'Indexation',compare:'Deux périodes'};
+    const SX_COL={pos:'#7c63ee',dev:'#3b76e8',brand:'#d78b35',mov:'#3fae7a',opp:'#d78b35',can:'#e8544a',dec:'#e8544a',conv:'#3fae7a',idx:'#3b76e8'};
+    const sxCur=SX_THEMES.some(t=>t[3].includes(st.scTab))?st.scTab:'pos';
+    const sxTheme=SX_THEMES.find(t=>t[3].includes(sxCur));
+    const sxThemes=SX_THEMES.map(t=>({name:t[1],style:this.tabStyle(t===sxTheme),
+      pick:()=>{ const last=(st.sxLast||{})[t[0]]; set({scTab:(last&&t[3].includes(last))?last:t[3][0],sxLast:Object.assign({},st.sxLast,{[sxTheme[0]]:sxCur})}); }}));
+    const sxViews=sxTheme[3].map(v=>({name:SX_LABELS[v],pick:()=>set({scTab:v}),
+      style:`display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;${v===sxCur?'background:#f1eefe;color:#5b43d6;font-weight:600':'color:#6d727a'}`}));
+    const sxThemeQuestion=sxTheme[2];
+    const sxChipV=kPuce(SX_COL[sxCur]||'#7c63ee');
+    const sxIc=(c,...ch)=>kIcone(c,...ch);
+    const sxIcPos=sxIc('#7c63ee',h('path',{d:'M4 20V10M10 20V4M16 20v-7M22 20H2'})), sxIcDev=sxIc('#3b76e8',h('rect',{x:7,y:2,width:10,height:20,rx:2}),h('path',{d:'M11 18h2'})),
+      sxIcBrand=sxIc('#d78b35',h('path',{d:'M20 12l-8 8-9-9V3h8z'}),h('circle',{cx:7.5,cy:7.5,r:1.2})), sxIcMov=sxIc('#3fae7a',h('path',{d:'M7 17V7M4 10l3-3 3 3M17 7v10M14 14l3 3 3-3'})),
+      sxIcOpp=sxIc('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:1})), sxIcCan=sxIc('#e8544a',h('path',{d:'M12 3l9 5-9 5-9-5z'}),h('path',{d:'M3 13l9 5 9-5'})),
+      sxIcDec=sxIc('#e8544a',h('path',{d:'M3 7l6 6 4-4 8 8'}),h('path',{d:'M21 11v6h-6'})), sxIcConv=sxIc('#3fae7a',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})),
+      sxIcIdx=sxIc('#3b76e8',h('ellipse',{cx:12,cy:6,rx:8,ry:3}),h('path',{d:'M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6'}));
+    const shr=(a,b)=>b?a/b*100:0;
+    const sxPct=v=>dec(v,0)+' %';
+    // — tableaux de segments : positions / appareils / marque
+    const sxSegStyle=(v,c)=>`font-size:14.5px;font-weight:${c?600:400};text-align:right;color:#121214`;
+    const POS_NOMS={'1-3':'Top 3 (positions 1 à 3)','4-10':'Positions 4 à 10','11-20':'Positions 11 à 20','21+':'Au-delà de la position 20'};
+    const posTotC=Object.values(searchAgg.positions).reduce((x,v)=>x+v[0],0), posTotI=Object.values(searchAgg.positions).reduce((x,v)=>x+v[1],0);
+    const sxPosHas=searchAgg.nbSeo>0&&posTotI>0;
+    const sxPosH0='Tranche de position', sxPosH1='Part des impressions', sxPosH2='Impressions', sxPosH3='Clics', sxPosH4='CTR';
+    const sxPosRows=Object.entries(searchAgg.positions).map(([t,v])=>({name:POS_NOMS[t],share:sxPct(shr(v[1],posTotI)),bar:`width:${Math.max(2,shr(v[1],posTotI)).toFixed(1)}%;height:100%;border-radius:4px;background:${t==='1-3'?'#3fae7a':t==='4-10'?'#b6a5f8':'#d3d5db'}`,c2:this.fmt(v[1]),c3:this.fmt(v[0]),c4:v[1]?dec(shr(v[0],v[1]),2)+' %':'—',c4Style:'font-size:14.5px;font-weight:600;text-align:right;color:#121214'}));
+    let insSxPos='';
+    if (sxPosHas) { const p=searchAgg.positions; insSxPos=`${sxPct(shr(p['4-10'][1],posTotI))} des impressions sont en positions 4-10, le gisement le plus rapide ; le top 3 capte ${sxPct(shr(p['1-3'][0],posTotC))} des clics pour ${sxPct(shr(p['1-3'][1],posTotI))} des impressions.`; }
+    const DEV_NOMS={mobile:'Mobile',desktop:'Desktop',tablet:'Tablette'};
+    const devTotC=Object.values(searchAgg.devices).reduce((x,v)=>x+v.clics,0);
+    const sxDevHas=Object.keys(searchAgg.devices).length>0&&devTotC>0;
+    const sxDevH0='Appareil', sxDevH1='Part des clics', sxDevH2='Impressions', sxDevH3='CTR', sxDevH4='Position';
+    const sxDevRows=Object.entries(searchAgg.devices).sort((x,y)=>y[1].clics-x[1].clics).map(([dv,v])=>({name:DEV_NOMS[dv]||dv,share:sxPct(shr(v.clics,devTotC)),bar:`width:${Math.max(2,shr(v.clics,devTotC)).toFixed(1)}%;height:100%;border-radius:4px;background:#b6a5f8`,c2:this.fmt(v.impressions),c3:v.impressions?dec(shr(v.clics,v.impressions),2)+' %':'—',c4:v.impressions?dec(v.posSum/v.impressions,1):'—',c4Style:'font-size:14.5px;font-weight:600;text-align:right;color:#121214'}));
+    let insSxDev='';
+    { const m=searchAgg.devices.mobile, dk=searchAgg.devices.desktop; if (m&&dk&&m.impressions&&dk.impressions) insSxDev=`Mobile : ${sxPct(shr(m.clics,devTotC))} des clics, position moyenne ${dec(m.posSum/m.impressions,1)} contre ${dec(dk.posSum/dk.impressions,1)} sur desktop.`; }
+    const brM=searchAgg.marque.marque, brH=searchAgg.marque.hors, brTotC=brM[0]+brH[0];
+    const sxBrandHas=searchAgg.nbSeo>0&&brTotC>0;
+    const sxBrandH0='Type de requête', sxBrandH1='Part des clics', sxBrandH2='Impressions', sxBrandH3='CTR', sxBrandH4='Clics';
+    const sxBrandRows=[['Marque (contient le nom de la marque)',brM,'#d78b35'],['Hors marque (acquisition réelle)',brH,'#7c63ee']].map(([n,v,c])=>({name:n,share:sxPct(shr(v[0],brTotC)),bar:`width:${Math.max(2,shr(v[0],brTotC)).toFixed(1)}%;height:100%;border-radius:4px;background:${c}`,c2:this.fmt(v[1]),c3:v[1]?dec(shr(v[0],v[1]),2)+' %':'—',c4:this.fmt(v[0]),c4Style:'font-size:14.5px;font-weight:600;text-align:right;color:#121214'}));
+    let insSxBrand='';
+    if (sxBrandHas) { const part=shr(brH[0],brTotC); let txt=`${sxPct(part)} des clics viennent de requêtes hors marque (acquisition réelle), ${sxPct(100-part)} de requêtes qui contiennent le nom de la marque.`;
+      if (searchCmp&&searchCmp.nbSeo>0){ const cm=searchCmp.marque, ct=cm.marque[0]+cm.hors[0]; if (ct>=100) { const dp=part-shr(cm.hors[0],ct); if (Math.abs(dp)>=2) txt+=` Part hors marque ${dp>0?'+':'−'}${dec(Math.abs(dp),0)} pt vs la comparaison.`; } }
+      insSxBrand=txt; }
+    // — gagnantes / perdantes
+    const MOISF2=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    const sxMoisLabel=m=>m?MOISF2[parseInt(m.slice(5),10)-1]+' '+m.slice(0,4):'';
+    const movList=(map,sgn)=>[...map.values()].map(r=>({r,d:r.clics-r.avant})).filter(x=>sgn*x.d>0).sort((x,y)=>sgn*(y.d-x.d)).slice(0,7);
+    const gains=movList(searchAgg.gagnants,1), pertes=movList(searchAgg.perdants,-1);
+    const sxMovHas=gains.length+pertes.length>0;
+    const mvRow=x=>({name:x.r.name,avant:this.fmt(x.r.avant),clics:this.fmt(x.r.clics),delta:(x.d>0?'+':'−')+this.fmt(Math.abs(x.d))});
+    const sxGain=gains.map(mvRow), sxLoss=pertes.map(mvRow);
+    const sxMovSub=searchAgg.moisRef?`${sxMoisLabel(searchAgg.moisRef)} vs mois précédent · toutes requêtes du mois`:'Dernier mois analysé vs mois précédent';
+    let insSxMov='';
+    if (sxMovHas) insSxMov=(gains[0]?`Plus forte hausse : « ${gains[0].r.name} » (+${this.fmt(gains[0].d)} clics). `:'')+(pertes[0]?`Plus forte baisse : « ${pertes[0].r.name} » (−${this.fmt(Math.abs(pertes[0].d))} clics).`:'');
+    // — opportunités
+    const oppsAll=searchAgg.opps.slice().sort((x,y)=>y.gain-x.gain);
+    const sxOppHas=oppsAll.length>0;
+    const sxOppRows=oppsAll.slice(0,9).map(o=>({name:o.requete,title:o.site+' · '+o.requete,impr:this.fmt(o.impressions),pos:dec(o.position,1),ctr:dec(o.ctr,2)+' %',gain:'+'+this.fmt(o.gain)+' clics'}));
+    const oppTot=oppsAll.slice(0,12).reduce((x,o)=>x+o.gain,0);
+    const sxOppSub=sxOppHas?`${sxMoisLabel(searchAgg.moisRef)} · gain potentiel cumulé ≈ ${this.fmt(Math.round(oppTot/10)*10)} clics par mois si ces requêtes passaient en top 3`:'Requêtes en positions 4 à 15';
+    let insSxOpp='';
+    if (sxOppHas) insSxOpp=`« ${oppsAll[0].requete} » concentre le plus gros gain : ${this.fmt(oppsAll[0].impressions)} impressions en position ${dec(oppsAll[0].position,1)} avec un CTR de ${dec(oppsAll[0].ctr,2)} % — travailler le titre, la description et le contenu de la page qui la porte.`;
+    // — cannibalisation (lignes à plat : une ligne de requête puis ses pages)
+    const canAll=searchAgg.cannib.slice().sort((x,y)=>y.impressions-x.impressions).slice(0,5);
+    const sxCanHas=canAll.length>0;
+    const pathOf=u=>{ try { const x=new URL(u); return x.pathname+(x.search||''); } catch(e){ return u; } };
+    const sxCanRows=[]; canAll.forEach(c=>{
+      sxCanRows.push({style:'display:grid;grid-template-columns:minmax(0,2fr) 190px 150px;align-items:center;gap:11px;padding:9px 8px 3px;border-top:1px solid #f2f2f4',nameStyle:'font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis',name:c.requete,title:c.site+' · '+c.requete,aStyle:'font-size:13px;color:#a33c39;text-align:right;font-weight:600',a:c.pages.length+' pages en concurrence',bStyle:'font-size:13.5px;color:#6d727a;text-align:right',b:this.fmt(c.impressions)+' impr.'});
+      c.pages.forEach(p=>sxCanRows.push({style:'display:grid;grid-template-columns:minmax(0,2fr) 190px 150px;align-items:center;gap:11px;padding:2px 8px 2px 22px',nameStyle:'font-size:13.5px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis',name:pathOf(p.page),title:p.page,aStyle:'font-size:13px;color:#6d727a;text-align:right',a:'position '+dec(p.position,1),bStyle:'font-size:13px;color:#6d727a;text-align:right',b:this.fmt(p.clics)+' clics · '+this.fmt(p.impressions)+' impr.'})); });
+    const sxCanSub=sxCanHas?`${sxMoisLabel(searchAgg.moisRef)} · ${searchAgg.cannib.length} requête${searchAgg.cannib.length>1?'s':''} concernée${searchAgg.cannib.length>1?'s':''}`:'Requêtes servies par plusieurs pages';
+    let insSxCan='';
+    if (sxCanHas) insSxCan=`Pour « ${canAll[0].requete} », ${canAll[0].pages.length} pages se partagent les affichages : choisir la page à faire ranker et renvoyer les autres vers elle (contenu distinct, lien interne, canonique).`;
+    // — pages en déclin
+    const decAll=searchAgg.pagesDeclin.map(p=>({p,d:p.clics-p.avant})).sort((x,y)=>x.d-y.d).slice(0,9);
+    const sxDecHas=decAll.length>0;
+    const sxDecRows=decAll.map(({p,d})=>({name:pathOf(p.page),href:p.page,title:p.site+' · '+p.page,avant:this.fmt(p.avant),clics:this.fmt(p.clics),delta:'−'+this.fmt(Math.abs(d))+' ('+dec(Math.abs(d)/p.avant*100,0)+' %)',pos:(p.positionAvant!=null?dec(p.positionAvant,1):'—')+' → '+(p.position!=null?dec(p.position,1):'—')}));
+    const sxDecSub=sxDecHas?`${sxMoisLabel(searchAgg.moisRef)} vs mois précédent · pages de plus de 10 clics le mois précédent`:'Pages qui perdent des clics';
+    let insSxDec='';
+    if (sxDecHas) { const x=decAll[0]; const dpos=(x.p.position!=null&&x.p.positionAvant!=null)?x.p.position-x.p.positionAvant:null;
+      insSxDec=`${pathOf(x.p.page)} perd ${this.fmt(Math.abs(x.d))} clics`+(dpos!=null?(Math.abs(dpos)<1?` à position quasi constante (${dec(x.p.position,1)}) : regarder le CTR (titre, description).`:dpos>0?` en perdant ${dec(dpos,1)} position${Math.abs(dpos)>=2?'s':''} : regarder le contenu et la concurrence.`:` malgré un gain de position : regarder le CTR.`):'.'); }
+    // — du clic à l'estimation (rapprochement GSC × GA4 par URL, canal choisi dans la liste des pages)
+    const convPages=[...pagesAgg.entries()].filter(([path,v])=>path!=='/'&&(v.landingSessions>0||v.clics>0)).sort((x,y)=>y[1].landingLeads-x[1].landingLeads||y[1].clics-x[1].clics).slice(0,8);
+    const cvSess=[...pagesAgg.entries()].filter(([path])=>path!=='/').reduce((x,[,v])=>x+(v.landingSessions||0),0), cvLeads=[...pagesAgg.entries()].filter(([path])=>path!=='/').reduce((x,[,v])=>x+(v.landingLeads||0),0), cvClics=[...pagesAgg.entries()].filter(([path])=>path!=='/').reduce((x,[,v])=>x+(v.clics||0),0);
+    const sxConvHas=convPages.length>0&&cvSess>0;
+    const cvMax=Math.max(1,...convPages.map(([,v])=>v.landingLeads||0));
+    const sxConvRows=convPages.map(([path,v])=>({name:path,title:v.pageUrl||path,clics:this.fmt(v.clics),sessions:v.landingSessions?this.fmt(v.landingSessions):'—',est:v.landingSessions?this.fmt(v.landingLeads):'—',conv:v.landingSessions>=SEUIL_SESSIONS_FIABLE?dec(v.landingLeads/v.landingSessions*100,2)+' %':'—',bar:`width:${((v.landingLeads||0)/cvMax*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8`}));
+    const sxConvTiles=[{label:'Clics Search Console',value:this.fmt(cvClics),sub:'pages principales, hors accueil'},{label:'Sessions arrivées sur ces pages',value:this.fmt(cvSess),sub:`${dec(shr(cvSess,cvClics),0)} % des clics (canal GA4 filtré)`},{label:'Estimations déclenchées',value:this.fmt(cvLeads),sub:cvSess?`${dec(shr(cvLeads,cvSess),2)} % des sessions`:'—'}];
+    const sxConvSub='Pages principales (hors accueil) · canal GA4 : '+((pagesCanaux.find(c=>/font-weight:600|background:#fff/.test(c.style||''))||{label:'Organic Search'}).label||'Organic Search');
+    let insSxConv='';
+    if (sxConvHas&&convPages[0]) { const [path,v]=convPages[0]; insSxConv=`${path} génère le plus d'estimations (${this.fmt(v.landingLeads||0)})`+(v.landingSessions>=SEUIL_SESSIONS_FIABLE?` avec une conversion de ${dec(v.landingLeads/v.landingSessions*100,2)} %`:'')+` ; au global, ${dec(shr(cvLeads,cvClics),1)} estimation pour 100 clics.`; }
+    // — indexation (API URL Inspection, hebdomadaire)
+    const idxS=this._idx||{loaded:false,sites:{}};
+    const idxSel=(st.sites||[]).filter(n=>idxS.sites&&idxS.sites[n]);
+    const idxPages=idxSel.flatMap(n=>idxS.sites[n].pages.map(p=>Object.assign({site:n},p)));
+    const idxKo=idxPages.filter(p=>p.verdict!=='PASS'||!p.canoniqueOk);
+    const idxRowsAll=[...idxKo,...idxPages.filter(p=>!idxKo.includes(p))].slice(0,10);      // à vérifier d'abord, puis les pages saines
+    const sxIdxHas=idxRowsAll.length>0;
+    const sxIdxEmpty=idxS.err?"L'indexation n'est pas disponible ici (API indisponible en local).":idxS.loaded&&!idxSel.length?"Aucune inspection pour cette sélection : l'analyse hebdomadaire arrive le lundi (ou à la demande depuis GitHub Actions).":'Chargement…';
+    const IDX_ST={PASS:['Indexée','#1f7a4d','#e8f6ee'],NEUTRAL:['Non indexée','#a15c07','#fdf3e3'],FAIL:['Erreur','#a33c39','#fdecec'],ERREUR:['Inspection impossible','#6d727a','#f2f2f5']};
+    const sxIdxRows=idxRowsAll.map(p=>{ const t=IDX_ST[p.verdict]||['À vérifier','#a15c07','#fdf3e3']; return { name:pathOf(p.url),url:p.url,site:p.site,stat:t[0],statStyle:`font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;text-align:center;color:${t[1]};background:${t[2]}`,etat:p.etat||'—',crawl:p.exploration?p.exploration.slice(8,10)+'/'+p.exploration.slice(5,7)+'/'+p.exploration.slice(2,4):'—',can:p.canoniqueOk?'✓':'Différente',canStyle:`font-size:13.5px;font-weight:${p.canoniqueOk?400:600};text-align:center;color:${p.canoniqueOk?'#9a9fa6':'#a33c39'}`}; });
+    const sxIdxSub=idxPages.length?`${idxPages.length} page${idxPages.length>1?'s':''} inspectée${idxPages.length>1?'s':''} sur ${idxSel.length} site${idxSel.length>1?'s':''} · analyse du ${idxS.genere?idxS.genere.slice(8,10)+'/'+idxS.genere.slice(5,7):'—'}${idxKo.length?' · '+idxKo.length+' à vérifier':''}`:'10 pages les plus cliquées de chaque site';
+    let insSxIdx='';
+    if (idxPages.length) insSxIdx=idxKo.length?`${idxKo.length} page${idxKo.length>1?'s':''} principale${idxKo.length>1?'s':''} à vérifier (non indexée, en erreur ou canonique différente) : ouvrir l'URL dans Search Console > Inspection d'URL.`:`Toutes les pages principales inspectées sont indexées.`;
     const pireePage = pagesSorted.map(([path,v])=>({path,v}))
       .filter(x=>x.v.sessions>=SEUIL_SESSIONS_FIABLE)
       .sort((a,b)=>(b.v.rebondSum/b.v.sessions)-(a.v.rebondSum/a.v.sessions))[0];
@@ -5109,6 +5530,10 @@ class Component extends DCLogic {
       countryPerf, countryInsight, projectPerf, projectInsight, noProjectPct, devicePerf, deviceInsight,
       sortVolume:()=>set({brandSort:'vol'}), sortPerf:()=>set({brandSort:'perf'}),
       brandSortVol:this.tabStyle(st.brandSort!=='perf'), brandSortPerf:this.tabStyle(st.brandSort==='perf'),
+      isSxPos:sxCur==='pos', isSxDev:sxCur==='dev', isSxBrand:sxCur==='brand', isSxQueries:sxCur==='queries', isSxMov:sxCur==='mov', isSxOpp:sxCur==='opp', isSxCan:sxCur==='can', isSxPages:sxCur==='pages', isSxDec:sxCur==='dec', isSxConv:sxCur==='conv', isSxIdx:sxCur==='idx', isSxCompare:sxCur==='compare',
+      sxThemes, sxViews, sxThemeQuestion, sxChipV, sxIcPos, sxIcDev, sxIcBrand, sxIcMov, sxIcOpp, sxIcCan, sxIcDec, sxIcConv, sxIcIdx,
+      sxPosHas, sxPosH0, sxPosH1, sxPosH2, sxPosH3, sxPosH4, sxPosRows, insSxPos, sxDevHas, sxDevH0, sxDevH1, sxDevH2, sxDevH3, sxDevH4, sxDevRows, insSxDev, sxBrandHas, sxBrandH0, sxBrandH1, sxBrandH2, sxBrandH3, sxBrandH4, sxBrandRows, insSxBrand,
+      sxMovHas, sxGain, sxLoss, sxMovSub, insSxMov, sxOppHas, sxOppRows, sxOppSub, insSxOpp, sxCanHas, sxCanRows, sxCanSub, insSxCan, sxDecHas, sxDecRows, sxDecSub, insSxDec, sxConvHas, sxConvRows, sxConvTiles, sxConvSub, insSxConv, sxIdxHas, sxIdxRows, sxIdxEmpty, sxIdxSub, insSxIdx,
       scKpis, scChart, scToggles, scTrendRangeLabel, scPosDispo, scPosIndispo, scPages, allPages, pagesCanaux, cChip:kPuce('#7c63ee'), cIcon:kIcone('#7c63ee',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})), qChip:kPuce('#3b76e8'), qIcon:kIcone('#3b76e8',h('circle',{cx:11,cy:11,r:7}),h('path',{d:'M21 21l-4.3-4.3'})), pChip:kPuce('#7c63ee'), pIcon:kIcone('#7c63ee',h('path',{d:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'}),h('path',{d:'M14 3v5h5'})), scQueries, allQueries, pageInsightText, queryInsight,
       pageQueriesOpen, pageQueriesLoading, pageQueriesError, pageQueriesPath, pageQueriesRows, fermerRequetesPage,
       queryCount:allQueries.length, pageCount:allPages.length,
