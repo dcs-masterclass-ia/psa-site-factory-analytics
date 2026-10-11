@@ -1951,13 +1951,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads back-office</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">{{ rangeLabel }} · toutes marques</span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
-              <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px"><span style="{{ tbChip }}">{{ tbIcon }}</span>Leads back-office</div>
+              <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px"><span style="{{ tbChip }}">{{ tbIcon }}</span>Leads</div>
               <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
                 <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ tbLeads }}</span>
                 <span style="{{ tbLeadsDelta.style }}margin-bottom:10px">{{ tbLeadsDelta.text }}</span>
@@ -4714,7 +4714,7 @@ class Component extends DCLogic {
     const tbLeadsV = boLeads;
     const tbLeadsDelta = deltaBadge(boLeads, cmp&&cmp.leads);
     const tbKpis=[
-      {label:'Leads back-office',chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
+      {label:'Leads',chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
       {label:'Part avec immatriculation',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('rect',{x:3,y:7,width:18,height:10,rx:2}),h('path',{d:'M7 11h4M7 14h2'})),info:"Part des leads du back-office saisis avec une plaque d'immatriculation, sur la période. Écart en points avec la période de comparaison.",value:entryPct!=null?dec(entryPct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(entryPct, entryPctCmp))},
       {label:'Part mobile',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('rect',{x:7,y:2,width:10,height:20,rx:2}),h('path',{d:'M11 18h2'})),info:"Part des leads du back-office déposés depuis un mobile, sur la période. Écart en points avec la période de comparaison.",value:mobilePct!=null?dec(mobilePct,1)+' %':'—',...deltaBadgeAsKpi(ptDeltaBadge(mobilePct, mobilePctCmp))}
     ];
@@ -4830,7 +4830,7 @@ class Component extends DCLogic {
       bar:`display:block;width:${(c/(devTotal||1)*100).toFixed(1)}%;height:100%;border-radius:5px;background:${deviceColors[String(name).toLowerCase()]||'#c8c8ce'}`
     }));
     const deviceInsight = deviceRowsSorted.length
-      ? `${deviceLabelFr(deviceRowsSorted[0][0])} représente ${Math.round(deviceRowsSorted[0][1]/(devTotal||1)*100)} % du volume de leads back-office (${this.fmt(deviceRowsSorted[0][1])} leads), le premier appareil du portefeuille sur la période.`
+      ? `${deviceLabelFr(deviceRowsSorted[0][0])} représente ${Math.round(deviceRowsSorted[0][1]/(devTotal||1)*100)} % du volume de leads (${this.fmt(deviceRowsSorted[0][1])} leads), le premier appareil du portefeuille sur la période.`
       : 'Aucune donnée d’appareil disponible sur la période.';
 
     // ---------- Tableau : prévision et analyses avancées (10/10/2026) ----------

@@ -65,7 +65,7 @@ test.describe("profil limite", () => {
 
   test("?source=tb est ignore : on reste sur GA4", async ({ page }) => {
     await page.goto("/?source=tb", { waitUntil: "networkidle" });
-    await expect(page.getByText("Leads back-office")).toHaveCount(0);
+    await expect(page.getByText("Leads", { exact: true })).toHaveCount(0);
     await expect(page.getByText("Taux de conversion").first()).toBeVisible();
   });
 });

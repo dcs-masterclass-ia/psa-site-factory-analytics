@@ -22,7 +22,7 @@ const NAV_TABS = {
   "GA4": "L'essentiel",
   "Search Console": "Clics, impressions & position",
   "PageSpeed": "Site sélectionné",
-  "Tableau": "Leads back-office",
+  "Tableau": "Leads",
 };
 const NAV_TITLE = {
   "GA4": "Google Analytics 4", "Search Console": "Search Console",
