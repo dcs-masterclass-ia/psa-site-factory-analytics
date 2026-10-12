@@ -19,5 +19,10 @@
  "Il reste à : {0}.": "Remaining: {0}.",
  "{0} — {1} · {2} modules": "{0} — {1} · {2} modules",
  "{0} — {1} · {2} module": "{0} — {1} · {2} module",
- "avant : {0}": "previous: {0}"
+ "avant : {0}": "previous: {0}",
+ "Terminés": "Completed",
+ "Aucun ticket terminé pour l'instant.": "No completed ticket yet.",
+ "Aucun ticket en cours.": "No ticket in progress.",
+ "Terminés ({0})": "Completed ({0})",
+ "Suivi ({0})": "Follow-up ({0})"
 }

@@ -1632,7 +1632,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-if>
 
             <sc-if value="{{ tkIsSuivi }}" hint-placeholder-val="{{ false }}">
-              <sc-if value="{{ tkNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:34px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun ticket pour l'instant.</div></sc-if>
+              <sc-if value="{{ tkNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:34px 0;text-align:center;font-size:14px;color:#9a9fa6">{{ tkEmptyText }}</div></sc-if>
               <div style="font-size:13.5px;color:#c24a44;padding:6px 0">{{ tkErr }}</div>
               <sc-for list="{{ tkRows }}" as="r" hint-placeholder-count="3">
                 <div style="border:1px solid #efeff1;border-radius:14px;margin-bottom:10px;overflow:hidden">
@@ -5460,7 +5460,7 @@ class Component extends DCLogic {
     const tkAlertSt = modalStyles(tkAlertCtl,'width:560px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     if (tkNews.length && !st.tkAlertDone && !st.tkAlert && !st.tkModal && this._tkAlertShown!==tkNews.map(x=>x.t.id+x.last).join()) { this._tkAlertShown=tkNews.map(x=>x.t.id+x.last).join(); setTimeout(()=>this.setState({tkAlert:true,tkAlertClosing:false}),600); }
     const tkAlertDismiss = after => { tkMarkSeen(); tkAlertCtl.closeIt(); setTimeout(()=>this.setState({tkTick:Date.now()}),220); if (after) after(); };
-    const tkRows = ((this._tk&&this._tk.list)||[]).map(t=>{
+    const tkRowsAll = ((this._tk&&this._tk.list)||[]).map(t=>{
       const ty=TK_TYPES[t.type]||TK_TYPES.question, sx=TK_STATUTS[t.statut]||TK_STATUTS.nouveau, ouvert=t.id===tkOpenId;
       const c=t.contexte||{};
       return { id:t.id, titre:t.titre, isNew:tkNewIds.has(t.id), open:ouvert, desc:t.description,
@@ -5474,12 +5474,15 @@ class Component extends DCLogic {
           style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 11px;cursor:pointer;'+(t.statut===k?`background:${TK_STATUTS[k][2]};color:${TK_STATUTS[k][1]}`:'background:#f6f6f8;color:#8a8f98') })):[],
         sendComment:()=>{ const x=(st.tkComment||'').trim(); if (x) tkMaj({action:'comment',id:t.id,texte:x}); } };
     });
-
+    // « Suivi » = tickets en cours ; « Terminés » = résolus ou refusés (rien n'est supprimé)
+    const tkEstTermine = id => { const t=((this._tk&&this._tk.list)||[]).find(x=>x.id===id); return !!t&&(t.statut==='resolu'||t.statut==='refuse'); };
+    const tkRowsOuverts = tkRowsAll.filter(r=>!tkEstTermine(r.id)), tkRowsTermines = tkRowsAll.filter(r=>tkEstTermine(r.id));
+    const tkRows = tkTab==='termines' ? tkRowsTermines : tkRowsOuverts;
     const tkTypeOpts = Object.keys(TK_TYPES).map(k=>({ label:TK_TYPES[k][0], pick:()=>set({tkType:k,tkMsg:null}),
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:7px 14px;cursor:pointer;white-space:nowrap;border:1px solid '+(tkType===k?TK_TYPES[k][1]:'#ececee')+';'+(tkType===k?`background:${TK_TYPES[k][2]};color:${TK_TYPES[k][1]}`:'background:#fff;color:#6d727a') }));
     const tkPrioOpts = [['normale','Normale'],['haute','Haute']].map(([k,l])=>({ label:l, pick:()=>set({tkPrio:k}),
       style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;'+(tkPrio===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
-    const tkTabs = [['nouveau','Nouveau ticket'],['suivi','Suivi'+(tkRows.length?' ('+tkRows.length+')':'')]].map(([k,l])=>({ label:l, pick:()=>{ set({tkTab:k,tkMsg:null}); if (k==='suivi') tkCharge(); },
+    const tkTabs = [['nouveau','Nouveau ticket'],['suivi','Suivi'+(tkRowsOuverts.length?' ('+tkRowsOuverts.length+')':'')],['termines','Terminés'+(tkRowsTermines.length?' ('+tkRowsTermines.length+')':'')]].map(([k,l])=>({ label:l, pick:()=>{ set({tkTab:k,tkMsg:null}); if (k!=='nouveau') tkCharge(); },
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(tkTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
     const tkPlaceholder = tkType==='bug' ? "Ex. : le total des leads FR ne correspond pas au BO sur septembre. Dis ce que tu vois, ce que tu attendais, et la page concernée."
       : tkType==='optimisation' ? "Ex. : ajouter un export CSV du tableau Pages, ou un filtre par marque. Dis ce que tu voudrais voir et à quoi ça te servirait."
@@ -5841,9 +5844,9 @@ class Component extends DCLogic {
         style:'min-width:30px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer;'+(((window.i18n&&window.i18n.lang)||'fr')===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') })),
       themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
         style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
-      tkNewCount:tkNews.length, tkAlertOpen:tkAlertCtl.isOpen, tkAlertBackdrop:tkAlertSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:90', tkAlertPanel:tkAlertSt.panel, tkAlertTitle:tkNews.length>1?tkNews.length+' tickets mis à jour':'Ton ticket a été mis à jour', tkAlertRows, tkAlertClose:()=>tkAlertDismiss(), tkAlertView:()=>tkAlertDismiss(()=>{ tkCtl.openIt(); set({tkTab:'suivi'}); tkCharge(); }),
+      tkNewCount:tkNews.length, tkAlertOpen:tkAlertCtl.isOpen, tkAlertBackdrop:tkAlertSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:90', tkAlertPanel:tkAlertSt.panel, tkAlertTitle:tkNews.length>1?tkNews.length+' tickets mis à jour':'Ton ticket a été mis à jour', tkAlertRows, tkAlertClose:()=>tkAlertDismiss(), tkAlertView:()=>{ const onglet=tkNews.some(x=>x.t.statut!=='resolu'&&x.t.statut!=='refuse')?'suivi':'termines'; tkAlertDismiss(()=>{ tkCtl.openIt(); set({tkTab:onglet}); tkCharge(); }); },
       tkModal:tkCtl.isOpen, tkBackdropStyle:tkStyles.backdrop, tkPanelStyle:tkStyles.panel, openTickets:()=>{ tkCtl.openIt(); tkCharge(); }, closeTickets:()=>{ tkMarkSeen(); tkCtl.closeIt(); },
-      tkTabs, tkIsNew:tkTab==='nouveau', tkIsSuivi:tkTab==='suivi', tkTypeOpts, tkPrioOpts, tkPlaceholder, tkContexteLabel,
+      tkTabs, tkIsNew:tkTab==='nouveau', tkIsSuivi:tkTab==='suivi'||tkTab==='termines', tkEmptyText:tkTab==='termines'?'Aucun ticket terminé pour l\'instant.':'Aucun ticket en cours.', tkTypeOpts, tkPrioOpts, tkPlaceholder, tkContexteLabel,
       tkTitre, onTkTitre:e=>set({tkTitre:e.target.value.slice(0,120)}), tkDesc, onTkDesc:e=>set({tkDesc:e.target.value.slice(0,3000)}),
       tkDescCount:tkDesc.length+' / 3000', tkSubmit:tkEnvoie, tkSubmitLabel:st.tkBusy?'Envoi…':'Envoyer le ticket',
       tkSubmitStyle:'display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 22px;border-radius:12px;font-size:14.5px;font-weight:600;white-space:nowrap;'+(tkValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),

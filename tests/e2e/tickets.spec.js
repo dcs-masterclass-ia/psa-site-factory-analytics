@@ -82,3 +82,23 @@ test("profil sans droit de gestion : pas de boutons de statut", async ({ page })
   await page.getByText("Mon ticket").click();
   await expect(page.getByText("En cours", { exact: true })).toHaveCount(0);
 });
+
+test("les tickets résolus ou refusés passent dans l'onglet « Terminés », hors du suivi", async ({ page }) => {
+  const base = { type: "bug", priorite: "normale", description: "x", createdAt: Date.now() - 5000, updatedAt: Date.now() - 1000, auteur: "e2e@autobiz.com", contexte: {}, commentaires: [] };
+  simule(page, { peutGerer: false, tickets: [
+    { ...base, id: "T-1", titre: "Ticket en cours", statut: "en_cours" },
+    { ...base, id: "T-2", titre: "Ticket résolu", statut: "resolu" },
+    { ...base, id: "T-3", titre: "Ticket refusé", statut: "refuse" },
+  ] });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByText("Ticket", { exact: true }).first().click();
+  await page.getByText(/^Suivi/).click();
+  await expect(page.getByText("Ticket en cours")).toBeVisible();
+  await expect(page.getByText("Ticket résolu")).toHaveCount(0);
+  await expect(page.getByText(/^Suivi \(1\)$/)).toBeVisible();
+  await page.getByText(/^Terminés/).click();
+  await expect(page.getByText("Ticket résolu")).toBeVisible();
+  await expect(page.getByText("Ticket refusé")).toBeVisible();
+  await expect(page.getByText("Ticket en cours")).toHaveCount(0);
+  await expect(page.getByText(/^Terminés \(2\)$/)).toBeVisible();
+});
