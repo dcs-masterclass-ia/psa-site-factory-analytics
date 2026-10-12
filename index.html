@@ -5421,7 +5421,7 @@ class Component extends DCLogic {
     // stockés côté serveur (api/tickets.js, repo de données privé). Le contexte
     // (onglet, périmètre, période) est joint automatiquement à chaque ticket.
     const tkCtl = modalCtl('tkModal');
-    const tkStyles = modalStyles(tkCtl,'width:700px;max-width:100%;max-height:88vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    const tkStyles = modalStyles(tkCtl,'width:700px;max-width:100%;height:min(760px,88vh);display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const tkData = this._tk || {};
     const tkTab = st.tkTab || 'nouveau';
     const tkType = st.tkType || 'bug', tkPrio = st.tkPrio || 'normale';
