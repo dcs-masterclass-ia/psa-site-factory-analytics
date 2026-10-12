@@ -17,8 +17,17 @@ set -e
 # sinon, constate le 12/08/2026.
 rm -rf data
 REPO="https://x-access-token:${DATA_REPO_TOKEN}@github.com/dcs-masterclass-ia/psa-site-factory-data.git"
-git clone --depth 1 --branch "$VERCEL_GIT_COMMIT_REF" "$REPO" data \
-  || git clone --depth 1 --branch main "$REPO" data
+# Nouvelles tentatives avec attente : GitHub peut refuser temporairement (403 « secondary rate limit ») quand beaucoup de
+# requetes partent en peu de temps (constate le 12/10/2026, deploiement en erreur) ; l'attente laisse la limite retomber.
+for essai in 1 2 3 4; do
+  rm -rf data
+  git clone --depth 1 --branch "$VERCEL_GIT_COMMIT_REF" "$REPO" data \
+    || git clone --depth 1 --branch main "$REPO" data \
+    && break
+  [ "$essai" -eq 4 ] && { echo "Clonage du repo de donnees impossible apres 4 essais" >&2; exit 1; }
+  echo "Clonage refuse (essai $essai) : nouvelle tentative dans $((essai * 30)) s" >&2
+  sleep $((essai * 30))
+done
 
 # Jamais deployes : l'historique profond (data/history, plusieurs dizaines de
 # Mo, lu par Converge directement dans le repo de donnees) et les
