@@ -282,7 +282,6 @@ window.I18N_EN = {
 "Ex. Lancement campagne Search Q3": "E.g. Q3 Search campaign launch",
 "Exemples — clique pour en ajouter un :": "Examples — click to add one:",
 "Exploration": "Crawl",
-"Exporter": "Export",
 "FCP (premier affichage)": "FCP (first display)",
 "Facultatif": "Optional",
 "Fait": "Done",

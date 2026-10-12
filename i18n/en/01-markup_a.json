@@ -16,7 +16,6 @@
  "Début": "Start",
  "Fin": "End",
  "Ticket": "Ticket",
- "Exporter": "Export",
  "L'essentiel": "Key figures",
  "Taux de conversion": "Conversion rate",
  "Estimations ÷ visiteurs de la page d'accueil du funnel, sur les jours exacts choisis (somme des jours). Estimation = utilisateur ayant déclenché la demande de reprise (événement GA4 tradein_request). Même taux dans le funnel, le classement du parc et la courbe Conversion. La variation est un écart en points de pourcentage.": "Valuations ÷ visitors to the funnel home page, over the exact days selected (sum of the days). Valuation = user who triggered the trade-in request (GA4 event tradein_request). Same rate in the funnel, the network ranking and the Conversion curve. The change is a difference in percentage points.",
