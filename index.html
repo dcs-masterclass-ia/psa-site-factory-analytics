@@ -566,7 +566,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </div>
             <sc-if value="{{ contribHas }}" hint-placeholder-val="{{ true }}">
-              <div id="cbContrib" style="flex:1;min-height:240px;position:relative">{{ contribChart }}</div>
+              <div id="cbContrib" data-hov style="flex:1;min-height:240px;position:relative">{{ contribChart }}</div>
             </sc-if>
             <sc-if value="{{ !contribHas }}" hint-placeholder-val="{{ false }}">
               <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ contribEmpty }}</div>
@@ -712,7 +712,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#6d727a;margin-bottom:6px">
                 <sc-for list="{{ histLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px"><span style="{{ l.dot }}"></span>{{ l.name }}</span></sc-for>
               </div>
-              <div id="cbHist" style="flex:1;min-height:220px;position:relative">{{ histChart }}</div>
+              <div id="cbHist" data-hov style="flex:1;min-height:220px;position:relative">{{ histChart }}</div>
             </sc-if>
             <sc-if value="{{ !histHas }}" hint-placeholder-val="{{ false }}">
               <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">L'historique mensuel arrive avec le prochain rafraîchissement des données.</div>
@@ -869,7 +869,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span onClick="{{ t.toggle }}" style="{{ t.style }}">{{ t.name }}</span>
               </sc-for>
             </div>
-            <div id="cbTrend" style="flex:1;min-height:220px;position:relative">{{ multiChart }}</div>
+            <div id="cbTrend" data-hov style="flex:1;min-height:220px;position:relative">{{ multiChart }}</div>
           <sc-if value="{{ insTrend }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insTrend }}</div></sc-if>
           </div>
           </sc-if>
@@ -891,7 +891,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:2px;border-radius:2px;background:#cdbffa"></span>Conversion du jour</span>
                 <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed #b3b7bd"></span>Période précédente</span>
               </div>
-              <div id="cbConv" style="flex:1;min-height:220px;position:relative">{{ convChart }}</div>
+              <div id="cbConv" data-hov style="flex:1;min-height:220px;position:relative">{{ convChart }}</div>
             </sc-if>
             <sc-if value="{{ !convHasData }}" hint-placeholder-val="{{ false }}">
               <div style="padding:34px 0;font-size:14px;color:#9a9fa6;text-align:center">La conversion quotidienne n'est pas encore disponible sur cette période : elle apparaît après le prochain rafraîchissement des données.</div>
@@ -986,7 +986,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:0">Jour de semaine, navigateurs et type de visiteur</div>
             </div></div>
             <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:26px;align-items:stretch">
-              <div id="cbSeason" style="position:relative;min-height:240px">{{ seasonChart }}</div>
+              <div id="cbSeason" data-hov style="position:relative;min-height:240px">{{ seasonChart }}</div>
               <div style="display:flex;flex-direction:column;gap:11px">
                 <sc-for list="{{ browsers }}" as="b" hint-placeholder-count="5">
                   <div>
@@ -2706,6 +2706,29 @@ class Component extends DCLogic {
     catch (e) { this._obj = { loaded:true, annees:{}, err:true }; }
     this.setState({ objTick:Date.now() });
   }
+  /* survol des graphiques : chaque graphique enregistre dans this._hov[id] ses abscisses (unités du viewBox) et une fonction qui donne la bulle d'un point */
+  onHoverMove(e) {
+    const box = e.target && e.target.closest ? e.target.closest('[data-hov]') : null;
+    if (!box) { this.hovHide(); return; }
+    const cfg = (this._hov || {})[box.id]; if (!cfg || !cfg.xs.length) { this.hovHide(); return; }
+    const r = box.getBoundingClientRect(), sc = Math.min(r.width / cfg.W, r.height / cfg.H), offX = (r.width - cfg.W * sc) / 2, offY = (r.height - cfg.H * sc) / 2;
+    const vx = (e.clientX - r.left - offX) / sc;
+    let best = 0, bd = Infinity; cfg.xs.forEach((x, i) => { const d = Math.abs(x - vx); if (d < bd) { bd = d; best = i; } });
+    if (bd > (cfg.xs.length > 1 ? Math.abs(cfg.xs[1] - cfg.xs[0]) * 1.2 : 1e9)) { this.hovHide(); return; }
+    const info = cfg.rows(best); if (!info) { this.hovHide(); return; }
+    let line = document.getElementById('chartHovLine'), tip = document.getElementById('chartHovTip');
+    if (!line) { line = document.createElement('div'); line.id = 'chartHovLine'; line.style.cssText = 'position:fixed;width:0;border-left:1.5px dashed #9b8cf0;pointer-events:none;z-index:9998;opacity:.8'; document.body.appendChild(line); }
+    if (!tip) { tip = document.createElement('div'); tip.id = 'chartHovTip'; tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:#fff;border:1px solid #e6e6ea;border-radius:12px;box-shadow:0 10px 30px rgba(30,20,70,.18);padding:10px 12px;font:12.5px/1.45 Poppins,sans-serif;color:#121214;min-width:150px;max-width:300px'; document.body.appendChild(tip); }
+    const px = r.left + offX + cfg.xs[best] * sc;
+    line.style.left = px + 'px'; line.style.top = (r.top + offY + (cfg.top || 0) * sc) + 'px'; line.style.height = (((cfg.bottom == null ? cfg.H : cfg.bottom) - (cfg.top || 0)) * sc) + 'px'; line.style.display = 'block';
+    const esc = t => String(t).replace(/[&<>]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[c]));
+    tip.innerHTML = '<div style="font-weight:600;margin-bottom:5px">' + esc(info.title) + '</div>' + (info.items || []).map(it => '<div style="display:flex;align-items:center;gap:8px;justify-content:space-between"><span style="display:inline-flex;align-items:center;gap:6px;color:#4b4b4f">' + (it.c ? '<span style="width:8px;height:8px;border-radius:4px;background:' + it.c + ';flex:none"></span>' : '') + esc(it.n) + '</span><span style="font-weight:600">' + esc(it.v) + '</span></div>').join('') + (info.foot ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #f0f0f2;color:#c4842a">' + info.foot.map(esc).join('<br>') + '</div>' : '');
+    tip.style.display = 'block';
+    const tw = tip.offsetWidth, th = tip.offsetHeight; let x = px + 14, y = e.clientY - th / 2;
+    if (x + tw > window.innerWidth - 8) x = px - tw - 14;
+    y = Math.max(8, Math.min(y, window.innerHeight - th - 8)); tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  hovHide() { const l = document.getElementById('chartHovLine'), t = document.getElementById('chartHovTip'); if (l) l.style.display = 'none'; if (t) t.style.display = 'none'; }
   /* calendrier d'événements (api/events.js) : chargé une fois, lecture seule pour le profil limité */
   async evCharge(force) {
     if (this._ev && this._ev.loaded && !force) return;
@@ -2734,6 +2757,8 @@ class Component extends DCLogic {
   }
   componentDidUpdate() { this.measureBoxes(); }
   componentDidMount() {
+    document.addEventListener('mousemove', e => this.onHoverMove(e));
+    document.addEventListener('scroll', () => this.hovHide(), true);
     this.evCharge();
     setTimeout(()=>this.objCharge(), 1500);
     setTimeout(()=>this.alCharge(), 1200);
@@ -3435,6 +3460,8 @@ class Component extends DCLogic {
       name, toggle:()=>set({hidden:Object.assign({},st.hidden,{[name]:!st.hidden[name]})}),
       style:`display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;${st.hidden[name]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:'+CHAN_COLORS[i%CHAN_COLORS.length]+'1a'}`
     }));
+    this._hov = {};
+    const fmtJL=iso=>iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
     const boxH=(k,w,d0)=>Math.max(150,Math.min(520,Math.round(w*(((this._boxes||{})[k])||d0/w))));
     const MW=900,MH=boxH('trend',900,210),ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
     const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }))*1.2;
@@ -3454,6 +3481,8 @@ class Component extends DCLogic {
     });
     const step8=Math.max(1,Math.floor(joursCanal.length/8));
     joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
+    this._hov.cbTrend={W:MW,H:MH,top:MT,bottom:MT+mph,xs:joursCanal.map((_,i)=>mx2(i)),rows:i=>{ const j=joursCanal[i]; const its=majeurs.map((n,ci)=>({n,c:CHAN_COLORS[ci%CHAN_COLORS.length],raw:(agg.canal[j]||{})[n]||0})).filter(x=>!st.hidden[x.n]);
+      const ev=evVisible.filter(e=>e.date===j).map(e=>'◆ '+e.titre); return {title:fmtJL(j),items:its.map(x=>({n:x.n,c:x.c,v:this.fmt(x.raw)})).concat(its.length>1?[{n:'Total affiché',v:this.fmt(its.reduce((a,x)=>a+x.raw,0))}]:[]),foot:ev.length?ev:null}; }};
     mk.push(...evMarks('ev',joursCanal,mx2,MT,MH-MB));
     const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},mk);
 
@@ -3497,6 +3526,10 @@ class Component extends DCLogic {
       convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} visiteurs accueil)`))); });
       const stepX=Math.max(1,Math.floor(dates.length/8));
       dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
+      const cmpV=(cmp&&cmpRange)?(()=>{ const cd=isoRange(cmpRange.debut,cmpRange.fin); return dates.map((_,i)=>{ const c=cmp.convDaily[cd[i]]; return c&&c[0]>0?c[1]/c[0]*100:null; }); })():null;
+      this._hov.cbConv={W:CW,H:CH,top:CT,bottom:CT+cph,xs:dates.map((_,i)=>cx(i)),rows:i=>{ const p=convSerie[i]; const its=[];
+        if (p) its.push({n:'Conversion du jour',c:'#cdbffa',v:dec(p.pct,1)+' %'}); if (ma[i]!=null) its.push({n:'Moyenne 7 jours',c:'#7c63ee',v:dec(ma[i],1)+' %'}); if (cmpV&&cmpV[i]!=null) its.push({n:'Période précédente',c:'#b3b7bd',v:dec(cmpV[i],1)+' %'});
+        if (p) its.push({n:'Estimations / accueil',v:this.fmt(p.est)+' / '+this.fmt(p.home)}); const ev=evVisible.filter(e=>e.date===dates[i]).map(e=>'◆ '+e.titre); return {title:fmtJL(dates[i]),items:its,foot:ev.length?ev:null}; }};
       ck.push(...evMarks('ev',dates,cx,CT,CH-CB));
     }
     const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck);
@@ -3602,6 +3635,7 @@ class Component extends DCLogic {
     let sd=`M${SL+sstep/2},${STp+sph-(lds[0]/maxLds)*sph}`;
     lds.forEach((v,i)=>{if(i)sd+=` L${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`;});
     if (!this.estLimite()) sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
+    this._hov.cbSeason={W:SW,H:SH,top:STp,bottom:STp+sph,xs:sess.map((_,i)=>SL+i*sstep+sstep/2),rows:i=>({title:['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][i],items:[{n:'Sessions / jour (moyenne)',c:'#b6a5f8',v:this.fmt(Math.round(sess[i]))}].concat(this.estLimite()?[]:[{n:'Leads / jour (moyenne)',c:'#3fae7a',v:dec(lds[i],1)}])})};
     const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},sk);
 
     const browserTotal = [...agg.browser.values()].reduce((a,v)=>a+v.sessions,0) || 1;
@@ -3651,6 +3685,9 @@ class Component extends DCLogic {
       });
       bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle','Estimations de la période actuelle : '+this.fmt(Ec));
       if (yMin>0) ck2.push(h('text',{key:'cut',x:CL2,y:12,fontSize:10,fill:'#b3b7bd',fontFamily:F},'Axe tronqué : lire les barres d\'évolution'));
+      const cLab=['Période de comparaison',...FACT_NOMS,'Période actuelle'];
+      this._hov.cbContrib={W:WW,H:WH,top:CT2,bottom:CT2+chei,xs:Array.from({length:8},(_,i)=>CL2+i*slot+slot/2),rows:i=>{ if (i===0) return {title:cLab[0],items:[{n:'Estimations',v:this.fmt(Er)}]}; if (i===7) return {title:cLab[7],items:[{n:'Estimations',v:this.fmt(Ec)}]};
+        const k=i-1, rate=k===0?{n:"Visiteurs de l'accueil",v:this.fmt(cuR[0])+' → '+this.fmt(cuA[0])}:{n:'Passage',v:dec(cuR[k]/cuR[k-1]*100,1)+' % → '+dec(cuA[k]/cuA[k-1]*100,1)+' %'}; return {title:FACT_NOMS[k],items:[rate,{n:'Effet sur les estimations',v:(eff[k]>=0?'+':'−')+this.fmt(Math.abs(Math.round(eff[k])))}]}; }};
       contribChart=h('svg',{viewBox:`0 0 ${WW} ${WH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck2);
       const iMax=eff.reduce((m,e,i)=>Math.abs(e)>Math.abs(eff[m])?i:m,0);
       const evo=Er?Dl/Er*100:null;
@@ -3753,6 +3790,7 @@ class Component extends DCLogic {
         const cur=y===anCourant, col=cur?'#5b43d6':histYearsOk.indexOf(y)===histYearsOk.length-2?'#9a86f2':'#c7c9d0';
         if (pts.length>1) hk.push(h('path',{key:'p'+y,d:pts.map((p,i)=>(i?'L':'M')+p[0]+','+p[1]).join(' '),fill:'none',stroke:col,strokeWidth:cur?3:2,strokeLinecap:'round',strokeLinejoin:'round'}));
         pts.forEach(p=>hk.push(h('circle',{key:'c'+y+p[3],cx:p[0],cy:p[1],r:cur?3.6:2.6,fill:col},h('title',null,`${MOIS3[p[3]]} ${y} : ${histMetric==='conv'?dec(p[2],1)+' %':this.fmt(p[2])}`)))); });
+      this._hov.cbHist={W:HW,H:HH,top:HT,bottom:HT+hhh,xs:Array.from({length:12},(_,i)=>hx(i)),rows:i=>({title:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'][i],items:histYearsOk.map(y=>({n:String(y),c:y===anCourant?'#5b43d6':histYearsOk.indexOf(y)===histYearsOk.length-2?'#9a86f2':'#c7c9d0',v:histVals[y][i]==null?'—':(histMetric==='conv'?dec(histVals[y][i],1)+' %':this.fmt(histVals[y][i]))})).reverse()})};
       histChart=h('svg',{viewBox:`0 0 ${HW} ${HH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},hk);
     }
     let insHist='';
