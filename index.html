@@ -2718,6 +2718,9 @@ class Component extends DCLogic {
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
+  static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','sites','sort','brandSort','hidden',
+    'leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr'];
+
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
   async alCharge(force) {
@@ -2787,7 +2790,17 @@ class Component extends DCLogic {
     }
     if (changed) { this._boxes = next; this.setState({ boxTick: Date.now() }); }
   }
-  componentDidUpdate() { this.measureBoxes(); }
+  componentDidUpdate() { this.measureBoxes(); this.sauveEtat(); }
+  /* Rafraîchir la page garde l'écran, la période, les sites et les réglages choisis : l'état utile est copié dans sessionStorage
+     (propre à l'onglet du navigateur, effacé à sa fermeture) et relu au démarrage. */
+  sauveEtat() {
+    if (!this.state.booted || new URLSearchParams(location.search).get('embed') === '1') return;
+    try {
+      const o = {}; Component.ETAT_PERSISTE.forEach(k => { if (this.state[k] !== undefined) o[k] = this.state[k]; });
+      const j = JSON.stringify(o);
+      if (j !== this._etatSauve) { this._etatSauve = j; sessionStorage.setItem('psf_ui_state', j); }
+    } catch (e) {}
+  }
   componentDidMount() {
     document.addEventListener('mousemove', e => this.onHoverMove(e));
     document.addEventListener('scroll', () => this.hovHide(), true);
@@ -2898,6 +2911,19 @@ class Component extends DCLogic {
         if (['ga','sc','ps','tb','pr'].includes(qp.get('source')) && !(this.estLimite() && ['tb','pr'].includes(qp.get('source'))) && !(qp.get('source')==='pr' && !this.presentationsOuvertes())) initial.source = qp.get('source');
         if (qp.get('from') && qp.get('to')) { initial.from = qp.get('from'); initial.to = qp.get('to'); }
         if (['none','previous','year'].includes(qp.get('cmp'))) initial.cmpMode = qp.get('cmp');
+      }
+      if (qp.get('embed') !== '1') {
+        try {
+          const sv = JSON.parse(sessionStorage.getItem('psf_ui_state') || 'null');
+          if (sv && typeof sv === 'object') {
+            const iso = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+            Component.ETAT_PERSISTE.forEach(k => { if (sv[k] !== undefined) initial[k] = sv[k]; });
+            if (Array.isArray(sv.sites)) { const ok = sv.sites.filter(n => this._allSites.includes(n)); initial.sites = ok.length ? ok : this._allSites.slice(); }
+            ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
+            // un onglet réservé (Pilotage des leads, Présentations) n'est repris que si le profil y a toujours droit
+            if (!['ga','sc','ps','tb','pr'].includes(initial.source) || (this.estLimite() && ['tb','pr'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
+          }
+        } catch (e) {}
       }
       this.setState(initial);
     } catch (e) {
