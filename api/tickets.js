@@ -20,7 +20,7 @@
  *   POST /api/tickets {action:"comment", id, texte}
  *        -> l'auteur du ticket, ou un profil complet
  *   POST /api/tickets {action:"status", id, statut}
- *        -> profil complet seulement
+ *        -> propriétaire seulement (PRESENTATIONS_EMAILS) ; les autres profils complets voient et commentent mais ne changent pas le statut
  *
  * Notification optionnelle : si TICKETS_WEBHOOK_URL (webhook Teams, carte
  * adaptative) est défini, chaque nouveau ticket y est posté (best effort, un
@@ -33,7 +33,7 @@
  */
 
 const crypto = require("crypto");
-const { verifySessionFromRequest } = require("./_lib/auth");
+const { verifySessionFromRequest, presentationsAllowed } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
 const { CATEGORIES, trier, boutons } = require("./_lib/triage");
@@ -126,6 +126,8 @@ module.exports = async function handler(req, res) {
   if (!session || !session.email) { res.status(401).json({ error: "Non authentifie." }); return; }
   const email = String(session.email).toLowerCase();
   const gere = session.role === "full";
+  // changer le statut d'un ticket (résolu, refusé…) : réservé aux adresses de PRESENTATIONS_EMAILS (propriétaire), pas à tous les profils complets
+  const peutStatut = presentationsAllowed(email);
 
   try {
     if (req.method === "GET" && req.query && req.query.capture) {
@@ -148,7 +150,7 @@ module.exports = async function handler(req, res) {
       const tous = (data && Array.isArray(data.tickets)) ? data.tickets : [];
       const visibles = gere ? tous : tous.filter(t => t.auteur === email);
       res.setHeader("cache-control", "no-store");
-      res.status(200).json({ tickets: visibles.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), peutGerer: gere, moi: email });
+      res.status(200).json({ tickets: visibles.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), peutGerer: gere, peutStatut, moi: email });
       return;
     }
 
@@ -193,7 +195,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (action === "status") {
-      if (!gere) { res.status(403).json({ error: "Acces non autorise pour ce profil." }); return; }
+      if (!peutStatut) { res.status(403).json({ error: "Seul le propriétaire du dashboard peut changer le statut d'un ticket." }); return; }
       if (!STATUTS.includes(body.statut)) { res.status(400).json({ error: "Statut invalide." }); return; }
       if (ticket.statut !== body.statut) {
         (ticket.commentaires = ticket.commentaires || []).push({ auteur: email, texte: `Statut : ${ticket.statut} → ${body.statut}`, at: now, systeme: true });

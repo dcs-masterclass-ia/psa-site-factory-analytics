@@ -7,11 +7,11 @@ test.beforeEach(async ({ context }) => {
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
 });
 
-function simule(page, { peutGerer = true, tickets = [] } = {}) {
+function simule(page, { peutGerer = true, peutStatut = peutGerer, tickets = [] } = {}) {
   const posts = [];
   page.route("**/api/tickets", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { tickets, peutGerer, moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { tickets, peutGerer, peutStatut, moi: "e2e@autobiz.com" } });
     const body = req.postDataJSON();
     posts.push(body);
     if (body.action === "create")

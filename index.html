@@ -1639,7 +1639,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <div style="padding:2px 14px 14px;border-top:1px solid #f4f4f6">
                     <div style="font-size:14px;line-height:1.6;color:#2f2f33;white-space:pre-wrap;margin-top:12px">{{ r.desc }}</div>
                     <div style="font-size:12px;color:#9a9fa6;margin-top:8px">Contexte : {{ r.ctx }}</div>
-                    <sc-if value="{{ tkPeutGerer }}" hint-placeholder-val="{{ false }}">
+                    <sc-if value="{{ tkPeutStatut }}" hint-placeholder-val="{{ false }}">
                     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><span style="font-size:12.5px;color:#9a9fa6;margin-right:4px">Statut</span><sc-for list="{{ r.statusBtns }}" as="b" hint-placeholder-count="4"><span onClick="{{ b.pick }}" style="{{ b.style }}">{{ b.label }}</span></sc-for></div>
                     </sc-if>
                     <sc-if value="{{ r.hasComments }}" hint-placeholder-val="{{ false }}">
@@ -2789,7 +2789,7 @@ class Component extends DCLogic {
     document.addEventListener('scroll', () => this.hovHide(), true);
     this.evCharge();
     setTimeout(()=>this.objCharge(), 1500);
-    const tkSync=()=>fetch('/api/tickets').then(r=>r.ok?r.json():null).then(j=>{ if (j) { this._tk=Object.assign({}, this._tk, { list:j.tickets||[], peutGerer:!!j.peutGerer, moi:j.moi }); this.setState({ tkTick:Date.now() }); } }).catch(()=>{});
+    const tkSync=()=>fetch('/api/tickets').then(r=>r.ok?r.json():null).then(j=>{ if (j) { this._tk=Object.assign({}, this._tk, { list:j.tickets||[], peutGerer:!!j.peutGerer, peutStatut:!!j.peutStatut, moi:j.moi }); this.setState({ tkTick:Date.now() }); } }).catch(()=>{});
     setTimeout(tkSync, 2000); setInterval(tkSync, 300000);
     setTimeout(()=>this.alCharge(), 1200);
     setTimeout(()=>this.indexCharge(), 1800);
@@ -5395,7 +5395,7 @@ class Component extends DCLogic {
     const tkTab = st.tkTab || 'nouveau';
     const tkType = st.tkType || 'bug', tkPrio = st.tkPrio || 'normale';
     const tkTitre = st.tkTitre || '', tkDesc = st.tkDesc || '';
-    const tkPeutGerer = !!tkData.peutGerer;
+    const tkPeutGerer = !!tkData.peutGerer, tkPeutStatut = !!tkData.peutStatut;
     const TK_TYPES = {bug:['Bug de données','#c24a44','#fdf1f0'], optimisation:['Optimisation','#3b76e8','#eef3fe'], question:['Question','#7c63ee','#f1eefe']};
     const TK_STATUTS = {nouveau:['Nouveau','#3b76e8','#eef3fe'], en_cours:['En cours','#c4842a','#fdf3e3'], resolu:['Résolu','#2b8f62','#eaf6ef'], refuse:['Refusé','#8a8f98','#f2f2f5']};
     const tkPill = (c,bg)=>`font-size:11px;font-weight:600;letter-spacing:.04em;color:${c};background:${bg};border-radius:999px;padding:2px 9px;white-space:nowrap`;
@@ -5412,7 +5412,7 @@ class Component extends DCLogic {
       try {
         const r = await fetch('/api/tickets'); const j = await r.json();
         if (!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status);
-        this._tk = { list:j.tickets||[], peutGerer:!!j.peutGerer, moi:j.moi };
+        this._tk = { list:j.tickets||[], peutGerer:!!j.peutGerer, peutStatut:!!j.peutStatut, moi:j.moi };
       } catch(e) { this._tk = Object.assign({}, this._tk, { err:'Chargement des tickets impossible.' }); }
       this.setState({ tkTick:Date.now() });
     };
@@ -5461,7 +5461,7 @@ class Component extends DCLogic {
         toggle:()=>set({tkOpenId:ouvert?null:t.id, tkComment:'', tkMsg:null}),
         comments:(t.commentaires||[]).map(k=>({ who:String(k.auteur||'').split('@')[0], text:k.systeme?String(k.texte).replace(/nouveau|en_cours|resolu|refuse/g,m=>TK_STATUTS[m][0]):k.texte, img:k.image?'/api/tickets?capture='+encodeURIComponent(k.image):'', when:tkFmtDate(k.at), style:k.systeme?'font-size:12.5px;color:#9a9fa6;font-style:italic':'font-size:13.5px;color:#2f2f33;line-height:1.5' })),
         hasComments:(t.commentaires||[]).length>0,
-        statusBtns:tkPeutGerer?Object.keys(TK_STATUTS).map(k=>({ label:TK_STATUTS[k][0], pick:()=>tkMaj({action:'status',id:t.id,statut:k}),
+        statusBtns:tkPeutStatut?Object.keys(TK_STATUTS).map(k=>({ label:TK_STATUTS[k][0], pick:()=>tkMaj({action:'status',id:t.id,statut:k}),
           style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 11px;cursor:pointer;'+(t.statut===k?`background:${TK_STATUTS[k][2]};color:${TK_STATUTS[k][1]}`:'background:#f6f6f8;color:#8a8f98') })):[],
         sendComment:()=>{ const x=(st.tkComment||'').trim(); if (x) tkMaj({action:'comment',id:t.id,texte:x}); } };
     });
@@ -5836,7 +5836,7 @@ class Component extends DCLogic {
       tkTitre, onTkTitre:e=>set({tkTitre:e.target.value.slice(0,120)}), tkDesc, onTkDesc:e=>set({tkDesc:e.target.value.slice(0,3000)}),
       tkDescCount:tkDesc.length+' / 3000', tkSubmit:tkEnvoie, tkSubmitLabel:st.tkBusy?'Envoi…':'Envoyer le ticket',
       tkSubmitStyle:'display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 22px;border-radius:12px;font-size:14.5px;font-weight:600;white-space:nowrap;'+(tkValide?'background:#121214;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
-      tkMsgOn:!!tkMsg, tkMsgText:tkMsg?tkMsg.text:'', tkMsgStyle, tkRows, tkNoRows:!tkRows.length&&!tkErrList, tkErr:tkErrList, tkPeutGerer, tkComment:st.tkComment||'', onTkComment:e=>set({tkComment:e.target.value.slice(0,1000)}),
+      tkMsgOn:!!tkMsg, tkMsgText:tkMsg?tkMsg.text:'', tkMsgStyle, tkRows, tkNoRows:!tkRows.length&&!tkErrList, tkErr:tkErrList, tkPeutGerer, tkPeutStatut, tkComment:st.tkComment||'', onTkComment:e=>set({tkComment:e.target.value.slice(0,1000)}),
       tkChip:kPuce('#7c63ee'), tkIcon:kIcone('#7c63ee',h('path',{d:'M4 21V4'}),h('path',{d:'M4 5h13l-2 4 2 4H4'})),
       prTabs, prIsNew:prTab==='nouveau', prIsList:prTab==='briefs', prMsgOn:!!prMsg, prMsgText:prMsg?prMsg.text:'',
       prMsgStyle:prMsg?'font-size:13px;border-radius:10px;padding:9px 12px;'+(prMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44'):'',

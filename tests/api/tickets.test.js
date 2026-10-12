@@ -79,6 +79,7 @@ test("profil limité : ticket d'un autre = introuvable (pas de fuite)", async ()
   assert.equal((await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "coucou" })).code, 404);
 });
 
+process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
 test("profil complet : voit tout, change le statut, historique tracé", async () => {
   session = { email: "b.moumni@autobiz.com", role: "limited" };
   const c = await appelle("POST", valide);
@@ -124,4 +125,16 @@ test("précision demandée : la réponse de l'auteur lève l'attente", async () 
   const r = await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Sur l'onglet GA4, tableau canal." });
   assert.equal(r.code, 200);
   assert.equal(fichier.tickets[0].attente, undefined);
+});
+
+test("profil complet qui n'est pas le propriétaire : voit et commente, mais ne peut pas changer le statut", async () => {
+  const c = await appelle("POST", valide);
+  session = { email: "mohand.yahiaoui@autobiz.com", role: "full" };
+  const g = await appelle("GET");
+  assert.equal(g.body.peutGerer, true);
+  assert.equal(g.body.peutStatut, false);
+  assert.equal((await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Oui c'est ça" })).code, 200);
+  const r = await appelle("POST", { action: "status", id: c.body.ticket.id, statut: "resolu" });
+  assert.equal(r.code, 403);
+  assert.equal(fichier.tickets[0].statut, "nouveau");
 });
