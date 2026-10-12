@@ -100,16 +100,22 @@ def carte(t):
 
 
 def actions(t):
-    """Boutons Accepter / Refuser (aucune modification autonome sans accord) — seulement si le secret de signature est présent
-    et que le ticket peut déboucher sur une modification (pas pour une simple question)."""
+    """Boutons de la carte (mêmes règles que api/_lib/triage.js) : Accepter seulement si l'agent peut agir (ajout simple, bug)."""
     secret = os.environ.get("TICKETS_LINK_SECRET")
-    # boutons seulement quand une modification autonome est possible (ajout simple, bug) : pas pour une question ni un gros chantier
-    if not secret or t["triage"]["categorie"] not in ("donnee_simple", "bug"):
+    if not secret:
         return {}
-    return {"actions": [
-        {"type": "Action.OpenUrl", "title": "Accepter", "style": "positive", "url": lien_decision(t["id"], "accept", secret)},
-        {"type": "Action.OpenUrl", "title": "Demander des précisions", "url": lien_decision(t["id"], "ask", secret)},
-        {"type": "Action.OpenUrl", "title": "Refuser", "style": "destructive", "url": lien_decision(t["id"], "refuse", secret)}]}
+    cat = t["triage"]["categorie"]
+
+    def b(titre, a, style=None):
+        o = {"type": "Action.OpenUrl", "title": titre, "url": lien_decision(t["id"], a, secret)}
+        if style:
+            o["style"] = style
+        return o
+    if cat in ("donnee_simple", "bug"):
+        return {"actions": [b("Accepter", "accept", "positive"), b("Demander des précisions", "ask"), b("Refuser", "refuse", "destructive")]}
+    if cat == "gros_chantier":
+        return {"actions": [b("Demander des précisions", "ask"), b("Refuser", "refuse", "destructive")]}
+    return {"actions": [b("Demander des précisions", "ask")]}
 
 
 def poster(payload):

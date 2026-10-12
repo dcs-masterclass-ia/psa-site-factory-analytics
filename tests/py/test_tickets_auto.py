@@ -45,7 +45,7 @@ class TestLiens(unittest.TestCase):
         self.assertEqual([a["title"] for a in acts], ["Accepter", "Demander des précisions", "Refuser"])
         self.assertRegex(acts[0]["url"], r"a=accept&exp=\d+&sig=[0-9a-f]{64}$")
         q = tk("question", "Comment ?"); ta.trier([q])
-        self.assertNotIn("actions", ta.carte(q)["attachments"][0]["content"])
+        self.assertEqual([a["title"] for a in ta.carte(q)["attachments"][0]["content"]["actions"]], ["Demander des précisions"])
         g = tk("optimisation", "Nouvel onglet", "Créer un nouvel onglet Ventes"); ta.trier([g])
-        self.assertNotIn("actions", ta.carte(g)["attachments"][0]["content"])
+        self.assertEqual([a["title"] for a in ta.carte(g)["attachments"][0]["content"]["actions"]], ["Demander des précisions", "Refuser"])
         del os.environ["TICKETS_LINK_SECRET"]

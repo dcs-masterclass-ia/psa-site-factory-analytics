@@ -41,14 +41,16 @@ function lienDecision(id, action, secret, now = Date.now()) {
   return `https://converge-tradein.vercel.app/api/ticket-decision?id=${id}&a=${action}&exp=${exp}&sig=${sig}`;
 }
 
-/** Boutons de décision de la carte Teams : seulement quand l'agent peut agir (ajout simple, bug) et que rien n'est encore décidé. */
+/** Boutons de décision de la carte Teams (rien n'est décidé tant qu'on n'a pas cliqué).
+ *  ajout simple / bug : Accepter (lance l'agent), Demander des précisions, Refuser.
+ *  gros chantier : pas d'agent (cadrage à la main) -> Demander des précisions, Refuser.  question : Demander des précisions. */
 function boutons(ticket, secret) {
-  if (!secret || ticket.decision || !ticket.triage || !["donnee_simple", "bug"].includes(ticket.triage.categorie)) return [];
-  return [
-    { type: "Action.OpenUrl", title: "Accepter", style: "positive", url: lienDecision(ticket.id, "accept", secret) },
-    { type: "Action.OpenUrl", title: "Demander des précisions", url: lienDecision(ticket.id, "ask", secret) },
-    { type: "Action.OpenUrl", title: "Refuser", style: "destructive", url: lienDecision(ticket.id, "refuse", secret) },
-  ];
+  if (!secret || ticket.decision || !ticket.triage) return [];
+  const b = (titre, a, style) => ({ type: "Action.OpenUrl", title: titre, ...(style ? { style } : {}), url: lienDecision(ticket.id, a, secret) });
+  const cat = ticket.triage.categorie;
+  if (cat === "donnee_simple" || cat === "bug") return [b("Accepter", "accept", "positive"), b("Demander des précisions", "ask"), b("Refuser", "refuse", "destructive")];
+  if (cat === "gros_chantier") return [b("Demander des précisions", "ask"), b("Refuser", "refuse", "destructive")];
+  return [b("Demander des précisions", "ask")];
 }
 
 module.exports = { CATEGORIES, classer, trier, lienDecision, boutons };
