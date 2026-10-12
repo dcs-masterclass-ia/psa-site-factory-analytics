@@ -41,3 +41,12 @@ test("refus : statut refuse + commentaire système", async () => {
   assert.equal(fichier.tickets[0].statut, "refuse");
   assert.equal(fichier.tickets[0].commentaires[0].systeme, true);
 });
+
+test("validation de mise en ligne : seulement si le correctif attend, une seule fois, sans changer le statut", async () => {
+  assert.equal((await appelle("POST", {}, lien("T-1", "merge"))).code, 409);
+  fichier.tickets[0].agent = { etat: "attente_validation", pr: "https://github.com/x/y/pull/1" };
+  assert.equal((await appelle("POST", {}, lien("T-1", "merge"))).code, 200);
+  assert.equal(fichier.tickets[0].validation.choix, "accepte");
+  assert.equal(fichier.tickets[0].statut, "nouveau");
+  assert.match((await appelle("POST", {}, lien("T-1", "abandon"))).html, /Déjà décidé/);
+});

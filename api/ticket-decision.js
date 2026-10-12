@@ -14,7 +14,8 @@ const crypto = require("crypto");
 const { readJson, writeJson } = require("./_lib/store");
 
 const FILE = "tickets/tickets.json";
-const ACTIONS = { accept: "accepte", refuse: "refuse" };
+const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse" };
+const VALIDATION = { merge: true, abandon: true }; // 2e décision : mise en ligne du correctif préparé par l'agent
 const AUTEUR = "decision-teams";
 
 const signe = (id, a, exp) => crypto.createHmac("sha256", process.env.TICKETS_LINK_SECRET || "").update(`${id}|${a}|${exp}`).digest("hex");
@@ -46,15 +47,27 @@ module.exports = async function handler(req, res) {
     const tickets = (data && Array.isArray(data.tickets)) ? data.tickets : [];
     const t = tickets.find(x => x.id === q.id);
     if (!t) { page(res, 404, "Ticket introuvable", "Ce ticket n'existe plus."); return; }
-    const verbe = q.a === "accept" ? "Accepter" : "Refuser";
-    if (t.decision) { page(res, 200, "Déjà décidé", `Ce ticket a déjà été <b>${t.decision.choix === "accepte" ? "accepté" : "refusé"}</b>.`); return; }
+    const verbe = { accept: "Accepter", refuse: "Refuser", merge: "Mettre en ligne", abandon: "Abandonner" }[q.a];
+    const positif = q.a === "accept" || q.a === "merge";
+    if (VALIDATION[q.a]) {
+      if (!t.agent || t.agent.etat !== "attente_validation") { page(res, 409, "Rien à valider", "Aucune modification n'attend de validation pour ce ticket."); return; }
+      if (t.validation) { page(res, 200, "Déjà décidé", `La mise en ligne a déjà été <b>${t.validation.choix === "accepte" ? "validée" : "abandonnée"}</b>.`); return; }
+    } else if (t.decision) { page(res, 200, "Déjà décidé", `Ce ticket a déjà été <b>${t.decision.choix === "accepte" ? "accepté" : "refusé"}</b>.`); return; }
     if (req.method !== "POST") {
       const form = `<form method="post" style="margin-top:18px"><input type="hidden" name="id" value="${esc(q.id)}"><input type="hidden" name="a" value="${esc(q.a)}"><input type="hidden" name="exp" value="${esc(q.exp)}"><input type="hidden" name="sig" value="${esc(q.sig)}">
-<button style="font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:${q.a === "accept" ? "#2b8f62" : "#c24a44"};cursor:pointer">${verbe} ce ticket</button></form>`;
+<button style="font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:${positif ? "#2b8f62" : "#c24a44"};cursor:pointer">${verbe}${VALIDATION[q.a] ? "" : " ce ticket"}</button></form>`;
       page(res, 200, `${verbe} ce ticket ?`, `<b>${esc(t.titre)}</b><br><span style="font-size:14px;color:#6d727a">${esc((t.triage && t.triage.categorie) || t.type)} · ${esc(t.auteur)}</span>`, form);
       return;
     }
     const now = Date.now();
+    if (VALIDATION[q.a]) {
+      t.validation = { choix: ACTIONS[q.a], at: now, via: "teams" };
+      t.updatedAt = now;
+      await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — mise en ligne ${ACTIONS[q.a]} (Teams)`, sha);
+      page(res, 200, positif ? "Mise en ligne validée" : "Modification abandonnée",
+        positif ? "La modification sera mise en ligne dans quelques minutes." : "La modification est abandonnée : rien n'est mis en ligne.");
+      return;
+    }
     t.decision = { choix: ACTIONS[q.a], at: now, via: "teams" };
     (t.commentaires = t.commentaires || []).push({ auteur: AUTEUR, systeme: true, at: now,
       texte: q.a === "accept" ? "Statut : " + t.statut + " → en_cours" : "Statut : " + t.statut + " → refuse" });

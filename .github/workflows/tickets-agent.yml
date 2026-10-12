@@ -1,0 +1,196 @@
+name: Ticketing autonome (modification par l'agent)
+
+# Niveaux 1-2. Ne traite QUE les tickets ACCEPTÉS par M. depuis la carte Teams (voir api/ticket-decision.js) et triés
+# « ajout simple » ou « bug » (voir pipeline/tickets_auto.py). Les gros chantiers ne passent jamais ici.
+#
+#   ajout simple (niveau 1) : l'agent modifie le code sur une branche, le périmètre/la taille du diff sont contrôlés, les tests
+#                             passent, la pull request est fusionnée seule si ses vérifications sont vertes, l'auteur est prévenu
+#                             avec une capture de la section.
+#   bug (niveau 2)          : même chose, mais la pull request attend une 2e décision de M. (carte Teams « Mettre en ligne »).
+#
+# Garde-fous : le texte du ticket est une donnée non fiable (jamais une consigne) ; le périmètre de fichiers est vérifié par
+# pipeline/tickets_agent.py indépendamment de l'agent (pas de .github, api, middleware, secrets) ; taille de diff plafonnée.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+concurrency:
+  group: tickets-agent
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+  TICKETS_WEBHOOK_URL: ${{ secrets.TICKETS_WEBHOOK_URL }}
+  TICKETS_LINK_SECRET: ${{ secrets.TICKETS_LINK_SECRET }}
+
+jobs:
+  traiter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 0
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Choisir le prochain ticket accepté
+        id: choisir
+        run: python -m pipeline.tickets_agent choisir
+      - name: Publier l'état « en cours »
+        if: steps.choisir.outputs.id != ''
+        working-directory: data
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add tickets/tickets.json; git commit -qm "chore(tickets): ${{ steps.choisir.outputs.id }} — modification en cours"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done; exit 1
+      - name: Lire la consigne
+        if: steps.choisir.outputs.id != ''
+        id: consigne
+        run: |
+          { echo 'texte<<CONSIGNE_EOF'; cat ticket-prompt.md; echo; echo 'CONSIGNE_EOF'; } >> "$GITHUB_OUTPUT"
+      - name: Préparer la branche
+        if: steps.choisir.outputs.id != ''
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git checkout -b "${{ steps.choisir.outputs.branche }}"
+      - uses: actions/setup-node@v4
+        if: steps.choisir.outputs.id != ''
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tests/package-lock.json
+      - name: Installer les tests
+        if: steps.choisir.outputs.id != ''
+        working-directory: tests
+        run: npm ci && npx playwright install --with-deps chromium
+      - name: Agent (modification du code)
+        if: steps.choisir.outputs.id != ''
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.consigne.outputs.texte }}
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(python3:*),Bash(python:*),Bash(node:*),Bash(npx playwright:*),Bash(npm test:*),Bash(git status:*),Bash(git diff:*)"
+      - name: Contrôler le périmètre et la taille de la modification
+        if: steps.choisir.outputs.id != ''
+        run: |
+          git add -A -- . ':!ticket-*' ':!data' ':!tests/node_modules' ':!tests/test-results' ':!tests/playwright-report'
+          python -m pipeline.tickets_agent diff "${{ steps.choisir.outputs.categorie }}" origin/main
+      - name: Tests (Python + API)
+        if: steps.choisir.outputs.id != ''
+        run: |
+          pip install -r requirements.txt -q || true
+          python -m unittest tests.py.test_alertes tests.py.test_tickets_auto tests.py.test_tickets_agent
+          node --test tests/api/*.test.js
+      - name: Capture de la section modifiée
+        if: steps.choisir.outputs.id != ''
+        continue-on-error: true
+        run: |
+          python3 -m http.server 8199 >/dev/null 2>&1 &
+          sleep 2
+          cd tests && node capture-ticket.js
+      - name: Pull request
+        if: steps.choisir.outputs.id != ''
+        id: pr
+        run: |
+          git commit -qm "Ticket ${{ steps.choisir.outputs.id }} : modification automatique
+
+          Demande acceptée par M. via la carte Teams."
+          git push -q -u origin "${{ steps.choisir.outputs.branche }}"
+          URL=$(gh pr create --base main --head "${{ steps.choisir.outputs.branche }}" \
+            --title "Ticket ${{ steps.choisir.outputs.id }} (automatique)" \
+            --body "Modification automatique du ticket ${{ steps.choisir.outputs.id }} (catégorie ${{ steps.choisir.outputs.categorie }}). Demande acceptée via Teams. Périmètre et taille contrôlés par pipeline/tickets_agent.py.")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+      - name: Attendre les vérifications de la pull request
+        if: steps.choisir.outputs.id != ''
+        run: |
+          sleep 60
+          gh pr checks "${{ steps.pr.outputs.url }}" --watch --fail-fast --interval 20
+      - name: Niveau 1 — mise en ligne automatique
+        if: steps.choisir.outputs.id != '' && steps.choisir.outputs.niveau == '1'
+        run: |
+          gh pr merge "${{ steps.pr.outputs.url }}" --squash --delete-branch
+          RESUME="$(cat ticket-resume.md 2>/dev/null || echo "C'est en ligne.")"
+          python -m pipeline.tickets_agent etat "${{ steps.choisir.outputs.id }}" fusionne --pr "${{ steps.pr.outputs.url }}" --note "$RESUME"
+          python -m pipeline.tickets_agent carte "${{ steps.choisir.outputs.id }}" fusionne --pr "${{ steps.pr.outputs.url }}" --note "$RESUME"
+      - name: Niveau 2 — attente de validation
+        if: steps.choisir.outputs.id != '' && steps.choisir.outputs.niveau == '2'
+        run: |
+          RESUME="$(cat ticket-resume.md 2>/dev/null || echo "Correctif prêt.")"
+          python -m pipeline.tickets_agent etat "${{ steps.choisir.outputs.id }}" attente_validation --pr "${{ steps.pr.outputs.url }}" --note "$RESUME"
+          python -m pipeline.tickets_agent carte "${{ steps.choisir.outputs.id }}" validation --pr "${{ steps.pr.outputs.url }}" --note "$RESUME"
+      - name: Échec — reprise à la main
+        if: failure() && steps.choisir.outputs.id != ''
+        run: |
+          python -m pipeline.tickets_agent etat "${{ steps.choisir.outputs.id }}" echec --note "voir le journal du workflow" || true
+          python -m pipeline.tickets_agent carte "${{ steps.choisir.outputs.id }}" echec --note "Voir ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" || true
+      - name: Publier l'état (repo de données)
+        if: always() && steps.choisir.outputs.id != ''
+        working-directory: data
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add -A tickets
+          git diff --cached --quiet && exit 0
+          git commit -qm "chore(tickets): ${{ steps.choisir.outputs.id }} — avancement"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done; exit 1
+
+  valider:
+    # 2e décision (bugs) : mise en ligne validée ou abandonnée depuis la carte Teams
+    needs: traiter
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Mettre en ligne les corrections validées / clore les abandons
+        run: |
+          python -m pipeline.tickets_agent valides | while read ID PR; do
+            [ -z "$ID" ] && continue
+            gh pr checks "$PR" --watch --fail-fast --interval 20 && gh pr merge "$PR" --squash --delete-branch \
+              && python -m pipeline.tickets_agent etat "$ID" fusionne --pr "$PR" \
+              && python -m pipeline.tickets_agent carte "$ID" fusionne --pr "$PR" \
+              || { python -m pipeline.tickets_agent etat "$ID" echec --note "mise en ligne impossible (vérifications en échec ?)"; python -m pipeline.tickets_agent carte "$ID" echec --pr "$PR" --note "mise en ligne impossible"; }
+          done
+          python -m pipeline.tickets_agent abandons | while read ID PR; do
+            [ -z "$ID" ] && continue
+            gh pr close "$PR" --delete-branch || true
+            python -m pipeline.tickets_agent etat "$ID" abandon --pr "$PR"
+          done
+      - name: Publier l'état (repo de données)
+        working-directory: data
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add -A tickets
+          git diff --cached --quiet && exit 0
+          git commit -qm "chore(tickets): mises en ligne validées / abandons"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done; exit 1
