@@ -19,7 +19,7 @@ test("bascule EN : textes traduits, nombres à l'anglaise, retour FR identique, 
   await page.locator('[aria-label="English"]').click();
   await expect(page.getByText("Conversion funnel").first()).toBeVisible();
   await expect(page.getByText("Tunnel de conversion")).toHaveCount(0);
-  await expect(page.getByText("Export", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Key figures", { exact: true }).first()).toBeVisible();
   // nombres : plus d'espace insécable ni de virgule décimale dans les KPI (« 7,1 % » -> « 7.1% »)
   const en = await page.evaluate(() => document.body.innerText);
   expect(en).not.toMatch(/\d,\d\s?%/);
