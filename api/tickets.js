@@ -37,6 +37,7 @@ const { verifySessionFromRequest, presentationsAllowed } = require("./_lib/auth"
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
 const { CATEGORIES, trier, boutons } = require("./_lib/triage");
+const { lance } = require("./_lib/dispatch");
 
 const FILE = "tickets/tickets.json";
 const TYPES = ["bug", "optimisation", "question"];
@@ -172,6 +173,7 @@ module.exports = async function handler(req, res) {
       tickets.push(ticket);
       await ecrit(tickets, sha, `ticket ${ticket.id} — ${email}`);
       await notifie(ticket);
+      if (ticket.triage && ticket.triage.categorie === "question") await lance("tickets-reponse.yml"); // l'agent prépare la réponse tout de suite
       res.status(200).json({ ok: true, ticket });
       return;
     }

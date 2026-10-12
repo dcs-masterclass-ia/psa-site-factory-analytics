@@ -9,7 +9,7 @@ const CATEGORIES = {
   donnee_simple: { label: "Ajout simple", niveau: 1, suite: "Une modification automatique est préparée après ton accord." },
   bug: { label: "Bug", niveau: 2, suite: "Un correctif est préparé et testé, puis validé avant mise en ligne." },
   gros_chantier: { label: "Gros chantier", niveau: 3, suite: "La demande est importante : un cadrage (effort, plan, risques) est préparé pour décision." },
-  question: { label: "Question", niveau: 0, suite: "Une réponse est rédigée." },
+  question: { label: "Question", niveau: 0, suite: "Ta question est à l'étude : une réponse te sera envoyée après vérification des chiffres." },
 };
 const MOTS_GROS = /nouvel(le)?s? (onglet|module|page|source|tableau de bord|dashboard)|refonte|refondre|nouvelle? (fonctionnalit|int[ée]gration|api)|automatis|intégrer|integrer|migration|import|synchronis|multi-?langue|droits|permissions|authentification/i;
 const MOTS_SIMPLE = /ajouter|ajout|colonne|total|libell|renomm|afficher|montrer|tooltip|info-?bulle|trier|tri |pourcentage|effectif|couleur/i;

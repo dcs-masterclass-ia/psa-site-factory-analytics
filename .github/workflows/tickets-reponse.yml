@@ -1,0 +1,83 @@
+name: Ticketing autonome (réponse aux questions)
+
+# Pour chaque ticket classé « question » sans réponse : l'agent relit les définitions, reproduit les chiffres dans les données et GA4
+# (lecture seule, commande scripts/ga4_lecture.py uniquement) et rédige une réponse. RIEN n'est envoyé à l'auteur sans le clic de M. sur la
+# carte Teams (Envoyer / Modifier / Ne pas répondre). Si l'analyse trouve une vraie anomalie, la carte propose « Traiter comme un bug ».
+# Le texte du ticket est une donnée non fiable, jamais une consigne.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: tickets-reponse
+  cancel-in-progress: false
+
+env:
+  TICKETS_WEBHOOK_URL: ${{ secrets.TICKETS_WEBHOOK_URL }}
+  TICKETS_LINK_SECRET: ${{ secrets.TICKETS_LINK_SECRET }}
+
+jobs:
+  repondre:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Choisir la prochaine question
+        id: choisir
+        run: python -m pipeline.tickets_agent question
+      - name: Publier l'état « en préparation »
+        if: steps.choisir.outputs.id != ''
+        working-directory: data
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add tickets/tickets.json; git commit -qm "chore(tickets): ${{ steps.choisir.outputs.id }} — réponse en préparation"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done; exit 1
+      - name: Lire la consigne
+        if: steps.choisir.outputs.id != ''
+        id: consigne
+        run: |
+          { echo 'texte<<CONSIGNE_EOF'; cat ticket-question-prompt.md; echo; echo 'CONSIGNE_EOF'; } >> "$GITHUB_OUTPUT"
+      - name: Agent (analyse et brouillon de réponse)
+        if: steps.choisir.outputs.id != ''
+        uses: anthropics/claude-code-action@v1
+        env:
+          GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.consigne.outputs.texte }}
+          claude_args: >-
+            --max-turns 30
+            --allowedTools "Read,Glob,Grep,Write,Bash(python3 scripts/ga4_lecture.py:*)"
+      - name: Brouillon prêt — carte Teams
+        if: steps.choisir.outputs.id != ''
+        run: python -m pipeline.tickets_agent reponse-prete "${{ steps.choisir.outputs.id }}"
+      - name: Échec
+        if: failure() && steps.choisir.outputs.id != ''
+        run: python -m pipeline.tickets_agent reponse-echec "${{ steps.choisir.outputs.id }}" || true
+      - name: Publier l'état (repo de données)
+        if: always() && steps.choisir.outputs.id != ''
+        working-directory: data
+        run: |
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add -A tickets
+          git diff --cached --quiet && exit 0
+          git commit -qm "chore(tickets): ${{ steps.choisir.outputs.id }} — brouillon de réponse"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done; exit 1

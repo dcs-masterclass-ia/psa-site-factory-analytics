@@ -34,7 +34,7 @@ CATEGORIES = {
     "gros_chantier": {"label": "Gros chantier", "niveau": 3,
                       "suite": "La demande est importante : un cadrage (effort, plan, risques) est préparé pour décision."},
     "question": {"label": "Question", "niveau": 0,
-                 "suite": "Une réponse est rédigée."},
+                 "suite": "Ta question est à l'étude : une réponse te sera envoyée après vérification des chiffres."},
 }
 
 MOTS_GROS = re.compile(r"nouvel(le)?s? (onglet|module|page|source|tableau de bord|dashboard)|refonte|refondre|"

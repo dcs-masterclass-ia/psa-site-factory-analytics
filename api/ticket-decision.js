@@ -12,9 +12,11 @@
  */
 const crypto = require("crypto");
 const { readJson, writeJson } = require("./_lib/store");
+const { lance } = require("./_lib/dispatch");
 
 const FILE = "tickets/tickets.json";
-const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse", ask: "precision" };
+const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse", ask: "precision", send: "envoi", edit: "envoi", drop: "abandon", tobug: "bug" };
+const REPONSE = { send: true, edit: true, drop: true, tobug: true }; // décision sur la réponse (ou le bug détecté) préparée pour une question
 const VALIDATION = { merge: true, abandon: true }; // 2e décision : mise en ligne du correctif préparé par l'agent
 const AUTEUR = "decision-teams";
 
@@ -47,6 +49,42 @@ module.exports = async function handler(req, res) {
     const tickets = (data && Array.isArray(data.tickets)) ? data.tickets : [];
     const t = tickets.find(x => x.id === q.id);
     if (!t) { page(res, 404, "Ticket introuvable", "Ce ticket n'existe plus."); return; }
+    if (REPONSE[q.a]) {
+      const rep = t.reponse;
+      if (!rep || rep.etat !== "attente") { page(res, 200, "Déjà traité", "Cette réponse a déjà été traitée, ou aucune n'est en attente."); return; }
+      const titres = { send: "Envoyer la réponse", edit: "Modifier puis envoyer la réponse", drop: "Ne pas répondre", tobug: "Traiter comme un bug" };
+      if (req.method !== "POST") {
+        const champs = ["id", "a", "exp", "sig"].map(k => `<input type="hidden" name="${k}" value="${esc(q[k])}">`).join("");
+        const couleur = q.a === "drop" ? "#c24a44" : "#2b8f62";
+        const zone = q.a === "edit" ? `<textarea name="texte" required maxlength="3000" rows="10" style="width:100%;box-sizing:border-box;font:15px/1.5 system-ui;border:1px solid #dcdce2;border-radius:12px;padding:10px;margin-top:10px">${esc(rep.texte)}</textarea>`
+          : (q.a === "send" ? `<div style="white-space:pre-wrap;background:#f6f6f8;border-radius:12px;padding:12px;margin-top:10px;font-size:14.5px">${esc(rep.texte)}</div>` : (rep.bug ? `<div style="white-space:pre-wrap;background:#fdf3e3;border-radius:12px;padding:12px;margin-top:10px;font-size:14px">${esc(rep.bug)}</div>` : ""));
+        page(res, 200, `${titres[q.a]} ?`, `<b>${esc(t.titre)}</b><br><span style="font-size:14px;color:#6d727a">de ${esc(t.auteur)}</span>${zone}`,
+          `<form method="post" style="margin-top:16px">${champs}<button style="font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:${couleur};cursor:pointer">${titres[q.a]}</button></form>`);
+        return;
+      }
+      const now = Date.now();
+      if (q.a === "send" || q.a === "edit") {
+        const texte = String(q.a === "edit" ? q.texte : rep.texte).replace(/\u0000/g, "").trim().slice(0, 3000);
+        if (!texte) { page(res, 400, "Réponse vide", "Écris la réponse avant d'envoyer."); return; }
+        (t.commentaires = t.commentaires || []).push({ auteur: AUTEUR, systeme: true, at: now, texte: `Statut : ${t.statut} → resolu` });
+        t.commentaires.push({ auteur: "equipe-converge", texte, at: now + 1 });
+        t.statut = "resolu"; rep.etat = "envoyee"; rep.texte = texte;
+      } else if (q.a === "drop") {
+        rep.etat = "abandon";
+      } else { // tobug : l'analyse a trouvé une anomalie, M. la fait traiter par l'agent de correction
+        t.triage = { ...(t.triage || {}), categorie: "bug", niveau: 2, raison: "anomalie confirmée à partir de l'analyse de la question", methode: "agent", at: now };
+        t.decision = { choix: "accepte", at: now, via: "teams" };
+        (t.commentaires = t.commentaires || []).push({ auteur: AUTEUR, systeme: true, at: now, texte: `Statut : ${t.statut} → en_cours` });
+        t.commentaires.push({ auteur: AUTEUR, systeme: true, at: now + 1, texte: "Une anomalie est confirmée : un correctif est en préparation." });
+        t.statut = "en_cours"; rep.etat = "bug";
+      }
+      t.updatedAt = now + 1;
+      await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — réponse ${rep.etat} (Teams)`, sha);
+      if (q.a === "tobug") await lance("tickets-agent.yml");
+      page(res, 200, { send: "Réponse envoyée", edit: "Réponse envoyée", drop: "Rien n'est envoyé", tobug: "Traité comme un bug" }[q.a],
+        { send: "L'auteur est alerté dans le dashboard.", edit: "L'auteur est alerté dans le dashboard.", drop: "Aucune réponse n'est envoyée à l'auteur.", tobug: "Le correctif démarre automatiquement." }[q.a]);
+      return;
+    }
     if (q.a === "ask") {
       if (t.decision || t.agent) { page(res, 200, "Déjà décidé", "Ce ticket a déjà une décision : la précision n'est plus possible."); return; }
       if (req.method !== "POST") {
@@ -83,6 +121,7 @@ module.exports = async function handler(req, res) {
       t.validation = { choix: ACTIONS[q.a], at: now, via: "teams" };
       t.updatedAt = now;
       await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — mise en ligne ${ACTIONS[q.a]} (Teams)`, sha);
+      if (positif) await lance("tickets-agent.yml");
       page(res, 200, positif ? "Mise en ligne validée" : "Modification abandonnée",
         positif ? "La modification sera mise en ligne dans quelques minutes." : "La modification est abandonnée : rien n'est mis en ligne.");
       return;
@@ -93,6 +132,7 @@ module.exports = async function handler(req, res) {
     t.statut = q.a === "accept" ? "en_cours" : "refuse";
     t.updatedAt = now;
     await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — décision ${ACTIONS[q.a]} (Teams)`, sha);
+    if (q.a === "accept") await lance("tickets-agent.yml");
     page(res, 200, q.a === "accept" ? "Ticket accepté" : "Ticket refusé",
       q.a === "accept" ? "C'est pris en compte : la modification démarre automatiquement." : "Le ticket est refusé. L'auteur en sera informé.");
   } catch (e) {

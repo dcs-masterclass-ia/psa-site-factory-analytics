@@ -64,3 +64,33 @@ test("demander des précisions : question envoyée à l'auteur (visible, ticket 
   assert.equal(t.commentaires[0].systeme, undefined);
   assert.equal(t.decision, undefined);
 });
+
+test("réponse préparée pour une question : envoyer (message à l'auteur + résolu), abandonner, bug", async () => {
+  fichier.tickets[0].reponse = { etat: "attente", texte: "Les deux chiffres sont justes.", verdict: "reponse" };
+  const q = lien("T-1", "send");
+  const g = await appelle("GET", q);
+  assert.match(g.html, /Les deux chiffres sont justes/);
+  assert.equal(fichier.tickets[0].statut, "nouveau");
+  assert.equal((await appelle("POST", {}, q)).code, 200);
+  const t = fichier.tickets[0];
+  assert.equal(t.statut, "resolu");
+  assert.equal(t.reponse.etat, "envoyee");
+  assert.equal(t.commentaires.slice(-1)[0].texte, "Les deux chiffres sont justes.");
+  assert.equal(t.commentaires.slice(-1)[0].systeme, undefined);
+  assert.match((await appelle("POST", {}, lien("T-1", "drop"))).html, /Déjà traité/);
+});
+
+test("réponse modifiée avant envoi ; ne pas répondre ; traiter comme un bug", async () => {
+  fichier.tickets[0].reponse = { etat: "attente", texte: "brouillon", verdict: "reponse" };
+  await appelle("POST", {}, { ...lien("T-1", "edit"), texte: "Version corrigée par M." });
+  assert.equal(fichier.tickets[0].commentaires.slice(-1)[0].texte, "Version corrigée par M.");
+  fichier.tickets[0].reponse = { etat: "attente", texte: "x", verdict: "reponse" }; fichier.tickets[0].statut = "nouveau";
+  await appelle("POST", {}, lien("T-1", "drop"));
+  assert.equal(fichier.tickets[0].reponse.etat, "abandon");
+  assert.equal(fichier.tickets[0].statut, "nouveau");
+  fichier.tickets[0].reponse = { etat: "attente", texte: "x", verdict: "bug_possible", bug: "chiffre faux" };
+  await appelle("POST", {}, lien("T-1", "tobug"));
+  assert.equal(fichier.tickets[0].triage.categorie, "bug");
+  assert.equal(fichier.tickets[0].decision.choix, "accepte");
+  assert.equal(fichier.tickets[0].statut, "en_cours");
+});
