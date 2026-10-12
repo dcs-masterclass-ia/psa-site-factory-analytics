@@ -16,7 +16,7 @@
  *   AUTH_COOKIE_SECRET   secret aleatoire (ex. `openssl rand -hex 32`)
  */
 
-const { sign, allowedEmails, limitedEmails, roleFor, MAX_SESSION_MS } = require("./_lib/auth");
+const { sign, allowedEmails, limitedEmails, roleFor, presentationsAllowed, MAX_SESSION_MS } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 
 const MAX_AGE_S = MAX_SESSION_MS / 1000; // 1 h, voir _lib/auth.js
@@ -78,6 +78,8 @@ module.exports = async function handler(req, res) {
       // pour l'interface seulement (masquer les onglets) ; l'acces reel est
       // controle cote serveur a chaque requete (middleware + api/data.js)
       `psf_role=${roleFor(email) === "limited" ? "limited" : "full"}; Path=/; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
+      // fonctionnalités verrouillées (interface seulement ; contrôle réel côté serveur) : « pres » = onglet Présentations
+      `psf_feat=${presentationsAllowed(email) ? "pres" : ""}; Path=/; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
     ]);
     res.status(200).json({ ok: true, email });
   } catch (e) {

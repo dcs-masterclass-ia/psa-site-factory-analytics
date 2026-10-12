@@ -77,6 +77,11 @@ function roleFor(email) {
   return null;
 }
 
+/** Onglet « Présentations » : verrouillé pour tous sauf les adresses de PRESENTATIONS_EMAILS (liste séparée par des virgules). Variable absente = personne. */
+function presentationsAllowed(email) {
+  return parseList(process.env.PRESENTATIONS_EMAILS).includes(String(email || "").toLowerCase());
+}
+
 function isEmailAllowed(email) { return roleFor(email) !== null; }
 
 function verifySessionFromRequest(req) {
@@ -88,4 +93,4 @@ function verifySessionFromRequest(req) {
   return { ...session, role };
 }
 
-module.exports = { MAX_SESSION_MS, sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, limitedEmails, roleFor, isEmailAllowed };
+module.exports = { MAX_SESSION_MS, sign, verify, parseCookies, verifySessionFromRequest, allowedEmails, limitedEmails, roleFor, isEmailAllowed, presentationsAllowed };

@@ -5,6 +5,7 @@ const path = require("path");
 const racine = path.resolve(__dirname, "../..");
 const storePath = require.resolve(path.join(racine, "api/_lib/store.js"));
 const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
+process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com, perso@example.com, autre@autobiz.com, b.moumni@autobiz.com";
 let fichier = null, fichierTpl = null, sha = 0, session = null;
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async p => { const f = p.includes("templates") ? fichierTpl : fichier; return { data: f ? JSON.parse(JSON.stringify(f)) : null, sha: String(sha) }; },
@@ -133,4 +134,16 @@ test("génération : déclenche le workflow, passe le brief en « demandée », 
 test("téléchargement : identifiant invalide refusé, fichier absent = 404", async () => {
   assert.equal((await appelle("GET", null, { fichier: "../etc" })).code, 400);
   assert.equal((await appelle("GET", null, { fichier: "B-abc" })).code, 404);
+});
+
+test("verrouillé : seules les adresses de PRESENTATIONS_EMAILS accèdent à la route", async () => {
+  session = { email: "intrus@autobiz.com", role: "full" };
+  assert.equal((await appelle("GET")).code, 403);
+  assert.equal((await appelle("POST", { action: "save", brief })).code, 403);
+  session = { email: "PERSO@example.com", role: "full" };             // casse ignorée
+  assert.equal((await appelle("GET")).code, 200);
+  delete process.env.PRESENTATIONS_EMAILS;                            // variable absente : personne
+  assert.equal((await appelle("GET")).code, 403);
+  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
+  session = { email: "m.foureau@autobiz.com", role: "full" };
 });

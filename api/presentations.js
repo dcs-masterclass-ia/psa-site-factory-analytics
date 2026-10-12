@@ -29,7 +29,7 @@
  */
 
 const crypto = require("crypto");
-const { verifySessionFromRequest } = require("./_lib/auth");
+const { verifySessionFromRequest, presentationsAllowed } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
 
@@ -113,6 +113,8 @@ module.exports = async function handler(req, res) {
   if (!session || !session.email) { res.status(401).json({ error: "Non authentifie." }); return; }
   if (session.role !== "full") { res.status(403).json({ error: "Acces non autorise pour ce profil." }); return; }
   const email = String(session.email).toLowerCase();
+  // fonctionnalité verrouillée : seules les adresses de PRESENTATIONS_EMAILS (variable Vercel) y accèdent
+  if (!presentationsAllowed(email)) { res.status(403).json({ error: "Fonctionnalite verrouillee pour le moment." }); return; }
 
   try {
     if (req.method === "GET" && req.query && req.query.fichier) {

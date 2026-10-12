@@ -241,9 +241,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div onClick="{{ pickTB }}" style="{{ srcTB }}" style-hover="background:#f4f4f6" title="Pilotage des leads">
       <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
+    <sc-if value="{{ canPres }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickPR }}" style="{{ srcPR }}" style-hover="background:#f4f4f6" title="Présentations">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M7 12l3-3 2.5 2.5L17 7"/></svg>
     </div>
+    </sc-if>
 
     </sc-if>
 
@@ -2752,6 +2754,7 @@ class Component extends DCLogic {
     if (this._onOutsideClick) document.removeEventListener('mousedown', this._onOutsideClick);
   }
   setTheme(k) { if (window.__setTheme) window.__setTheme(k); this.setState({ theme:k }); }
+  presentationsOuvertes() { return /(^|; )psf_feat=pres/.test(document.cookie); }   // interface seulement : /api/presentations refuse les autres adresses
   estLimite() {
     // profil GA4 / Search Console / PageSpeed uniquement : sert seulement a
     // masquer l'interface ; l'acces reel est refuse cote serveur
@@ -2828,7 +2831,7 @@ class Component extends DCLogic {
       if (qp.get('embed') === '1') {
         const voulus = (qp.get('sites') || '').split('|').filter(n => this._allSites.includes(n));
         if (voulus.length) initial.sites = voulus;
-        if (['ga','sc','ps','tb','pr'].includes(qp.get('source')) && !(this.estLimite() && ['tb','pr'].includes(qp.get('source')))) initial.source = qp.get('source');
+        if (['ga','sc','ps','tb','pr'].includes(qp.get('source')) && !(this.estLimite() && ['tb','pr'].includes(qp.get('source'))) && !(qp.get('source')==='pr' && !this.presentationsOuvertes())) initial.source = qp.get('source');
         if (qp.get('from') && qp.get('to')) { initial.from = qp.get('from'); initial.to = qp.get('to'); }
         if (['none','previous','year'].includes(qp.get('cmp'))) initial.cmpMode = qp.get('cmp');
       }
@@ -5674,7 +5677,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isPR:st.source==='pr'&&!this.estLimite(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
@@ -5774,7 +5777,7 @@ class Component extends DCLogic {
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickPR:()=>{ if (!this.estLimite()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rate,1)+' %', rateSpark, kpiRateDelta,
