@@ -1,0 +1,6 @@
+{
+ "moy. {0} / jour": "avg. {0} / day",
+ "{0} sites · relevés du {1}": "{0} sites · readings of {1}",
+ "médiane {0} · {1} sites · {2} ≥ 90": "median {0} · {1} sites · {2} ≥ 90",
+ "médiane · {0} / {1} sites > 200 ms": "median · {0} / {1} sites > 200 ms"
+}

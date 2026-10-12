@@ -1,0 +1,18 @@
+{
+ "= stable": "= stable",
+ "= place": "= unchanged",
+ "Engagement moyen du site : {0} % ; aucun canal important ne s'écarte de plus de 5 points.": "Average site engagement: {0}%; no major channel deviates by more than 5 points.",
+ "{0} {1} : {2} — {3} sur {4} années ; {5} : {6}": "{0} {1}: {2} — {3} over {4} years; {5}: {6}",
+ "{0} des impressions sont en positions 4-10, le gisement le plus rapide ; le top 3 capte {1} des clics pour {2} des impressions.": "{0} of impressions are in positions 4-10, the quickest opportunity; the top 3 captures {1} of clicks for {2} of impressions.",
+ "; au global, {0} estimation pour 100 clics.": "; overall, {0} valuations per 100 clicks.",
+ "{0} page{1} principale{2} à vérifier (non indexée, en erreur ou canonique différente) : ouvrir l'URL dans Search Console > Inspection d'URL.": "{0} main page{1} to check (not indexed, in error or different canonical): open the URL in Search Console > URL Inspection.",
+ "Score Lighthouse mobile moyen des sites du périmètre (dernier relevé de chaque site). Vert ≥ 90, orange 50-89, rouge < 50.": "Average mobile Lighthouse score of the sites in the scope (latest reading of each site). Green ≥ 90, orange 50-89, red < 50.",
+ "{0} < 50 · {1} entre 50 et 89 · {2} ≥ 90": "{0} < 50 · {1} between 50 and 89 · {2} ≥ 90",
+ "Méthode validée sur 2022-2025 (parc entier) : écart entre −0,6 % et +1,1 % sur le total annuel. Fourchette = croissances 30 j / 90 j / depuis janvier.": "Method validated on 2022-2025 (entire network): gap between −0.6% and +1.1% on the annual total. Range = growth over 30 d / 90 d / since January.",
+ ". Que veux-tu analyser ?": ". What would you like to analyse?",
+ "Coche les modules à inclure ; le plan se met à jour à droite": "Tick the modules to include; the outline updates on the right",
+ "Réduisez les ressources JavaScript inutilisées": "Reduce unused JavaScript",
+ "Réduisez les ressources CSS inutilisées": "Reduce unused CSS",
+ "Évitez les redirections de page multiples": "Avoid multiple page redirects",
+ "Réduisez la taille des ressources JavaScript": "Minify JavaScript"
+}

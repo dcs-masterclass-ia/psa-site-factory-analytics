@@ -1,0 +1,23 @@
+{
+ "{0} sites · {1} marques": "{0} sites · {1} brands",
+ "Projection fin {0}": "End-{0} projection",
+ "fourchette {0} – {1}": "range {0} – {1}",
+ "non atteint en {0}": "not reached in {0}",
+ "{0} (en cours)": "{0} (in progress)",
+ "{0} · cumul": "{0} · cumulative",
+ "Top {0} sur {1} marques": "Top {0} of {1} brands",
+ "Autres ({0} marques)": "Others ({0} brands)",
+ "Top {0} sur {1} marchés": "Top {0} of {1} markets",
+ "Autres ({0} marchés)": "Others ({0} markets)",
+ "{0} sites analysés (≥ 300 leads sur 30 j, ≥ 150 N-1)": "{0} sites analysed (≥ 300 leads over 30 d, ≥ 150 last year)",
+ "Poids de chaque mois dans l'année, moyenne {0}": "Weight of each month in the year, average {0}",
+ "vs N-1": "vs last year",
+ "Toutes ({0})": "All ({0})",
+ "{0} diapos": "{0} slides",
+ "{0} diapo": "{0} slide",
+ "{0} / 3 étapes obligatoires": "{0} / 3 required steps",
+ "Il reste à : {0}.": "Remaining: {0}.",
+ "{0} — {1} · {2} modules": "{0} — {1} · {2} modules",
+ "{0} — {1} · {2} module": "{0} — {1} · {2} module",
+ "avant : {0}": "previous: {0}"
+}

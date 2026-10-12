@@ -95,6 +95,8 @@ if (location.hostname === "psa-site-factory-dashboard.vercel.app") location.repl
   setInterval(verifieMaintenance, 60000);
 })();
 </script>
+<script src="./i18n-en.js"></script>
+<script src="./i18n.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -376,6 +378,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg>
         Ticket
         <sc-if value="{{ tkNewCount }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#e8544a;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;animation:tabFadeIn .2s ease">{{ tkNewCount }}</span></sc-if>
+      </div>
+
+      <div role="group" aria-label="Langue" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
+        <sc-for list="{{ langOpts }}" as="l" hint-placeholder-count="2">
+          <span onClick="{{ l.pick }}" title="{{ l.title }}" aria-label="{{ l.title }}" style="{{ l.style }}">{{ l.label }}</span>
+        </sc-for>
       </div>
 
       <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
@@ -3265,6 +3273,7 @@ class Component extends DCLogic {
   }
 
   renderVals(){
+    const T=(s,c)=>window.i18n?window.i18n.t(s,c):s; // texte du code traduit selon la langue (voir i18n.js)
     const h=React.createElement,F='Poppins',st=this.state,set=o=>this.setState(o);
     // initiales reelles du compte connecte (badge en bas de la sidebar) --
     // avant, "MF" etait fige en dur quel que soit qui etait connecte.
@@ -3424,7 +3433,7 @@ class Component extends DCLogic {
       if (ranked.length) {
         const mid=Math.floor(ranked.length/2);
         const med = ranked.length%2 ? ranked[mid].taux : (ranked[mid-1].taux+ranked[mid].taux)/2;
-        convMedianLabel = 'médiane '+dec(med,1)+' %';
+        convMedianLabel = T('médiane')+' '+dec(med,1)+' %';
       }
       if (currentIsSingle && rang>0 && cmpRange) {
         const rankedPrev = this.rankSites(cmpRange.debut, cmpRange.fin);
@@ -3647,7 +3656,7 @@ class Component extends DCLogic {
 
     // audience & saisonnalite : reel (agg.browser/newVsReturning), jour de
     // semaine reel sur les sessions reprise/leads quotidiens de la periode
-    const JOURS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const JOURS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d=>window.i18n?window.i18n.t(d,'jour'):d);
     const sessByDow=Array(7).fill(0), ldsByDow=Array(7).fill(0), cntByDow=Array(7).fill(0);
     dates.forEach(iso=>{ const dow=(new Date(iso).getUTCDay()+6)%7; sessByDow[dow]+=agg.repriseDaily[iso]||0; ldsByDow[dow]+=agg.leadsDaily[iso]||0; cntByDow[dow]++; });
     const sess = sessByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0), lds = ldsByDow.map((v,i)=>cntByDow[i]?v/cntByDow[i]:0);
@@ -3709,14 +3718,14 @@ class Component extends DCLogic {
         ck2.push(h('text',{key:'s'+i,x:x+bw/2,y:WH-26,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[0]+(parts.length>1?' →':'')));
         if (parts.length>1) ck2.push(h('text',{key:'s2'+i,x:x+bw/2,y:WH-13,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[1]));
       };
-      bar(0,yMin,Er,'#c9ccd3',this.fmt(Er),'Période de comparaison','Estimations de la période de comparaison : '+this.fmt(Er));
+      bar(0,yMin,Er,'#c9ccd3',this.fmt(Er),'Période de comparaison',T('Estimations de la période de comparaison :')+' '+this.fmt(Er));
       eff.forEach((e,i)=>{
-        const rateTip=i===0?`Visiteurs de l'accueil : ${this.fmt(cuR[0])} → ${this.fmt(cuA[0])}`:`${FACT_NOMS[i]} : ${dec(cuR[i]/cuR[i-1]*100,1)} % → ${dec(cuA[i]/cuA[i-1]*100,1)} %`;
-        bar(i+1,lev[i],lev[i+1],e>=0?'#3fae7a':'#e8544a',(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e))),FACT_NOMS[i],rateTip+' · effet '+(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e)))+' estimations');
+        const rateTip=i===0?`${T("Visiteurs de l'accueil")} : ${this.fmt(cuR[0])} → ${this.fmt(cuA[0])}`:`${T(FACT_NOMS[i])} : ${dec(cuR[i]/cuR[i-1]*100,1)} % → ${dec(cuA[i]/cuA[i-1]*100,1)} %`;
+        bar(i+1,lev[i],lev[i+1],e>=0?'#3fae7a':'#e8544a',(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e))),FACT_NOMS[i],rateTip+' · '+T('effet')+' '+(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e)))+' '+T('estimations'));
         const xa=CL2+(i+1)*slot-(slot-bw)/2, xb=CL2+(i+1)*slot+(slot-bw)/2;
         ck2.push(h('line',{key:'c'+i,x1:xa,y1:yy(lev[i]),x2:xb,y2:yy(lev[i]),stroke:'#cfd1d6',strokeWidth:1,strokeDasharray:'3 3'}));
       });
-      bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle','Estimations de la période actuelle : '+this.fmt(Ec));
+      bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle',T('Estimations de la période actuelle :')+' '+this.fmt(Ec));
       if (yMin>0) ck2.push(h('text',{key:'cut',x:CL2,y:12,fontSize:10,fill:'#b3b7bd',fontFamily:F},'Axe tronqué : lire les barres d\'évolution'));
       const cLab=['Période de comparaison',...FACT_NOMS,'Période actuelle'];
       this._hov.cbContrib={W:WW,H:WH,top:CT2,bottom:CT2+chei,xs:Array.from({length:8},(_,i)=>CL2+i*slot+slot/2),rows:i=>{ if (i===0) return {title:cLab[0],items:[{n:'Estimations',v:this.fmt(Er)}]}; if (i===7) return {title:cLab[7],items:[{n:'Estimations',v:this.fmt(Ec)}]};
@@ -4013,7 +4022,7 @@ class Component extends DCLogic {
       if (ctrParc.length) {
         const mid = Math.floor(ctrParc.length/2);
         const med = ctrParc.length%2 ? ctrParc[mid] : (ctrParc[mid-1]+ctrParc[mid])/2;
-        scCtrMedianLabel = 'médiane parc '+dec(med,2)+' %';
+        scCtrMedianLabel = T('médiane parc')+' '+dec(med,2)+' %';
       }
     }
     const monthsSelKeys = Object.keys(searchAgg.monthly).sort();
@@ -5152,7 +5161,7 @@ class Component extends DCLogic {
     })();
 
     // ---- saisonnalité : jours de la semaine (365 j) et mois (années complètes) ----
-    const tb_JOURS_C=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+    const tb_JOURS_C=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'].map(d=>window.i18n?window.i18n.t(d,'jour'):d);
     const weekdayRows = (()=>{
       if (!tb_lastDay) return [];
       const sums=[0,0,0,0,0,0,0], cnt=[0,0,0,0,0,0,0];
@@ -5828,6 +5837,8 @@ class Component extends DCLogic {
       tbCaps, capTitle, capTip, capNeeded, capDate, capSubTxt:capSub, fcOk, fcKpis, fcNote, tbForecastChart, tbYoyChart, yoyLegend, annualRows, weekdayRows, monthSeasonRows:monthSeason.rows, monthSeasonOk:monthSeason.ok, seasonLabel, ruptTabs, ruptDown, ruptUp, ruptNote, qualOk, qualTop, qualKpis, qualNote, capPct:capPct.toFixed(1), tbHasAdvanced:!!tb_lastDay,
       tbGridAlign:(countryRows.length>=4?'stretch':'start'),
       ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
+      langOpts:['fr','en'].map(k=>({ label:k.toUpperCase(), title:k==='fr'?'Français':'English', pick:()=>{ if (window.i18n) window.i18n.set(k); this.setState({ langTick:Date.now() }); },
+        style:'min-width:30px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer;'+(((window.i18n&&window.i18n.lang)||'fr')===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') })),
       themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
         style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
       tkNewCount:tkNews.length, tkAlertOpen:tkAlertCtl.isOpen, tkAlertBackdrop:tkAlertSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:90', tkAlertPanel:tkAlertSt.panel, tkAlertTitle:tkNews.length>1?tkNews.length+' tickets mis à jour':'Ton ticket a été mis à jour', tkAlertRows, tkAlertClose:()=>tkAlertDismiss(), tkAlertView:()=>tkAlertDismiss(()=>{ tkCtl.openIt(); set({tkTab:'suivi'}); tkCharge(); }),

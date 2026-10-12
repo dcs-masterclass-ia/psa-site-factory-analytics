@@ -381,3 +381,11 @@ toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés,
 
 ## Tickets : capture de livraison
 À chaque livraison d'un ticket, joindre une capture ciblée sur la section livrée (l'élément concerné, jamais l'écran entier) : fichier PNG dans `tickets/captures/<id>-livraison.png` du repo de données, référencé par le champ `image` du commentaire de réponse (servi par `GET /api/tickets?capture=<nom>`, visible par l'auteur et les profils complets, affiché dans le suivi et le modal d'alerte).
+
+## Langue du dashboard (FR / EN)
+- Le dashboard est écrit en français ; `i18n.js` traduit à l'exécution (sélecteur FR | EN dans l'en-tête, préférence en localStorage `psf_lang`).
+- Dictionnaire : `i18n/en/*.json` ({français: anglais}, valeurs variables `{0}`, `{1}`…) et `i18n/mots.json` (mots / locutions : jours, mois…).
+  `python scripts/build-i18n.py` génère `i18n-en.js` (à commiter). `python scripts/i18n-extract.py` liste les textes de `index.html` sans traduction (`i18n/todo.json`).
+- **Tout nouveau texte visible doit avoir sa traduction** : ajouter la clé (le texte français exact, ou un motif avec `{0}`) dans un nouveau `i18n/en/NN-*.json`, puis relancer le build. Texte assemblé dans le code (`'médiane '+x`) : utiliser `T('médiane')` (défini en tête de `renderVals`) ; jour ambigu (« Mar ») : `T(x,'jour')`.
+- Les noms de sites, requêtes Search Console et contenus saisis ne sont jamais traduits (absents du dictionnaire). Nombres convertis automatiquement (« 27 651 » -> « 27,651 », « 7,1 % » -> « 7.1% ») ; dates restent en jj/mm.
+- Test : `tests/e2e/langue.spec.js` (bascule, retour FR identique, aucun accent français résiduel sur la vue GA4 principale).

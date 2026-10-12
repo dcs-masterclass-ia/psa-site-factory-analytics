@@ -14,9 +14,13 @@ function simule(page, { peutGerer = true, peutStatut = peutGerer, tickets = [] }
     if (req.method() === "GET") return route.fulfill({ json: { tickets, peutGerer, peutStatut, moi: "e2e@autobiz.com" } });
     const body = req.postDataJSON();
     posts.push(body);
-    if (body.action === "create")
-      return route.fulfill({ json: { ok: true, ticket: { id: "T-20261011-ab12", type: body.type, priorite: body.priorite, titre: body.titre, description: body.description,
-        statut: "nouveau", createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@autobiz.com", contexte: body.contexte, commentaires: [] } } });
+    if (body.action === "create") {
+      // la liste du serveur contient le ticket créé (le dashboard la relit périodiquement)
+      const ticket = { id: "T-20261011-ab12", type: body.type, priorite: body.priorite, titre: body.titre, description: body.description,
+        statut: "nouveau", createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@autobiz.com", contexte: body.contexte, commentaires: [] };
+      tickets.unshift(ticket);
+      return route.fulfill({ json: { ok: true, ticket } });
+    }
     const t = tickets.find((x) => x.id === body.id) || tickets[0];
     if (body.action === "status") return route.fulfill({ json: { ok: true, ticket: { ...t, statut: body.statut } } });
     return route.fulfill({ json: { ok: true, ticket: { ...t, commentaires: [{ auteur: "e2e@autobiz.com", texte: body.texte, at: Date.now() }] } } });

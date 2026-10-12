@@ -31,3 +31,6 @@ tests/.cache/
 
 Icon
 .DS_Store
+i18n/todo.json
+scripts/_i18n_batches/
+scripts/i18n-apply-batches.py
