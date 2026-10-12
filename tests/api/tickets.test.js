@@ -96,7 +96,7 @@ test("commentaire : l'auteur peut commenter son ticket, texte vide refusé", asy
   assert.equal((await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "   " })).code, 400);
   const r = await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Précision : septembre uniquement" });
   assert.equal(r.code, 200);
-  assert.equal(r.body.ticket.commentaires.length, 1);
+  assert.equal(r.body.ticket.commentaires.length, 2);
 });
 
 test("limite de 10 tickets par jour et par personne", async () => {
@@ -107,4 +107,12 @@ test("limite de 10 tickets par jour et par personne", async () => {
 test("méthode inconnue et action inconnue", async () => {
   assert.equal((await appelle("DELETE")).code, 405);
   assert.equal((await appelle("POST", { action: "supprimer-tout" })).code, 404);
+});
+
+test("création : le ticket est trié tout de suite (catégorie + commentaire visible par l'auteur)", async () => {
+  const r = await appelle("POST", { ...valide, type: "optimisation", titre: "Transitions", description: "Ajouter une animation sur tous les marchés, plus fluide." });
+  assert.equal(r.body.ticket.triage.categorie, "donnee_simple");
+  assert.equal(r.body.ticket.commentaires[0].systeme, true);
+  const g = await appelle("POST", { ...valide, type: "optimisation", titre: "Onglet", description: "Créer un nouvel onglet Ventes avec une nouvelle source." });
+  assert.equal(g.body.ticket.triage.categorie, "gros_chantier");
 });

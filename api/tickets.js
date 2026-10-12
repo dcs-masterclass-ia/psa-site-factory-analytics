@@ -36,6 +36,7 @@ const crypto = require("crypto");
 const { verifySessionFromRequest } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
+const { CATEGORIES, trier, lienDecision } = require("./_lib/triage");
 
 const FILE = "tickets/tickets.json";
 const TYPES = ["bug", "optimisation", "question"];
@@ -98,14 +99,20 @@ async function notifie(ticket) {
           type: "AdaptiveCard", version: "1.4",
           body: [
             { type: "TextBlock", size: "Medium", weight: "Bolder", wrap: true,
-              text: `${ticket.priorite === "haute" ? "🔴 " : ""}${LIBELLE_TYPE[ticket.type]} — ${ticket.titre}` },
+              text: `${ticket.priorite === "haute" ? "🔴 " : ""}${ticket.triage ? `${CATEGORIES[ticket.triage.categorie].label} (niveau ${ticket.triage.niveau})` : LIBELLE_TYPE[ticket.type]} — ${ticket.titre}` },
             { type: "TextBlock", wrap: true, text: ticket.description.slice(0, 600) },
             { type: "FactSet", facts: [
               { title: "Ticket", value: ticket.id },
               { title: "Auteur", value: ticket.auteur },
               { title: "Contexte", value: `${ctx.onglet || "?"} · ${ctx.nbSites || "?"} site(s)` },
+              ...(ticket.triage ? [{ title: "Raison du tri", value: ticket.triage.raison }, { title: "Suite", value: CATEGORIES[ticket.triage.categorie].suite }] : []),
             ] },
           ],
+          // boutons seulement quand l'agent peut agir (ajout simple, bug) ; aucune modification autonome sans ce clic
+          ...(ticket.triage && ["donnee_simple", "bug"].includes(ticket.triage.categorie) && process.env.TICKETS_LINK_SECRET ? { actions: [
+            { type: "Action.OpenUrl", title: "Accepter", style: "positive", url: lienDecision(ticket.id, "accept", process.env.TICKETS_LINK_SECRET) },
+            { type: "Action.OpenUrl", title: "Refuser", style: "destructive", url: lienDecision(ticket.id, "refuse", process.env.TICKETS_LINK_SECRET) },
+          ] } : {}),
         },
       }],
     };
@@ -163,6 +170,7 @@ module.exports = async function handler(req, res) {
       if (recents >= MAX_PAR_JOUR) { res.status(429).json({ error: `Limite de ${MAX_PAR_JOUR} tickets par jour atteinte.` }); return; }
       if (tickets.length >= MAX_TICKETS) { res.status(507).json({ error: "Trop de tickets stockés, contacte l'administrateur." }); return; }
       const ticket = { id: newId(), ...v.ok, statut: "nouveau", createdAt: now, updatedAt: now, auteur: email, commentaires: [] };
+      trier(ticket);
       tickets.push(ticket);
       await ecrit(tickets, sha, `ticket ${ticket.id} — ${email}`);
       await notifie(ticket);
