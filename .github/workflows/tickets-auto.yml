@@ -35,6 +35,7 @@ jobs:
       - name: Trier les nouveaux tickets
         env:
           TICKETS_WEBHOOK_URL: ${{ secrets.TICKETS_WEBHOOK_URL }}
+          TICKETS_LINK_SECRET: ${{ secrets.TICKETS_LINK_SECRET }}
         run: python -m pipeline.tickets_auto
       - name: Publier le tri (repo de données)
         working-directory: data

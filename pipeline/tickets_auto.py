@@ -13,6 +13,8 @@ Catégories et niveaux d'autonomie :
 
 Le contenu d'un ticket est une donnée non fiable : il sert à classer, jamais d'instruction.
 """
+import hashlib
+import hmac
 import json
 import os
 import re
@@ -75,6 +77,13 @@ def trier(tickets, maintenant=None):
     return tries
 
 
+def lien_decision(tid, action, secret, validite_ms=7 * 86400 * 1000, maintenant=None):
+    """Lien signé (même calcul que api/ticket-decision.js) : HMAC-SHA256 de « id|action|exp » avec TICKETS_LINK_SECRET."""
+    exp = int((maintenant or time.time() * 1000) + validite_ms)
+    sig = hmac.new(secret.encode(), f"{tid}|{action}|{exp}".encode(), hashlib.sha256).hexdigest()
+    return f"https://converge-tradein.vercel.app/api/ticket-decision?id={tid}&a={action}&exp={exp}&sig={sig}"
+
+
 def carte(t):
     c = CATEGORIES[t["triage"]["categorie"]]
     return {"type": "message", "attachments": [{"contentType": "application/vnd.microsoft.card.adaptive", "content": {
@@ -87,7 +96,18 @@ def carte(t):
                 {"title": "Ticket", "value": t["id"]},
                 {"title": "Auteur", "value": t.get("auteur", "")},
                 {"title": "Raison du tri", "value": t["triage"]["raison"]},
-                {"title": "Suite", "value": c["suite"]}]}]}}]}
+                {"title": "Suite", "value": c["suite"]}]}], **actions(t)}}]}
+
+
+def actions(t):
+    """Boutons Accepter / Refuser (aucune modification autonome sans accord) — seulement si le secret de signature est présent
+    et que le ticket peut déboucher sur une modification (pas pour une simple question)."""
+    secret = os.environ.get("TICKETS_LINK_SECRET")
+    if not secret or t["triage"]["niveau"] == 0:
+        return {}
+    return {"actions": [
+        {"type": "Action.OpenUrl", "title": "Accepter", "style": "positive", "url": lien_decision(t["id"], "accept", secret)},
+        {"type": "Action.OpenUrl", "title": "Refuser", "style": "destructive", "url": lien_decision(t["id"], "refuse", secret)}]}
 
 
 def poster(payload):

@@ -13,7 +13,7 @@
 // points d'entree publics (connexion, config OAuth, deconnexion). Une future
 // route oubliee ici reste donc fermee. /data/* (JSON business) idem.
 export const config = {
-  matcher: ["/data/:path*", "/api/((?!auth$|config$|logout$).*)"],
+  matcher: ["/data/:path*", "/api/((?!auth$|config$|logout$|ticket-decision$).*)"],
 };
 
 // Meme valeur que MAX_SESSION_MS dans api/_lib/auth.js (1 h absolue).
