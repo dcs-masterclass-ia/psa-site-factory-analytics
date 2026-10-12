@@ -380,4 +380,4 @@ toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés,
 
 
 ## Tickets : capture de livraison
-À chaque livraison d'un ticket, joindre une capture de ce qui a été poussé : fichier PNG dans `tickets/captures/<id>-livraison.png` du repo de données, référencé par le champ `image` du commentaire de réponse (servi par `GET /api/tickets?capture=<nom>`, visible par l'auteur et les profils complets, affiché dans le suivi et le modal d'alerte).
+À chaque livraison d'un ticket, joindre une capture ciblée sur la section livrée (l'élément concerné, jamais l'écran entier) : fichier PNG dans `tickets/captures/<id>-livraison.png` du repo de données, référencé par le champ `image` du commentaire de réponse (servi par `GET /api/tickets?capture=<nom>`, visible par l'auteur et les profils complets, affiché dans le suivi et le modal d'alerte).
