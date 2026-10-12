@@ -13,6 +13,9 @@
  * Routes (session valide obligatoire, cf. middleware.js) :
  *   GET  /api/tickets                       -> { tickets: [...], peutGerer }
  *        profil complet : tous les tickets ; profil limité : les siens seulement
+ *   GET  /api/tickets?capture=<nom>.png     -> capture d'écran jointe à un commentaire
+ *        (champ "image" du commentaire ; fichier tickets/captures/<nom> du repo de données).
+ *        Visible par l'auteur du ticket et par les profils complets.
  *   POST /api/tickets {action:"create",...} -> crée (profils complet ET limité)
  *   POST /api/tickets {action:"comment", id, texte}
  *        -> l'auteur du ticket, ou un profil complet
@@ -32,7 +35,7 @@
 const crypto = require("crypto");
 const { verifySessionFromRequest } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
-const { readJson, writeJson } = require("./_lib/store");
+const { readJson, writeJson, readBinary } = require("./_lib/store");
 
 const FILE = "tickets/tickets.json";
 const TYPES = ["bug", "optimisation", "question"];
@@ -122,6 +125,21 @@ module.exports = async function handler(req, res) {
   const gere = session.role === "full";
 
   try {
+    if (req.method === "GET" && req.query && req.query.capture) {
+      const nom = String(req.query.capture);
+      if (!/^[A-Za-z0-9._-]{1,80}\.(png|jpe?g|webp)$/.test(nom)) { res.status(400).json({ error: "Nom de capture invalide." }); return; }
+      const { data } = await readJson(FILE);
+      const liste = (data && Array.isArray(data.tickets)) ? data.tickets : [];
+      const t = liste.find(x => (x.commentaires || []).some(k => k.image === nom));
+      if (!t || (!gere && t.auteur !== email)) { res.status(404).json({ error: "Capture introuvable." }); return; }
+      const buf = await readBinary(`tickets/captures/${nom}`);
+      if (!buf) { res.status(404).json({ error: "Capture introuvable." }); return; }
+      res.setHeader("content-type", /\.png$/.test(nom) ? "image/png" : /\.webp$/.test(nom) ? "image/webp" : "image/jpeg");
+      res.setHeader("cache-control", "private, max-age=3600");
+      res.status(200).send(buf);
+      return;
+    }
+
     if (req.method === "GET") {
       const { data } = await readJson(FILE);
       const tous = (data && Array.isArray(data.tickets)) ? data.tickets : [];

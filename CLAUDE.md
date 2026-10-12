@@ -377,3 +377,7 @@ Une seule action principale à la fois : « Continuer » dans l'étape (plein ta
 sont terminées) ; « Enregistrer le brouillon » (= brief, onglet « Mes présentations ») et « Enregistrer comme modèle » sont des actions secondaires expliquées. Le client est
 toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés, mois et chiffres traduits (`pipeline/deck/textes.py`, `periodes.py`) ; les analyses rédigées
 (`analyse.py`) et quelques phrases de `construit.py` restent en français ou en anglais (repli anglais).
+
+
+## Tickets : capture de livraison
+À chaque livraison d'un ticket, joindre une capture de ce qui a été poussé : fichier PNG dans `tickets/captures/<id>-livraison.png` du repo de données, référencé par le champ `image` du commentaire de réponse (servi par `GET /api/tickets?capture=<nom>`, visible par l'auteur et les profils complets, affiché dans le suivi et le modal d'alerte).
