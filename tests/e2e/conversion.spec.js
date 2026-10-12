@@ -78,18 +78,22 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
   await page.getByText("Conversion", { exact: true }).first().click();               // thème « Conversion »
   await page.getByText("Avant / après V2", { exact: true }).first().click();         // vue du thème
   await expect(page.getByText("Parcours avant / après V2")).toBeVisible();
-  await expect(page.getByText(/Avant : .+ \(\d+ j\) · Après : .+ \(\d+ j\)/)).toBeVisible();
+  await expect(page.getByText(/Avant : \d{2}\/\d{2}–\d{2}\/\d{2} · Après : \d{2}\/\d{2}–\d{2}\/\d{2} · V2 le \d{2}\/\d{2}/)).toBeVisible();   // mode par défaut : les dates du haut
+  await page.getByText("Autour de la bascule", { exact: true }).click();
+  await expect(page.getByText(/avant : 28 jours précédant la bascule · après : depuis la bascule/)).toBeVisible();
+  await page.getByText("14 j", { exact: true }).click();
+  await expect(page.getByText(/avant : 14 jours précédant la bascule/)).toBeVisible();
   await expect(page.getByText("Visiteurs accueil / jour")).toBeVisible();
   await expect(page.getByText("Estimations / jour")).toBeVisible();
   // écarts de conversion en POINTS (jamais une variation relative étiquetée pt)
   await expect(page.getByText(/[+−]\d+,\d pt/).first()).toBeVisible();
   // info-bulle : visible au survol
-  const info = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "28 jours qui précèdent la bascule" }) }).first();
+  const info = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "jours qui précèdent la bascule" }) }).first();
   await info.scrollIntoViewIfNeeded();
   await page.waitForTimeout(300); // le défilement masque la bulle (voulu) : on survole une fois la page immobile
   await info.hover();
   await expect(page.locator("#dc-tipbox")).toBeVisible();
-  await expect(page.locator("#dc-tipbox")).toContainText("28 jours qui précèdent la bascule");
+  await expect(page.locator("#dc-tipbox")).toContainText("jours qui précèdent la bascule");
   await page.locator("body").screenshot({ path: "test-results/v2-opel.png" });
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
@@ -196,4 +200,20 @@ test("PageSpeed : synthèse du parc (moyennes, seuils, optimisations, marques)",
   await page.getByText("Desktop", { exact: true }).first().click();
   await expect(page.getByText("LCP (affichage principal)")).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("Avant / après V2 : avertissement quand la période mélange ancien et nouveau parcours", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('[data-testid="scope-picker-toggle"]').click();
+  await page.getByText("Aucun", { exact: true }).click();
+  await page.locator('[data-testid="scope-search-input"]').fill("CITROEN FR");
+  await page.locator('[data-testid="scope-item"]').filter({ hasText: "CITROEN FR" }).first().click();
+  await page.keyboard.press("Escape");
+  await page.mouse.click(5, 5);
+  await page.getByText("Conversion", { exact: true }).first().click();
+  await page.getByText("Avant / après V2", { exact: true }).first().click();
+  await expect(page.getByText(/Attention : la période choisie contient \d+ jours? avant la V2/)).toBeVisible();
+  await page.getByText("Isoler la V2 (autour de la bascule)", { exact: true }).click();                   // le bouton bascule de mode
+  await expect(page.getByText(/avant : 28 jours précédant la bascule/)).toBeVisible();
+  await expect(page.getByText(/Attention : la période choisie contient/)).toHaveCount(0);
 });
