@@ -188,7 +188,7 @@ Méthode :
 4. Si tu ne peux pas vérifier (donnée absente, accès manquant), verdict « impossible » et dis précisément ce qui manque.
 
 Fichiers à écrire à la racine (rien d'autre) :
-- reponse.md : la réponse destinée à l'AUTEUR, en français simple (tutoiement), courte, avec les chiffres vérifiés, sans jargon ni mention de l'IA.
+- reponse.md : la réponse destinée à l'AUTEUR, en français simple (tutoiement), courte, avec les chiffres vérifiés, sans jargon ni mention de l'IA, en TEXTE BRUT : pas de markdown (ni **gras**, ni titres), des phrases ou des tirets simples « • ».
 - analyse.json : {{"verdict": "reponse" | "bug_possible" | "impossible", "bug": "si bug_possible : ce qui est faux, où, preuves chiffrées (pour M., pas pour l'auteur)", "resume": "2 lignes pour M."}}
 """
 
