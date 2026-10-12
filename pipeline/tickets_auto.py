@@ -39,7 +39,7 @@ CATEGORIES = {
 
 MOTS_GROS = re.compile(r"nouvel(le)?s? (onglet|module|page|source|tableau de bord|dashboard)|refonte|refondre|"
                        r"nouvelle? (fonctionnalit|int[ée]gration|api)|automatis|intégrer|integrer|migration|"
-                       r"tous les (sites|march)|import|synchronis|multi-?langue|droits|permissions|authentification", re.I)
+                       r"import|synchronis|multi-?langue|droits|permissions|authentification", re.I)
 MOTS_SIMPLE = re.compile(r"ajouter|ajout|colonne|total|libell|renomm|afficher|montrer|tooltip|info-?bulle|trier|tri |"
                          r"pourcentage|effectif|couleur", re.I)
 
@@ -103,7 +103,8 @@ def actions(t):
     """Boutons Accepter / Refuser (aucune modification autonome sans accord) — seulement si le secret de signature est présent
     et que le ticket peut déboucher sur une modification (pas pour une simple question)."""
     secret = os.environ.get("TICKETS_LINK_SECRET")
-    if not secret or t["triage"]["niveau"] == 0:
+    # boutons seulement quand une modification autonome est possible (ajout simple, bug) : pas pour une question ni un gros chantier
+    if not secret or t["triage"]["categorie"] not in ("donnee_simple", "bug"):
         return {}
     return {"actions": [
         {"type": "Action.OpenUrl", "title": "Accepter", "style": "positive", "url": lien_decision(t["id"], "accept", secret)},

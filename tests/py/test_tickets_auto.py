@@ -12,6 +12,7 @@ class TestTri(unittest.TestCase):
         self.assertEqual(ta.classer(tk("bug", "Écart de leads"))[0], "bug")
         self.assertEqual(ta.classer(tk("optimisation", "Total par canal", "Ajouter une colonne total"))[0], "donnee_simple")
         self.assertEqual(ta.classer(tk("optimisation", "Nouvel onglet", "Créer un nouvel onglet Ventes"))[0], "gros_chantier")
+        self.assertEqual(ta.classer(tk("optimisation", "Transitions", "Ajouter une animation sur tous les marchés"))[0], "donnee_simple")
         self.assertEqual(ta.classer(tk("optimisation", "Truc", "Améliorer l'expérience globale du site"))[0], "gros_chantier")
 
     def test_description_longue_monte_d_un_niveau(self):
@@ -45,4 +46,6 @@ class TestLiens(unittest.TestCase):
         self.assertRegex(acts[0]["url"], r"a=accept&exp=\d+&sig=[0-9a-f]{64}$")
         q = tk("question", "Comment ?"); ta.trier([q])
         self.assertNotIn("actions", ta.carte(q)["attachments"][0]["content"])
+        g = tk("optimisation", "Nouvel onglet", "Créer un nouvel onglet Ventes"); ta.trier([g])
+        self.assertNotIn("actions", ta.carte(g)["attachments"][0]["content"])
         del os.environ["TICKETS_LINK_SECRET"]
