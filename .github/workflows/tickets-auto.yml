@@ -1,0 +1,47 @@
+name: Ticketing autonome (tri des tickets)
+
+# Niveau 1 : toutes les 10 minutes, trie les nouveaux tickets (ajout simple / bug / gros chantier / question), prévient
+# l'auteur (commentaire système -> alerte du dashboard) et poste une carte Teams. Voir pipeline/tickets_auto.py.
+# Les niveaux suivants (modification autonome, validation) s'appuient sur le champ « triage » posé ici.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tickets-auto
+  cancel-in-progress: false
+
+jobs:
+  trier:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Trier les nouveaux tickets
+        env:
+          TICKETS_WEBHOOK_URL: ${{ secrets.TICKETS_WEBHOOK_URL }}
+        run: python -m pipeline.tickets_auto
+      - name: Publier le tri (repo de données)
+        working-directory: data
+        run: |
+          if git diff --quiet -- tickets/tickets.json; then echo "rien à publier"; exit 0; fi
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add tickets/tickets.json
+          git commit -m "chore(tickets): tri automatique des nouveaux tickets"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1
