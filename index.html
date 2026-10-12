@@ -375,6 +375,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;background:#f2f2f5;color:#4b4f57;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#e8e8ee">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg>
         Ticket
+        <sc-if value="{{ tkNewCount }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#e8544a;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;animation:tabFadeIn .2s ease">{{ tkNewCount }}</span></sc-if>
       </div>
 
       <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
@@ -1552,6 +1553,30 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </div>
       </sc-if>
 
+      <sc-if value="{{ tkAlertOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ tkAlertBackdrop }}">
+        <div style="{{ tkAlertPanel }}">
+          <div style="display:flex;align-items:center;gap:12px;padding:22px 26px 6px">
+            <span style="width:40px;height:40px;border-radius:14px;background:#f1eefe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></span>
+            <div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:600;color:#121214">{{ tkAlertTitle }}</div><div style="font-size:13px;color:#9a9fa6">Les mises à jour de tes tickets depuis ta dernière visite</div></div>
+          </div>
+          <div style="padding:12px 26px 6px;overflow-y:auto;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ tkAlertRows }}" as="n" hint-placeholder-count="2">
+              <div style="border:1px solid #efeff2;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:14.5px;font-weight:600;color:#121214">{{ n.titre }}</span><span style="{{ n.statStyle }}">{{ n.statLabel }}</span></div>
+                <div style="font-size:13px;color:#4b4b4f;line-height:1.5">{{ n.message }}</div>
+                <sc-if value="{{ n.reply }}" hint-placeholder-val="{{ false }}"><div style="font-size:13.5px;color:#2f2f33;line-height:1.5;background:#f6f6f8;border-radius:10px;padding:8px 12px"><span style="color:#9a9fa6;font-size:12px">{{ n.replyWho }} :</span> {{ n.reply }}</div></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 26px 22px">
+            <span onClick="{{ tkAlertClose }}" style="font-size:14px;font-weight:500;color:#6d727a;background:#f4f4f6;border-radius:12px;padding:9px 18px;cursor:pointer" style-hover="background:#ebebef">Fermer</span>
+            <span onClick="{{ tkAlertView }}" style="font-size:14px;font-weight:600;color:#fff;background:#7c63ee;border-radius:12px;padding:9px 18px;cursor:pointer" style-hover="background:#6a50e0">Voir mes tickets</span>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ tkModal }}" hint-placeholder-val="{{ false }}">
       <div style="{{ tkBackdropStyle }}">
         <div style="{{ tkPanelStyle }}">
@@ -1604,7 +1629,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="border:1px solid #efeff1;border-radius:14px;margin-bottom:10px;overflow:hidden">
                   <div onClick="{{ r.toggle }}" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;flex-wrap:wrap" style-hover="background:#fafafc">
                     <span style="{{ r.typeStyle }}">{{ r.typeLabel }}</span>
-                    <span style="flex:1;min-width:140px;font-size:14.5px;font-weight:500;color:#121214">{{ r.titre }}</span>
+                    <sc-if value="{{ r.isNew }}" hint-placeholder-val="{{ false }}"><span title="Mis à jour" style="width:9px;height:9px;border-radius:5px;background:#e8544a;flex:none"></span></sc-if><span style="flex:1;min-width:140px;font-size:14.5px;font-weight:500;color:#121214">{{ r.titre }}</span>
                     <sc-if value="{{ r.urgent }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:#c24a44;background:#fdf1f0;border-radius:999px;padding:2px 9px">Priorité haute</span></sc-if>
                     <span style="{{ r.statStyle }}">{{ r.statLabel }}</span>
                     <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ r.id }} · {{ r.meta }}</span>
@@ -2763,6 +2788,8 @@ class Component extends DCLogic {
     document.addEventListener('scroll', () => this.hovHide(), true);
     this.evCharge();
     setTimeout(()=>this.objCharge(), 1500);
+    const tkSync=()=>fetch('/api/tickets').then(r=>r.ok?r.json():null).then(j=>{ if (j) { this._tk=Object.assign({}, this._tk, { list:j.tickets||[], peutGerer:!!j.peutGerer, moi:j.moi }); this.setState({ tkTick:Date.now() }); } }).catch(()=>{});
+    setTimeout(tkSync, 2000); setInterval(tkSync, 300000);
     setTimeout(()=>this.alCharge(), 1200);
     setTimeout(()=>this.indexCharge(), 1800);
     window.addEventListener('resize', () => { clearTimeout(this._rz); this._rz = setTimeout(() => this.measureBoxes(), 120); });
@@ -5401,10 +5428,32 @@ class Component extends DCLogic {
     const tkFmtDate = ts => { const d=new Date(ts); return pad2tk(d.getDate())+'/'+pad2tk(d.getMonth()+1)+' '+pad2tk(d.getHours())+':'+pad2tk(d.getMinutes()); };
     function pad2tk(n){ return String(n).padStart(2,'0'); }
     const tkOpenId = st.tkOpenId || null;
+    // ---- alerte de mise à jour des tickets de l'utilisateur (statut changé / réponse), vue en modal centré flou ----
+    // « lu » : localStorage par adresse (id -> horodatage vu) ; par défaut, la date de création du ticket.
+    const tkMoi = String((this._tk&&this._tk.moi)||this._userEmail||'').toLowerCase();
+    const tkSeenKey = 'psf_tk_seen_'+tkMoi;
+    const tkSeenRead = () => { try { return JSON.parse(localStorage.getItem(tkSeenKey)||'{}')||{}; } catch(e) { return {}; } };
+    const tkSeen = tkSeenRead();
+    const tkNews = ((this._tk&&this._tk.list)||[]).filter(t=>String(t.auteur||'').toLowerCase()===tkMoi && tkMoi).map(t=>{
+      const autres=(t.commentaires||[]).filter(k=>String(k.auteur||'').toLowerCase()!==tkMoi);
+      const last=autres.reduce((a,k)=>Math.max(a,k.at||0),0);
+      return { t, autres, last, vu:tkSeen[t.id]!=null?tkSeen[t.id]:(t.createdAt||0) };
+    }).filter(x=>x.last>x.vu);
+    const tkNewIds = new Set(tkNews.map(x=>x.t.id));
+    const tkMarkSeen = () => { try { const m=tkSeenRead(); ((this._tk&&this._tk.list)||[]).forEach(t=>{ if (String(t.auteur||'').toLowerCase()===tkMoi) m[t.id]=Math.max(t.updatedAt||0,Date.now()); }); localStorage.setItem(tkSeenKey,JSON.stringify(m)); } catch(e) {} };
+    const TK_MSG = { nouveau:"Ton ticket est bien reçu.", en_cours:"Ton ticket est pris en charge : on travaille dessus.", resolu:"C'est traité : la modification est en ligne.", refuse:"Ton ticket n'a pas été retenu." };
+    const tkAlertRows = tkNews.sort((a,b)=>b.last-a.last).map(({t,autres})=>{
+      const sx=TK_STATUTS[t.statut]||TK_STATUTS.nouveau; const rep=autres.filter(k=>!k.systeme).slice(-1)[0]; const changed=autres.some(k=>k.systeme);
+      return { titre:t.titre, statLabel:sx[0], statStyle:tkPill(sx[1],sx[2]), message:changed?TK_MSG[t.statut]:'Tu as une réponse sur ce ticket.', reply:rep?rep.texte:'', replyWho:rep?String(rep.auteur||'').split('@')[0]:'' };
+    });
+    const tkAlertCtl = modalCtl('tkAlert');
+    const tkAlertSt = modalStyles(tkAlertCtl,'width:560px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
+    if (tkNews.length && !st.tkAlertDone && !st.tkAlert && !st.tkModal && this._tkAlertShown!==tkNews.map(x=>x.t.id+x.last).join()) { this._tkAlertShown=tkNews.map(x=>x.t.id+x.last).join(); setTimeout(()=>this.setState({tkAlert:true,tkAlertClosing:false}),600); }
+    const tkAlertDismiss = after => { tkMarkSeen(); tkAlertCtl.closeIt(); setTimeout(()=>this.setState({tkTick:Date.now()}),220); if (after) after(); };
     const tkRows = ((this._tk&&this._tk.list)||[]).map(t=>{
       const ty=TK_TYPES[t.type]||TK_TYPES.question, sx=TK_STATUTS[t.statut]||TK_STATUTS.nouveau, ouvert=t.id===tkOpenId;
       const c=t.contexte||{};
-      return { id:t.id, titre:t.titre, open:ouvert, desc:t.description,
+      return { id:t.id, titre:t.titre, isNew:tkNewIds.has(t.id), open:ouvert, desc:t.description,
         typeLabel:ty[0], typeStyle:tkPill(ty[1],ty[2]), statLabel:sx[0], statStyle:tkPill(sx[1],sx[2]),
         urgent:t.priorite==='haute', meta:tkFmtDate(t.createdAt)+(tkPeutGerer?' · '+String(t.auteur||'').split('@')[0]:''),
         ctx:[c.onglet, c.nbSites?(c.sites&&c.sites.length===1?c.sites[0]:c.nbSites+' sites'):null, c.periode&&c.periode.from?c.periode.from.slice(8,10)+'/'+c.periode.from.slice(5,7)+' → '+c.periode.to.slice(8,10)+'/'+c.periode.to.slice(5,7):null].filter(Boolean).join(' · '),
@@ -5415,6 +5464,7 @@ class Component extends DCLogic {
           style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 11px;cursor:pointer;'+(t.statut===k?`background:${TK_STATUTS[k][2]};color:${TK_STATUTS[k][1]}`:'background:#f6f6f8;color:#8a8f98') })):[],
         sendComment:()=>{ const x=(st.tkComment||'').trim(); if (x) tkMaj({action:'comment',id:t.id,texte:x}); } };
     });
+
     const tkTypeOpts = Object.keys(TK_TYPES).map(k=>({ label:TK_TYPES[k][0], pick:()=>set({tkType:k,tkMsg:null}),
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:7px 14px;cursor:pointer;white-space:nowrap;border:1px solid '+(tkType===k?TK_TYPES[k][1]:'#ececee')+';'+(tkType===k?`background:${TK_TYPES[k][2]};color:${TK_TYPES[k][1]}`:'background:#fff;color:#6d727a') }));
     const tkPrioOpts = [['normale','Normale'],['haute','Haute']].map(([k,l])=>({ label:l, pick:()=>set({tkPrio:k}),
@@ -5779,7 +5829,8 @@ class Component extends DCLogic {
       ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
       themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
         style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
-      tkModal:tkCtl.isOpen, tkBackdropStyle:tkStyles.backdrop, tkPanelStyle:tkStyles.panel, openTickets:()=>{ tkCtl.openIt(); tkCharge(); }, closeTickets:tkCtl.closeIt,
+      tkNewCount:tkNews.length, tkAlertOpen:tkAlertCtl.isOpen, tkAlertBackdrop:tkAlertSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:90', tkAlertPanel:tkAlertSt.panel, tkAlertTitle:tkNews.length>1?tkNews.length+' tickets mis à jour':'Ton ticket a été mis à jour', tkAlertRows, tkAlertClose:()=>tkAlertDismiss(), tkAlertView:()=>tkAlertDismiss(()=>{ tkCtl.openIt(); set({tkTab:'suivi'}); tkCharge(); }),
+      tkModal:tkCtl.isOpen, tkBackdropStyle:tkStyles.backdrop, tkPanelStyle:tkStyles.panel, openTickets:()=>{ tkCtl.openIt(); tkCharge(); }, closeTickets:()=>{ tkMarkSeen(); tkCtl.closeIt(); },
       tkTabs, tkIsNew:tkTab==='nouveau', tkIsSuivi:tkTab==='suivi', tkTypeOpts, tkPrioOpts, tkPlaceholder, tkContexteLabel,
       tkTitre, onTkTitre:e=>set({tkTitre:e.target.value.slice(0,120)}), tkDesc, onTkDesc:e=>set({tkDesc:e.target.value.slice(0,3000)}),
       tkDescCount:tkDesc.length+' / 3000', tkSubmit:tkEnvoie, tkSubmitLabel:st.tkBusy?'Envoi…':'Envoyer le ticket',
