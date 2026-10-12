@@ -138,3 +138,19 @@ test("profil complet qui n'est pas le propriétaire : voit et commente, mais ne 
   assert.equal(r.code, 403);
   assert.equal(fichier.tickets[0].statut, "nouveau");
 });
+
+test("réponses de nos outils et du propriétaire : toujours signées « équipe-converge » (données réelles inchangées)", async () => {
+  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
+  session = { email: "auteur@autobiz.com", role: "limited" };
+  const c = await appelle("POST", valide);
+  fichier.tickets[0].commentaires.push(
+    { auteur: "asktaprof@gmail.com", texte: "ok", at: 1 }, { auteur: "m.foureau@autobiz.com", texte: "ok2", at: 2 },
+    { auteur: "converge-auto", texte: "auto", at: 3, systeme: true }, { auteur: "decision-teams", texte: "dt", at: 4, systeme: true },
+    { auteur: "mohand@autobiz.com", texte: "moi", at: 5 });
+  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com,asktaprof@gmail.com";
+  const g = await appelle("GET");
+  const auteurs = g.body.tickets[0].commentaires.map(k => k.auteur);
+  assert.deepEqual(auteurs.slice(-5), ["équipe-converge", "équipe-converge", "équipe-converge", "équipe-converge", "mohand@autobiz.com"]);
+  assert.equal(fichier.tickets[0].commentaires.slice(-1)[0].auteur, "mohand@autobiz.com");
+  assert.ok(c.body.ticket);
+});

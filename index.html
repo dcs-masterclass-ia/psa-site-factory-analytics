@@ -5445,7 +5445,7 @@ class Component extends DCLogic {
     const tkSeenRead = () => { try { return JSON.parse(localStorage.getItem(tkSeenKey)||'{}')||{}; } catch(e) { return {}; } };
     const tkSeen = tkSeenRead();
     const tkNews = ((this._tk&&this._tk.list)||[]).filter(t=>String(t.auteur||'').toLowerCase()===tkMoi && tkMoi).map(t=>{
-      const autres=(t.commentaires||[]).filter(k=>String(k.auteur||'').toLowerCase()!==tkMoi);
+      const autres=(t.commentaires||[]).filter(k=>!k.mien&&String(k.auteur||'').toLowerCase()!==tkMoi);
       const last=autres.reduce((a,k)=>Math.max(a,k.at||0),0);
       return { t, autres, last, vu:tkSeen[t.id]!=null?tkSeen[t.id]:(t.createdAt||0) };
     }).filter(x=>x.last>x.vu);

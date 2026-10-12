@@ -49,6 +49,15 @@ const MAX_PAR_JOUR = 10;
 const MAX_FILE_BYTES = 900 * 1024;
 const LIBELLE_TYPE = { bug: "Bug de données", optimisation: "Optimisation", question: "Question" };
 
+// Signature affichée des réponses venant de nos outils ou du propriétaire : toujours « équipe-converge » (les données gardent l'auteur réel)
+const OUTILS = new Set(["converge-auto", "decision-teams", "equipe-converge"]);
+const signature = (c, email) => {
+  const a = String(c.auteur || "").toLowerCase();
+  if (OUTILS.has(a) || presentationsAllowed(a)) return { ...c, auteur: "équipe-converge", ...(a === email ? { mien: true } : {}) };
+  return a === email ? { ...c, mien: true } : c;
+};
+const affiche = (t, email) => ({ ...t, commentaires: (t.commentaires || []).map(c => signature(c, email)) });
+
 const txt = (v, max) => String(v == null ? "" : v).replace(/\u0000/g, "").trim().slice(0, max);
 const isoDate = v => (/^\d{4}-\d{2}-\d{2}$/.test(String(v || "")) ? String(v) : null);
 
@@ -151,7 +160,7 @@ module.exports = async function handler(req, res) {
       const tous = (data && Array.isArray(data.tickets)) ? data.tickets : [];
       const visibles = gere ? tous : tous.filter(t => t.auteur === email);
       res.setHeader("cache-control", "no-store");
-      res.status(200).json({ tickets: visibles.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), peutGerer: gere, peutStatut, moi: email });
+      res.status(200).json({ tickets: visibles.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)).map(t => affiche(t, email)), peutGerer: gere, peutStatut, moi: email });
       return;
     }
 
@@ -174,7 +183,7 @@ module.exports = async function handler(req, res) {
       await ecrit(tickets, sha, `ticket ${ticket.id} — ${email}`);
       await notifie(ticket);
       if (ticket.triage && ticket.triage.categorie === "question") await lance("tickets-reponse.yml"); // l'agent prépare la réponse tout de suite
-      res.status(200).json({ ok: true, ticket });
+      res.status(200).json({ ok: true, ticket: affiche(ticket, email) });
       return;
     }
 
@@ -192,7 +201,7 @@ module.exports = async function handler(req, res) {
       if (repondait) delete ticket.attente;
       await ecrit(tickets, sha, `ticket ${id} — commentaire`);
       if (repondait) await notifie(ticket, texte); // M. est prévenu : la précision demandée est arrivée, avec les boutons de décision
-      res.status(200).json({ ok: true, ticket });
+      res.status(200).json({ ok: true, ticket: affiche(ticket, email) });
       return;
     }
 
@@ -205,7 +214,7 @@ module.exports = async function handler(req, res) {
         ticket.updatedAt = now;
         await ecrit(tickets, sha, `ticket ${id} — statut ${body.statut}`);
       }
-      res.status(200).json({ ok: true, ticket });
+      res.status(200).json({ ok: true, ticket: affiche(ticket, email) });
       return;
     }
 
