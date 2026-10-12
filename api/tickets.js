@@ -36,7 +36,7 @@ const crypto = require("crypto");
 const { verifySessionFromRequest } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
-const { CATEGORIES, trier, lienDecision } = require("./_lib/triage");
+const { CATEGORIES, trier, boutons } = require("./_lib/triage");
 
 const FILE = "tickets/tickets.json";
 const TYPES = ["bug", "optimisation", "question"];
@@ -85,7 +85,7 @@ function valideCreation(b) {
   };
 }
 
-async function notifie(ticket) {
+async function notifie(ticket, precision) {
   const url = process.env.TICKETS_WEBHOOK_URL;
   if (!url) return;
   try {
@@ -99,8 +99,8 @@ async function notifie(ticket) {
           type: "AdaptiveCard", version: "1.4",
           body: [
             { type: "TextBlock", size: "Medium", weight: "Bolder", wrap: true,
-              text: `${ticket.priorite === "haute" ? "🔴 " : ""}${ticket.triage ? `${CATEGORIES[ticket.triage.categorie].label} (niveau ${ticket.triage.niveau})` : LIBELLE_TYPE[ticket.type]} — ${ticket.titre}` },
-            { type: "TextBlock", wrap: true, text: ticket.description.slice(0, 600) },
+              text: precision ? `Précision reçue — ${ticket.titre}` : `${ticket.priorite === "haute" ? "🔴 " : ""}${ticket.triage ? `${CATEGORIES[ticket.triage.categorie].label} (niveau ${ticket.triage.niveau})` : LIBELLE_TYPE[ticket.type]} — ${ticket.titre}` },
+            { type: "TextBlock", wrap: true, text: precision ? `${ticket.auteur} répond : ${precision}` : ticket.description.slice(0, 600) },
             { type: "FactSet", facts: [
               { title: "Ticket", value: ticket.id },
               { title: "Auteur", value: ticket.auteur },
@@ -108,11 +108,7 @@ async function notifie(ticket) {
               ...(ticket.triage ? [{ title: "Raison du tri", value: ticket.triage.raison }, { title: "Suite", value: CATEGORIES[ticket.triage.categorie].suite }] : []),
             ] },
           ],
-          // boutons seulement quand l'agent peut agir (ajout simple, bug) ; aucune modification autonome sans ce clic
-          ...(ticket.triage && ["donnee_simple", "bug"].includes(ticket.triage.categorie) && process.env.TICKETS_LINK_SECRET ? { actions: [
-            { type: "Action.OpenUrl", title: "Accepter", style: "positive", url: lienDecision(ticket.id, "accept", process.env.TICKETS_LINK_SECRET) },
-            { type: "Action.OpenUrl", title: "Refuser", style: "destructive", url: lienDecision(ticket.id, "refuse", process.env.TICKETS_LINK_SECRET) },
-          ] } : {}),
+          ...(boutons(ticket, process.env.TICKETS_LINK_SECRET).length ? { actions: boutons(ticket, process.env.TICKETS_LINK_SECRET) } : {}),
         },
       }],
     };
@@ -188,7 +184,10 @@ module.exports = async function handler(req, res) {
       if ((ticket.commentaires || []).length >= 50) { res.status(400).json({ error: "Trop de commentaires sur ce ticket." }); return; }
       (ticket.commentaires = ticket.commentaires || []).push({ auteur: email, texte, at: now });
       ticket.updatedAt = now;
+      const repondait = ticket.attente === "auteur" && email === ticket.auteur;
+      if (repondait) delete ticket.attente;
       await ecrit(tickets, sha, `ticket ${id} — commentaire`);
+      if (repondait) await notifie(ticket, texte); // M. est prévenu : la précision demandée est arrivée, avec les boutons de décision
       res.status(200).json({ ok: true, ticket });
       return;
     }

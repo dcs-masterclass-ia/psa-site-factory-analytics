@@ -108,6 +108,7 @@ def actions(t):
         return {}
     return {"actions": [
         {"type": "Action.OpenUrl", "title": "Accepter", "style": "positive", "url": lien_decision(t["id"], "accept", secret)},
+        {"type": "Action.OpenUrl", "title": "Demander des précisions", "url": lien_decision(t["id"], "ask", secret)},
         {"type": "Action.OpenUrl", "title": "Refuser", "style": "destructive", "url": lien_decision(t["id"], "refuse", secret)}]}
 
 

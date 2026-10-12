@@ -41,4 +41,14 @@ function lienDecision(id, action, secret, now = Date.now()) {
   return `https://converge-tradein.vercel.app/api/ticket-decision?id=${id}&a=${action}&exp=${exp}&sig=${sig}`;
 }
 
-module.exports = { CATEGORIES, classer, trier, lienDecision };
+/** Boutons de décision de la carte Teams : seulement quand l'agent peut agir (ajout simple, bug) et que rien n'est encore décidé. */
+function boutons(ticket, secret) {
+  if (!secret || ticket.decision || !ticket.triage || !["donnee_simple", "bug"].includes(ticket.triage.categorie)) return [];
+  return [
+    { type: "Action.OpenUrl", title: "Accepter", style: "positive", url: lienDecision(ticket.id, "accept", secret) },
+    { type: "Action.OpenUrl", title: "Demander des précisions", url: lienDecision(ticket.id, "ask", secret) },
+    { type: "Action.OpenUrl", title: "Refuser", style: "destructive", url: lienDecision(ticket.id, "refuse", secret) },
+  ];
+}
+
+module.exports = { CATEGORIES, classer, trier, lienDecision, boutons };

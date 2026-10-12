@@ -14,7 +14,7 @@ const crypto = require("crypto");
 const { readJson, writeJson } = require("./_lib/store");
 
 const FILE = "tickets/tickets.json";
-const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse" };
+const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse", ask: "precision" };
 const VALIDATION = { merge: true, abandon: true }; // 2e décision : mise en ligne du correctif préparé par l'agent
 const AUTEUR = "decision-teams";
 
@@ -47,6 +47,25 @@ module.exports = async function handler(req, res) {
     const tickets = (data && Array.isArray(data.tickets)) ? data.tickets : [];
     const t = tickets.find(x => x.id === q.id);
     if (!t) { page(res, 404, "Ticket introuvable", "Ce ticket n'existe plus."); return; }
+    if (q.a === "ask") {
+      if (t.decision || t.agent) { page(res, 200, "Déjà décidé", "Ce ticket a déjà une décision : la précision n'est plus possible."); return; }
+      if (req.method !== "POST") {
+        const form = `<form method="post" style="margin-top:14px"><input type="hidden" name="id" value="${esc(q.id)}"><input type="hidden" name="a" value="ask"><input type="hidden" name="exp" value="${esc(q.exp)}"><input type="hidden" name="sig" value="${esc(q.sig)}">
+<textarea name="texte" required maxlength="1000" rows="5" placeholder="Ex. : sur quel onglet exactement ? Peux-tu donner un exemple ?" style="width:100%;box-sizing:border-box;font:15px system-ui;border:1px solid #dcdce2;border-radius:12px;padding:10px"></textarea>
+<button style="margin-top:12px;font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:#7c63ee;cursor:pointer">Envoyer à l'auteur</button></form>`;
+        page(res, 200, "Demander des précisions", `<b>${esc(t.titre)}</b><br><span style="font-size:14px;color:#6d727a">Ta question sera envoyée à ${esc(t.auteur)}, qui sera alerté dans le dashboard.</span>`, form);
+        return;
+      }
+      const texte = String(q.texte || "").replace(/\u0000/g, "").trim().slice(0, 1000);
+      if (!texte) { page(res, 400, "Question vide", "Écris ta question avant d'envoyer."); return; }
+      const now = Date.now();
+      (t.commentaires = t.commentaires || []).push({ auteur: "equipe-converge", texte, at: now });
+      t.attente = "auteur";
+      t.updatedAt = now;
+      await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — précision demandée (Teams)`, sha);
+      page(res, 200, "Question envoyée", "L'auteur est alerté dans le dashboard. Tu recevras une carte Teams dès qu'il répond.");
+      return;
+    }
     const verbe = { accept: "Accepter", refuse: "Refuser", merge: "Mettre en ligne", abandon: "Abandonner" }[q.a];
     const positif = q.a === "accept" || q.a === "merge";
     if (VALIDATION[q.a]) {

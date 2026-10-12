@@ -116,3 +116,12 @@ test("création : le ticket est trié tout de suite (catégorie + commentaire vi
   const g = await appelle("POST", { ...valide, type: "optimisation", titre: "Onglet", description: "Créer un nouvel onglet Ventes avec une nouvelle source." });
   assert.equal(g.body.ticket.triage.categorie, "gros_chantier");
 });
+
+test("précision demandée : la réponse de l'auteur lève l'attente", async () => {
+  session = { email: "auteur@autobiz.com", role: "limited" };
+  const c = await appelle("POST", valide);
+  fichier.tickets[0].attente = "auteur";
+  const r = await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Sur l'onglet GA4, tableau canal." });
+  assert.equal(r.code, 200);
+  assert.equal(fichier.tickets[0].attente, undefined);
+});

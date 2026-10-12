@@ -5445,7 +5445,7 @@ class Component extends DCLogic {
     const TK_MSG = { nouveau:"Ton ticket est bien reçu.", en_cours:"Ton ticket est pris en charge : on travaille dessus.", resolu:"C'est traité : la modification est en ligne.", refuse:"Ton ticket n'a pas été retenu." };
     const tkAlertRows = tkNews.sort((a,b)=>b.last-a.last).map(({t,autres})=>{
       const sx=TK_STATUTS[t.statut]||TK_STATUTS.nouveau; const rep=autres.filter(k=>!k.systeme).slice(-1)[0]; const changed=autres.some(k=>k.systeme);
-      return { titre:t.titre, statLabel:sx[0], statStyle:tkPill(sx[1],sx[2]), message:changed?TK_MSG[t.statut]:'Tu as une réponse sur ce ticket.', img:(autres.filter(k=>k.image).slice(-1)[0]||{}).image?'/api/tickets?capture='+encodeURIComponent(autres.filter(k=>k.image).slice(-1)[0].image):'', reply:rep?rep.texte:'', replyWho:rep?String(rep.auteur||'').split('@')[0]:'' };
+      return { titre:t.titre, statLabel:sx[0], statStyle:tkPill(sx[1],sx[2]), message:t.attente==='auteur'?"On a besoin d'une précision de ta part pour traiter ce ticket : réponds dans le suivi.":changed?TK_MSG[t.statut]:'Tu as une réponse sur ce ticket.', img:(autres.filter(k=>k.image).slice(-1)[0]||{}).image?'/api/tickets?capture='+encodeURIComponent(autres.filter(k=>k.image).slice(-1)[0].image):'', reply:rep?rep.texte:'', replyWho:rep?String(rep.auteur||'').split('@')[0]:'' };
     });
     const tkAlertCtl = modalCtl('tkAlert');
     const tkAlertSt = modalStyles(tkAlertCtl,'width:560px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');

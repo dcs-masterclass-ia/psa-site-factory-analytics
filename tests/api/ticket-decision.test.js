@@ -50,3 +50,17 @@ test("validation de mise en ligne : seulement si le correctif attend, une seule 
   assert.equal(fichier.tickets[0].statut, "nouveau");
   assert.match((await appelle("POST", {}, lien("T-1", "abandon"))).html, /Déjà décidé/);
 });
+
+test("demander des précisions : question envoyée à l'auteur (visible, ticket en attente), sans décision", async () => {
+  const q = lien("T-1", "ask");
+  const g = await appelle("GET", q);
+  assert.equal(g.code, 200);
+  assert.match(g.html, /textarea/);
+  assert.equal((await appelle("POST", {}, { ...q, texte: "   " })).code, 400);
+  assert.equal((await appelle("POST", {}, { ...q, texte: "Sur quel onglet exactement ?" })).code, 200);
+  const t = fichier.tickets[0];
+  assert.equal(t.attente, "auteur");
+  assert.equal(t.commentaires[0].texte, "Sur quel onglet exactement ?");
+  assert.equal(t.commentaires[0].systeme, undefined);
+  assert.equal(t.decision, undefined);
+});

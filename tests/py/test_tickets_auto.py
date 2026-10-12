@@ -42,7 +42,7 @@ class TestLiens(unittest.TestCase):
         os.environ["TICKETS_LINK_SECRET"] = "s3cret"
         t = tk("optimisation", "Total", "Ajouter une colonne total"); ta.trier([t])
         acts = ta.carte(t)["attachments"][0]["content"]["actions"]
-        self.assertEqual([a["title"] for a in acts], ["Accepter", "Refuser"])
+        self.assertEqual([a["title"] for a in acts], ["Accepter", "Demander des précisions", "Refuser"])
         self.assertRegex(acts[0]["url"], r"a=accept&exp=\d+&sig=[0-9a-f]{64}$")
         q = tk("question", "Comment ?"); ta.trier([q])
         self.assertNotIn("actions", ta.carte(q)["attachments"][0]["content"])
