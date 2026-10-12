@@ -60,7 +60,7 @@ test("suivi : un gestionnaire change le statut et commente", async ({ page }) =>
   const posts = simule(page, { tickets: [base] });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Ticket", { exact: true }).first().click();
-  await page.getByText(/^Suivi/).click();
+  await page.getByText(/^En cours/).click();
   await expect(page.getByText("Export CSV des pages")).toBeVisible();
   await expect(page.getByText("Priorité haute")).toBeVisible();
   await page.getByText("Export CSV des pages").click();
@@ -78,7 +78,7 @@ test("profil sans droit de gestion : pas de boutons de statut", async ({ page })
   simule(page, { peutGerer: false, tickets: [base] });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Ticket", { exact: true }).first().click();
-  await page.getByText(/^Suivi/).click();
+  await page.getByText(/^En cours/).click();
   await page.getByText("Mon ticket").click();
   await expect(page.getByText("En cours", { exact: true })).toHaveCount(0);
 });
@@ -92,10 +92,10 @@ test("les tickets résolus ou refusés passent dans l'onglet « Terminés », ho
   ] });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Ticket", { exact: true }).first().click();
-  await page.getByText(/^Suivi/).click();
+  await page.getByText(/^En cours/).click();
   await expect(page.getByText("Ticket en cours")).toBeVisible();
   await expect(page.getByText("Ticket résolu")).toHaveCount(0);
-  await expect(page.getByText(/^Suivi \(1\)$/)).toBeVisible();
+  await expect(page.getByText(/^En cours \(1\)$/)).toBeVisible();
   await page.getByText(/^Terminés/).click();
   await expect(page.getByText("Ticket résolu")).toBeVisible();
   await expect(page.getByText("Ticket refusé")).toBeVisible();

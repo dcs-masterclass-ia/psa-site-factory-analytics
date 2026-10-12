@@ -24,5 +24,6 @@
  "Aucun ticket terminé pour l'instant.": "No completed ticket yet.",
  "Aucun ticket en cours.": "No ticket in progress.",
  "Terminés ({0})": "Completed ({0})",
- "Suivi ({0})": "Follow-up ({0})"
+ "En cours ({0})": "In progress ({0})",
+ "En cours": "In progress"
 }
