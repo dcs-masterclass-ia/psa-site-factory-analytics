@@ -793,7 +793,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ lChip }}">{{ lIcon }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Fuites du tunnel par segment<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque appareil ou canal : part des visiteurs qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Fuites du tunnel par segment<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque appareil ou canal d'acquisition (Paid, Organic…) : part des visiteurs (sous chaque pourcentage : nombre d'utilisateurs ayant atteint l'étape) qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">Passage d'une étape à la suivante · mois touchés par la période</div>
               </div>
               </div>
@@ -810,7 +810,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:6px 8px;border-top:1px solid #f2f2f4">
                   <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
                   <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ r.home }}</span>
-                  <span style="{{ r.s1 }}">{{ r.c1 }}</span><span style="{{ r.s2 }}">{{ r.c2 }}</span><span style="{{ r.s3 }}">{{ r.c3 }}</span><span style="{{ r.s4 }}">{{ r.c4 }}</span><span style="{{ r.s5 }}">{{ r.c5 }}</span>
+                  <span style="{{ r.s1 }}">{{ r.c1 }}<span style="display:block;font-size:11.5px;font-weight:400;color:#9a9fa6">{{ r.n1 }}</span></span><span style="{{ r.s2 }}">{{ r.c2 }}<span style="display:block;font-size:11.5px;font-weight:400;color:#9a9fa6">{{ r.n2 }}</span></span><span style="{{ r.s3 }}">{{ r.c3 }}<span style="display:block;font-size:11.5px;font-weight:400;color:#9a9fa6">{{ r.n3 }}</span></span><span style="{{ r.s4 }}">{{ r.c4 }}<span style="display:block;font-size:11.5px;font-weight:400;color:#9a9fa6">{{ r.n4 }}</span></span><span style="{{ r.s5 }}">{{ r.c5 }}<span style="display:block;font-size:11.5px;font-weight:400;color:#9a9fa6">{{ r.n5 }}</span></span>
                   <span style="font-size:14.5px;font-weight:600;color:#121214;text-align:right">{{ r.conv }}</span>
                 </div>
               </sc-for>
@@ -957,19 +957,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipD }}">{{ tIconD }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Total = tous appareils confondus (sessions et conversions additionnées, taux recalculé). Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
               </div>
               </div>
               <span onClick="{{ openMatrix }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ matrixCount }} canaux</span>
             </div>
             <div style="margin-bottom:10px"></div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
-              <span>Canal</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
+              <span>Canal</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
             <sc-for list="{{ matrix }}" as="row" hint-placeholder-count="5">
-              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
                 <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                <div style="{{ row.dT }}"><span style="font-size:15px;font-weight:700">{{ row.vT }}</span><span style="font-size:12px;color:#6d727a">{{ row.gT }}</span></div>
                 <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
                 <div style="{{ row.d3 }}"><span style="font-size:15px;font-weight:600">{{ row.v3 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g3 }}</span></div>
@@ -1746,12 +1747,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </span>
           </div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
-            <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
-              <span>Canal</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>Canal</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
             <sc-for list="{{ allMatrix }}" as="row" hint-placeholder-count="12">
-              <div style="display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(110px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
                 <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                <div style="{{ row.dT }}"><span style="font-size:15px;font-weight:700">{{ row.vT }}</span><span style="font-size:12px;color:#6d727a">{{ row.gT }}</span></div>
                 <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
                 <div style="{{ row.d3 }}"><span style="font-size:15px;font-weight:600">{{ row.v3 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g3 }}</span></div>
@@ -3600,11 +3602,14 @@ class Component extends DCLogic {
     const canauxDevice = [...new Set([...agg.convCanalDevice.values()].map(r=>r.canal))];
     const tauxFor = (map,canal,device) => { const row=map.get(canal+'|'+device); return row && row.sessions ? row.conversions/row.sessions*100 : null; };
     const sessionsTotalCanal = canal => ['desktop','mobile','tablet'].reduce((a,dev)=>{ const row=agg.convCanalDevice.get(canal+'|'+dev); return a+(row?row.sessions||0:0); },0);
+    const tauxTotal = (map,canal) => { let se=0,co=0; for (const r of map.values()) if (r.canal===canal) { se+=r.sessions||0; co+=r.conversions||0; } return se?co/se*100:null; };
     const mkMatrixRow = canal => {
+      const vT=tauxTotal(agg.convCanalDevice,canal), pT=cmp?tauxTotal(cmp.convCanalDevice,canal):null;
       const v1=tauxFor(agg.convCanalDevice,canal,'desktop'), v2v=tauxFor(agg.convCanalDevice,canal,'mobile'), v3=tauxFor(agg.convCanalDevice,canal,'tablet');
       const g=(now,dev)=> cmp ? (()=>{ const p=tauxFor(cmp.convCanalDevice,canal,dev); return (now!=null&&p!=null)?(now-p):null; })() : null;
       const gLabel = x => x==null? '—' : (x>0?'+':'')+dec(x,2)+' pt';
       return {name:canal,
+        dT:cell(vT||0).replace('background:','background:').replace(/;background:[^;]*$/,';background:#ece6fd'), vT:vT==null?'—':dec(vT,2)+' %', gT:gLabel(vT!=null&&pT!=null?vT-pT:null),
         d1:cell(v1||0), v1:v1==null?'—':dec(v1,2)+' %', g1:gLabel(g(v1,'desktop')),
         d2:cell(v2v||0), v2:v2v==null?'—':dec(v2v,2)+' %', g2:gLabel(g(v2v,'mobile')),
         d3:cell(v3||0), v3:v3==null?'—':dec(v3,2)+' %', g3:gLabel(g(v3,'tablet'))};
@@ -3756,14 +3761,14 @@ class Component extends DCLogic {
     const trans=v=>[1,2,3,4,5].map(k=>v[k-1]>0?v[k]/v[k-1]*100:null);
     const leakAvg=trans(segTot), leakHas=segTot[0]>=100;
     const TR_NOMS=['Version','Kilométrage','Coordonnées','Point de vente','Estimation'];
-    const leakSegs=[...segMap.entries()].filter(([,v])=>v[0]>=100).sort((x,y)=>y[1][0]-x[1][0]).slice(0,8);
+    const leakSegs=[...segMap.entries()].filter(([,v])=>v[0]>=100).sort((x,y)=>y[1][0]-x[1][0]);
     const cellS=(v,avg)=>{ const d=v==null||avg==null?0:v-avg; const bg=d>=2?'#e8f6ee':d<=-2?'#fdecec':'#f6f6f8', col=d>=2?'#1f7a4d':d<=-2?'#a33c39':'#2f2f33'; return `padding:9px 4px;border-radius:10px;text-align:center;font-size:14px;font-weight:600;background:${bg};color:${col}`; };
-    const leakRows=leakSegs.map(([name,v])=>{ const t=trans(v); const o={name:leakDim==='device'?(DEV_FR[name]||name):name, home:this.fmt(v[0]), conv:dec(v[5]/v[0]*100,1)+' %'}; t.forEach((x,i)=>{ o['c'+(i+1)]=x==null?'—':dec(x,1)+' %'; o['s'+(i+1)]=cellS(x,leakAvg[i]); }); return o; });
+    const leakRows=leakSegs.map(([name,v])=>{ const t=trans(v); const o={name:leakDim==='device'?(DEV_FR[name]||name):name, home:this.fmt(v[0]), conv:dec(v[5]/v[0]*100,1)+' %'}; t.forEach((x,i)=>{ o['n'+(i+1)]=this.fmt(v[i+1]); o['c'+(i+1)]=x==null?'—':dec(x,1)+' %'; o['s'+(i+1)]=cellS(x,leakAvg[i]); }); return o; });
     const leakAvgO={}; leakAvg.forEach((x,i)=>{ leakAvgO['leakAvg'+(i+1)]=x==null?'—':dec(x,1)+' %'; });
     let insLeaks='';
     if (leakHas) { let worst=null; leakSegs.filter(([,v])=>v[0]>=1000).forEach(([name,v])=>{ trans(v).forEach((x,i)=>{ if (x!=null&&leakAvg[i]!=null){ const d=x-leakAvg[i]; if (!worst||d<worst.d) worst={d,name:leakDim==='device'?(DEV_FR[name]||name):name,i,x}; } }); });
       insLeaks=worst&&worst.d<=-2?`Plus gros écart à la moyenne : ${worst.name} à l'étape « ${TR_NOMS[worst.i]} » (${dec(worst.x,1)} % contre ${dec(leakAvg[worst.i],1)} %).`:'Aucun segment important ne s\'écarte de plus de 2 points de la moyenne du site sur une étape.'; }
-    const leakChips=mkChips([['device','Appareil'],['canal','Canal']],leakDim,'leakDim');
+    const leakChips=mkChips([['device','Par appareil'],['canal','Par canal d\'acquisition']],leakDim,'leakDim');
     const lIcon=kIcone('#e8544a',h('path',{d:'M3 4h18l-7 8v6l-4 2v-8z'})), lChip=kPuce('#e8544a');
 
     // ---- Même période, années passées (histMonth : sessions reprise / accueil / estimations par mois depuis 2022)
