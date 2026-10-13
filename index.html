@@ -420,7 +420,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
 
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
-            <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px;flex-wrap:wrap"><span style="{{ convChip }}">{{ convIcon }}</span>Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Estimations ÷ visiteurs de la page d'accueil du funnel, sur les jours exacts choisis (somme des jours). Estimation = utilisateur ayant déclenché la demande de reprise (événement GA4 tradein_request). Même taux dans le funnel, le classement du parc et la courbe Conversion. La variation est un écart en points de pourcentage.</span></span></div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px;flex-wrap:wrap"><span style="{{ convChip }}">{{ convIcon }}</span>Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Demandes d'estimation (événement GA4 tradein_request) ÷ sessions du site de reprise, sur les jours exacts choisis (somme des jours) : c'est la mesure de Looker. Même taux dans le classement du parc et la courbe Conversion. Le tunnel ci-dessous compte, lui, des utilisateurs distincts à partir de la page d'accueil. La variation est un écart en points de pourcentage.</span></span></div>
             <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
               <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ kpiRate }}</span>
               <span style="{{ kpiRateDelta.style }}">{{ kpiRateDelta.text }}</span>
@@ -883,7 +883,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipC }}">{{ tIconC }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par jour<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque jour : demandes d'estimation ÷ sessions du site de reprise (comme Looker). Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des sessions sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">{{ convRangeLabel }}</div>
               </div>
               </div>
@@ -2951,7 +2951,7 @@ class Component extends DCLogic {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
-                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false };
+                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.daily) continue;
@@ -2972,6 +2972,9 @@ class Component extends DCLogic {
       // sessions). Repli (semaines / mois entiers, donc des jours en trop) seulement
       // si le site n'a pas de funnel quotidien couvrant le debut de la periode ;
       // funnelApprox le signale a l'ecran.
+      // taux de conversion « global » = évènements d'estimation (evDaily) ÷ sessions du site de reprise, comme Looker ; le tunnel reste en utilisateurs
+      const evJours = d.evDaily || {};
+      const evOk = Object.keys(evJours).length > 0;
       const fd = d.funnelDaily || {};
       const fdJours = Object.keys(fd);
       let jourMin = null; for (const k of fdJours) if (jourMin === null || k < jourMin) jourMin = k;
@@ -2983,7 +2986,7 @@ class Component extends DCLogic {
           if (jour < debutIso || jour > finIso) continue;
           const v = fd[jour];
           for (let i = 0; i < 6; i++) out.funnelSteps[i].users += v[i] || 0;
-          const c = out.convDaily[jour] || (out.convDaily[jour] = [0, 0]); c[0] += v[0] || 0; c[1] += v[5] || 0;
+          if (!evOk) { const c = out.convDaily[jour] || (out.convDaily[jour] = [0, 0]); c[0] += v[0] || 0; c[1] += v[5] || 0; }
         }
         siteSteps = true;
       } else {
@@ -3005,6 +3008,10 @@ class Component extends DCLogic {
         }
         if (siteSteps) out.funnelApprox = true;
       }
+      if (evOk) {
+        for (const i of idxs) { const jour = d.daily.d[i]; if (evJours[jour] === undefined) continue; const c = out.convDaily[jour] || (out.convDaily[jour] = [0, 0]); c[0] += d.daily.rep[i] || 0; c[1] += evJours[jour] || 0; }
+        out.convSess = true;
+      } else if (Object.keys(fd).length) out.convUsers = true;
       if (d.v2 && d.v2.is_v2_split && d.v2steps && d.v2steps.length) {
         if (!out.v2Steps) out.v2Steps = d.v2steps.map(x=>({step:x.step,a:0,b:0}));
         d.v2steps.forEach((x,i)=>{ if (out.v2Steps[i]) { out.v2Steps[i].a += x.a||0; out.v2Steps[i].b += x.b||0; } });
@@ -3095,7 +3102,9 @@ class Component extends DCLogic {
     const arr = this._allSites.map(n => {
       const a = this.aggregate.call({ state:{sites:[n]}, data:this.data }, debutIso, finIso);
       const f = a.funnelSteps && a.funnelSteps.length ? a.funnelSteps : null;
-      return { site:n, taux: f && f[0].users ? f[f.length-1].users/f[0].users*100 : null };
+      const tunnel = f && f[0].users ? f[f.length-1].users/f[0].users*100 : null;
+      let se = 0, ev = 0; for (const c of Object.values(a.convDaily || {})) { se += c[0]; ev += c[1]; }
+      return { site:n, taux: se > 0 ? ev/se*100 : tunnel, tauxTunnel: tunnel };
     }).filter(x => x.taux != null);
     arr.sort((a,b) => b.taux-a.taux);
     return arr;
@@ -3363,6 +3372,11 @@ class Component extends DCLogic {
     const cmpFunnelLast = cmp && cmp.funnelSteps && cmp.funnelSteps.length ? cmp.funnelSteps[cmp.funnelSteps.length-1].users : 0;
     const cmpFirst = cmp && cmp.funnelSteps && cmp.funnelSteps.length ? cmp.funnelSteps[0].users : 0;
     const cmpRate = cmpFirst ? cmpFunnelLast/cmpFirst*100 : null;
+    // taux « global » (carte principale, classement, courbe) : évènements ÷ sessions du site de reprise (= Looker) ; le tunnel garde `rate` (utilisateurs)
+    const sumConv = a => { let se=0,ev=0; for (const c of Object.values((a&&a.convDaily)||{})) { se+=c[0]; ev+=c[1]; } return se>0 ? ev/se*100 : null; };
+    const convSessMode = !!agg.convSess && !agg.convUsers;
+    const rateGlobal = sumConv(agg) != null ? sumConv(agg) : rate;
+    const cmpRateGlobal = cmp ? (sumConv(cmp) != null ? sumConv(cmp) : cmpRate) : null;
 
     const pctDelta = (now, prev) => {
       if (prev == null || !prev) return null;
@@ -3437,15 +3451,15 @@ class Component extends DCLogic {
           h('g',{key:'t',pointerEvents:'none',transform:'translate('+tx+',6)'},[h('rect',{key:'r',width:tw,height:62,rx:10,fill:'#141414',opacity:.96}),
             h('text',{key:'d',x:12,y:19,fontSize:11.5,fill:'#9a9fa6',fontFamily:F},b.label),
             h('text',{key:'v',x:12,y:39,fontSize:15,fontWeight:600,fill:'#cfc4ff',fontFamily:F},'Conversion '+dec(b.r,1)+' %'),
-            h('text',{key:'n',x:12,y:55,fontSize:11.5,fill:'#c4c7d0',fontFamily:F},this.fmt(b.es)+' estim. / '+this.fmt(b.ho)+' visiteurs')])); }
+            h('text',{key:'n',x:12,y:55,fontSize:11.5,fill:'#c4c7d0',fontFamily:F},this.fmt(b.es)+' estim. / '+this.fmt(b.ho)+(convSessMode?' sessions':' visiteurs'))])); }
       B.forEach((b,i)=>ch.push(h('rect',{key:'h'+i,x:X(i)-W/nB/2,y:0,width:W/nB,height:H,fill:'transparent',style:{cursor:'crosshair'},onMouseEnter:()=>set({convHover:i}),onMouseLeave:()=>set({convHover:null})})));
       return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto',overflow:'visible'}},ch);
     })():'';
-    const kpiRateDelta = ptDeltaBadge(rate, cmpRate);
+    const kpiRateDelta = ptDeltaBadge(rateGlobal, cmpRateGlobal);
 
     // classement reel sur le taux de conversion, parmi tout le parc --
     // couteux (82 agregations), uniquement recalcule pour l'onglet GA4.
-    let convRankLabel='Classement indisponible', convMedianLabel='', hasConvDelta=false, convDeltaLabel='', convDeltaStyle='';
+    let convRankLabel='Classement indisponible', convMedianLabel='', convMedianTunnel='', hasConvDelta=false, convDeltaLabel='', convDeltaStyle='';
     if (this._allSites && this._allSites.length) {
       const ranked = this.rankSites(debut, fin);
       const currentIsSingle = st.sites.length === 1;
@@ -3456,6 +3470,8 @@ class Component extends DCLogic {
         const mid=Math.floor(ranked.length/2);
         const med = ranked.length%2 ? ranked[mid].taux : (ranked[mid-1].taux+ranked[mid].taux)/2;
         convMedianLabel = T('médiane')+' '+dec(med,1)+' %';
+        const tun = ranked.map(x=>x.tauxTunnel).filter(v=>v!=null).sort((a,b)=>b-a);
+        if (tun.length) { const m2=Math.floor(tun.length/2); convMedianTunnel = T('médiane')+' '+dec(tun.length%2?tun[m2]:(tun[m2-1]+tun[m2])/2,1)+' %'; }
       }
       if (currentIsSingle && rang>0 && cmpRange) {
         const rankedPrev = this.rankSites(cmpRange.debut, cmpRange.fin);
@@ -3483,7 +3499,7 @@ class Component extends DCLogic {
     const compPct = funnelFirst ? funnelLast/funnelFirst*100 : 0;
     const compPctLabel = dec(compPct,1)+' %';
     const abandonLabel = dec(100-compPct,1)+' %';
-    const compMedianLabel = convMedianLabel || 'médiane parc indisponible';
+    const compMedianLabel = convMedianTunnel || convMedianLabel || 'médiane parc indisponible';
     const cx=100,cy=98,r=70;
     const arc=p=>{const a=Math.PI*(1-Math.max(0,Math.min(1,p)));return `M${cx-r},${cy} A${r},${r} 0 0 1 ${cx+r*Math.cos(a)},${cy-r*Math.sin(a)}`;};
     const gauge=h('svg',{viewBox:'0 0 200 124',width:'100%',style:{display:'block',height:'auto'}},[
@@ -3555,7 +3571,7 @@ class Component extends DCLogic {
     const convMoy = convSomme(agg.convDaily,[debut,fin]);
     const convMoyCmp = cmp && cmpRange ? convSomme(cmp.convDaily,[cmpRange.debut,cmpRange.fin]) : null;
     const fmtJ = iso => iso ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
-    const convRangeLabel = `${rangeDays} j (${fmtJ(debut)}→${fmtJ(fin)}) · utilisateurs accueil → estimation`;
+    const convRangeLabel = `${rangeDays} j (${fmtJ(debut)}→${fmtJ(fin)}) · ${convSessMode?'sessions → estimations':'utilisateurs accueil → estimation'}`;
     const convSummary = convMoy==null ? '' : `Conversion moyenne ${dec(convMoy,1)} %`+(convMoyCmp!=null?` · période précédente ${dec(convMoyCmp,1)} % (${convMoy>=convMoyCmp?'+':'−'}${dec(Math.abs(convMoy-convMoyCmp),1)} pt)`:'');
     const v2Dates = [...new Set(st.sites.map(n=>this.data&&this.data[n]&&this.data[n].v2_date).filter(Boolean))];
     const v2Marker = v2Dates.length===1 && st.sites.every(n=>this.data&&this.data[n]&&this.data[n].v2_date) ? v2Dates[0] : null;
@@ -3584,13 +3600,13 @@ class Component extends DCLogic {
       trace(convSerie.map(p=>p?p.pct:null),'#cdbffa',1.6,null,'jour');
       const ma = dates.map((_,i)=>{ let hh=0,ee=0; for (let k=Math.max(0,i-6);k<=i;k++){ const p=convSerie[k]; if (p){hh+=p.home;ee+=p.est;} } return hh? ee/hh*100 : null; });
       trace(ma,'#7c63ee',2.8,null,'ma7');
-      convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} visiteurs accueil)`))); });
+      convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} ${convSessMode?'sessions':'visiteurs accueil'})`))); });
       const stepX=Math.max(1,Math.floor(dates.length/8));
       dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
       const cmpV=(cmp&&cmpRange)?(()=>{ const cd=isoRange(cmpRange.debut,cmpRange.fin); return dates.map((_,i)=>{ const c=cmp.convDaily[cd[i]]; return c&&c[0]>0?c[1]/c[0]*100:null; }); })():null;
       this._hov.cbConv={W:CW,H:CH,top:CT,bottom:CT+cph,xs:dates.map((_,i)=>cx(i)),rows:i=>{ const p=convSerie[i]; const its=[];
         if (p) its.push({n:'Conversion du jour',c:'#cdbffa',v:dec(p.pct,1)+' %'}); if (ma[i]!=null) its.push({n:'Moyenne 7 jours',c:'#7c63ee',v:dec(ma[i],1)+' %'}); if (cmpV&&cmpV[i]!=null) its.push({n:'Période précédente',c:'#b3b7bd',v:dec(cmpV[i],1)+' %'});
-        if (p) its.push({n:'Estimations / accueil',v:this.fmt(p.est)+' / '+this.fmt(p.home)}); const ev=evVisible.filter(e=>e.date===dates[i]).map(e=>'◆ '+e.titre); return {title:fmtJL(dates[i]),items:its,foot:ev.length?ev:null}; }};
+        if (p) its.push({n:convSessMode?'Estimations / sessions':'Estimations / accueil',v:this.fmt(p.est)+' / '+this.fmt(p.home)}); const ev=evVisible.filter(e=>e.date===dates[i]).map(e=>'◆ '+e.titre); return {title:fmtJL(dates[i]),items:its,foot:ev.length?ev:null}; }};
       ck.push(...evMarks('ev',dates,cx,CT,CH-CB));
     }
     const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck);
@@ -5946,8 +5962,8 @@ class Component extends DCLogic {
       pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
-      kpis, kpiRate:dec(rate,1)+' %', rateSpark, kpiRateDelta,
-      convDefLabel: agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts',
+      kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
+      convDefLabel: convSessMode ? 'estimations ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel,
       steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),

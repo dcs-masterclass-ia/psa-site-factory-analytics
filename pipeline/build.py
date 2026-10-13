@@ -576,6 +576,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     except Exception as e:
         journal.append(f"funnel quotidien en erreur ({type(e).__name__}: {e})")
 
+    # evenements d'estimation par jour (evDaily) : numerateur du taux de conversion « en sessions » (= Looker). 1 requete par site.
+    try:
+        ev = ga4.evenements_par_jour(cli, s.propriete, hote_reprise, debut, fin, funnel.EVENEMENT_ESTIMATION)
+        if ev:
+            d["evDaily"] = ev
+            journal.append(f"evenements d'estimation : {len(ev)} jour(s)")
+    except Exception as e:
+        journal.append(f"evenements d'estimation en erreur ({type(e).__name__}: {e})")
+
     # funnel mensuel par appareil et par canal (vue « Fuites du tunnel ») : 6 requetes GA4 par site pour toute la fenetre.
     try:
         seg = funnel_daily.funnel_segments(cli, s.propriete, hote_reprise, date.fromisoformat(mois_liste[0] + "-01"), date.fromisoformat(jour_fiable()))

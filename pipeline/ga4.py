@@ -79,6 +79,14 @@ def sessions_par_jour(cli, pid, hote, debut, fin):
     return {d: int(s) for d, s in l}
 
 
+def evenements_par_jour(cli, pid, hote, debut, fin, evenement):
+    """Nombre d'occurrences (eventCount) d'un évènement par jour, sur l'hôte de reprise : {« AAAA-MM-JJ »: n}.
+    Numérateur du taux de conversion « en sessions » (même mesure que Looker : tradein_request ÷ sessions)."""
+    l = _rapport(cli, pid, debut, fin, ["date"], ["eventCount"],
+                 _et(_egal("hostName", hote), _egal("eventName", evenement)))
+    return {f"{d[:4]}-{d[4:6]}-{d[6:8]}": int(float(n)) for d, n in l}
+
+
 def sessions_total(cli, pid, hote, debut, fin):
     """Total GA4 du mois. Ce n'est pas la somme des jours, et c'est normal."""
     l = _rapport(cli, pid, debut, fin, [], ["sessions"], _egal("hostName", hote))

@@ -71,3 +71,13 @@ utilisation) ni les points ouverts et prochaines étapes (propres à chaque édi
 - **Trafic venant du site de la marque** = sessions dont la source UTM est « Main-Website » (boutons du site de la marque) ou dont le canal est « Referral » depuis l'URL de la marque (`DOMAINES_MARQUE` dans `pipeline/deck/donnees.py`), ÷ sessions totales. Pas calculé sous 100 sessions.
 - **Groupes de marques** : XP (Peugeot, Citroën, DS, Opel), XF (Alfa Romeo, Abarth, Fiat, Fiat Pro, Jeep, Lancia, Leapmotor), Spoticar, autres ; la vue « hors Spoticar » recalcule les parts sans Spoticar.
 - **Blocs fixes** (modules `nps`, `utm`) : diapositives de texte réutilisables placées en annexes.
+
+
+## Taux de conversion du dashboard : sessions (global) et utilisateurs (tunnel)  — 13/10/2026
+Demande de M.A (ticket T-20261012-da4d) : « sur la performance globale du site on utilise les sessions, dans un tunnel on regarde les utilisateurs ».
+- **Taux de conversion global** (carte principale, classement du parc, médiane, courbe « Conversion par jour ») =
+  évènements `tradein_request` ÷ sessions du site de reprise, sur les jours exacts (même mesure que Looker). Numérateur : `evDaily`
+  (pipeline/ev_daily.py, tenu à jour par build.py) ; dénominateur : `daily.rep`. Repli temporaire, tant qu'un site n'a pas `evDaily` :
+  l'ancien taux en utilisateurs (la carte l'indique).
+- **Tunnel de conversion** (6 étapes, abandon cumulé, médiane du tunnel) : inchangé, en **utilisateurs** actifs GA4 de la page d'accueil.
+- Les présentations PowerPoint gardent leur propre chaîne (hot leads ÷ In Journey, en utilisateurs distincts) : ce changement ne les concerne pas.

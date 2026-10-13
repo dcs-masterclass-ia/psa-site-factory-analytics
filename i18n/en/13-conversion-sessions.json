@@ -1,0 +1,10 @@
+{
+ "estimations ÷ sessions du site de reprise · jours exacts": "valuations ÷ trade-in site sessions · exact days",
+ "Demandes d'estimation (événement GA4 tradein_request) ÷ sessions du site de reprise, sur les jours exacts choisis (somme des jours) : c'est la mesure de Looker. Même taux dans le classement du parc et la courbe Conversion. Le tunnel ci-dessous compte, lui, des utilisateurs distincts à partir de la page d'accueil. La variation est un écart en points de pourcentage.": "Valuation requests (GA4 event tradein_request) ÷ trade-in site sessions, over the exact days selected (sum of the days): this is the Looker measure. Same rate in the network ranking and the Conversion curve. The funnel below counts distinct users starting from the home page instead. The change is a difference in percentage points.",
+ "Pour chaque jour : demandes d'estimation ÷ sessions du site de reprise (comme Looker). Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des sessions sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuation requests ÷ trade-in site sessions (like Looker). Thick line = 7-day rolling average (sum of valuations ÷ sum of sessions over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
+ "{0} j ({1}→{2}) · sessions → estimations": "{0} d ({1}→{2}) · sessions → valuations",
+ "Estimations / sessions": "Valuations / sessions",
+ "{0}/{1} : {2} % ({3} estimations / {4} sessions)": "{0}/{1}: {2}% ({3} valuations / {4} sessions)",
+ "{0} estim. / {1} sessions": "{0} valuations / {1} sessions",
+ "{0} estim. / {1} visiteurs": "{0} valuations / {1} visitors"
+}
