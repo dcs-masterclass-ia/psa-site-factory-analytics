@@ -1,0 +1,49 @@
+name: Veille des canaux de trafic (Unassigned)
+
+# Toutes les 30 minutes : alerte Teams si la part de sessions « Unassigned » d'un site saute par rapport aux 7 jours
+# précédents (cf. pipeline/canaux_watch.py). Dépôt public : la console ne montre aucun chiffre métier.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canaux-watch
+  cancel-in-progress: false
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install google-analytics-data==0.18.19 google-auth==2.35.0 requests
+
+      - name: Déposer la clé du compte de service
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/ga4.json" >> "$GITHUB_ENV"
+
+      # L'état (sites déjà signalés aujourd'hui) survit d'un passage à l'autre grâce au cache.
+      - name: Restaurer l'état
+        uses: actions/cache@v4
+        with:
+          path: canaux_state.json
+          key: canaux-state-${{ github.run_id }}
+          restore-keys: canaux-state-
+
+      - name: Contrôler les canaux
+        env:
+          LEADS_TEAMS_WEBHOOK_URL: ${{ secrets.LEADS_TEAMS_WEBHOOK_URL }}
+        run: python -m pipeline.canaux_watch
