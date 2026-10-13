@@ -81,3 +81,12 @@ Demande de M.A (ticket T-20261012-da4d) : « sur la performance globale du site 
   l'ancien taux en utilisateurs (la carte l'indique).
 - **Tunnel de conversion** (6 étapes, abandon cumulé, médiane du tunnel) : inchangé, en **utilisateurs** actifs GA4 de la page d'accueil.
 - Les présentations PowerPoint gardent leur propre chaîne (hot leads ÷ In Journey, en utilisateurs distincts) : ce changement ne les concerne pas.
+
+## Alignement sur Looker (13/10/2026)
+- **Sessions du site de la marque** = sessions de toute la propriété GA4 (tous domaines, session comptée une fois) : `propSessions`
+  (carte « Visites site marque » de Looker). Mois entiers : total mensuel GA4 ; sinon somme des jours.
+- **Sessions site reprise et taux de conversion** : mois entiers = total mensuel GA4 (`repriseMonth`) ; sinon somme des jours (≈ 1 % de moins).
+- **Leads GA4** = évènements `tradein_request` (Hot leads de Looker) ; le tunnel reste en utilisateurs distincts.
+- **Canaux d'acquisition** = « Stellantis Custom Channel Group » (`sessionCustomChannelGroup:<id>`, retrouvé par son nom dans chaque
+  propriété, repli sur le groupe par défaut) : canal quotidien du site parent, conversion par canal × appareil, entonnoir par canal.
+  Le médium `DRE` reste « Unassigned » tant que la règle n'est pas ajoutée au groupe dans GA4 (même constat que Looker).

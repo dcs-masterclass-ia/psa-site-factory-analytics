@@ -576,6 +576,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     except Exception as e:
         journal.append(f"funnel quotidien en erreur ({type(e).__name__}: {e})")
 
+    # sessions de TOUTE la propriete (tous domaines), par jour et par mois : meme perimetre que « Visites site marque » de Looker.
+    try:
+        d["propSessions"] = {
+            "daily": ga4.sessions_propriete_par_jour(cli, s.propriete, debut, fin),
+            "month": ga4.sessions_propriete_par_mois(cli, s.propriete, debut, fin),
+        }
+    except Exception as e:
+        journal.append(f"sessions de la propriete en erreur ({type(e).__name__}: {e})")
+
     # evenements d'estimation par jour (evDaily) : numerateur du taux de conversion « en sessions » (= Looker). 1 requete par site.
     try:
         ev = ga4.evenements_par_jour(cli, s.propriete, hote_reprise, debut, fin, funnel.EVENEMENT_ESTIMATION)

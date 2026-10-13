@@ -37,7 +37,7 @@ def _valide(cli, pid, hote, debut, fin, nom):
 
 
 def dimension_canal(cli, pid, hote, debut, fin):
-    for c in CANDIDATS:
+    for c in [ga4.dim_canal(pid)] + CANDIDATS:
         if _valide(cli, pid, hote, debut, fin, c):
             return c
     return None

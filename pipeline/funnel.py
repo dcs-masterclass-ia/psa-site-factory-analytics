@@ -261,11 +261,12 @@ def conversion_par_canal_device(cli, pid, hote, debut, fin):
     d'un entonnoir sequentiel, l'evenement seul suffit deja a compter une
     vraie demande de reprise (c'est d'ailleurs la definition retenue pour
     les GA Leads du Looker Studio du projet, cf. commentaire plus haut)."""
+    dim_c = ga4.dim_canal(pid)       # canaux de Looker (groupe personnalisé) quand il existe
     sessions = ga4._rapport(cli, pid, debut, fin,
-                            ["sessionDefaultChannelGroup", "deviceCategory"], ["sessions", "engagedSessions"],
+                            [dim_c, "deviceCategory"], ["sessions", "engagedSessions"],
                             ga4._egal("hostName", hote))
     conversions = ga4._rapport(cli, pid, debut, fin,
-                               ["sessionDefaultChannelGroup", "deviceCategory"], ["eventCount"],
+                               [dim_c, "deviceCategory"], ["eventCount"],
                                ga4._et(ga4._egal("hostName", hote), ga4._egal("eventName", EVENEMENT_ESTIMATION)))
     conv_map = {(c, d): int(n) for c, d, n in conversions}
     out = []

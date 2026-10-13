@@ -158,6 +158,42 @@ def sources_utm(cli, pid, hote, debut, fin, evenement, limite=20):
     return lignes[:limite]
 
 
+NOM_GROUPE_CANAUX = "Stellantis Custom Channel Group"   # groupe de canaux personnalisé utilisé par Looker (défini dans chaque propriété)
+_DIM_CANAL = {}
+
+
+def dim_canal(pid):
+    """Dimension GA4 des canaux d'acquisition d'une propriété : `sessionCustomChannelGroup:<id>` si le groupe
+    « Stellantis Custom Channel Group » existe (mêmes canaux que Looker), sinon le groupe par défaut de GA4.
+    Résultat mis en cache par propriété (l'identifiant du groupe diffère d'une propriété à l'autre)."""
+    if pid in _DIM_CANAL:
+        return _DIM_CANAL[pid]
+    dim = "sessionDefaultChannelGroup"
+    try:
+        from google.analytics.admin import AnalyticsAdminServiceClient
+        for g in AnalyticsAdminServiceClient().list_channel_groups(parent=f"properties/{pid}"):
+            if not g.system_defined and g.display_name.strip() == NOM_GROUPE_CANAUX:
+                dim = f"sessionCustomChannelGroup:{g.name.split('/')[-1]}"
+                break
+    except Exception:
+        pass
+    _DIM_CANAL[pid] = dim
+    return dim
+
+
+def sessions_propriete_par_jour(cli, pid, debut, fin):
+    """Sessions de TOUTE la propriété (tous les domaines, une session comptée une fois) par jour : {« AAAA-MM-JJ »: n}.
+    C'est le périmètre de la carte « Visites site marque » de Looker."""
+    l = _rapport(cli, pid, debut, fin, ["date"], ["sessions"], None)
+    return {f"{d[:4]}-{d[4:6]}-{d[6:8]}": int(float(n)) for d, n in l}
+
+
+def sessions_propriete_par_mois(cli, pid, debut, fin):
+    """Idem par mois : {« AAAA-MM »: n}. Le total d'un mois n'est pas la somme de ses jours (GA4 dédoublonne)."""
+    l = _rapport(cli, pid, debut, fin, ["yearMonth"], ["sessions"], None)
+    return {f"{m[:4]}-{m[4:6]}": int(float(n)) for m, n in l}
+
+
 def groupe_canal(nom):
     return GROUPES_CANAUX.get(nom, "a")
 

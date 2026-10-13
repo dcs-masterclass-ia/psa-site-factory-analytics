@@ -1,0 +1,5 @@
+{
+ "Sessions site de la marque": "Brand site sessions",
+ "Sessions GA4 de toute la propriété de la marque (tous ses domaines : site de la marque, boutique, réseau, outil de reprise…), une session n'étant comptée qu'une fois : c'est la carte « Visites site marque » de Looker. Mois entiers : total mensuel GA4. Le seul site de la marque (hôte principal) est dans l'infobulle du graphique.": "GA4 sessions of the whole brand property (all its domains: brand site, store, network, trade-in tool…), each session counted once: this is Looker's “Brand site visits” card. Whole months: GA4 monthly total.",
+ "Demandes d'estimation sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.": "Valuation requests over the period: GA4 tradein_request events (Looker's “Hot leads”), sum of the exact days. The funnel counts distinct users instead, hence a slightly lower figure. GA4 data, distinct from back-office leads."
+}

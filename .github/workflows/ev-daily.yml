@@ -51,3 +51,10 @@ jobs:
           ARGS=(--ecrire)
           if [ -n "$IN_SITES" ]; then ARGS+=(--sites); IFS=',' read -ra L <<< "$IN_SITES"; for s in "${L[@]}"; do ARGS+=("$(echo "$s" | sed 's/^ *//;s/ *$//')"); done; fi
           python -m pipeline.ev_daily "${ARGS[@]}"
+      - name: Redéployer le dashboard (reprend les nouvelles données)
+        if: success()
+        env:
+          SEC_VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          [ -z "$SEC_VERCEL_DEPLOY_HOOK" ] && { echo "::warning::VERCEL_DEPLOY_HOOK non configuré : redéploiement manuel nécessaire."; exit 0; }
+          curl -fsS -X POST "$SEC_VERCEL_DEPLOY_HOOK"

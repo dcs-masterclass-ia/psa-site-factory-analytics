@@ -2951,7 +2951,21 @@ class Component extends DCLogic {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
-                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false };
+                  trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
+                  convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false };
+    // période = mois civils entiers : Looker prend le total GA4 du mois (jamais la somme des jours, qui diffère d'environ 1 %)
+    const moisEntiers = (() => {
+      if (debutIso.slice(8,10) !== '01') return null;
+      const ms = []; let y = +debutIso.slice(0,4), m = +debutIso.slice(5,7);
+      for (let k = 0; k < 60; k++) {
+        const fin = new Date(Date.UTC(y, m, 0)).toISOString().slice(0,10);
+        ms.push([y+'-'+String(m).padStart(2,'0'), +fin.slice(8,10)]);
+        if (fin >= finIso) return fin === finIso ? ms : null;
+        m++; if (m > 12) { m = 1; y++; }
+      }
+      return null;
+    })();
+    out.exactMois = !!moisEntiers;
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.daily) continue;
@@ -2962,6 +2976,24 @@ class Component extends DCLogic {
         out.reprise += d.daily.rep[i] || 0;
         out.trafficDaily[jour] = (out.trafficDaily[jour] || 0) + (d.daily.u[i] || 0);
         out.repriseDaily[jour] = (out.repriseDaily[jour] || 0) + (d.daily.rep[i] || 0);
+      }
+      // --- totaux « Looker » : mois entiers -> total mensuel GA4 ; sinon somme des jours
+      const siteRepJours = idxs.reduce((a, i) => a + (d.daily.rep[i] || 0), 0);
+      const siteTrafJours = idxs.reduce((a, i) => a + (d.daily.u[i] || 0), 0);
+      const rm = d.repriseMonth || {}, tmo = d.trafficMonth || {}, pmo = (d.propSessions && d.propSessions.month) || {};
+      const complet = (src, m, nj) => src[m] && (src[m].rdays || src[m].tdays || 0) >= nj;
+      const exR = moisEntiers && moisEntiers.every(([m, nj]) => rm[m] && (rm[m].rdays || 0) >= nj) ? moisEntiers.reduce((a, [m]) => a + rm[m].sessions, 0) : null;
+      const exT = moisEntiers && moisEntiers.every(([m, nj]) => tmo[m] && (tmo[m].tdays || 0) >= nj) ? moisEntiers.reduce((a, [m]) => a + tmo[m].sessions, 0) : null;
+      if (exR != null) out.reprise += exR - siteRepJours;
+      if (exT != null) out.traffic += exT - siteTrafJours;
+      if (d.propSessions && d.propSessions.daily) {
+        const exP = moisEntiers && moisEntiers.every(([m]) => pmo[m] != null) ? moisEntiers.reduce((a, [m]) => a + pmo[m], 0) : null;
+        out.propTotal += exP != null ? exP : Object.entries(d.propSessions.daily).reduce((a, [j, n]) => a + (j >= debutIso && j <= finIso ? n : 0), 0);
+      } else { out.propTotal += exT != null ? exT : siteTrafJours; out.propApprox = true; }
+      if (d.evDaily && Object.keys(d.evDaily).length) {
+        const evSite = idxs.reduce((a, i) => a + (d.evDaily[d.daily.d[i]] || 0), 0);
+        out.convEv += evSite;
+        out.convSessTot += exR != null ? exR : siteRepJours;
       }
       for (const mois of Object.keys(d.leads || {})) {
         if (mois === "total") continue;
@@ -3103,7 +3135,8 @@ class Component extends DCLogic {
       const a = this.aggregate.call({ state:{sites:[n]}, data:this.data }, debutIso, finIso);
       const f = a.funnelSteps && a.funnelSteps.length ? a.funnelSteps : null;
       const tunnel = f && f[0].users ? f[f.length-1].users/f[0].users*100 : null;
-      let se = 0, ev = 0; for (const c of Object.values(a.convDaily || {})) { se += c[0]; ev += c[1]; }
+      let se = a.convSessTot, ev = a.convEv;
+      if (!(se > 0)) { se = 0; ev = 0; for (const c of Object.values(a.convDaily || {})) { se += c[0]; ev += c[1]; } }
       return { site:n, taux: se > 0 ? ev/se*100 : tunnel, tauxTunnel: tunnel };
     }).filter(x => x.taux != null);
     arr.sort((a,b) => b.taux-a.taux);
@@ -3373,7 +3406,7 @@ class Component extends DCLogic {
     const cmpFirst = cmp && cmp.funnelSteps && cmp.funnelSteps.length ? cmp.funnelSteps[0].users : 0;
     const cmpRate = cmpFirst ? cmpFunnelLast/cmpFirst*100 : null;
     // taux « global » (carte principale, classement, courbe) : évènements ÷ sessions du site de reprise (= Looker) ; le tunnel garde `rate` (utilisateurs)
-    const sumConv = a => { let se=0,ev=0; for (const c of Object.values((a&&a.convDaily)||{})) { se+=c[0]; ev+=c[1]; } return se>0 ? ev/se*100 : null; };
+    const sumConv = a => { if (a && a.convSessTot > 0) return a.convEv/a.convSessTot*100; let se=0,ev=0; for (const c of Object.values((a&&a.convDaily)||{})) { se+=c[0]; ev+=c[1]; } return se>0 ? ev/se*100 : null; };
     const convSessMode = !!agg.convSess && !agg.convUsers;
     const rateGlobal = sumConv(agg) != null ? sumConv(agg) : rate;
     const cmpRateGlobal = cmp ? (sumConv(cmp) != null ? sumConv(cmp) : cmpRate) : null;
@@ -3420,10 +3453,14 @@ class Component extends DCLogic {
 
     const kIcone = (c, ...els) => h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:c,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},els);
     const kPuce = c => `width:30px;height:30px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:${c}1a`;
+    const brandSessions = agg.propTotal > 0 ? agg.propTotal : parent;
+    const cmpBrandSessions = cmp ? (cmp.propTotal > 0 ? cmp.propTotal : cmp.traffic) : null;
+    const leadsEv = convSessMode && agg.convEv > 0 ? agg.convEv : null;      // « Hot leads » de Looker : évènements tradein_request
+    const cmpLeadsEv = cmp && cmp.convEv > 0 ? cmp.convEv : null;
     const kpis=[
-      {label:'Sessions site parent',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),info:"Sessions GA4 du site de la marque (site parent) sur la période. Une session qui passe du site parent à l'outil de reprise est comptée dans les deux sites.",value:this.fmt(parent),...deltaBadgeAsKpi(deltaBadge(parent, cmp&&cmp.traffic)),spark:safeSpark(trafficBuckets,'#7c63ee')},
+      {label:'Sessions site de la marque',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),info:"Sessions GA4 de toute la propriété de la marque (tous ses domaines : site de la marque, boutique, réseau, outil de reprise…), une session n'étant comptée qu'une fois : c'est la carte « Visites site marque » de Looker. Mois entiers : total mensuel GA4. Le seul site de la marque (hôte principal) est dans l'infobulle du graphique.",value:this.fmt(brandSessions),...deltaBadgeAsKpi(deltaBadge(brandSessions, cmp&&cmpBrandSessions)),spark:safeSpark(trafficBuckets,'#7c63ee')},
       {label:'Sessions site reprise',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('path',{d:'M3 12a9 9 0 019-9 9 9 0 016.4 2.6L21 8'}),h('path',{d:'M21 3v5h-5'}),h('path',{d:'M21 12a9 9 0 01-9 9 9 9 0 01-6.4-2.6L3 16'}),h('path',{d:'M3 21v-5h5'})),info:"Sessions GA4 de l'outil de reprise (son nom d'hôte) sur la période.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
-      {label:'Leads GA4',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Estimations sur la période : utilisateurs ayant déclenché la demande de reprise (tradein_request), somme des jours exacts. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leads),...deltaBadgeAsKpi(deltaBadge(leads, cmpFunnelLast||null)),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
+      {label:'Leads GA4',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Demandes d'estimation sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leadsEv!=null?leadsEv:leads),...deltaBadgeAsKpi(deltaBadge(leadsEv!=null?leadsEv:leads, leadsEv!=null?cmpLeadsEv:(cmpFunnelLast||null))),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = homeBuckets.map((hb,i)=> hb ? estBuckets[i]/hb*100 : 0);

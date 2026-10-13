@@ -23,3 +23,30 @@ test("carte principale : conversion en sessions quand evDaily existe, tunnel inc
   // le tunnel, lui, garde son entrée en utilisateurs de la page d'accueil
   await expect(page.getByText("Visiteurs de l'accueil menés jusqu'à l'estimation").first()).toBeVisible();
 });
+
+test("mois entier : total mensuel GA4 (comme Looker) pour les sessions et le taux", async ({ page, context }) => {
+  const fs = require("fs"), path = require("path");
+  const fichier = path.join(__dirname, "../../data/citroen-fr.json");
+  const d = JSON.parse(fs.readFileSync(fichier, "utf8"));
+  test.skip(!d.repriseMonth || !d.repriseMonth["2026-09"], "données de septembre indisponibles");
+  const prop = { daily: {}, month: { "2026-09": 1414658 } };   // total de la propriété (valeur GA4 relevée le 13/10/2026)
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => {
+    sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "ga", from: "2026-09-01", to: "2026-09-30", sites: ["CITROEN FR"], cmpMode: "none" }));
+  });
+  await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
+  const ev = {};
+  d.daily.d.forEach((j, i) => { ev[j] = Math.round((d.daily.rep[i] || 0) * 0.15); });
+  await page.route(/\/data\/citroen-fr\.json$/, (r) => r.fulfill({ json: { ...d, evDaily: ev, propSessions: prop } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  const totalMois = d.repriseMonth["2026-09"].sessions;
+  const evSept = d.daily.d.reduce((a, j, i) => a + (j.startsWith("2026-09") ? ev[j] : 0), 0);
+  const attendu = (evSept / totalMois * 100).toFixed(1).replace(".", ",") + " %";
+  const fmt = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const texte = (await page.evaluate(() => document.body.innerText)).replace(/ | /g, " ");
+  expect(texte).toContain(fmt(totalMois).replace(/ /g, " "));    // sessions reprise = total mensuel
+  expect(texte).toContain(attendu);                                  // taux = évènements ÷ total mensuel
+  const tProp = prop.month["2026-09"];
+  expect(texte).toContain(fmt(tProp).replace(/ /g, " "));        // sessions du site de la marque = total de la propriété
+});

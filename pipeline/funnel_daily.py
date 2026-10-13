@@ -81,7 +81,7 @@ def funnel_segments(cli, pid, hote, debut, fin):
     attendu = {v.lower(): i + 1 for i, (_, v) in enumerate(funnel.ETAPES_PARAM[:-1])}
     valeur_estimation = dict(funnel.ETAPES_PARAM)["Estimation"]
     out = {}
-    for nom, dim in (("device", "deviceCategory"), ("canal", "sessionDefaultChannelGroup")):
+    for nom, dim in (("device", "deviceCategory"), ("canal", ga4.dim_canal(pid))):
         mois = {}
 
         def ligne(ym, seg):
