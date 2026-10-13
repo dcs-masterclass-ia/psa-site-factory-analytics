@@ -5210,15 +5210,18 @@ class Component extends DCLogic {
     const tbYoyChart = (()=>{
       if (!tb_lastDay) return '';
       const W=860,H=330,GL=48,GR=10,GT=22,GB=26, pw=W-GL-GR, ph=H-GT-GB, cols=['#d9d2fb','#a996f4','#6c4fe0'];
-      let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); }); ymax*=1.12;
+      let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); }); ymax*=1.3;   // marge en haut : valeurs (verticales) + écart en %
       const el=[]; const bw=pw/12;
-      for (let k=0;k<=4;k++){ const v=ymax/1.12*k/4, yy=GT+ph-(v/ymax)*ph; el.push(h('line',{key:'g'+k,x1:GL,y1:yy,x2:GL+pw,y2:yy,stroke:'#f0f0f3'}), h('text',{key:'gt'+k,x:GL-8,y:yy+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
+      for (let k=0;k<=4;k++){ const v=ymax/1.3*k/4, yy=GT+ph-(v/ymax)*ph; el.push(h('line',{key:'g'+k,x1:GL,y1:yy,x2:GL+pw,y2:yy,stroke:'#f0f0f3'}), h('text',{key:'gt'+k,x:GL-8,y:yy+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
       for (let m=1;m<=12;m++){ const x0=GL+(m-1)*bw+bw*0.14, w=bw*0.72/3;
         yoyYears.forEach((y,j)=>{ const v=ym[y+'-'+tb_pad2(m)]||0; if(!v) return; const partial=(y===yoyYears[2]&&m===lastMonthI); const hh=v/ymax*ph;
-          el.push(h('rect',{key:'b'+m+'_'+j,x:x0+j*w,y:GT+ph-hh,width:w-2,height:hh,rx:2.5,fill:cols[j],opacity:partial?.55:1})); });
+          el.push(h('rect',{key:'b'+m+'_'+j,x:x0+j*w,y:GT+ph-hh,width:w-2,height:hh,rx:2.5,fill:cols[j],opacity:partial?.55:1}));
+          // valeur du mois (leads), écrite à la verticale au-dessus de chaque barre
+          const cx=x0+j*w+(w-2)/2, cy=GT+ph-hh-4;
+          el.push(h('text',{key:'v'+m+'_'+j,x:cx,y:cy,fontSize:9,fill:j===2?'#4b43a8':'#8a8f98',fontWeight:j===2?600:400,fontFamily:F,transform:`rotate(-90 ${cx} ${cy})`,textAnchor:'start'},this.fmt(v))); });
         el.push(h('text',{key:'mx'+m,x:GL+(m-1)*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_MOIS_C[m-1]));
         const a=ym[yoyYears[2]+'-'+tb_pad2(m)], b=ym[yoyYears[1]+'-'+tb_pad2(m)];
-        if (a && b && m<lastMonthI) el.push(h('text',{key:'dl'+m,x:GL+(m-1)*bw+bw/2,y:GT+ph-Math.max(a,b)/ymax*ph-6,textAnchor:'middle',fontSize:10,fontWeight:600,fill:a>=b?'#2b8f62':'#a33c39',fontFamily:F},(a>=b?'+':'−')+Math.round(Math.abs(a/b-1)*100)+'%'));
+        if (a && b && m<lastMonthI) el.push(h('text',{key:'dl'+m,x:GL+(m-1)*bw+bw/2,y:GT+ph-Math.max(a,b)/ymax*ph-this.fmt(Math.max(a,b)).length*5.1-14,textAnchor:'middle',fontSize:10,fontWeight:600,fill:a>=b?'#2b8f62':'#a33c39',fontFamily:F},(a>=b?'+':'−')+Math.round(Math.abs(a/b-1)*100)+'%'));
       }
       return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},el);
     })();
