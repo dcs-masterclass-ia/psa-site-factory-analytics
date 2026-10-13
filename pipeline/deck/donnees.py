@@ -3,8 +3,9 @@
 Sources et règles : docs/presentations-definitions.md.
   - leads : data/history/leads et leads_acq (back-office, leads valides) ;
   - trafic : data/history/ga4_sources (sessions des sites de reprise) ;
-  - utilisateurs distincts (trafic, In Journey, Hot leads) : requête GA4 directe sur la période
-    (jamais une somme de valeurs quotidiennes), mise en cache.
+  - chaîne GA4 alignée sur Looker (requête directe sur la période, jamais une somme de valeurs quotidiennes, mise en cache) :
+    sessions (total GA4 de la période) -> In Journey (sessions ayant déclenché form_step_view) -> Hot leads (évènements tradein_request) ;
+    canaux = « Stellantis Custom Channel Group » ; les utilisateurs distincts restent disponibles (clé « utilisateurs »).
 Un seul périmètre (pays) pour toutes les mesures d'une présentation.
 """
 
@@ -271,7 +272,10 @@ class Donnees:
         return a, b
 
     def canaux(self, periode, marque):
-        """{canal: sessions} sur la période."""
+        """{canal: sessions} sur la période : GA4 direct (groupe de canaux de Looker) ; repli sur l'historique si GA4 est indisponible."""
+        u = self.utilisateurs(periode, marque)
+        if u and u.get("canaux"):
+            return dict(u["canaux"])
         self._charge_trafic()
         out = defaultdict(int)
         deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
@@ -283,13 +287,12 @@ class Donnees:
 
     # ------------------------------------------- utilisateurs distincts (GA4, direct)
     def utilisateurs(self, periode, marque):
-        """{utilisateurs, in_journey, hot_leads} distincts sur la période, ou None si GA4 indisponible."""
-        cles = []
-        total = {"utilisateurs": 0, "in_journey": 0, "hot_leads": 0}
+        """{sessions, in_journey, hot_leads, utilisateurs, canaux} sur la période (définitions de Looker), ou None si GA4 indisponible."""
+        total = {"sessions": 0, "in_journey": 0, "hot_leads": 0, "utilisateurs": 0, "canaux": {}}
         for nom, m, _ in self.sites:
             if m != marque:
                 continue
-            cle = f"{nom}|{periode.debut}|{periode.fin}"
+            cle = f"v2|{nom}|{periode.debut}|{periode.fin}"
             v = self._cache_ga4().get(cle)
             if v is None:
                 v = self._requete_ga4(nom, periode)
@@ -297,8 +300,10 @@ class Donnees:
                     return None
                 self._cache_ga4()[cle] = v
                 self._sauve_cache()
-            for k in total:
+            for k in ("sessions", "in_journey", "hot_leads", "utilisateurs"):
                 total[k] += v[k]
+            for c, n in v.get("canaux", {}).items():
+                total["canaux"][c] = total["canaux"].get(c, 0) + n
         return total
 
     def _cache_ga4(self):
@@ -317,7 +322,8 @@ class Donnees:
             pass
 
     def _requete_ga4(self, nom, periode):
-        """Utilisateurs distincts des sites de reprise : tous, avec form_step_view (In Journey), avec tradein_request (Hot leads)."""
+        """Chaîne de Looker sur les sites de reprise : sessions (total de la période), In Journey (sessions avec form_step_view),
+        Hot leads (évènements tradein_request), canaux (Stellantis Custom Channel Group) ; utilisateurs distincts en complément."""
         try:
             from pipeline import ga4, sites as sites_mod
             from pipeline.history import hote_reprise_ga4
@@ -328,11 +334,14 @@ class Donnees:
             d0, d1 = periode.debut.isoformat(), periode.fin.isoformat()
             hote = hote_reprise_ga4(cli, s, d0, d1)
             filtre = ga4._egal("hostName", hote)
-            tot = ga4._rapport(cli, s.propriete, d0, d1, [], ["totalUsers"], filtre)
-            ev = ga4._rapport(cli, s.propriete, d0, d1, ["eventName"], ["totalUsers"], filtre)
-            par_evt = {e: int(u) for e, u in ev}
-            return {"utilisateurs": int(tot[0][0]) if tot else 0, "in_journey": par_evt.get("form_step_view", 0),
-                    "hot_leads": par_evt.get("tradein_request", 0)}
-        except Exception as e:  # GA4 indisponible : la présentation l'indique, elle ne s'arrête pas
+            tot = ga4._rapport(cli, s.propriete, d0, d1, [], ["sessions", "totalUsers"], filtre)
+            ev = ga4._rapport(cli, s.propriete, d0, d1, ["eventName"], ["sessions", "eventCount"], filtre)
+            par_evt = {e: (int(float(se)), int(float(c))) for e, se, c in ev}
+            can = ga4._rapport(cli, s.propriete, d0, d1, [ga4.dim_canal(s.propriete)], ["sessions"], filtre)
+            return {"sessions": int(float(tot[0][0])) if tot else 0, "utilisateurs": int(float(tot[0][1])) if tot else 0,
+                    "in_journey": par_evt.get("form_step_view", (0, 0))[0],
+                    "hot_leads": par_evt.get("tradein_request", (0, 0))[1],
+                    "canaux": {(c.strip() or "(non défini)"): int(float(n)) for c, n in can}}
+        except (Exception, SystemExit) as e:  # GA4 indisponible (accès absent compris) : la présentation l'indique, elle ne s'arrête pas
             print(f"  GA4 indisponible pour {nom} {periode.etiquette()} : {type(e).__name__}")
             return None

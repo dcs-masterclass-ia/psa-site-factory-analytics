@@ -28,13 +28,13 @@ incohérences. Les écarts avec lui sont attendus et listés plus bas.
 | New cars / Trade-in only / Used cars | Back-office | `PURCHASE PROJECT` : VN / « No purchase project » / VO. NC = New cars. |
 | Source d'acquisition | Back-office | `SOURCE_ACQUISITION` regroupée : Search = {Search, Google Ads} ; Emailing = {sfmc} ; LLM = {chatgpt.com, …} ; Display ; Main-Website ; Autre = vide. |
 | CTA du site | Back-office | `SUPPORT` (menu, HP-B, footer, page offre) × `CAMPAGNE` = « CTA », pour la source Main-Website. |
-| Utilisateurs trade-in | GA4 | Utilisateurs distincts des sites de reprise (Belgique : nl + fr ; Luxembourg), sur la période. |
-| Sessions trade-in | GA4 | Sessions des mêmes sites de reprise. |
-| Canaux du trafic | GA4 | `sessionPrimaryChannelGroup` (Display, Paid Search, Organic Search…). |
-| In Journey | GA4 | Utilisateurs distincts ayant déclenché `form_step_view` sur les sites de reprise. |
-| Hot leads | GA4 | Utilisateurs distincts de l'étape « estimation » (`tradein_request`). |
-| Taux In Journey | GA4 | In Journey ÷ utilisateurs trade-in. |
-| CVR | GA4 | Hot leads ÷ In Journey. |
+| Sessions trade-in | GA4 | Sessions des sites de reprise (Belgique : nl + fr ; Luxembourg), **total GA4 de la période** (même chiffre que Looker). |
+| Canaux du trafic | GA4 | « Stellantis Custom Channel Group » (Display, Paid Search, Organic Search…), lu directement sur la période. |
+| In Journey | GA4 | **Sessions** ayant déclenché `form_step_view` sur les sites de reprise. |
+| Hot leads | GA4 | **Évènements** `tradein_request` sur les sites de reprise. |
+| Taux In Journey | GA4 | In Journey ÷ sessions trade-in. |
+| CVR (flèche In Journey → Hot leads) | GA4 | Hot leads ÷ In Journey (comme Looker). |
+| CVR global (tuile) | GA4 | Hot leads ÷ sessions trade-in (comme Looker). |
 
 Les leads du back-office (module « Leads ») et les hot leads GA4 (module « Trafic ») sont deux mesures différentes de deux
 outils différents ; elles ne sont jamais comparées ni rapportées l'une à l'autre.
@@ -67,7 +67,7 @@ utilisation) ni les points ouverts et prochaines étapes (propres à chaque édi
 
 ## Ajouts du reporting mensuel (2026-10-11)
 
-- **CVR (tuile de la diapo trafic)** = hot leads ÷ utilisateurs distincts trade-in de la période (GA4), variation en points vs période précédente et vs N-1 ; pas calculé sous 100 utilisateurs.
+- **CVR (tuile de la diapo trafic)** = hot leads ÷ sessions trade-in de la période (GA4, comme Looker), variation en points vs période précédente et vs N-1 ; pas calculé sous 100 sessions.
 - **Trafic venant du site de la marque** = sessions dont la source UTM est « Main-Website » (boutons du site de la marque) ou dont le canal est « Referral » depuis l'URL de la marque (`DOMAINES_MARQUE` dans `pipeline/deck/donnees.py`), ÷ sessions totales. Pas calculé sous 100 sessions.
 - **Groupes de marques** : XP (Peugeot, Citroën, DS, Opel), XF (Alfa Romeo, Abarth, Fiat, Fiat Pro, Jeep, Lancia, Leapmotor), Spoticar, autres ; la vue « hors Spoticar » recalcule les parts sans Spoticar.
 - **Blocs fixes** (modules `nps`, `utm`) : diapositives de texte réutilisables placées en annexes.
@@ -90,3 +90,9 @@ Demande de M.A (ticket T-20261012-da4d) : « sur la performance globale du site 
 - **Canaux d'acquisition** = « Stellantis Custom Channel Group » (`sessionCustomChannelGroup:<id>`, retrouvé par son nom dans chaque
   propriété, repli sur le groupe par défaut) : canal quotidien du site parent, conversion par canal × appareil, entonnoir par canal.
   Le médium `DRE` reste « Unassigned » tant que la règle n'est pas ajoutée au groupe dans GA4 (même constat que Looker).
+
+## Chaîne GA4 des présentations alignée sur Looker (13/10/2026)
+Remplace la règle du 10/10 « utilisateurs distincts partout » : la chaîne devient celle de Looker — sessions (total GA4 de la période) →
+In Journey (sessions avec `form_step_view`) → Hot leads (évènements `tradein_request`), canaux = « Stellantis Custom Channel Group ».
+Les utilisateurs distincts restent disponibles dans les données (`utilisateurs`) mais ne sont plus affichés. Le cache GA4 des
+présentations est versionné (`v2|…`) : les anciennes valeurs en utilisateurs ne sont pas réutilisées.

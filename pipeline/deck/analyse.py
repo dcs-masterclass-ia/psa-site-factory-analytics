@@ -3,7 +3,7 @@ des lectures (hypothèses signalées) et des recommandations rattachées au fact
 
 Méthode, pour une marque et une période de référence :
  1. Leads = sessions × ratio leads/session -> effet trafic et effet ratio (en leads, somme = écart total).
- 2. Chaîne GA4 utilisateurs -> In Journey -> hot leads : contribution (log) de l'audience, de l'entrée dans le tunnel et de l'estimation.
+ 2. Chaîne GA4 (comme Looker) sessions -> In Journey -> hot leads : contribution (log) de l'audience, de l'entrée dans le tunnel et de l'estimation.
  3. Canaux : contribution de chaque canal à l'écart de sessions, évolution du mix.
  4. Saisonnalité : la même évolution (période vs précédente) observée les 2 années précédentes ; l'écart actuel est-il dans la norme ?
  5. Dynamique : mois complets de la période vs N-1, accélération ou ralentissement du dernier mois.
@@ -248,16 +248,16 @@ def analyse_marque(ctx, m):
         # 2. chaîne GA4
         uc, ur = d.utilisateurs(ctx.per, m), d.utilisateurs(pa, m)
         chaine = None
-        if uc and ur and min(uc["utilisateurs"], ur["utilisateurs"], uc["in_journey"], ur["in_journey"], uc["hot_leads"], ur["hot_leads"]) >= 1:
-            fa = math.log(uc["utilisateurs"] / ur["utilisateurs"])
-            fe = math.log((uc["in_journey"] / uc["utilisateurs"]) / (ur["in_journey"] / ur["utilisateurs"]))
+        if uc and ur and min(uc["sessions"], ur["sessions"], uc["in_journey"], ur["in_journey"], uc["hot_leads"], ur["hot_leads"]) >= 1:
+            fa = math.log(uc["sessions"] / ur["sessions"])
+            fe = math.log((uc["in_journey"] / uc["sessions"]) / (ur["in_journey"] / ur["sessions"]))
             fh = math.log((uc["hot_leads"] / uc["in_journey"]) / (ur["hot_leads"] / ur["in_journey"]))
             chaine = sorted([(abs(fa), "audience", fa), (abs(fe), "entrée", fe), (abs(fh), "estimation", fh)], reverse=True)
-            ent_c, ent_r = uc["in_journey"] / uc["utilisateurs"] * 100, ur["in_journey"] / ur["utilisateurs"] * 100
+            ent_c, ent_r = uc["in_journey"] / uc["sessions"] * 100, ur["in_journey"] / ur["sessions"] * 100
             est_c, est_r = uc["hot_leads"] / uc["in_journey"] * 100, ur["hot_leads"] / ur["in_journey"] * 100
-            c.append(F(f"Parcours : {t.nb(uc['utilisateurs'])} utilisateurs ({t.evol(uc['utilisateurs'], ur['utilisateurs'])[0]}), {t.pct(ent_c, 0)} entrent dans le tunnel ({t.pts(ent_c - ent_r)}), "
+            c.append(F(f"Parcours : {t.nb(uc['sessions'])} sessions ({t.evol(uc['sessions'], ur['sessions'])[0]}), {t.pct(ent_c, 0)} entrent dans le tunnel ({t.pts(ent_c - ent_r)}), "
                        f"{t.pct(est_c, 0)} déposent une estimation ({t.pts(est_c - est_r)}) : {t.nb(uc['hot_leads'])} hot leads.",
-                       f"Journey: {t.nb(uc['utilisateurs'])} users ({t.evol(uc['utilisateurs'], ur['utilisateurs'])[0]}), {t.pct(ent_c, 0)} enter the funnel ({t.pts(ent_c - ent_r)}), "
+                       f"Journey: {t.nb(uc['sessions'])} sessions ({t.evol(uc['sessions'], ur['sessions'])[0]}), {t.pct(ent_c, 0)} enter the funnel ({t.pts(ent_c - ent_r)}), "
                        f"{t.pct(est_c, 0)} submit an estimate ({t.pts(est_c - est_r)}): {t.nb(uc['hot_leads'])} hot leads."))
         # 3. canaux
         ref_can = d.canaux(pa, m)
@@ -693,9 +693,9 @@ def s_trafic(ctx, m):
             if abs(v0) >= SEUIL_BASE:
                 r.append(F(f"{'Faire le point avec l’équipe média sur' if v0 < 0 else 'Capitaliser sur'} {k0} : budget, ciblage, calendrier.", f"{'Review with the media team' if v0 < 0 else 'Build on'} {k0}: budget, targeting, calendar."))
     u = d.utilisateurs(per, m)
-    if u and u["utilisateurs"] >= SEUIL_BASE and u["in_journey"]:
-        ent, est = u["in_journey"] / u["utilisateurs"] * 100, u["hot_leads"] / u["in_journey"] * 100
-        a.append(F(f"Parcours : {t.pct(ent, 0)} des utilisateurs entrent dans le tunnel, {t.pct(est, 0)} d'entre eux déposent une estimation.", f"Journey: {t.pct(ent, 0)} of users enter the funnel, {t.pct(est, 0)} of them submit an estimate."))
+    if u and u["sessions"] >= SEUIL_BASE and u["in_journey"]:
+        ent, est = u["in_journey"] / u["sessions"] * 100, u["hot_leads"] / u["in_journey"] * 100
+        a.append(F(f"Parcours : {t.pct(ent, 0)} des sessions entrent dans le tunnel, {t.pct(est, 0)} d'entre elles déposent une estimation.", f"Journey: {t.pct(ent, 0)} of sessions enter the funnel, {t.pct(est, 0)} of them submit an estimate."))
         if ent < 40:
             r.append(F("Tester une accroche et un appel à l'action plus visibles sur la première étape (entrée dans le tunnel faible).", "Test a more visible hook and call to action on the first step (low funnel entry)."))
     sess_h = [(aa, v) for aa, v in _serie(ctx, x.S) if d.premier_jour_trafic() and f"{aa}-{per.debut.month:02d}-01" >= d.premier_jour_trafic()]

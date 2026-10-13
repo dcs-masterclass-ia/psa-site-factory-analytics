@@ -373,11 +373,11 @@ def trafic_marque(ctx, m):
         ctx.avertissements.append(f"{ctx.nom(m)} : aucune donnée de trafic sur la période, diapositive non générée.")
         return None
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['trafic']} {ctx.et(per)}", ctx.perimetre, source_ga4(ctx),
-                 notes=note_definitions(ctx, "Utilisateurs distincts calculés par GA4 sur la période entière (In Journey = événement form_step_view ; hot leads = événement tradein_request). CVR = hot leads ÷ utilisateurs. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
+                 notes=note_definitions(ctx, "Chaîne GA4 comme Looker, calculée sur la période entière : sessions (total GA4) ; In Journey = sessions ayant déclenché form_step_view ; hot leads = évènements tradein_request. CVR = hot leads ÷ sessions. Canaux = Stellantis Custom Channel Group. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
     ga = d.utilisateurs(per, m)
     y, h, w = 1.55, 1.25, 2.55
     if ga is None:
-        g.tuile(s, X0, y, 3 * w + 1.2, h, t["utilisateurs"], t["non_dispo"], t["ga4_indispo"])
+        g.tuile(s, X0, y, 3 * w + 1.2, h, t["sessions"], t["non_dispo"], t["ga4_indispo"])
     else:
         refs = [(c, d.utilisateurs(p, m)) for c, p in ctx.refs]
         def det(k):
@@ -385,8 +385,8 @@ def trafic_marque(ctx, m):
             for c, v in refs:
                 out.append(f"{t.evol(ga[k], v[k])[0]} {libelle_ref(ctx, c)}" if v else f"{t['non_dispo']}")
             return "  ·  ".join(out) or None
-        g.tuile(s, X0, y, w, h, t["utilisateurs"], t.nb(ga["utilisateurs"]), det("utilisateurs"), taille_valeur=24)
-        g.fleche(s, X0 + w + 0.05, y + 0.38, 0.5, 0.3, t.pct(t.taux(ga["in_journey"], ga["utilisateurs"]), 0) if ga["utilisateurs"] else None)
+        g.tuile(s, X0, y, w, h, t["sessions"], t.nb(ga["sessions"]), det("sessions"), taille_valeur=24)
+        g.fleche(s, X0 + w + 0.05, y + 0.38, 0.5, 0.3, t.pct(t.taux(ga["in_journey"], ga["sessions"]), 0) if ga["sessions"] else None)
         g.tuile(s, X0 + w + 0.6, y, w, h, t["in_journey"], t.nb(ga["in_journey"]), det("in_journey"), taille_valeur=24)
         g.fleche(s, X0 + 2 * w + 0.65, y + 0.38, 0.5, 0.3, t.pct(t.taux(ga["hot_leads"], ga["in_journey"]), 0) if ga["in_journey"] else None)
         g.tuile(s, X0 + 2 * w + 1.2, y, w, h, t["hot_leads"], t.nb(ga["hot_leads"]), det("hot_leads"), taille_valeur=24)
@@ -398,12 +398,12 @@ def trafic_marque(ctx, m):
             if v is not None and cur is not None:
                 out.append(f"{t.pts(cur - v)} {court[cle][0 if ctx.langue == 'fr' else 1]}")
         return "  ".join(out) or None
-    if ga is not None and ga["utilisateurs"] >= 100:
-        cvr = ga["hot_leads"] / ga["utilisateurs"] * 100
+    if ga is not None and ga["sessions"] >= 100:
+        cvr = ga["hot_leads"] / ga["sessions"] * 100
         refs_cvr = []
         for cle, p in ctx.refs:
             u = d.utilisateurs(p, m)
-            refs_cvr.append((cle, (u["hot_leads"] / u["utilisateurs"] * 100) if (u and u["utilisateurs"] >= 100) else None))
+            refs_cvr.append((cle, (u["hot_leads"] / u["sessions"] * 100) if (u and u["sessions"] >= 100) else None))
         g.tuile(s, X0 + 8.95, y, 1.7, h, "CVR", t.pct(cvr, 1), det_pts(cvr, refs_cvr), taille_valeur=22)
     a_site, b_site = d.trafic_site_marque(per, m)
     if b_site >= 100:
