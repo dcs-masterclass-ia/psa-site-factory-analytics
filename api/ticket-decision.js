@@ -15,7 +15,7 @@ const { readJson, writeJson } = require("./_lib/store");
 const { lance } = require("./_lib/dispatch");
 
 const FILE = "tickets/tickets.json";
-const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse", ask: "precision", send: "envoi", edit: "envoi", drop: "abandon", tobug: "bug" };
+const ACTIONS = { accept: "accepte", refuse: "refuse", merge: "accepte", abandon: "refuse", ask: "precision", send: "envoi", edit: "envoi", drop: "abandon", tobug: "bug", reply: "reponse", reopen: "rouvert" };
 const REPONSE = { send: true, edit: true, drop: true, tobug: true }; // décision sur la réponse (ou le bug détecté) préparée pour une question
 const VALIDATION = { merge: true, abandon: true }; // 2e décision : mise en ligne du correctif préparé par l'agent
 const AUTEUR = "decision-teams";
@@ -49,6 +49,37 @@ module.exports = async function handler(req, res) {
     const tickets = (data && Array.isArray(data.tickets)) ? data.tickets : [];
     const t = tickets.find(x => x.id === q.id);
     if (!t) { page(res, 404, "Ticket introuvable", "Ce ticket n'existe plus."); return; }
+    if (q.a === "reply" || q.a === "reopen") {
+      const champs = ["id", "a", "exp", "sig"].map(k => `<input type="hidden" name="${k}" value="${esc(q[k])}">`).join("");
+      const dernier = [...(t.commentaires || [])].reverse().find(c => !c.systeme);
+      const contexte = dernier ? `<div style="white-space:pre-wrap;background:#f6f6f8;border-radius:12px;padding:12px;margin-top:10px;font-size:14px"><span style="color:#6d727a;font-size:12px">${esc(String(dernier.auteur).split("@")[0])} :</span> ${esc(dernier.texte)}</div>` : "";
+      if (q.a === "reopen") {
+        if (t.statut !== "resolu" && t.statut !== "refuse") { page(res, 200, "Déjà ouvert", "Ce ticket n'est plus terminé."); return; }
+        if (req.method !== "POST") { page(res, 200, "Rouvrir ce ticket ?", `<b>${esc(t.titre)}</b>${contexte}`, `<form method="post" style="margin-top:16px">${champs}<button style="font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:#7c63ee;cursor:pointer">Rouvrir le ticket</button></form>`); return; }
+        const now = Date.now();
+        (t.commentaires = t.commentaires || []).push({ auteur: AUTEUR, systeme: true, at: now, texte: `Statut : ${t.statut} → en_cours` });
+        t.statut = "en_cours";
+        if (t.reponse) delete t.reponse; // une question rouverte est re-analysée avec le nouveau commentaire
+        t.updatedAt = now;
+        await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — rouvert (Teams)`, sha);
+        if ((t.triage || {}).categorie === "question") await lance("tickets-reponse.yml");
+        page(res, 200, "Ticket rouvert", "Le ticket est de nouveau en cours" + ((t.triage || {}).categorie === "question" ? " : une nouvelle réponse est préparée avec le commentaire." : "."));
+        return;
+      }
+      if (req.method !== "POST") {
+        page(res, 200, "Répondre à l'auteur", `<b>${esc(t.titre)}</b><br><span style="font-size:14px;color:#6d727a">à ${esc(t.auteur)}</span>${contexte}`,
+          `<form method="post" style="margin-top:14px">${champs}<textarea name="texte" required maxlength="1500" rows="6" style="width:100%;box-sizing:border-box;font:15px/1.5 system-ui;border:1px solid #dcdce2;border-radius:12px;padding:10px"></textarea><button style="margin-top:12px;font:600 15px system-ui;border:0;border-radius:12px;padding:11px 20px;color:#fff;background:#2b8f62;cursor:pointer">Envoyer la réponse</button></form>`);
+        return;
+      }
+      const texte = String(q.texte || "").replace(/\u0000/g, "").trim().slice(0, 1500);
+      if (!texte) { page(res, 400, "Réponse vide", "Écris ta réponse avant d'envoyer."); return; }
+      const now = Date.now();
+      (t.commentaires = t.commentaires || []).push({ auteur: "equipe-converge", texte, at: now });
+      t.updatedAt = now;
+      await writeJson(FILE, { updatedAt: now, tickets }, `chore(tickets): ${t.id} — réponse (Teams)`, sha);
+      page(res, 200, "Réponse envoyée", "L'auteur est alerté dans le dashboard.");
+      return;
+    }
     if (REPONSE[q.a]) {
       const rep = t.reponse;
       if (!rep || rep.etat !== "attente") { page(res, 200, "Déjà traité", "Cette réponse a déjà été traitée, ou aucune n'est en attente."); return; }

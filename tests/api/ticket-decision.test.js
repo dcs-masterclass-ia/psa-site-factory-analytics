@@ -94,3 +94,20 @@ test("réponse modifiée avant envoi ; ne pas répondre ; traiter comme un bug",
   assert.equal(fichier.tickets[0].decision.choix, "accepte");
   assert.equal(fichier.tickets[0].statut, "en_cours");
 });
+
+test("commentaire d'un utilisateur : répondre (message équipe-converge) et rouvrir une question terminée", async () => {
+  fichier.tickets[0].statut = "resolu";
+  fichier.tickets[0].triage = { categorie: "question" };
+  fichier.tickets[0].reponse = { etat: "envoyee", texte: "ancienne réponse" };
+  fichier.tickets[0].commentaires = [{ auteur: "a@b.c", texte: "Je pense qu'il faut changer cela", at: 1 }];
+  const r = lien("T-1", "reply");
+  const g = await appelle("GET", r);
+  assert.match(g.html, /Je pense qu&#39;il faut|Je pense qu'il faut/);
+  await appelle("POST", {}, { ...r, texte: "Bien reçu, on regarde." });
+  assert.equal(fichier.tickets[0].commentaires.slice(-1)[0].texte, "Bien reçu, on regarde.");
+  assert.equal(fichier.tickets[0].statut, "resolu");
+  await appelle("POST", {}, lien("T-1", "reopen"));
+  assert.equal(fichier.tickets[0].statut, "en_cours");
+  assert.equal(fichier.tickets[0].reponse, undefined);
+  assert.match((await appelle("POST", {}, lien("T-1", "reopen"))).html, /Déjà ouvert/);
+});

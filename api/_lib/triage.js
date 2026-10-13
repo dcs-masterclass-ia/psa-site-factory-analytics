@@ -53,4 +53,12 @@ function boutons(ticket, secret) {
   return [b("Demander des précisions", "ask")];
 }
 
-module.exports = { CATEGORIES, classer, trier, lienDecision, boutons };
+/** Carte « nouveau commentaire » : Répondre (champ texte) et, si le ticket est terminé, Rouvrir. */
+function boutonsCommentaire(ticket, secret) {
+  if (!secret) return [];
+  const b = (titre, a, style) => ({ type: "Action.OpenUrl", title: titre, ...(style ? { style } : {}), url: lienDecision(ticket.id, a, secret) });
+  const termine = ticket.statut === "resolu" || ticket.statut === "refuse";
+  return [b("Répondre", "reply", "positive"), ...(termine ? [b("Rouvrir le ticket", "reopen")] : [])];
+}
+
+module.exports = { CATEGORIES, classer, trier, lienDecision, boutons, boutonsCommentaire };

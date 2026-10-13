@@ -36,7 +36,7 @@ const crypto = require("crypto");
 const { verifySessionFromRequest, presentationsAllowed } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
-const { CATEGORIES, trier, boutons } = require("./_lib/triage");
+const { CATEGORIES, trier, boutons, boutonsCommentaire } = require("./_lib/triage");
 const { lance } = require("./_lib/dispatch");
 
 const FILE = "tickets/tickets.json";
@@ -93,6 +93,30 @@ function valideCreation(b) {
       contexte: nettoieContexte(b.contexte),
     },
   };
+}
+
+// Nouveau commentaire d'un utilisateur (sur n'importe quel ticket, y compris terminé) : M. est prévenu, avec Répondre / Rouvrir
+async function notifieCommentaire(ticket, auteur, texte) {
+  const url = process.env.TICKETS_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    const acts = boutonsCommentaire(ticket, process.env.TICKETS_LINK_SECRET);
+    const carte = { type: "message", attachments: [{ contentType: "application/vnd.microsoft.card.adaptive", content: {
+      $schema: "http://adaptivecards.io/schemas/adaptive-card.json", type: "AdaptiveCard", version: "1.4",
+      body: [
+        { type: "TextBlock", size: "Medium", weight: "Bolder", wrap: true, text: `Nouveau commentaire de ${String(auteur).split("@")[0]} — ${ticket.titre}` },
+        { type: "TextBlock", wrap: true, text: String(texte).slice(0, 800) },
+        { type: "FactSet", facts: [{ title: "Ticket", value: ticket.id }, { title: "Statut", value: ticket.statut }] },
+      ],
+      ...(acts.length ? { actions: acts } : {}),
+    } }] };
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 3000);
+    await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(carte), signal: ctrl.signal });
+    clearTimeout(t);
+  } catch (e) {
+    console.error("[tickets:notifieCommentaire]", e && e.message);
+  }
 }
 
 async function notifie(ticket, precision) {
@@ -201,6 +225,7 @@ module.exports = async function handler(req, res) {
       if (repondait) delete ticket.attente;
       await ecrit(tickets, sha, `ticket ${id} — commentaire`);
       if (repondait) await notifie(ticket, texte); // M. est prévenu : la précision demandée est arrivée, avec les boutons de décision
+      else if (!presentationsAllowed(email)) await notifieCommentaire(ticket, email, texte); // tout autre commentaire d'un utilisateur prévient aussi M.
       res.status(200).json({ ok: true, ticket: affiche(ticket, email) });
       return;
     }
