@@ -555,7 +555,7 @@ window.I18N_EN = {
 "Personnalisée": "Custom",
 "Pic le {0} ({1} vs la moyenne), creux le {2} ({3}) — sessions du site de reprise.": "Peak on {0} ({1} vs the average), trough on {2} ({3}) — trade-in site sessions.",
 "Pilotage": "Steering",
-"Pilotage des leads": "Lead management",
+"Pilotage des leads": "Lead Management",
 "Plan de la présentation": "Presentation outline",
 "Plus forte baisse : « {0} » (−{1} clics).": "Biggest drop: “{0}” (−{1} clicks).",
 "Plus forte hausse : « {0} » (+{1} clics).": "Biggest rise: “{0}” (+{1} clicks).",
