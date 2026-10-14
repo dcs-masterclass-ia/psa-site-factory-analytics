@@ -74,6 +74,37 @@ class TestFusion(unittest.TestCase):
         self.assertEqual(m["france"]["monthly"], [])     # l'entrée n'est pas modifiée en place
 
 
+class TestChampsRiches(unittest.TestCase):
+    FR = {"periode": "2026-08", "total": 94351, "yoy_pct": 7, "ytd_total": 1078320, "ytd_yoy_pct": 3, "working_days": 21,
+          "electric_units": 36159, "electric_pct": 38, "electric_yoy_pct": 113, "vo_total": 356008, "vo_yoy_pct": -5,
+          "particuliers_yoy_pct": 23, "flottes_yoy_pct": 7,
+          "top_models": [{"model": "Tesla Model Y", "units": 4622}, {"model": "", "units": 3}, {"model": "Renault 5", "units": 2316}],
+          "marques": [{"name": "Peugeot", "units": 14000, "share_pct": 14.8, "yoy_pct": 3}, {"name": "X", "share_pct": 400}],
+          "source_url": "https://www.aaa-data.fr/actualites/x/", "citation": "94 351 immatriculations en août 2026"}
+
+    def test_france_riche(self):
+        o = mk.valide_releve(self.FR, ["aaa-data.fr"], [], date(2026, 10, 14))
+        self.assertEqual(o["vo_total"], 356008)
+        self.assertEqual(o["electric_pct"], 38.0)
+        self.assertEqual([m["model"] for m in o["top_models"]], ["Tesla Model Y", "Renault 5"])   # ligne sans libellé écartée
+        self.assertEqual(o["marques"], [{"name": "Peugeot", "units": 14000, "share_pct": 14.8, "yoy_pct": 3}])   # part 400 % écartée
+        self.assertNotIn("share_pct", [k for m in o["marques"] for k in m if m["name"] == "X"])
+
+    def test_part_electrique_incoherente(self):
+        with self.assertRaises(mk.Refus):
+            mk.valide_releve({**self.FR, "electric_pct": 60}, ["aaa-data.fr"], [], date(2026, 10, 14))
+
+    def test_europe(self):
+        r = {"periode": "2026-06", "yoy_pct": 5.7, "electric_pct": 20.7, "hybrid_pct": 37.3, "phev_pct": 9.8, "stellantis_share_pct": 14.3,
+             "countries": [{"name": "France", "yoy_pct": 4, "bev_yoy_pct": 62.9}], "source_url": "https://www.acea.auto/x", "citation": "BEV 20.7%"}
+        o = mk.valide_releve(r, ["acea.auto"], [], date(2026, 10, 14), champs=mk.CHAMPS_UE)
+        self.assertEqual(o["stellantis_share_pct"], 14.3)
+        self.assertEqual(o["countries"][0]["bev_yoy_pct"], 62.9)
+        out, j = mk.fusionne_europe([], [o])
+        self.assertEqual(out[0]["label"], "Juin 2026 (cumul annuel)")
+        self.assertEqual(out[0]["countries"][0]["name"], "France")
+
+
 class TestAgent(unittest.TestCase):
     def test_consigne_et_outils(self):
         p = mk.consigne("market_in", ["DE", "GB"])
