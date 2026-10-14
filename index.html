@@ -6040,10 +6040,10 @@ class Component extends DCLogic {
         config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-mois',base:true,nom:'Reporting mensuel — pays',description:'Modèle du reporting mensuel : vue globale par groupes de marques (hors Spoticar), projets d\'achat, trafic / CVR / part du site marque, leads et sources par marque, analyse et recommandation sur chaque diapositive, points ouverts, prochaines étapes, blocs NPS et UTM',
         config:{client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','projets','trafic_marque','sources','analyse','points_ouverts','prochaines_etapes','nps','utm'],contact:{},commentaire:''}},
+      {id:'base-annee',base:true,nom:'Annuel — pays',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
+        config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Une base minimale (vue globale, trafic par marque, analyse) à enrichir selon le besoin',
-        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','trafic_marque','analyse'],contact:{},commentaire:''}},
-      {id:'base-annee',base:true,nom:'Bilan annuel',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
-        config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}}
+        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','trafic_marque','analyse'],contact:{},commentaire:''}}
     ];
     const prTplAll = PR_TPL_BASE.concat(((this._pr&&this._pr.templates)||[]).map(t=>Object.assign({base:false},t)));
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);

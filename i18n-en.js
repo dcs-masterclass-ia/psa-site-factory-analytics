@@ -51,6 +51,7 @@ window.I18N_EN = {
 "Analyse et recommandation": "Analysis and recommendation",
 "Analyses détaillées": "Detailed analyses",
 "Annuel 2022 – 2025": "Yearly 2022 – 2025",
+"Annuel — pays": "Annual — country",
 "Annuelle": "Annual",
 "Annuler": "Cancel",
 "Année": "Year",
