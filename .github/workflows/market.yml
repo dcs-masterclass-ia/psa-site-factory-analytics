@@ -74,7 +74,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.consigne.outputs.texte }}
           claude_args: >-
-            --max-turns 40
+            --max-turns 120
             --allowedTools "${{ steps.consigne.outputs.outils }}"
 
       - name: Valider et publier
