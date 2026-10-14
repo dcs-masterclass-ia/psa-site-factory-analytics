@@ -2225,6 +2225,35 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </div>
 
+            <sc-if value="{{ pdvHas }}" hint-placeholder-val="{{ true }}">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
+              <div style="font-size:15px;font-weight:600;color:#121214">Meilleur point de vente</div>
+              <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:14px">Point de vente choisi par le plus de parcours · mois touchés par la période</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
+                <div>
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.04em;color:#7c63ee;margin-bottom:4px">{{ pdvScopeLabel }}</div>
+                  <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:8px">{{ pdvBest }}</div>
+                  <sc-for list="{{ pdvSel }}" as="r" hint-placeholder-count="5">
+                    <div style="padding:6px 0;border-top:1px solid #f1f1f3">
+                      <div style="display:flex;gap:10px;font-size:13.5px"><span style="width:18px;color:#9a9fa6">{{ r.rang }}</span><span style="flex:1;min-width:0;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-weight:600;color:#121214">{{ r.n }}</span><span style="width:52px;text-align:right;color:#6d727a">{{ r.share }}</span></div>
+                      <div style="height:4px;border-radius:2px;background:#f1f1f3;margin:5px 0 0 28px;overflow:hidden"><div style="{{ r.bar }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;letter-spacing:.04em;color:#7c63ee;margin-bottom:4px">Marché entier</div>
+                  <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:8px">{{ pdvBestMarche }}</div>
+                  <sc-for list="{{ pdvMarche }}" as="r" hint-placeholder-count="5">
+                    <div style="padding:6px 0;border-top:1px solid #f1f1f3">
+                      <div style="display:flex;gap:10px;font-size:13.5px"><span style="width:18px;color:#9a9fa6">{{ r.rang }}</span><span style="flex:1;min-width:0;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span><span style="font-weight:600;color:#121214">{{ r.n }}</span><span style="width:52px;text-align:right;color:#6d727a">{{ r.share }}</span></div>
+                      <div style="height:4px;border-radius:2px;background:#f1f1f3;margin:5px 0 0 28px;overflow:hidden"><div style="{{ r.bar }}"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            </sc-if>
+
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
@@ -3486,7 +3515,7 @@ class Component extends DCLogic {
      cf. pipeline/leads_extract.py) : jamais this.<methode> ici, appelee
      aussi via .call({state,data}, ...) pour les vues par pays/parc. */
   aggregateLeadsBreakdown(debutIso, finIso) {
-    const out = { brand:new Map(), project:new Map(), device:new Map(), entryAvec:0, entryTotal:0 };
+    const out = { brand:new Map(), project:new Map(), device:new Map(), pdv:new Map(), totalMois:0, pdvMois:0, entryAvec:0, entryTotal:0 };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.leads) continue;
@@ -3499,6 +3528,8 @@ class Component extends DCLogic {
         (lm.brand||[]).forEach(([n,c])=>out.brand.set(n,(out.brand.get(n)||0)+c));
         (lm.project||[]).forEach(([n,c])=>out.project.set(n,(out.project.get(n)||0)+c));
         (lm.device||[]).forEach(([n,c])=>out.device.set(n,(out.device.get(n)||0)+c));
+        out.totalMois += lm.total||0;
+        if (lm.pdv && lm.pdv.length) { out.pdvMois += lm.total||0; lm.pdv.forEach(([n,c])=>out.pdv.set(n,(out.pdv.get(n)||0)+c)); }   // point de vente (colonne BC) : top 30 par site et par mois
         if (lm.entry) {
           const avec=lm.entry['Avec immatriculation']||0, sansPlaque=lm.entry['Marque / modele']||0;
           out.entryAvec += avec; out.entryTotal += avec+sansPlaque;
@@ -5285,6 +5316,20 @@ class Component extends DCLogic {
     const projLabelFr=n=>n==='No purchase project'?'Sans projet':n==='VN'?'Projet VN':n==='VO'?'Projet VO':titleCase(n);
     const projRows = Array.from(boAgg.project.entries()).map(([name,c])=>({name,count:c})).sort((a,b)=>b.count-a.count);
     const ptot = projRows.reduce((a,p)=>a+p.count,0) || 1;
+    // meilleur point de vente (colonne BC) : celui que le plus de parcours choisissent, dans la sélection puis sur le marché entier
+    const pdvListe = (agg0) => {
+      const tot = agg0.pdvMois || 0;
+      return [...agg0.pdv.entries()].sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,c],i)=>({rang:String(i+1),name:n,n:this.fmt(c),share:tot?dec(c/tot*100,1)+' %':'—',
+        bar:`height:100%;width:${tot?Math.min(100,c/tot*100*4):0}%;border-radius:3px;background:#7c63ee`}));
+    };
+    const pdvSel = pdvListe(boAgg);
+    const pdvMarques=[...new Set(this.state.sites.map(marqueDeSiteTb))];
+    const pdvScopeLabel=this.state.sites.length>=this._allSites.length?'Marché entier':(pdvMarques.length===1?`${pdvMarques[0]} · ${this.state.sites.length} site${this.state.sites.length>1?'s':''}`:`${pdvMarques.length} marques · ${this.state.sites.length} sites`);
+    const boMarche = this.aggregateLeadsBreakdown.call({state:{sites:this._allSites}, data:this.data}, debut, fin);
+    const pdvMarche = pdvListe(boMarche);
+    const pdvHas = pdvSel.length>0 || pdvMarche.length>0;
+    const pdvBest = pdvSel[0] ? `${pdvSel[0].name} · ${pdvSel[0].n} parcours (${pdvSel[0].share})` : '—';
+    const pdvBestMarche = pdvMarche[0] ? `${pdvMarche[0].name} · ${pdvMarche[0].n} parcours (${pdvMarche[0].share})` : '—';
     const tbProjectDonut = (()=>{
       const DC=2*Math.PI*54; let off=0;
       const donutArcs=projRows.map((p,i)=>{
@@ -6196,7 +6241,7 @@ class Component extends DCLogic {
       ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
-      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, pdvSel, pdvScopeLabel, pdvMarche, pdvHas, pdvBest, pdvBestMarche, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
       fcChip:kPuce('#7c63ee'), fcIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), capChip:kPuce('#d78b35'), capIcon:kIcone('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:0.8})),
       yoyChip:kPuce('#3b76e8'), yoyIcon:kIcone('#3b76e8',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})),
       annChip:kPuce('#3fae7a'), annIcon:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),

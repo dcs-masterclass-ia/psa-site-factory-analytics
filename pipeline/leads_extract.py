@@ -7,9 +7,10 @@ a la main) par un appel au meme point d'API que celui utilise par le bouton
 l'identifiant du site.
 
 N'exploite que les dimensions deja documentees au README (marque reprise,
-carburant, source, code marketing, mode d'entree, projet d'achat) — jamais
-les colonnes PII du CSV (telephone, commentaires, nom du concessionnaire,
-etc.), qui ne sont ni lues ni publiees dans data/*.json.
+carburant, source, code marketing, mode d'entree, projet d'achat, appareil)
+et, depuis le 15/10/2026, le point de vente choisi (colonne BC, DEALER NAME :
+une entreprise, pas une personne) — jamais les colonnes PII du CSV (telephone,
+commentaires, adresse, etc.), qui ne sont ni lues ni publiees dans data/*.json.
 """
 
 import csv
@@ -185,6 +186,8 @@ COL_MODE = "MODE"
 # le regroupement (mobile/desktop/autres) se fait cote dashboard, generique,
 # sans supposer la casse exacte.
 COL_DEVICE = "DEVICE"
+# point de vente (concessionnaire) choisi par le client : colonne BC de l'export, en-tete "DEALER NAME"
+COL_DEALER = "DEALER NAME"
 
 
 def token():
@@ -276,7 +279,7 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
     lignes = [l for l in _telecharge(site_nom, debut, fin) if _valide(l)] if bornes > 0 else []
 
     daily = [0] * bornes
-    brand, fuel, project, source, code, device = (Counter() for _ in range(6))
+    brand, fuel, project, source, code, device, pdv = (Counter() for _ in range(7))
     entree = {"Avec immatriculation": 0, "Marque / modele": 0}
     # comptage jour par jour et par appareil, meme principe que `daily` mais
     # une serie par valeur trouvee dans DEVICE — sert au rapport hebdomadaire V2
@@ -303,6 +306,9 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
             source[l[COL_SOURCE]] += 1
         if l.get(COL_CODE):
             code[l[COL_CODE]] += 1
+        nom_pdv = (l.get(COL_DEALER) or "").strip()
+        if nom_pdv:
+            pdv[nom_pdv] += 1
         if l.get(COL_DEVICE):
             device[l[COL_DEVICE]] += 1
             if jour is not None and 1 <= jour <= bornes:
@@ -318,4 +324,6 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
         "entry": entree, "project": _top(project),
         "source": _top(source), "code": _top(code),
         "device": _top(device), "dailyDevice": dict(daily_device),
+        # points de vente (colonne BC) : les 30 premiers du mois, suffisant pour trouver le meilleur d'une marque ou du marche
+        "pdv": _top(pdv, 30),
     }
