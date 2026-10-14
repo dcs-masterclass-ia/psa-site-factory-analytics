@@ -770,7 +770,13 @@ def main():
     ap.add_argument("--sites", nargs="*", help="par defaut : tous ceux qui ont l'acces API")
     ap.add_argument("--ecrire", action="store_true",
                     help="sans ce drapeau, rien n'est ecrit sur le disque")
+    ap.add_argument("--complet", action="store_true",
+                    help="rattrapage complet : retraite TOUS les mois de la fenetre (au lieu des 2 derniers), "
+                         "aucun mois repris tel quel de l'existant")
     a = ap.parse_args()
+    if a.complet:
+        global MOIS_RECENTS
+        MOIS_RECENTS = MOIS_HISTORIQUE
 
     cibles = [trouve_site(x) for x in a.sites] if a.sites else [s for s in SITES if s.acces_api]
     mois_liste = mois_a_traiter()

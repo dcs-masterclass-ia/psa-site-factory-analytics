@@ -3225,6 +3225,8 @@ class Component extends DCLogic {
         for (const jour of fdJours) {
           if (jour < debutIso || jour > finIso) continue;
           const v = fd[jour];
+          // un site précédent (semaines / mois) peut avoir créé un tunnel de moins de 6 étapes : on le complète au lieu de planter
+          while (out.funnelSteps.length < 6) out.funnelSteps.push({step:STEPS_FUNNEL[out.funnelSteps.length], users:0});
           for (let i = 0; i < 6; i++) out.funnelSteps[i].users += v[i] || 0;
           if (!evOk) { const c = out.convDaily[jour] || (out.convDaily[jour] = [0, 0]); c[0] += v[0] || 0; c[1] += v[5] || 0; }
         }

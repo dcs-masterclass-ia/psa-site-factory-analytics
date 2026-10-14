@@ -23,6 +23,11 @@ on:
         type: choice
         options: ["non", "oui"]
         default: "non"
+      complet:
+        description: "Rattrapage complet : retraite tous les mois (≈ 3 h), pas seulement les 2 derniers"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
       sites:
         description: "Sites à traiter, séparés par des virgules (vide = tous)"
         required: false
@@ -98,6 +103,7 @@ jobs:
           # degrade site par site vers l'ancien comportement (donnees
           # preservees), rien d'autre n'est affecte.
           LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+          IN_COMPLET: ${{ inputs.complet }}
         run: |
           # separateur virgule (pas espace) : un nom de site contient lui-meme
           # des espaces ("OPEL PT") -- un decoupage par espace le brisait en
@@ -112,6 +118,7 @@ jobs:
               ARGS+=("$s")
             done
           fi
+          if [ "$IN_COMPLET" = "oui" ]; then ARGS+=(--complet); fi
           if [ "$IN_SIMULATION" != "oui" ]; then ARGS+=(--ecrire); fi
           echo "mode : $([ "$IN_SIMULATION" = "oui" ] && echo SIMULATION || echo ECRITURE)"
           # build.py ecrit lui-meme le recapitulatif complet dans
