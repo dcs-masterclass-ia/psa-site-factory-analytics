@@ -4918,9 +4918,10 @@ class Component extends DCLogic {
     }
 
     const tbLeadsV = boLeads;
-    // Les leads BO suivent le rythme de GA4 (J-2) : au-delà, la période affichée n'est pas encore chargée (pas un zéro réel).
-    const tbDispoNote = (this._pipelineToday && fin > this._pipelineToday)
-      ? T('Leads disponibles jusqu\'au')+' '+this._pipelineToday.slice(8,10)+'/'+this._pipelineToday.slice(5,7) : '';
+    // Leads BO publiés jusqu'à hier : au-delà, la période affichée n'est pas encore chargée (pas un zéro réel).
+    const tbHier = (()=>{ const d=new Date(); d.setDate(d.getDate()-1); return d.toLocaleDateString('sv-SE',{timeZone:'Europe/Paris'}); })();
+    const tbDispoNote = (fin > tbHier)
+      ? T('Leads disponibles jusqu\'au')+' '+tbHier.slice(8,10)+'/'+tbHier.slice(5,7) : '';
     const tbLeadsDelta = deltaBadge(boLeads, cmp&&cmp.leads);
     const tbKpis=[
       {label:'Leads',chip:kPuce('#7c63ee'),icon:kIcone('#7c63ee',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Leads du back-office sur la période, hors doublons, tests et leads hors production.",value:this.fmt(boLeads),...deltaBadgeAsKpi(deltaBadge(boLeads, cmp&&cmp.leads))},
