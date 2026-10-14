@@ -389,3 +389,11 @@ toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés,
 - **Tout nouveau texte visible doit avoir sa traduction** : ajouter la clé (le texte français exact, ou un motif avec `{0}`) dans un nouveau `i18n/en/NN-*.json`, puis relancer le build. Texte assemblé dans le code (`'médiane '+x`) : utiliser `T('médiane')` (défini en tête de `renderVals`) ; jour ambigu (« Mar ») : `T(x,'jour')`.
 - Les noms de sites, requêtes Search Console et contenus saisis ne sont jamais traduits (absents du dictionnaire). Nombres convertis automatiquement (« 27 651 » -> « 27,651 », « 7,1 % » -> « 7.1% ») ; dates restent en jj/mm.
 - Test : `tests/e2e/langue.spec.js` (bascule, retour FR identique, aucun accent français résiduel sur la vue GA4 principale).
+
+## AAA Data — marché automobile (2026-10-14)
+Onglet « AAA Data » (`source:'aaa'`, profil complet) : lit `data/market.json` du repo de données (servi comme les autres JSON).
+Mise à jour : `.github/workflows/market.yml` (cron le 2 et le 25 de chaque mois, ou manuel avec `dry_run`) -> `python -m pipeline.market`.
+Un appel Claude (web_search + web_fetch limités au domaine de la source) lit le dernier communiqué de AAA Data (FR), ACEA (Europe, cumul annuel),
+KBA (DE), UNRAE (IT), ANFAC (ES), SMMT (GB) ; chaque relevé est validé (période, plages, domaine de la source, citation, cohérence avec la série)
+avant d'être fusionné ; un relevé refusé laisse la série existante intacte. Les visuels des podiums viennent de domaines listés dans la CSP de `vercel.json`.
+Tests : `python -m unittest tests.py.test_market`, `tests/e2e/aaa-data.spec.js`.

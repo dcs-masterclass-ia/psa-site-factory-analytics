@@ -2495,6 +2495,32 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-for>
         </div>
 
+        <sc-if value="{{ aaaHasOthers }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px"><span style="font-size:17px;font-weight:600;color:#121214">Autres marchés</span><span style="font-size:13px;color:#9a9fa6">Allemagne, Italie, Espagne, Royaume-Uni · sources officielles nationales</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px">
+          <sc-for list="{{ aaaOthers }}" as="o" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div style="font-size:15px;font-weight:600;color:#121214">{{ o.name }}</div><span style="font-size:12.5px;color:#9a9fa6">{{ o.last }}</span></div>
+              <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-top:8px">
+                <span style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ o.total }}</span>
+                <span style="{{ o.yoyStyle }}">{{ o.yoy }}</span>
+                <span style="font-size:13px;color:#6d727a;padding-bottom:3px">{{ o.ev }}</span>
+              </div>
+              <div style="margin-top:12px">
+                <sc-for list="{{ o.months }}" as="r" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid #f1f1f3;font-size:13px">
+                    <span style="flex:1;color:#6d727a">{{ r.label }}</span>
+                    <span style="font-weight:600;color:#121214;font-variant-numeric:tabular-nums">{{ r.total }}</span>
+                    <span style="width:64px;text-align:right;color:#6d727a">{{ r.yoy }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <a href="{{ o.src }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:10px;font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div><div style="font-size:15px;font-weight:600;color:#121214">Par pays · 2025</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">{{ aaaCountriesSub }}</div></div>
@@ -5142,6 +5168,11 @@ class Component extends DCLogic {
     if(aaaCRest.length){ const rs=aaaCRest.reduce((a,c)=>a+c.share_pct,0); aaaCountriesTop.push({name:'… '+aaaCRest.length+' autres pays',share:aaaP(rs,1),bar:aaaBar(rs,aaaCMax)}); }
     if(aaaCLast&&aaaCS.length>9) aaaCountriesTop.push({name:aaaCLast.name+' (dernier)',share:aaaP(aaaCLast.share_pct,2),bar:aaaBar(aaaCLast.share_pct,aaaCMax)});
     const aaaCountriesRows=aaaCS.map(c=>({name:c.name,total:aaaNf(c.registrations),share:aaaP(c.share_pct,2),yoy:aaaSg(c.yoy_pct)}));
+    const aaaOthers=['DE','IT','ES','GB'].map(id=>{ const b=(aaaMk&&aaaMk.markets&&aaaMk.markets[id])||null; const ms=b&&b.monthly?b.monthly.filter(x=>typeof x.total==='number'):[]; if(!ms.length) return null;
+      const l=ms[ms.length-1];
+      return {name:b.name||id,last:aaaML(l.month),total:aaaNf(l.total),yoy:typeof l.yoy_pct==='number'?aaaSg(l.yoy_pct):'—',yoyStyle:aaaPill(l.yoy_pct||0),
+        ev:typeof l.electric_pct==='number'?'électrique '+aaaP(l.electric_pct):'',src:l.source_url||'',
+        months:ms.slice(-6).reverse().map(x=>({label:aaaML(x.month),total:aaaNf(x.total),yoy:typeof x.yoy_pct==='number'?aaaSg(x.yoy_pct):'—'}))}; }).filter(Boolean);
     // Leads BO publiés jusqu'à hier : au-delà, la période affichée n'est pas encore chargée (pas un zéro réel).
     const tbHier = (()=>{ const d=new Date(); d.setDate(d.getDate()-1); return d.toLocaleDateString('sv-SE',{timeZone:'Europe/Paris'}); })();
     const tbDispoNote = (fin > tbHier)
@@ -6133,7 +6164,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,

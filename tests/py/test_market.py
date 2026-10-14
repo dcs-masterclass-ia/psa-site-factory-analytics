@@ -1,0 +1,85 @@
+import unittest
+from datetime import date
+from pipeline import market as mk
+
+AUJ = date(2026, 10, 14)
+OK = {"periode": "2026-09", "total": 262000, "yoy_pct": 2.5, "electrique_pct": 18.4,
+      "source_url": "https://www.kba.de/DE/Presse/x.html", "citation": "Im September wurden 262.000 Pkw neu zugelassen"}
+
+
+class TestValidation(unittest.TestCase):
+    def v(self, **kw):
+        r = {**OK, **kw}
+        return mk.valide_releve(r, ["kba.de"], [], AUJ)
+
+    def test_releve_valide(self):
+        o = self.v()
+        self.assertEqual(o, {"month": "2026-09", "source_url": OK["source_url"], "total": 262000, "yoy_pct": 2.5, "electric_pct": 18.4})
+
+    def test_refus(self):
+        for kw in ({"periode": "2026-13"}, {"periode": "2027-01"}, {"source_url": "https://exemple.com/a"},
+                   {"source_url": "https://kba.de.evil.com/a"}, {"citation": ""}, {"total": 12},
+                   {"yoy_pct": 400}, {"electrique_pct": 140}, {"total": True}):
+            with self.assertRaises(mk.Refus, msg=str(kw)):
+                self.v(**kw)
+
+    def test_sous_domaine_accepte(self):
+        o = mk.valide_releve({**OK, "source_url": "https://www.kba.de/a"}, ["kba.de"], [], AUJ)
+        self.assertEqual(o["month"], "2026-09")
+
+    def test_incoherence_avec_la_serie(self):
+        serie = [{"month": "2026-08", "total": 230000}]
+        with self.assertRaises(mk.Refus):
+            mk.valide_releve({**OK, "total": 26200}, ["kba.de"], serie, AUJ)
+        self.assertEqual(mk.valide_releve(OK, ["kba.de"], serie, AUJ)["total"], 262000)
+
+    def test_sans_chiffre(self):
+        with self.assertRaises(mk.Refus):
+            self.v(total=None, yoy_pct=None, electrique_pct=None)
+
+
+class TestFusion(unittest.TestCase):
+    def test_ajout_tri_et_revision(self):
+        serie = [{"month": "2026-07", "total": 100000, "yoy_pct": 1.0, "hybrid_pct": 40}]
+        nouveaux = [{"month": "2026-08", "total": 90000, "source_url": "u"},
+                    {"month": "2026-07", "total": 101000, "source_url": "u"}]
+        out, j = mk.fusionne_mensuel(serie, nouveaux)
+        self.assertEqual([s["month"] for s in out], ["2026-07", "2026-08"])
+        self.assertEqual(out[0]["total"], 101000)
+        self.assertEqual(out[0]["hybrid_pct"], 40)      # champ inconnu du nouveau relevé conservé
+        self.assertEqual(len(j), 2)
+
+    def test_un_null_ne_supprime_rien(self):
+        serie = [{"month": "2026-07", "total": 100000, "electric_pct": 20.0}]
+        out, j = mk.fusionne_mensuel(serie, [{"month": "2026-07", "source_url": "u", "total": 100000}])
+        self.assertEqual(out[0]["electric_pct"], 20.0)
+
+    def test_idempotent(self):
+        serie = [{"month": "2026-07", "total": 100000, "source_url": "u"}]
+        out, j = mk.fusionne_mensuel(serie, [{"month": "2026-07", "total": 100000, "source_url": "u"}])
+        self.assertEqual(j, [])
+
+    def test_europe_cumul(self):
+        base = [{"label": "Mai 2026 (cumul annuel)", "yoy_pct": 4, "electric_pct": 20, "source_url": "a"}]
+        out, j = mk.fusionne_europe(base, [{"month": "2026-08", "yoy_pct": 5.0, "electric_pct": 21.0, "source_url": "b"},
+                                           {"month": "2026-06", "yoy_pct": 5.7, "source_url": "c"}])
+        self.assertEqual([p["label"] for p in out], ["Mai 2026 (cumul annuel)", "Juin 2026 (cumul annuel)", "Août 2026 (cumul annuel)"])
+
+    def test_applique_cree_les_marches(self):
+        m = {"france": {"monthly": []}, "europe": {"periods_2026": []}}
+        out, j = mk.applique(m, {"DE": [{"month": "2026-09", "total": 262000, "source_url": "u"}], "GB": []})
+        self.assertEqual(out["markets"]["DE"]["name"], "Allemagne")
+        self.assertEqual(list(j), ["DE"])
+        self.assertNotIn("GB", out["markets"])
+        self.assertEqual(m["france"]["monthly"], [])     # l'entrée n'est pas modifiée en place
+
+
+class TestJson(unittest.TestCase):
+    def test_extrait(self):
+        self.assertEqual(mk.extrait_json('Voici : {"releves": []} fin')["releves"], [])
+        with self.assertRaises(mk.Refus):
+            mk.extrait_json("rien")
+
+
+if __name__ == "__main__":
+    unittest.main()
