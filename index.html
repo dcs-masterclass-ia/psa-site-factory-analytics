@@ -4892,9 +4892,11 @@ class Component extends DCLogic {
     const boCmp = cmpRange ? this.aggregateLeadsBreakdown(cmpRange.debut, cmpRange.fin) : null;
     // Le back-office est publie jusqu'a hier, GA4 jusqu'a J-2 : l'ecart n'est comparable que sur les jours que GA4 couvre.
     const finComparable = (this._pipelineToday && fin > this._pipelineToday) ? this._pipelineToday : fin;
-    const boLeads = finComparable === fin ? agg.leads : this.aggregate.call({state:{sites:this.state.sites}, data:this.data}, debut, finComparable).leads;
+    const boLeads = agg.leads; // total affiche : leads BO jusqu'a hier
     const ga4Leads = leads; // proxy funnel GA4 (tradein_request), calcule plus haut -- jamais reconcilie avec le BO
-    const ecartGa4Bo = ga4Leads ? dec(Math.abs(boLeads-ga4Leads)/ga4Leads*100,1)+' %' : '—';
+    // l'ecart GA4 / BO ne compare que les jours couverts par GA4 (J-2), sinon il serait gonfle par les jours BO en plus
+    const boComparable = finComparable === fin ? boLeads : (debut > finComparable ? null : this.aggregate.call({state:{sites:this.state.sites}, data:this.data}, debut, finComparable).leads);
+    const ecartGa4Bo = (ga4Leads && boComparable != null) ? dec(Math.abs(boComparable-ga4Leads)/ga4Leads*100,1)+' %' : '—';
     const devTotal = Array.from(boAgg.device.values()).reduce((a,b)=>a+b,0);
     const boCmpDevTotal = boCmp ? Array.from(boCmp.device.values()).reduce((a,b)=>a+b,0) : 0;
     const entryPct = boAgg.entryTotal ? boAgg.entryAvec/boAgg.entryTotal*100 : null;
