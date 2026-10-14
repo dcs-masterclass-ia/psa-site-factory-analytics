@@ -83,8 +83,10 @@ def controle(nouveau, ancien=None, modele=None):
     r.ajoute("somme_daily_egale_total", ok, True,
              "" if ok else "au moins un mois ou la somme des jours differe du total")
 
+    # leads.daily peut dépasser meta.days : les leads du back-office sont publiés jusqu'à hier, avant la consolidation GA4 (J-2).
+    # Le défaut à détecter reste un tableau PLUS COURT que les jours GA4 (trou).
     mauvais = [m for m in nouveau["periods"]
-               if len(nouveau["leads"][m]["daily"]) != nouveau["meta"][m]["days"]]
+               if len(nouveau["leads"][m]["daily"]) < nouveau["meta"][m]["days"]]
     r.ajoute("longueur_daily_egale_days", not mauvais, True,
              "" if not mauvais else f"mois en ecart : {mauvais}")
 
