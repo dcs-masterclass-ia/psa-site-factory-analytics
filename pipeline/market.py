@@ -38,7 +38,7 @@ import httpx
 RACINE = Path(__file__).resolve().parent.parent
 FICHIER = RACINE / "data" / "market.json"
 
-MODELE = os.environ.get("MARKET_MODEL", "claude-sonnet-5-5")
+MODELE = os.environ.get("MARKET_MODEL", "claude-sonnet-4-6")  # celui de la newsletter, déjà éprouvé avec web_search / web_fetch
 API = "https://api.anthropic.com/v1/messages"
 
 MOIS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
@@ -214,7 +214,8 @@ def _appel(prompt, domaines, cle):
     for _ in range(5):   # pause_turn : le serveur rend la main, on relance avec le tour déjà produit
         r = httpx.post(API, headers=entetes, timeout=300,
                        json={"model": MODELE, "max_tokens": 4096, "tools": outils, "messages": messages})
-        r.raise_for_status()
+        if r.status_code >= 400:
+            raise Refus(f"API {r.status_code} : {r.text[:300]}")
         d = r.json()
         if d.get("stop_reason") != "pause_turn":
             return "".join(b.get("text", "") for b in d.get("content", []) if b.get("type") == "text")
