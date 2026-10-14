@@ -47,16 +47,23 @@ SOURCES = {
            "le communiqué de presse mensuel d'AAA Data (https://www.aaa-data.fr/actualites/ — titre « Communiqué de presse du 1er … », "
            "un par mois, publié le 1er du mois suivant) : voitures particulières neuves (VPN), occasion (VO), particuliers / flottes"),
     "EU": ("Europe", ["acea.auto"],
-           "le dernier communiqué de presse ACEA sur les immatriculations de voitures neuves dans l'Union européenne "
-           "(https://www.acea.auto/news/ ou https://www.acea.auto/pc-registrations/, titre « New car registrations: … »), chiffres cumulés depuis janvier"),
+           "les communiqués de presse ACEA sur les immatriculations de voitures neuves dans l'Union européenne "
+           "(https://www.acea.auto/news/ ou https://www.acea.auto/pc-registrations/, titre du type « New car registrations: +5.3% in August 2026 ; "
+           "battery-electric 21.7% market share » — l'URL contient « year-to-date »). Prends le communiqué le PLUS RÉCENT (août 2026 ou plus tard), "
+           "puis les 2 précédents ; chiffres cumulés depuis janvier"),
     "DE": ("Allemagne", ["kba.de"],
-           "le communiqué de presse mensuel du Kraftfahrt-Bundesamt (KBA) sur les Neuzulassungen de voitures particulières (Pkw)"),
+           "le communiqué de presse mensuel du Kraftfahrt-Bundesamt (KBA) sur les Neuzulassungen de voitures particulières (Pkw) — "
+           "série « Fahrzeugzulassungen » : https://www.kba.de/DE/Presse/Pressemitteilungen/Fahrzeugzulassungen/fahrzeugzulassungen_node.html, "
+           "titre du type « Fahrzeugzulassungen im September 2026 » (page « pm41_2026_n_09_26_pm_komplett.html » pour septembre)"),
     "IT": ("Italie", ["unrae.it"],
-           "le dernier communiqué mensuel de l'UNRAE sur les immatricolazioni d'autovetture en Italie"),
+           "le dernier communiqué mensuel de l'UNRAE sur les immatricolazioni d'autovetture en Italie "
+           "(https://unrae.it/sala-stampa/autovetture, titre du type « Mercato vetture Italia … a settembre »)"),
     "ES": ("Espagne", ["anfac.com"],
-           "le dernier communiqué mensuel de l'ANFAC sur les matriculaciones de turismos en Espagne"),
+           "le dernier communiqué mensuel de l'ANFAC sur les matriculaciones de turismos en Espagne "
+           "(https://anfac.com/, communiqués de presse « Las ventas de turismos … en septiembre » : cherche le total du mois ET son évolution)"),
     "GB": ("Royaume-Uni", ["smmt.co.uk"],
-           "le dernier communiqué mensuel de la SMMT sur les new car registrations au Royaume-Uni"),
+           "le dernier communiqué mensuel de la SMMT sur les new car registrations au Royaume-Uni "
+           "(https://www.smmt.co.uk/category/news/, titre du type « Record electric car market powers bumper September »)"),
 }
 
 # champs d'un relevé mensuel national : nom -> (min, max). Un champ absent de la page est null : jamais estimé.
@@ -121,6 +128,7 @@ PROMPT = """Nous sommes le {date}. Tu collectes les immatriculations de voitures
 Pour CHAQUE marché ci-dessous, lis les communiqués officiels puis écris le fichier JSON demandé (outil Write), rien d'autre.
 
 Règles communes :
+- Commence par le communiqué le PLUS RÉCENT disponible (le mois qui précède la date du jour, ou le dernier publié), puis remonte.
 - « periode » est le mois de l'immatriculation (pas la date de publication).
 - Mets null pour toute valeur absente de la page : n'estime jamais, ne calcule jamais, ne complète jamais de mémoire.
 - Les unités sont des immatriculations (entiers) ; les pourcentages sont des nombres (38 pour 38 %).
