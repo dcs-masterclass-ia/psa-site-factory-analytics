@@ -21,3 +21,18 @@ test("canal × device : colonne Total ; fuites par canal avec effectifs", async 
   await page.screenshot({ path: process.env.TMPDIR + "/leaks.png" });
   expect(erreurs).toEqual([]);
 });
+
+test("canal × device : colonne Sessions, canaux classés par volume décroissant", async ({ page }) => {
+  await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByText("Conversion", { exact: true }).first().click();
+  await page.getByText("Canal × device", { exact: true }).first().click();
+  await expect(page.getByText("Sessions", { exact: true }).first()).toBeVisible();
+  const carte = page.locator("div").filter({ hasText: /^Conversion par canal et device/ }).last();
+  const valeurs = await page.evaluate(() => {
+    const lignes = [...document.querySelectorAll("div")].filter((d) => getComputedStyle(d).display === "grid" && /\d/.test(d.innerText) && d.children.length === 6 && /%/.test(d.innerText));
+    return lignes.map((l) => parseInt(l.children[1].innerText.split("\n")[0].replace(/[^\d]/g, ""), 10)).filter((n) => !isNaN(n));
+  });
+  expect(valeurs.length).toBeGreaterThan(2);
+  expect(valeurs).toEqual([...valeurs].sort((a, b) => b - a));
+});

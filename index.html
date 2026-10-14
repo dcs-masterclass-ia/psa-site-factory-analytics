@@ -962,19 +962,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:4px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipD }}">{{ tIconD }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Total = tous appareils confondus (sessions et conversions additionnées, taux recalculé). Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Conversion par canal et device<span class="dc-info" tabindex="0">i<span class="dc-tip">Canaux classés par nombre de sessions décroissant ; la colonne Sessions donne le volume (tous appareils) et son écart vs la période précédente. Total = tous appareils confondus (sessions et conversions additionnées, taux recalculé). Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">Taux de conversion croisé · delta vs période précédente</div>
               </div>
               </div>
               <span onClick="{{ openMatrix }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ matrixCount }} canaux</span>
             </div>
             <div style="margin-bottom:10px"></div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
-              <span>Canal</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 92px repeat(4,minmax(96px,1fr));align-items:center;gap:12px;padding:8px;font-size:14px;color:#9a9fa6">
+              <span>Canal</span><span style="text-align:right;font-weight:600;color:#4b4b4f">Sessions</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
             <sc-for list="{{ matrix }}" as="row" hint-placeholder-count="5">
-              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) 92px repeat(4,minmax(96px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
                 <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><span style="font-size:15px;font-weight:600;color:#121214">{{ row.sT }}</span><span style="font-size:12px;color:#6d727a">{{ row.sG }}</span></div>
                 <div style="{{ row.dT }}"><span style="font-size:15px;font-weight:700">{{ row.vT }}</span><span style="font-size:12px;color:#6d727a">{{ row.gT }}</span></div>
                 <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
@@ -1777,12 +1778,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </span>
           </div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
-            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
-              <span>Canal</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 92px repeat(4,minmax(96px,1fr));align-items:center;gap:12px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>Canal</span><span style="text-align:right;font-weight:600;color:#4b4b4f">Sessions</span><span style="text-align:center;font-weight:600;color:#4b4b4f">Total</span><span style="text-align:center">Desktop</span><span style="text-align:center">Mobile</span><span style="text-align:center">Tablette</span>
             </div>
             <sc-for list="{{ allMatrix }}" as="row" hint-placeholder-count="12">
-              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,minmax(100px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 92px repeat(4,minmax(96px,1fr));align-items:center;gap:12px;padding:6px 8px;border-top:1px solid #f2f2f4">
                 <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.name }}</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px"><span style="font-size:15px;font-weight:600;color:#121214">{{ row.sT }}</span><span style="font-size:12px;color:#6d727a">{{ row.sG }}</span></div>
                 <div style="{{ row.dT }}"><span style="font-size:15px;font-weight:700">{{ row.vT }}</span><span style="font-size:12px;color:#6d727a">{{ row.gT }}</span></div>
                 <div style="{{ row.d1 }}"><span style="font-size:15px;font-weight:600">{{ row.v1 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g1 }}</span></div>
                 <div style="{{ row.d2 }}"><span style="font-size:15px;font-weight:600">{{ row.v2 }}</span><span style="font-size:12px;color:#6d727a">{{ row.g2 }}</span></div>
@@ -3713,14 +3715,18 @@ class Component extends DCLogic {
     const cell=v=>`display:flex;flex-direction:column;align-items:center;gap:1px;border-radius:11px;padding:8px 6px;color:#121214;background:${v>=2?'#e7e0fd':v>=1.3?'#f0ecfe':v>=0.9?'#f7f5ff':'#f7f7f9'}`;
     const canauxDevice = [...new Set([...agg.convCanalDevice.values()].map(r=>r.canal))];
     const tauxFor = (map,canal,device) => { const row=map.get(canal+'|'+device); return row && row.sessions ? row.conversions/row.sessions*100 : null; };
-    const sessionsTotalCanal = canal => ['desktop','mobile','tablet'].reduce((a,dev)=>{ const row=agg.convCanalDevice.get(canal+'|'+dev); return a+(row?row.sessions||0:0); },0);
+    const sessionsCanalMap = (map,canal) => { let t=0; for (const r of map.values()) if (r.canal===canal) t+=r.sessions||0; return t; };
+    const sessionsTotalCanal = canal => sessionsCanalMap(agg.convCanalDevice,canal);
+    const sessionsTotalCanalOld = canal => ['desktop','mobile','tablet'].reduce((a,dev)=>{ const row=agg.convCanalDevice.get(canal+'|'+dev); return a+(row?row.sessions||0:0); },0);
     const tauxTotal = (map,canal) => { let se=0,co=0; for (const r of map.values()) if (r.canal===canal) { se+=r.sessions||0; co+=r.conversions||0; } return se?co/se*100:null; };
     const mkMatrixRow = canal => {
       const vT=tauxTotal(agg.convCanalDevice,canal), pT=cmp?tauxTotal(cmp.convCanalDevice,canal):null;
       const v1=tauxFor(agg.convCanalDevice,canal,'desktop'), v2v=tauxFor(agg.convCanalDevice,canal,'mobile'), v3=tauxFor(agg.convCanalDevice,canal,'tablet');
       const g=(now,dev)=> cmp ? (()=>{ const p=tauxFor(cmp.convCanalDevice,canal,dev); return (now!=null&&p!=null)?(now-p):null; })() : null;
       const gLabel = x => x==null? '—' : (x>0?'+':'')+dec(x,2)+' pt';
+      const sNow=sessionsCanalMap(agg.convCanalDevice,canal), sPrev=cmp?sessionsCanalMap(cmp.convCanalDevice,canal):0;
       return {name:canal,
+        sT:this.fmt(sNow), sG:(cmp&&sPrev>0)?((sNow>=sPrev?'+':'−')+dec(Math.abs((sNow/sPrev-1)*100),0)+' %'):'',
         dT:cell(vT||0).replace('background:','background:').replace(/;background:[^;]*$/,';background:#ece6fd'), vT:vT==null?'—':dec(vT,2)+' %', gT:gLabel(vT!=null&&pT!=null?vT-pT:null),
         d1:cell(v1||0), v1:v1==null?'—':dec(v1,2)+' %', g1:gLabel(g(v1,'desktop')),
         d2:cell(v2v||0), v2:v2v==null?'—':dec(v2v,2)+' %', g2:gLabel(g(v2v,'mobile')),

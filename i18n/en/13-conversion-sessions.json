@@ -6,5 +6,6 @@
  "Estimations / sessions": "Valuations / sessions",
  "{0}/{1} : {2} % ({3} estimations / {4} sessions)": "{0}/{1}: {2}% ({3} valuations / {4} sessions)",
  "{0} estim. / {1} sessions": "{0} valuations / {1} sessions",
- "{0} estim. / {1} visiteurs": "{0} valuations / {1} visitors"
+ "{0} estim. / {1} visiteurs": "{0} valuations / {1} visitors",
+ "Canaux classés par nombre de sessions décroissant ; la colonne Sessions donne le volume (tous appareils) et son écart vs la période précédente. Total = tous appareils confondus (sessions et conversions additionnées, taux recalculé). Taux = sessions ayant déclenché la demande d'estimation ÷ sessions du canal et de l'appareil. Le dénominateur est donc les sessions : cette mesure diffère du taux de conversion du parcours (estimations ÷ visiteurs de l'accueil) et sert à comparer des canaux entre eux.": "Channels are ranked by number of sessions, highest first; the Sessions column gives the volume (all devices) and its change vs the previous period. Total = all devices combined (sessions and conversions added up, rate recalculated). Rate = sessions that triggered the valuation request ÷ sessions of the channel and device. The denominator is therefore sessions: this measure differs from the journey conversion rate (valuations ÷ home page visitors) and is used to compare channels with each other."
 }
