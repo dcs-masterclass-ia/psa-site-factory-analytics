@@ -1,0 +1,42 @@
+name: Diagnostic colonnes de l'extraction back-office
+
+# Ponctuel, manuel : liste les en-têtes (avec lettre de colonne) du CSV d'extraction et la répartition d'une colonne.
+# Lecture seule. Voir pipeline/_diag_colonnes.py.
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: "Site (ex. OPEL FR)"
+        required: true
+        default: "OPEL FR"
+      jours:
+        description: "Fenêtre en jours"
+        required: false
+        default: "7"
+      lettres:
+        description: "Lettres de colonne à détailler (ex. BC)"
+        required: false
+        default: "BC"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Colonnes
+        env:
+          LEADS_EXTRACT_TOKEN: ${{ secrets.LEADS_EXTRACT_TOKEN }}
+          IN_SITE: ${{ inputs.site }}
+          IN_JOURS: ${{ inputs.jours }}
+          IN_LETTRES: ${{ inputs.lettres }}
+        run: python -m pipeline._diag_colonnes "$IN_SITE" "$IN_JOURS" "$IN_LETTRES"
