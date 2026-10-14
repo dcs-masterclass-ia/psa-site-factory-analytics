@@ -378,6 +378,7 @@ window.I18N_EN = {
 "Leads GA4 dont la session a commencé sur cette page": "GA4 leads whose session started on this page",
 "Leads de la semaine dans la fourchette habituelle ({0} vs {1} ± {2} attendu).": "Leads this week within the usual range ({0} vs {1} ± {2} expected).",
 "Leads de la semaine {0}{1} % vs l'attendu ({2} vs {3} ± {4}).": "Leads this week {0}{1}% vs expected ({2} vs {3} ± {4}).",
+"Leads disponibles jusqu'au": "Leads available up to",
 "Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).": "Back-office leads (BO extraction) excluding duplicates, tests and non-production leads. A measure distinct from GA4 Leads: the BO also counts requests that GA4 does not see (consent, blockers).",
 "Leads du back-office sur la période, hors doublons, tests et leads hors production.": "Back-office leads over the period, excluding duplicates, tests and non-production leads.",
 "Leads hebdomadaires · 8 semaines": "Weekly leads · 8 weeks",
