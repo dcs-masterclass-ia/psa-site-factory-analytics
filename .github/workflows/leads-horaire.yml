@@ -1,0 +1,54 @@
+name: Leads heure par heure (miroir du monitor)
+
+# Toutes les 30 minutes : recopie la section « horaire » du suivi des leads du monitor (repo stla-monitor, produite par
+# leads_live.py) dans leads_horaire.json du repo de données, que l'API /api/leads-horaire lit en direct (graphique
+# « Leads heure par heure » de l'onglet Leads). Aucune donnée personnelle : des compteurs par créneau de 30 min.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: leads-horaire
+  cancel-in-progress: false
+
+jobs:
+  miroir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Récupérer le suivi des leads du monitor
+        env:
+          GH_TOKEN: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api -H "Accept: application/vnd.github.raw" repos/dcs-masterclass-ia/stla-monitor/contents/leads_watch_report.json > rapport.json
+          python3 - <<'PY'
+          import json, datetime
+          r = json.load(open("rapport.json"))
+          h = r.get("horaire")
+          if not h or "flotte" not in h:
+              raise SystemExit("section horaire absente du rapport")
+          json.dump({"genere": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "horaire": h},
+                    open("leads_horaire.json", "w"), ensure_ascii=False, separators=(",", ":"))
+          print("creneauxEcoules", h.get("creneauxEcoules"), "sites", len(h.get("sites", {})))
+          PY
+      - name: Publier dans le repo de données
+        env:
+          GH_TOKEN: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/dcs-masterclass-ia/psa-site-factory-data.git" data
+          cp leads_horaire.json data/leads_horaire.json
+          cd data
+          git config user.name "dcs-masterclass-ia"
+          git config user.email "m.foureau@autobiz.com"
+          git add leads_horaire.json
+          if git diff --cached --quiet; then echo "inchangé"; exit 0; fi
+          git commit -qm "chore(leads): horaire (miroir du monitor)"
+          for i in 1 2 3; do git pull -q --rebase origin main && git push -q origin main && exit 0; sleep 3; done
+          echo "push impossible" >&2; exit 1
