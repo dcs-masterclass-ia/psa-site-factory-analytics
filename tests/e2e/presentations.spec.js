@@ -22,7 +22,7 @@ const ouvre = async (page) => {
   await page.locator('div[title="Présentations"]').click();
 };
 const continuer = (page) => page.locator("span.pr-btn:visible", { hasText: /^Continuer$/ }).last().click();   // le dernier = celui de l'étape qui vient de s'ouvrir
-const choisitModele = async (page, nom = "Reporting trimestriel — pays") => {
+const choisitModele = async (page, nom = "Trimestriel — pays") => {
   await page.getByText(nom, { exact: true }).first().click();
   await expect(page.getByText("Titre de la présentation").first()).toBeVisible();      // l'étape 2 s'ouvre toute seule
 };
@@ -168,7 +168,7 @@ test("modèles : choix d'un modèle de base, création d'un modèle, onglet Mod�
     return route.fulfill({ json: { ok: true, template: t } });
   });
   await ouvre(page);
-  await choisitModele(page, "Reporting mensuel — pays");
+  await choisitModele(page, "Mensuel — pays");
   await expect(page.getByText("vs mois précédent")).toBeVisible();                  // périodicité du modèle
   await page.getByText("Enregistrer comme modèle", { exact: true }).click();
   await page.getByPlaceholder("Nom du modèle").fill("Mon mensuel BELUX");

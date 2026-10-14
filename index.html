@@ -2377,7 +2377,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
                   <sc-for list="{{ prTplCards }}" as="c" hint-placeholder-count="4">
                     <div onClick="{{ c.pick }}" style="{{ c.style }}" title="{{ c.tip }}">
-                      <span style="font-size:14.5px;font-weight:600;color:#121214">{{ c.nom }}</span>
+                      <span style="font-size:14.5px;font-weight:600;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ c.nom }}</span>
                       <sc-if value="{{ c.check }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:50%;background:#7c63ee;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span></sc-if>
                     </div>
                   </sc-for>
@@ -5822,7 +5822,7 @@ class Component extends DCLogic {
     const prStepUiFlat={}; Object.keys(prStepUi).forEach(k=>{ Object.keys(prStepUi[k]).forEach(f=>{ prStepUiFlat[k+'_'+f]=prStepUi[k][f]; }); });
     // étape 1 : cartes de modèles
     const prTplCards=prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1]; const sel=pr.tplId===t.id;
-      return { nom:t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
+      return { nom:({'Reporting trimestriel — pays':'Trimestriel — pays','Reporting mensuel — pays':'Mensuel — pays','Présentation personnalisée':'Personnalisée'})[t.nom]||t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
         pick:()=>prApplyTpl(t), tip:(t.description?t.description+' — ':'')+per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), style:`position:relative;cursor:pointer;border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
         check:sel }; });
     // étape 2 : erreurs de champ
