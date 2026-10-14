@@ -282,6 +282,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       <div style="flex:1 1 150px;min-width:0">
         <div style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
         <div style="font-size:13px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rangeLabel }}</div>
+        <sc-if value="{{ provNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#b7791f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ provNote }}</div></sc-if>
       </div>
 
       <div style="position:relative" data-popover="scope">
@@ -1143,7 +1144,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcPos }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Distribution des positions<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des clics et des impressions selon la position moyenne de chaque requête (calcul sur toutes les requêtes du mois, pas seulement le top). Les positions 4-10 sont le gisement le plus rapide : une page de plus dans le top 3 change le volume de clics.</span></span></div>
-                <div style="font-size:12.5px;color:#9a9fa6">Toutes les requêtes · mois touchés par la période</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Toutes les requêtes · {{ sxMoisSub }}</div>
               </div>
               </div>
               <span style="flex:1"></span>
@@ -1172,7 +1173,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcDev }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Appareils<span class="dc-info" tabindex="0">i<span class="dc-tip">Clics, impressions, CTR et position moyenne de la recherche naturelle selon l'appareil. Mobile et desktop n'ont pas la même position : un écart important pointe un sujet d'ergonomie ou de contenu propre à un appareil.</span></span></div>
-                <div style="font-size:12.5px;color:#9a9fa6">Search Console · mois touchés par la période</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Search Console · {{ sxMoisSub }}</div>
               </div>
               </div>
               <span style="flex:1"></span>
@@ -1201,7 +1202,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ sxChipV }}">{{ sxIcBrand }}</span><div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Marque / hors marque<span class="dc-info" tabindex="0">i<span class="dc-tip">Les clics sur des requêtes qui contiennent le nom de la marque (« reprise peugeot ») viennent de gens qui connaissaient déjà la marque ; le hors-marque mesure l'acquisition réelle (« estimation voiture »). Classement sur toutes les requêtes du mois.</span></span></div>
-                <div style="font-size:12.5px;color:#9a9fa6">Requêtes contenant le nom de la marque · mois touchés par la période</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Requêtes contenant le nom de la marque · {{ sxMoisSub }}</div>
               </div>
               </div>
               <span style="flex:1"></span>
@@ -3099,6 +3100,7 @@ class Component extends DCLogic {
       const pipeline = await (await fetch(urlData("pipeline"))).json();
       this._allSites = Object.keys(pipeline.sites || {}).sort();
       this._pipelineToday = pipeline.jour_ga4_fiable || new Date().toISOString().slice(0, 10);
+      this._ga4Consolide = pipeline.jour_ga4_consolide || null;   // J-2 : au-delà, les jours GA4 sont provisoires (affinés chaque nuit)
       const slug = n => n.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-");
       const loaded = {};
       await Promise.all(this._allSites.map(async s => {
@@ -3362,6 +3364,12 @@ class Component extends DCLogic {
     const out = { clics:0, impressions:0, posSum:0, queries:new Map(), monthly:{},
       devices:{}, positions:{'1-3':[0,0],'4-10':[0,0],'11-20':[0,0],'21+':[0,0]}, marque:{marque:[0,0],hors:[0,0]}, nbSeo:0,
       gagnants:new Map(), perdants:new Map(), opps:[], cannib:[], pagesDeclin:[], moisRef:null };
+    // analyses SEO d'un mois (positions, marque / hors marque, appareils) ajoutées au cumul
+    const ingestSeo = sm => {
+      for (const [t, v] of Object.entries(sm.positions||{})) { const c = out.positions[t]; if (c) { c[0]+=v[0]; c[1]+=v[1]; } }
+      for (const k of ['marque','hors']) { out.marque[k][0]+=(sm.marque&&sm.marque[k]?sm.marque[k][0]:0); out.marque[k][1]+=(sm.marque&&sm.marque[k]?sm.marque[k][1]:0); }
+      for (const [dv, v] of Object.entries(sm.devices||{})) { const c = out.devices[dv] || { clics:0, impressions:0, posSum:0 }; c.clics+=v.clics||0; c.impressions+=v.impressions||0; c.posSum+=(v.position||0)*(v.impressions||0); out.devices[dv]=c; }
+    };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.searchMonth) continue;
@@ -3377,9 +3385,7 @@ class Component extends DCLogic {
         const sm = d.searchMonth[mois];
         if (sm.positions) {       // analyses SEO du mois (pipeline : liste complète des requêtes)
           out.nbSeo++; if (!lastSeo || mois > lastSeo) lastSeo = mois;
-          for (const [t, v] of Object.entries(sm.positions)) { const c = out.positions[t]; if (c) { c[0]+=v[0]; c[1]+=v[1]; } }
-          for (const k of ['marque','hors']) { out.marque[k][0]+=(sm.marque&&sm.marque[k]?sm.marque[k][0]:0); out.marque[k][1]+=(sm.marque&&sm.marque[k]?sm.marque[k][1]:0); }
-          for (const [dv, v] of Object.entries(sm.devices||{})) { const c = out.devices[dv] || { clics:0, impressions:0, posSum:0 }; c.clics+=v.clics||0; c.impressions+=v.impressions||0; c.posSum+=(v.position||0)*(v.impressions||0); out.devices[dv]=c; }
+          ingestSeo(sm);
         }
         out.clics += sm.clics||0; out.impressions += sm.impressions||0;
         out.posSum += (sm.position||0) * (sm.impressions||0);
@@ -3391,6 +3397,13 @@ class Component extends DCLogic {
           qcur.clics += q.clics||0; qcur.impressions += q.impressions||0; qcur.posSum += (q.position||0)*(q.impressions||0);
           out.queries.set(q.requete, qcur);
         }
+      }
+      // aucun mois analysé dans la période (ex. mois en cours seul) : jamais de bloc vide, on prend le dernier mois analysé
+      // disponible (avant la fin de la période) et on le signale (out.repliMois) pour que l'interface affiche sa date
+      if (!lastSeo) {
+        const dispo = Object.keys(d.searchMonth).filter(m => m !== 'total' && d.searchMonth[m] && d.searchMonth[m].positions && m <= finIso.slice(0,7)).sort();
+        const m = dispo[dispo.length-1];
+        if (m) { lastSeo = m; out.nbSeo++; ingestSeo(d.searchMonth[m]); if (!out.repliMois || m > out.repliMois) out.repliMois = m; }
       }
       // instantanés (gagnants, perdants, opportunités, cannibalisation, pages en déclin) : dernier mois analysé de la période, par site
       if (lastSeo) {
@@ -4777,6 +4790,11 @@ class Component extends DCLogic {
     const sxMovHas=gains.length+pertes.length>0;
     const mvRow=x=>({name:x.r.name,avant:this.fmt(x.r.avant),clics:this.fmt(x.r.clics),delta:(x.d>0?'+':'−')+this.fmt(Math.abs(x.d))});
     const sxGain=gains.map(mvRow), sxLoss=pertes.map(mvRow);
+    // dates des données Search Console : mois entiers touchés par la période, ou à défaut le dernier mois analysé (jamais de bloc vide)
+    const sxMoisSub=searchAgg.repliMois?`données de ${sxMoisLabel(searchAgg.repliMois)} (dernier mois analysé, la période n'en contient pas encore)`:'mois touchés par la période';
+    // GA4 : les deux derniers jours publiés (J-1, J-2) sont provisoires ; ils sont affichés dès qu'ils existent et affinés chaque nuit
+    const provCons=this._ga4Consolide;
+    const provNote=(st.source==='ga' && provCons && fin>provCons)?`GA4 provisoire jusqu'au ${fin.slice(8,10)}/${fin.slice(5,7)} : les derniers jours sont affinés chaque nuit`:'';
     const sxMovSub=searchAgg.moisRef?`${sxMoisLabel(searchAgg.moisRef)} vs mois précédent · toutes requêtes du mois`:'Dernier mois analysé vs mois précédent';
     let insSxMov='';
     if (sxMovHas) insSxMov=(gains[0]?`Plus forte hausse : « ${gains[0].r.name} » (+${this.fmt(gains[0].d)} clics). `:'')+(pertes[0]?`Plus forte baisse : « ${pertes[0].r.name} » (−${this.fmt(Math.abs(pertes[0].d))} clics).`:'');
@@ -6176,7 +6194,7 @@ class Component extends DCLogic {
       ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
-      tbLeads:this.fmt(tbLeadsV), tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
       fcChip:kPuce('#7c63ee'), fcIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), capChip:kPuce('#d78b35'), capIcon:kIcone('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:0.8})),
       yoyChip:kPuce('#3b76e8'), yoyIcon:kIcone('#3b76e8',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})),
       annChip:kPuce('#3fae7a'), annIcon:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),

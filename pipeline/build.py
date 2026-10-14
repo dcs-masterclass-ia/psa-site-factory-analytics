@@ -81,7 +81,15 @@ def mois_a_traiter(jusqu_a=None):
 
 
 def jour_fiable():
-    """GA4 ne consolide pas avant 24 a 48 h : le dernier jour sur est J-2."""
+    """Dernier jour GA4 PUBLIE : hier (J-1). Les donnees des deux derniers jours sont provisoires : GA4 consolide
+    sous 24 a 48 h, et chaque execution retraite les mois en cours, donc ces jours sont affines chaque nuit.
+    (Avant le 14/10/2026 on attendait J-2 : un jour de plus de retard dans le dashboard pour rien.)"""
+    return (datetime.now(PARIS).date() - timedelta(days=1)).isoformat()
+
+
+def jour_consolide():
+    """Dernier jour GA4 considere comme consolide (J-2) : sert aux alertes et aux comparaisons qui ne doivent pas
+    reagir a un jour encore incomplet."""
     return (datetime.now(PARIS).date() - timedelta(days=2)).isoformat()
 
 
@@ -788,7 +796,7 @@ def main():
                 f.write(texte + "\n")
 
     ecrit_recap(f"## Rafraîchissement automatique — {datetime.now(PARIS).strftime('%d/%m/%Y %H:%M')}\n")
-    ecrit_recap(f"Mois traités : {', '.join(mois_liste)} — dernier jour fiable : {jour_fiable()}\n")
+    ecrit_recap(f"Mois traités : {', '.join(mois_liste)} — dernier jour publie : {jour_fiable()} (consolide : {jour_consolide()})\n")
     ecrit_recap("### Hôtes découverts\n")
     ecrit_recap("| Site | Parent | Reprise |")
     ecrit_recap("|---|---|---|")
@@ -797,6 +805,7 @@ def main():
         "derniere_execution": datetime.now(PARIS).isoformat(timespec="seconds"),
         "commit": os.environ.get("GITHUB_SHA", "")[:7],
         "jour_ga4_fiable": jour_fiable(),
+        "jour_ga4_consolide": jour_consolide(),
         "mois_traites": mois_liste,
         "statut": "ok",
         "sites": {},

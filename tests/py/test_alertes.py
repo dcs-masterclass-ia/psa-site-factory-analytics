@@ -20,21 +20,28 @@ def site(jours_a=7, accueil_b=1000, est_b=300, accueil_a=1000, est_a=300, sess_b
 
 class Alertes(unittest.TestCase):
     def test_site_stable_sans_alerte(self):
-        self.assertEqual(evaluer_site("TEST FR", site(), CONFIG_DEFAUT, "2026-10-10"), [])
+        self.assertEqual(evaluer_site("TEST FR", site(), CONFIG_DEFAUT, "2026-10-11"), [])
 
     def test_chute_de_sessions(self):
-        a = evaluer_site("TEST FR", site(sess_a=300), CONFIG_DEFAUT, "2026-10-10")
+        a = evaluer_site("TEST FR", site(sess_a=300), CONFIG_DEFAUT, "2026-10-11")
         self.assertEqual([x["regle"] for x in a], ["sessions"])
         self.assertEqual(a[0]["severite"], "haute")                 # −62 % : au-delà de 2× le seuil
 
     def test_chute_de_conversion_et_etape(self):
-        a = evaluer_site("TEST FR", site(est_a=150), CONFIG_DEFAUT, "2026-10-10")
+        a = evaluer_site("TEST FR", site(est_a=150), CONFIG_DEFAUT, "2026-10-11")
         self.assertIn("conversion", [x["regle"] for x in a])
         self.assertIn("etape", [x["regle"] for x in a])
 
     def test_volume_insuffisant_pas_d_alerte(self):
-        a = evaluer_site("TEST FR", site(accueil_a=10, est_a=1, accueil_b=10, est_b=3, sess_a=50, sess_b=200), CONFIG_DEFAUT, "2026-10-10")
+        a = evaluer_site("TEST FR", site(accueil_a=10, est_a=1, accueil_b=10, est_b=3, sess_a=50, sess_b=200), CONFIG_DEFAUT, "2026-10-11")
         self.assertEqual(a, [])
+
+    def test_les_deux_derniers_jours_provisoires_sont_ignores(self):
+        # le dernier jour (J-1, GA4 encore incomplet) tombe à zéro : pas de fausse alerte, la fenêtre s'arrête à J-2
+        d = site()
+        d["funnelDaily"]["2026-10-09"] = [5, 3, 3, 3, 2, 1]
+        d["daily"]["rep"][-1] = 10
+        self.assertEqual(evaluer_site("TEST FR", d, CONFIG_DEFAUT, "2026-10-10"), [])
 
     def test_fraicheur(self):
         a = evaluer_site("TEST FR", site(), CONFIG_DEFAUT, "2026-10-20")
@@ -42,7 +49,7 @@ class Alertes(unittest.TestCase):
 
     def test_seuil_reglable(self):
         cfg = dict(CONFIG_DEFAUT, sessionsPct=80)
-        self.assertEqual(evaluer_site("TEST FR", site(sess_a=300), cfg, "2026-10-10"), [])
+        self.assertEqual(evaluer_site("TEST FR", site(sess_a=300), cfg, "2026-10-11"), [])
 
 
 if __name__ == "__main__":

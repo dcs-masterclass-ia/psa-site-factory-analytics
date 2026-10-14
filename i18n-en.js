@@ -878,6 +878,7 @@ window.I18N_EN = {
 "diapositives ·": "slides ·",
 "diapositives · cliquer pour modifier": "slides · click to edit",
 "donner un titre (étape 2)": "give a title (step 2)",
+"données de {0} (dernier mois analysé, la période n'en contient pas encore)": "data from {0} (last analysed month, the period does not contain one yet)",
 "données terrain absentes": "no field data",
 "du parc": "of the network",
 "déjà atteint": "already reached",

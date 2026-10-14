@@ -68,6 +68,14 @@ def evaluer_site(nom, d, cfg, aujourdhui=None):
         return out
     dernier = max(fd)
     retard = (date.fromisoformat(aujourdhui) - date.fromisoformat(dernier)).days
+    # les deux derniers jours GA4 sont provisoires (incomplets) : les regles de baisse s'arretent au dernier jour
+    # consolide (J-2), sinon un jour a moitie compte declencherait de fausses alertes
+    limite = _ajoute(aujourdhui, -2)
+    if dernier > limite:
+        fd = {j: v for j, v in fd.items() if j <= limite}
+        if not fd:
+            return out
+        dernier = max(fd)
     if retard > cfg["fraicheurJours"]:
         out.append({"site": nom, "regle": "fraicheur", "severite": "haute" if retard > 2 * cfg["fraicheurJours"] else "moyenne",
                     "titre": "Données en retard", "detail": f"Dernier jour mesuré : {dernier} ({retard} jours).", "valeur": retard, "reference": cfg["fraicheurJours"], "jour": dernier})
