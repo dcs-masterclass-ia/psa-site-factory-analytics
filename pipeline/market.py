@@ -224,7 +224,9 @@ def consigne(dossier, sources=None, n=6, aujourdhui=None):
 def outils_autorises(sources=None):
     """Liste --allowedTools pour claude-code-action : WebFetch limité aux domaines des sources, WebSearch, Write."""
     doms = [d for sid in (sources or SOURCES) for d in SOURCES[sid][1]]
-    return ",".join([f"WebFetch(domain:{d})" for d in doms] + ["WebSearch", "Write", "Read"])
+    # la règle domain: vise un nom d'hôte exact : on autorise aussi la variante www. (cas de toutes ces sources)
+    hotes = [h for d in doms for h in (d, "www." + d)]
+    return ",".join([f"WebFetch(domain:{h})" for h in hotes] + ["WebSearch", "Write", "Read"])
 
 
 def extrait_json(texte):
