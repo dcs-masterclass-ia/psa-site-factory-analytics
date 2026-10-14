@@ -2016,6 +2016,48 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       <sc-if value="{{ isTB }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
+        <sc-if value="{{ hhHas }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <span style="font-size:16px;font-weight:600;color:#121214">Leads heure par heure</span>
+            <span style="flex:1"></span>
+            <span>{{ hhSelect }}</span>
+            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
+              <span onClick="{{ hhJourAuj.pick }}" style="{{ hhJourAuj.style }}">Aujourd'hui</span>
+              <span onClick="{{ hhJourHier.pick }}" style="{{ hhJourHier.style }}">Hier</span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px">
+            <span style="font-size:32px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ hhTitre }}</span>
+            <span style="font-size:13.5px;color:#6d727a">{{ hhSous }}</span>
+          </div>
+          <div>{{ hhChart }}</div>
+          <div style="display:flex;gap:18px;justify-content:center;font-size:12.5px;color:#6d727a;margin-top:6px">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#f59e0b"></span>Habituel (moyenne des 4 mêmes jours)</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#7c63ee"></span>Leads sur la journée</span>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ trHas }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+            <span style="font-size:16px;font-weight:600;color:#121214">Leads par jour, tous sites confondus</span>
+            <span style="flex:1"></span>
+            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
+              <sc-for list="{{ trVues }}" as="v" hint-placeholder-count="4"><span onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.label }}</span></sc-for>
+            </span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin:12px 0 8px;font-size:13.5px;color:#6d727a">
+            <span>Moyenne <b style="color:#121214;font-size:18px">{{ trMoy }}</b> leads / jour</span>
+            <span>{{ trDer }}</span>
+            <span style="font-size:12.5px;color:#9a9fa6">{{ trAide }}</span>
+          </div>
+          <div>{{ trChart }}</div>
+        </div>
+        </sc-if>
+
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
@@ -3176,6 +3218,17 @@ class Component extends DCLogic {
       montrer(json.error || "Connexion refusée.");
     } catch (e) { montrer("Erreur de connexion."); }
   }
+  /* Leads heure par heure : miroir du suivi du monitor (api/leads-horaire.js), rechargé toutes les 2 minutes sur l'onglet Leads */
+  async chargeHoraire(force) {
+    if (this._hhBusy) return;
+    if (!force && this._hh && Date.now() - (this._hhT || 0) < 120000) return;
+    this._hhBusy = true;
+    try {
+      const r = await fetch('/api/leads-horaire');
+      if (r.ok) { this._hh = await r.json(); this._hhT = Date.now(); this.setState({ hhRev: this._hhT }); }
+    } catch (e) { /* hors ligne : on garde la dernière lecture */ }
+    this._hhBusy = false;
+  }
   async boot() {
     if (!this._userEmail) return;
     try {
@@ -3195,6 +3248,7 @@ class Component extends DCLogic {
       }));
       this.data = loaded;
       if (!limite) { try { this._market = await (await fetch('/data/market.json')).json(); } catch (e) {} }
+      if (!limite) { this.chargeHoraire(true); if (!this._hhTimer) this._hhTimer = setInterval(() => { if (this.state && this.state.source === 'tb') this.chargeHoraire(); }, 120000); }
       if (!limite) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
       // mode embarque (colonne du mode "Comparer") : un seul site, meme
       // source/periode que la vue parente, sans rail ni en-tete.
@@ -5444,6 +5498,103 @@ class Component extends DCLogic {
     const fuelSubLabel=pdvScopeLabel;
     let fuelInsight='Aucune donnée de carburant sur la période.';
     if(fuelPerf.length){ const t=fuelPerf[0]; const el=fuelPerf.find(x=>x.name==='Électrique'); fuelInsight=`${t.name} : ${t.share} des véhicules repris (${t.leads} leads)`+(el&&el!==t?` ; électrique ${el.share}`:'')+(t.delta&&t.delta!=='—'?`, ${t.delta} vs marché entier`:'')+'.'; }
+    // ---------- Leads heure par heure + Leads par jour (comme dans UAS Monitor) ----------
+    const hhH = this._hh && this._hh.horaire;
+    const hhScope = st.hhScope || 'flotte', hhJour = st.hhJour === 'hier' ? 'hier' : 'aujourdhui';
+    const NOMS_PAYS_HH = {FR:'France',DE:'Allemagne',IT:'Italie',ES:'Espagne',PT:'Portugal',BE:'Belgique',LU:'Luxembourg',AT:'Autriche',PL:'Pologne',NL:'Pays-Bas',GB:'Royaume-Uni',UK:'Royaume-Uni',CH:'Suisse'};
+    const hhSitesNoms = hhH ? Object.keys(hhH.sites||{}).sort() : [];
+    const hhPays = [...new Set(hhSitesNoms.map(n=>n.split(' ').slice(-1)[0]))].sort();
+    const hh48 = (b,cle)=> (b&&b[cle])||new Array(48).fill(0);
+    const hhBloc = (()=>{
+      if(!hhH) return null;
+      if(hhScope==='flotte') return hhH.flotte;
+      if(hhScope.startsWith('pays:')){ const p=hhScope.slice(5); const bl=hhSitesNoms.filter(n=>n.split(' ').slice(-1)[0]===p).map(n=>hhH.sites[n]);
+        if(!bl.length) return null;
+        const add=cle=>Array.from({length:48},(_,i)=>bl.reduce((a,b)=>a+(((b||{})[cle]||[])[i]||0),0));
+        return {aujourdhui:add('aujourdhui'),hier:add('hier'),baseline:add('baseline')}; }
+      return hhH.sites[hhScope.slice(5)]||null;
+    })();
+    const hhHas = !!(hhH && hhBloc);
+    let hhChart=null, hhTitre='', hhSous='', hhSelect=null, hhNom='Toute la flotte';
+    if(hhHas){
+      hhNom = hhScope==='flotte'?'Toute la flotte':hhScope.startsWith('pays:')?(NOMS_PAYS_HH[hhScope.slice(5)]||hhScope.slice(5)):hhScope.slice(5);
+      const ecoules=hhH.creneauxEcoules||0, hCour=Math.floor(ecoules/2);
+      const parH=a=>Array.from({length:24},(_,i)=>(a[2*i]||0)+(a[2*i+1]||0));
+      const donn=parH(hh48(hhBloc,hhJour)), base=parH(hh48(hhBloc,'baseline'));
+      const auj = hhJour==='aujourdhui';
+      const vals=donn.map((v,i)=>(auj&&i>hCour)?null:v);
+      const total=vals.reduce((a,v)=>a+(v||0),0);
+      const jusqu=auj?ecoules:48;
+      const attendu=hh48(hhBloc,'baseline').slice(0,jusqu).reduce((a,v)=>a+v,0);
+      const ecart=attendu>0?(total-attendu)/attendu*100:null;
+      hhTitre=this.fmt(total);
+      hhSous=`leads ${auj?'depuis minuit':'hier'} (${hhNom})`+(ecart!==null?` · ${(ecart>=0?'+':'−')+Math.abs(Math.round(ecart))} % vs habituel (≈${this.fmt(attendu)}${auj?' à cette heure':''})`:'');
+      const W=1200,H=250,L=46,R=12,T=12,B=28, bw=(W-L-R)/24;
+      const mx0=Math.max(1,...donn.map(v=>v||0),...base);
+      const step=mx0<=60?10:mx0<=150?25:mx0<=400?50:100, mx=Math.ceil(mx0*1.05/step)*step;
+      const Y=v=>T+(H-T-B)*(1-v/mx);
+      const els=[];
+      for(let g=0;g<=mx;g+=step){ els.push(h('line',{key:'g'+g,x1:L,x2:W-R,y1:Y(g),y2:Y(g),stroke:'#ececee',strokeWidth:1})); els.push(h('text',{key:'gt'+g,x:L-8,y:Y(g)+4,textAnchor:'end',fontSize:11,fill:'#9a9fa6'},String(g))); }
+      vals.forEach((v,i)=>{ if(v===null) return; const x=L+i*bw+bw*.14, w=bw*.72, y=Y(v);
+        els.push(h('rect',{key:'b'+i,x,y,width:w,height:Math.max(0,Y(0)-y),rx:4,fill:(auj&&i===hCour)?'#c9c2fb':'#7c63ee'},h('title',null,`${String(i).padStart(2,'0')}h – ${String((i+1)%24).padStart(2,'0')}h : ${v} leads`))); });
+      const pts=base.map((v,i)=>[L+i*bw+bw/2,Y(v)]);
+      let dpath='M'+pts[0][0]+','+pts[0][1];
+      for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i], cx=(x0+x1)/2; dpath+=` C${cx},${y0} ${cx},${y1} ${x1},${y1}`; }
+      els.push(h('path',{key:'bl',d:dpath,fill:'none',stroke:'#f59e0b',strokeWidth:2.2}));
+      for(let i=0;i<24;i+=2) els.push(h('text',{key:'x'+i,x:L+i*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:11,fill:'#9a9fa6'},String(i).padStart(2,'0')+'h'));
+      hhChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
+    }
+    if(hhH){
+      const opts=[h('option',{key:'f',value:'flotte'},'Toute la flotte'),
+        h('optgroup',{key:'p',label:'Par pays'},hhPays.map(p=>h('option',{key:'p'+p,value:'pays:'+p},NOMS_PAYS_HH[p]||p))),
+        h('optgroup',{key:'s',label:'Par site'},hhSitesNoms.map(n=>h('option',{key:'s'+n,value:'site:'+n},n)))];
+      hhSelect=h('select',{value:hhScope,onChange:e=>set({hhScope:e.target.value}),style:{fontFamily:'inherit',fontSize:'13.5px',padding:'7px 10px',borderRadius:'10px',border:'1px solid #e4e4e8',background:'#fff',color:'#121214'}},opts);
+    }
+    const hhBtn=a=>`display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;font-weight:${a?600:500};${a?'background:#f1eefe;color:#5b43d6':'background:transparent;color:#6d727a'}`;
+
+    // leads par jour, tous sites : jours (14), semaines (26), mois, années
+    const trVue = ['jour','semaine','mois','annee'].includes(st.trVue)?st.trVue:'jour';
+    const trJours = {};
+    for(const sn of toutesSites){ const dd=this.data&&this.data[sn]; if(!dd||!dd.leads) continue;
+      for(const mo of Object.keys(dd.leads)){ if(mo==='total') continue; const arr=(dd.leads[mo]&&dd.leads[mo].daily)||[];
+        arr.forEach((v,i)=>{ const j=mo+'-'+String(i+1).padStart(2,'0'); trJours[j]=(trJours[j]||0)+(v||0); }); } }
+    const trKeys=Object.keys(trJours).sort();
+    const trMens={};   // mois -> total de la flotte, depuis l'historique mensuel (2022…)
+    const lmS0=this._leadsMensuel&&this._leadsMensuel.sites;
+    if(lmS0) for(const sn of Object.keys(lmS0)) for(const [mo,v] of Object.entries(lmS0[sn]||{})) trMens[mo]=(trMens[mo]||0)+(Array.isArray(v)?(v[0]||0):(v||0));
+    const JS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+    const dnb=(mo)=>new Date(Date.UTC(+mo.slice(0,4),+mo.slice(5,7),0)).getUTCDate();
+    let trPts=[];   // {label, total, jours, we}
+    if(trVue==='jour'){ trPts=trKeys.slice(-14).map(j=>{ const d0=new Date(j+'T12:00:00Z'); return {label:JS[d0.getUTCDay()]+' '+j.slice(8,10)+'/'+j.slice(5,7),total:trJours[j],jours:1,we:[0,6].includes(d0.getUTCDay())}; }); }
+    else if(trVue==='semaine'){ const sm=new Map(); for(const j of trKeys){ const d0=new Date(j+'T12:00:00Z'); const lun=new Date(d0); lun.setUTCDate(d0.getUTCDate()-((d0.getUTCDay()+6)%7)); const k=lun.toISOString().slice(0,10); const c=sm.get(k)||{t:0,n:0}; c.t+=trJours[j]; c.n++; sm.set(k,c); }
+      trPts=[...sm.entries()].sort().slice(-26).filter(([k,c])=>c.n>=7).map(([k,c])=>({label:k.slice(8,10)+'/'+k.slice(5,7),total:c.t/c.n,jours:1,we:false})); }
+    else { const mm={}; for(const [mo,v] of Object.entries(trMens)) mm[mo]={t:v,n:dnb(mo)};
+      const cur=new Date().toISOString().slice(0,7);
+      for(const j of trKeys){ const mo=j.slice(0,7); if(mm[mo]&&mo!==cur) continue; const c=mm[mo]||(mm[mo]={t:0,n:0}); if(mo===cur){ if(!c._rec){ c.t=0;c.n=0;c._rec=1; } c.t+=trJours[j]; c.n++; } else { c.t+=trJours[j]; c.n++; } }
+      if(trVue==='mois') trPts=Object.entries(mm).sort().map(([mo,c])=>({label:MOISF2[+mo.slice(5,7)-1].slice(0,4)+'. '+mo.slice(2,4),total:c.n?c.t/c.n:0,jours:1,we:false}));
+      else { const an={}; for(const [mo,c] of Object.entries(mm)){ const y=mo.slice(0,4); const a=an[y]||(an[y]={t:0,n:0}); a.t+=c.t; a.n+=c.n; }
+        trPts=Object.entries(an).sort().map(([y,c])=>({label:y,total:c.n?c.t/c.n:0,jours:1,we:false})); } }
+    let trChart=null, trMoy='', trDer='';
+    if(trPts.length>=2){
+      const W=1200,H=260,L=56,R=18,T=14,B=30, n=trPts.length;
+      const vmax=Math.max(...trPts.map(p=>p.total)), vmin=Math.min(...trPts.map(p=>p.total));
+      const rng=vmax-vmin||1, lo=Math.max(0,vmin-rng*.15), hi=vmax+rng*.1;
+      const X=i=>L+(W-L-R)*(n===1?.5:i/(n-1)), Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
+      const els=[];
+      for(let g=0;g<=4;g++){ const v=lo+(hi-lo)*g/4; els.push(h('line',{key:'g'+g,x1:L,x2:W-R,y1:Y(v),y2:Y(v),stroke:'#ececee'})); els.push(h('text',{key:'gt'+g,x:L-8,y:Y(v)+4,textAnchor:'end',fontSize:11,fill:'#9a9fa6'},this.fmt(v))); }
+      const d=trPts.map((p,i)=>[X(i),Y(p.total)]);
+      let dp='M'+d[0][0]+','+d[0][1]; for(let i=1;i<d.length;i++){ const cx=(d[i-1][0]+d[i][0])/2; dp+=` C${cx},${d[i-1][1]} ${cx},${d[i][1]} ${d[i][0]},${d[i][1]}`; }
+      els.push(h('path',{key:'ar',d:dp+` L${d[d.length-1][0]},${H-B} L${d[0][0]},${H-B} Z`,fill:'#7c63ee',opacity:.1}));
+      els.push(h('path',{key:'ln',d:dp,fill:'none',stroke:'#7c63ee',strokeWidth:2.4}));
+      trPts.forEach((p,i)=>els.push(h('circle',{key:'c'+i,cx:d[i][0],cy:d[i][1],r:4.5,fill:p.we?'#c8c8ce':'#fff',stroke:'#7c63ee',strokeWidth:2},h('title',null,`${p.label} : ${this.fmt(p.total)} leads`))));
+      const tick=Math.max(1,Math.ceil(n/8));
+      trPts.forEach((p,i)=>{ if(i%tick===0||i===n-1) els.push(h('text',{key:'x'+i,x:X(i),y:H-8,textAnchor:i===0?'start':i===n-1?'end':'middle',fontSize:11,fill:'#9a9fa6'},p.label)); });
+      trChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
+      trMoy=this.fmt(trPts.reduce((a,p)=>a+p.total,0)/n);
+      const last=trPts[n-1]; trDer=`${last.label} : ${this.fmt(last.total)} leads`;
+    }
+    const trVues=[['jour','Jour'],['semaine','Semaine'],['mois','Mois'],['annee','Année']].map(([v,l])=>({label:l,style:hhBtn(trVue===v),pick:()=>set({trVue:v})}));
+    const trAide={jour:'Total des leads de chaque jour, 14 derniers jours.',semaine:'Moyenne de leads par jour, semaine par semaine (lundi → dimanche), 26 dernières semaines.',mois:'Moyenne de leads par jour, mois par mois, depuis le début de l\'historique.',annee:'Moyenne de leads par jour, année par année.'}[trVue];
     const tbProjectDonut = (()=>{
       const DC=2*Math.PI*54; let off=0;
       const donutArcs=projRows.map((p,i)=>{
@@ -6357,7 +6508,7 @@ class Component extends DCLogic {
       ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
-      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, fuelPerf, fuelSubLabel, fuelInsight, cFuelChip:kPuce('#e8a33d'), cFuelIcon:kIcone('#e8a33d',h('path',{d:'M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15'}),h('path',{d:'M3 21h12'}),h('path',{d:'M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-3-3'}),h('path',{d:'M6 9h6'})), pdvSel, pdvScopeLabel, pdvMarche, pdvHas, pdvBest, pdvBestMarche, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, hhHas, hhChart, hhTitre, hhSous, hhSelect, hhJourAuj:{style:hhBtn(hhJour==='aujourdhui'),pick:()=>set({hhJour:'aujourdhui'})}, hhJourHier:{style:hhBtn(hhJour==='hier'),pick:()=>set({hhJour:'hier'})}, trChart, trVues, trMoy, trDer, trAide, trHas:!!trChart, fuelPerf, fuelSubLabel, fuelInsight, cFuelChip:kPuce('#e8a33d'), cFuelIcon:kIcone('#e8a33d',h('path',{d:'M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15'}),h('path',{d:'M3 21h12'}),h('path',{d:'M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-3-3'}),h('path',{d:'M6 9h6'})), pdvSel, pdvScopeLabel, pdvMarche, pdvHas, pdvBest, pdvBestMarche, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
       fcChip:kPuce('#7c63ee'), fcIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), capChip:kPuce('#d78b35'), capIcon:kIcone('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:0.8})),
       yoyChip:kPuce('#3b76e8'), yoyIcon:kIcone('#3b76e8',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})),
       annChip:kPuce('#3fae7a'), annIcon:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),
@@ -6448,7 +6599,7 @@ class Component extends DCLogic {
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) set({source:'tb'}); }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
