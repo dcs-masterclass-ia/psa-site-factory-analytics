@@ -220,7 +220,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 </helmet>
 <div style="display:flex;width:100%;height:100vh;background:#f4f4f6;overflow:hidden">
 
-  <div data-chrome="rail" style="width:84px;flex:none;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:14px;overflow-y:auto">
+  <div data-chrome="rail" style="width:156px;flex:none;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:20px 0;gap:14px;overflow-y:auto">
     <div style="width:32px;height:32px;overflow:hidden;position:relative;flex:none;margin-bottom:4px">
       <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/logo-converge-noir+-+copie.png" alt="Converge" style="position:absolute;top:-86.6px;left:-96.4px;width:327.7px;height:218.5px;max-width:none">
     </div>
@@ -234,33 +234,33 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div style="{{ srcGA }}" style-hover="background:#f4f4f6">
       <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">Google Analytics</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">Google Analytics</span>
     </div>
     <div onClick="{{ pickSC }}" title="Search Console" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcSC }}" style-hover="background:#f4f4f6">
       <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">Google Search Console</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">Google Search Console</span>
     </div>
     <div onClick="{{ pickPS }}" title="PageSpeed Insights" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcPS }}" style-hover="background:#f4f4f6">
       <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">PageSpeed Insights</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">PageSpeed Insights</span>
     </div>
     <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickTB }}" title="Pilotage des leads" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcTB }}" style-hover="background:#f4f4f6">
       <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">Pilotage des leads</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">Pilotage des leads</span>
     </div>
     <sc-if value="{{ canPres }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickPR }}" title="Présentations" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcPR }}" style-hover="background:#f4f4f6">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8M7 12l3-3 2.5 2.5L17 7"/></svg>
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">Présentations</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">Présentations</span>
     </div>
     </sc-if>
 
@@ -268,7 +268,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <div style="{{ srcAAA }}" style-hover="background:#f4f4f6">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
     </div>
-    <span style="font-size:10.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 4px;max-width:100%">AAA Data</span>
+    <span style="font-size:11.5px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 6px;max-width:100%;white-space:nowrap">AAA Data</span>
     </div>
     </sc-if>
 
