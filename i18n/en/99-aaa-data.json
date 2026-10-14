@@ -71,5 +71,14 @@
  "Hybride": "Hybrid",
  "Hybride rechargeable": "Plug-in hybrid",
  "Essence": "Petrol",
- "Diesel": "Diesel"
+ "Diesel": "Diesel",
+ "Carburant des véhicules repris": "Fuel of traded-in vehicles",
+ "Énergie du véhicule apporté en reprise · {0}": "Energy of the vehicle brought in for trade-in · {0}",
+ "Énergie": "Energy",
+ "vs marché": "vs market",
+ "GPL": "LPG",
+ "GNV": "CNG",
+ "Éthanol": "Ethanol",
+ "Non renseigné": "Not specified",
+ "Aucune donnée de carburant sur la période.": "No fuel data for the period."
 }

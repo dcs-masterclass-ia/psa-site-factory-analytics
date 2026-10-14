@@ -2185,30 +2185,29 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
-                  <span style="{{ cCtryChip }}">{{ cCtryIcon }}</span>
+                  <span style="{{ cFuelChip }}">{{ cFuelIcon }}</span>
                   <div>
-                    <div style="font-size:15px;font-weight:600;color:#121214">Marchés des sites</div>
-                    <div style="font-size:12.5px;color:#9a9fa6">Pays du site de reprise · <span style="color:#6d727a">{{ countryCountLabel }}</span></div>
+                    <div style="font-size:15px;font-weight:600;color:#121214">Carburant des véhicules repris</div>
+                    <div style="font-size:12.5px;color:#9a9fa6">Énergie du véhicule apporté en reprise · {{ fuelSubLabel }}</div>
                   </div>
                 </div>
-                <span style="font-size:11.5px;font-weight:500;border-radius:999px;padding:3px 10px;white-space:nowrap;background:#eef7f2;color:#2b8f62">avec immatriculation</span>
               </div>
-              <div style="display:grid;grid-template-columns:minmax(80px,1fr) 70px 70px minmax(110px,1.2fr);align-items:center;gap:12px;padding:0 6px 8px;font-size:12.5px;color:#9a9fa6">
-                <span>Marché</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">Avec plaque</span>
+              <div style="display:grid;grid-template-columns:minmax(90px,1fr) 70px minmax(120px,1.3fr) 76px;align-items:center;gap:12px;padding:0 6px 8px;font-size:12.5px;color:#9a9fa6">
+                <span>Énergie</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span><span style="text-align:right">vs marché</span>
               </div>
               <div style="min-height:{{ listMinH }}px">
-              <sc-for list="{{ countryPerf }}" as="c" hint-placeholder-count="5">
-                <div style="display:grid;gap:12px;align-items:center;padding:0 6px;min-height:44px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s;grid-template-columns:minmax(80px,1fr) 70px 70px minmax(110px,1.2fr)" style-hover="background:#f6f7fb">
+              <sc-for list="{{ fuelPerf }}" as="f" hint-placeholder-count="5">
+                <div style="display:grid;gap:12px;align-items:center;padding:0 6px;min-height:44px;border-top:1px solid #f2f2f4;grid-template-columns:minmax(90px,1fr) 70px minmax(120px,1.3fr) 76px">
                   <span style="display:flex;align-items:center;gap:8px;min-width:0">
-                    <span style="{{ c.dot }}"></span>
-                    <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                    <span style="{{ f.dot }}"></span>
+                    <span style="font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.name }}</span>
                   </span>
-                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ c.leads }}</span>
-                  <span style="{{ c.delayStyle }}">{{ c.delay }}</span>
+                  <span style="font-size:14.5px;color:#2f2f33;text-align:right">{{ f.leads }}</span>
                   <span style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
-                    <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ c.bar }}"></span></span>
-                    <span style="font-size:13.5px;font-weight:600;color:#121214;white-space:nowrap;min-width:44px;text-align:right">{{ c.rate }}</span>
+                    <span style="flex:1;min-width:40px;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><span style="{{ f.bar }}"></span></span>
+                    <span style="font-size:13.5px;font-weight:600;color:#121214;white-space:nowrap;min-width:44px;text-align:right">{{ f.share }}</span>
                   </span>
+                  <span style="{{ f.deltaStyle }}">{{ f.delta }}</span>
                 </div>
               </sc-for>
               </div>
@@ -2220,13 +2219,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                     <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
                     <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
                   </span>
-                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · à traiter : {{ countryInsight }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#c4842a;background:#fdf3e3;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">À TRAITER</span>{{ countryInsight }}</span>
+                  <span style="min-width:0;font-size:12.5px;line-height:1.5;color:#5b606a;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" title="KamIA · à traiter : {{ fuelInsight }}"><span style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:.06em;color:#c4842a;background:#fdf3e3;border-radius:6px;padding:1px 7px;margin-right:6px;vertical-align:1px">À TRAITER</span>{{ fuelInsight }}</span>
                 </div>
               </div>
             </div>
 
             <sc-if value="{{ pdvHas }}" hint-placeholder-val="{{ true }}">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
+            <div style="grid-column:1 / -1;background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
               <div style="font-size:15px;font-weight:600;color:#121214">Meilleur point de vente</div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:14px">Point de vente choisi par le plus de parcours · mois touchés par la période</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
@@ -3574,7 +3573,7 @@ class Component extends DCLogic {
      cf. pipeline/leads_extract.py) : jamais this.<methode> ici, appelee
      aussi via .call({state,data}, ...) pour les vues par pays/parc. */
   aggregateLeadsBreakdown(debutIso, finIso) {
-    const out = { brand:new Map(), project:new Map(), device:new Map(), pdv:new Map(), totalMois:0, pdvMois:0, entryAvec:0, entryTotal:0 };
+    const out = { brand:new Map(), project:new Map(), device:new Map(), fuel:new Map(), pdv:new Map(), totalMois:0, pdvMois:0, entryAvec:0, entryTotal:0 };
     for (const s of this.state.sites) {
       const d = this.data && this.data[s];
       if (!d || !d.leads) continue;
@@ -3587,6 +3586,7 @@ class Component extends DCLogic {
         (lm.brand||[]).forEach(([n,c])=>out.brand.set(n,(out.brand.get(n)||0)+c));
         (lm.project||[]).forEach(([n,c])=>out.project.set(n,(out.project.get(n)||0)+c));
         (lm.device||[]).forEach(([n,c])=>out.device.set(n,(out.device.get(n)||0)+c));
+        (lm.fuel||[]).forEach(([n,c])=>out.fuel.set(n,(out.fuel.get(n)||0)+c));
         out.totalMois += lm.total||0;
         if (lm.pdv && lm.pdv.length) { out.pdvMois += lm.total||0; lm.pdv.forEach(([n,c])=>out.pdv.set(n,(out.pdv.get(n)||0)+c)); }   // point de vente (colonne BC) : top 30 par site et par mois
         if (lm.entry) {
@@ -5413,12 +5413,37 @@ class Component extends DCLogic {
     };
     const pdvSel = pdvListe(boAgg);
     const pdvMarques=[...new Set(this.state.sites.map(marqueDeSiteTb))];
-    const pdvScopeLabel=this.state.sites.length>=this._allSites.length?'Marché entier':(pdvMarques.length===1?`${pdvMarques[0]} · ${this.state.sites.length} site${this.state.sites.length>1?'s':''}`:`${pdvMarques.length} marques · ${this.state.sites.length} sites`);
-    const boMarche = this.aggregateLeadsBreakdown.call({state:{sites:this._allSites}, data:this.data}, debut, fin);
+    const toutesSites=this._allSites||[];
+    const pdvScopeLabel=this.state.sites.length>=toutesSites.length?'Marché entier':(pdvMarques.length===1?`${pdvMarques[0]} · ${this.state.sites.length} site${this.state.sites.length>1?'s':''}`:`${pdvMarques.length} marques · ${this.state.sites.length} sites`);
+    const boMarche = this.aggregateLeadsBreakdown.call({state:{sites:toutesSites}, data:this.data}, debut, fin);
     const pdvMarche = pdvListe(boMarche);
     const pdvHas = pdvSel.length>0 || pdvMarche.length>0;
     const pdvBest = pdvSel[0] ? `${pdvSel[0].name} · ${pdvSel[0].n} parcours (${pdvSel[0].share})` : '—';
     const pdvBestMarche = pdvMarche[0] ? `${pdvMarche[0].name} · ${pdvMarche[0].n} parcours (${pdvMarche[0].share})` : '—';
+    // carburant des véhicules repris (colonne FUEL) : part dans la sélection et écart en points vs le marché entier
+    const FUEL_FR={petrol:'Essence',essence:'Essence',diesel:'Diesel',gazole:'Diesel',hybrid:'Hybride',hybride:'Hybride',electric:'Électrique',electrique:'Électrique',électrique:'Électrique',
+      lpg:'GPL',gpl:'GPL',cng:'GNV',gnv:'GNV',ethanol:'Éthanol',e85:'Éthanol',other:'Autre',autre:'Autre',unknown:'Non renseigné'};
+    const FUEL_COL={'Essence':'#f2b36b','Diesel':'#8a8f98','Hybride':'#4aa3ff','Électrique':'#7c63ee','Hybride rechargeable':'#7fd1b9','GPL':'#7fd1b9','GNV':'#7fd1b9','Éthanol':'#a3d977','Autre':'#c8c8ce','Non renseigné':'#d9dade'};
+    const fuelNorm=agg0=>{ const m=new Map(); for(const [n,c] of agg0.fuel.entries()){ const k0=String(n).trim(); const kl=k0.toLowerCase();
+        // libellés du back-office dans toutes les langues des marchés (gasoleo, gasolina, benzin, hybride rechargeable…)
+        let l=FUEL_FR[kl];
+        if(!l){ if(/rechargeable|plug|enchuf|phev/.test(kl)) l='Hybride rechargeable'; else if(/hybrid|h[ií]brid|ibrid/.test(kl)) l='Hybride';
+          else if(/electri|elettric|elektr|[eé]lectr|bev/.test(kl)) l='Électrique'; else if(/diesel|gazole|gasoleo|gas[oó]leo|gasolio|dizel/.test(kl)) l='Diesel';
+          else if(/essence|petrol|gasolin|benzin|benzina|super|gasoline/.test(kl)) l='Essence'; else if(/gpl|lpg|glp/.test(kl)) l='GPL'; else if(/gnv|gnc|cng|metan|methan|erdgas/.test(kl)) l='GNV';
+          else l=titleCase(k0); }
+        m.set(l,(m.get(l)||0)+c); } return m; };
+    const fuelSel=fuelNorm(boAgg), fuelMar=fuelNorm(boMarche);
+    const fuelTotS=[...fuelSel.values()].reduce((a,b)=>a+b,0), fuelTotM=[...fuelMar.values()].reduce((a,b)=>a+b,0);
+    const fuelPerf=[...fuelSel.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>{
+      const sh=fuelTotS?c/fuelTotS*100:0, shM=fuelTotM?(fuelMar.get(n)||0)/fuelTotM*100:0, dl=sh-shM;
+      const same=this.state.sites.length>=toutesSites.length;
+      return {name:n,leads:this.fmt(c),share:dec(sh,1)+' %',dot:`width:10px;height:10px;border-radius:3px;flex:none;background:${FUEL_COL[n]||'#c8c8ce'}`,
+        bar:`display:block;width:${Math.min(100,sh).toFixed(1)}%;height:100%;border-radius:4px;background:${FUEL_COL[n]||'#c8c8ce'}`,
+        delta:same?'—':(dl>=0?'+':'−')+dec(Math.abs(dl),1)+' pt',deltaStyle:`font-size:12.5px;text-align:right;color:${same?'#9a9fa6':(Math.abs(dl)<1?'#9a9fa6':'#6d727a')};font-weight:${Math.abs(dl)>=3?600:400}`};
+    });
+    const fuelSubLabel=pdvScopeLabel;
+    let fuelInsight='Aucune donnée de carburant sur la période.';
+    if(fuelPerf.length){ const t=fuelPerf[0]; const el=fuelPerf.find(x=>x.name==='Électrique'); fuelInsight=`${t.name} : ${t.share} des véhicules repris (${t.leads} leads)`+(el&&el!==t?` ; électrique ${el.share}`:'')+(t.delta&&t.delta!=='—'?`, ${t.delta} vs marché entier`:'')+'.'; }
     const tbProjectDonut = (()=>{
       const DC=2*Math.PI*54; let off=0;
       const donutArcs=projRows.map((p,i)=>{
@@ -5443,7 +5468,9 @@ class Component extends DCLogic {
     // seraient des donnees GA4, pas des donnees de leads).
     const deviceLabelFr=n=>({mobile:'Mobile',desktop:'Desktop',tablet:'Tablette'}[String(n).toLowerCase()]||titleCase(n));
     const deviceColors={mobile:'#7c63ee',desktop:'#3fae7a',tablet:'#e8a33d'};
-    const deviceRowsSorted = Array.from(boAgg.device.entries()).sort((a,b)=>b[1]-a[1]);
+    const deviceTous = new Map(boAgg.device);
+    for (const d0 of ['mobile','desktop','tablet']) { if (![...deviceTous.keys()].some(k=>String(k).toLowerCase()===d0)) deviceTous.set(d0,0); }   // les trois appareils sont toujours listés
+    const deviceRowsSorted = Array.from(deviceTous.entries()).sort((a,b)=>b[1]-a[1]);
     const devicePerf = deviceRowsSorted.map(([name,c])=>({
       name:deviceLabelFr(name), value:this.fmt(c), pct:Math.round(c/(devTotal||1)*100)+' % du volume',
       bar:`display:block;width:${(c/(devTotal||1)*100).toFixed(1)}%;height:100%;border-radius:5px;background:${deviceColors[String(name).toLowerCase()]||'#c8c8ce'}`
@@ -6330,7 +6357,7 @@ class Component extends DCLogic {
       ticketLabel:ticketState==='loading'?'Génération…':(st.ticket?'Masquer le ticket':'Générer un ticket Jira'),
       ticketBtn:`display:inline-flex;align-items:center;gap:10px;height:38px;padding:0 20px;border-radius:13px;font-size:15px;font-weight:500;cursor:pointer;white-space:nowrap;${!psSite?'background:#f4f4f6;color:#c2c5cb;cursor:default':st.ticket?'background:#f4f4f6;color:#2f2f33':'background:#141414;color:#fff'}`,
       ticketText,
-      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, pdvSel, pdvScopeLabel, pdvMarche, pdvHas, pdvBest, pdvBestMarche, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
+      tbLeads:this.fmt(tbLeadsV), sxMoisSub, provNote, tbLeadsDelta, tbDispoNote, tbKpis, tbSpark, tbProjectDonut, fuelPerf, fuelSubLabel, fuelInsight, cFuelChip:kPuce('#e8a33d'), cFuelIcon:kIcone('#e8a33d',h('path',{d:'M4 21V6a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v15'}),h('path',{d:'M3 21h12'}),h('path',{d:'M14 9h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-3-3'}),h('path',{d:'M6 9h6'})), pdvSel, pdvScopeLabel, pdvMarche, pdvHas, pdvBest, pdvBestMarche, ecartGa4Bo, perimetreTbLabel, medianEntryLabel,
       fcChip:kPuce('#7c63ee'), fcIcon:kIcone('#7c63ee',h('path',{d:'M3 17l6-6 4 4 8-8'}),h('path',{d:'M15 7h6v6'})), capChip:kPuce('#d78b35'), capIcon:kIcone('#d78b35',h('circle',{cx:12,cy:12,r:9}),h('circle',{cx:12,cy:12,r:4.5}),h('circle',{cx:12,cy:12,r:0.8})),
       yoyChip:kPuce('#3b76e8'), yoyIcon:kIcone('#3b76e8',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})),
       annChip:kPuce('#3fae7a'), annIcon:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),
