@@ -116,15 +116,59 @@ def rattrape_site(nom, dry_run=False, forcer=False):
     return avant, apres
 
 
+def rafraichit_courant(nom, dry_run=False):
+    """Remet a jour les leads BO du mois en cours (et du mois precedent les 2 premiers jours du mois), jusqu'a hier,
+    sans toucher a GA4 ni aux mois consolides. Rapide : une extraction BO par site."""
+    from datetime import datetime
+    from pipeline.build import PARIS, jours_leads
+    chemin = DATA_DIR / f"{_slug(nom)}.json"
+    if not chemin.exists():
+        return None
+    d = json.loads(chemin.read_text(encoding="utf-8"))
+    auj = datetime.now(PARIS).date()
+    mois = [auj.strftime("%Y-%m")]
+    if auj.day <= 2:
+        prec = (auj.replace(day=1) - __import__("datetime").timedelta(days=1)).strftime("%Y-%m")
+        mois.insert(0, prec)
+    ecrit = False
+    for m in mois:
+        if m not in d.get("leads", {}) or m not in d.get("meta", {}):
+            continue
+        an, mo = int(m[:4]), int(m[5:])
+        nb = (datetime(an + (mo == 12), mo % 12 + 1, 1) - datetime(an, mo, 1)).days
+        try:
+            bloc = leads_extract.bloc_leads_mois(nom, m, nb, jours_leads(m, nb, d["meta"][m].get("days", 0)))
+        except Exception as e:
+            print(f"  {nom} {m} : echec extraction ({type(e).__name__}: {e}), conserve")
+            continue
+        ancien = len(d["leads"][m].get("daily") or [])
+        d["leads"][m] = bloc
+        ecrit = True
+        print(f"  {nom} {m} : {bloc['total']} leads, {ancien} -> {len(bloc['daily'])} jours")
+    if not ecrit or dry_run:
+        return None
+    chemin.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    ok, detail = _commit_et_pousse([f"data/{chemin.name}"], f"Leads BO au jour le jour — {nom}")
+    if not ok:
+        print(f"  {nom} : ECHEC commit/push ({detail})")
+    return ok
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sites", nargs="*", help="par defaut : tous ceux couverts par SITE_EXTRACT")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--forcer", action="store_true", help="rejoue tous les mois consolides, pas seulement ceux a zero")
+    ap.add_argument("--courant", action="store_true", help="ne rafraichit que les leads du mois en cours, jusqu'a hier")
     a = ap.parse_args()
 
     if not a.dry_run:
         _configure_git()
+
+    if a.courant:
+        for nom in (a.sites or sorted(leads_extract.SITE_EXTRACT.keys())):
+            rafraichit_courant(nom, dry_run=a.dry_run)
+        return
 
     cibles = a.sites or sorted(leads_extract.SITE_EXTRACT.keys())
     resultats = {}
