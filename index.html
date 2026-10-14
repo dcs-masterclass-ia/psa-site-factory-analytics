@@ -2377,62 +2377,154 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       <sc-if value="{{ isAAA }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
         <div style="display:flex;flex-direction:column;gap:4px">
-          <div style="font-size:21px;font-weight:600;letter-spacing:-.02em;color:#121214">AAA Data — marché automobile</div>
-          <div style="font-size:13.5px;color:#6d727a">Immatriculations en France et en Europe. Sources : SDES, AAA Data, ACEA. Mise à jour du {{ aaaDate }}.</div>
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#7c63ee">SOURCES SDES · AAA DATA · ACEA</div>
+          <div style="font-size:21px;font-weight:600;letter-spacing:-.02em;color:#121214">AAA Data</div>
+          <div style="font-size:13.5px;color:#6d727a">Le socle chiffré du marché : immatriculations France et Europe, mix électrique, modèles et pays. Données au {{ aaaDate }}.</div>
         </div>
         <sc-if value="{{ !aaaOk }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données du marché indisponibles pour le moment.</div></sc-if>
         <sc-if value="{{ aaaOk }}" hint-placeholder-val="{{ true }}">
-        <div style="font-size:15px;font-weight:600;color:#121214;margin-top:6px">France — annuel</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px">
+
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:6px"><span style="font-size:17px;font-weight:600;color:#121214">France — annuel</span><span style="font-size:13px;color:#9a9fa6">2022 – 2025, source SDES officielle</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px">
           <sc-for list="{{ aaaFrAnnual }}" as="a" hint-placeholder-count="4">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-              <div style="font-size:13.5px;color:#6d727a">{{ a.year }}</div>
-              <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;margin:6px 0">{{ a.total }}</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap"><span style="{{ a.yoyStyle }}">{{ a.yoy }}</span><span style="font-size:13px;color:#6d727a;padding:3px 0">{{ a.elec }} électrique</span></div>
+              <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;color:#6d727a">{{ a.year }}</span><span style="{{ a.yoyStyle }}">{{ a.yoy }}</span></div>
+              <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;margin:8px 0 0;font-variant-numeric:tabular-nums">{{ a.total }}</div>
+              <div style="font-size:12.5px;color:#9a9fa6">immatriculations</div>
+              <div style="font-size:13px;color:#6d727a;margin:12px 0 6px">Part électrique <b style="color:#121214">{{ a.ev }}</b></div>
+              <div style="height:6px;border-radius:3px;background:#f1f1f3;overflow:hidden"><div style="{{ a.evBar }}"></div></div>
+              <div style="font-size:12px;color:#9a9fa6;margin-top:10px;min-height:16px">{{ a.note }}</div>
             </div>
           </sc-for>
         </div>
+        <a href="{{ aaaFrSrc }}" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a>
+
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-          <div style="font-size:15px;font-weight:600;color:#121214">France — immatriculations par mois</div>
-          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 8px">Voitures particulières neuves, source AAA Data. Évolution en % vs même mois de l'année précédente.</div>
-          <div>{{ aaaMonthChart }}</div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-            <div style="font-size:15px;font-weight:600;color:#121214">{{ aaaTopTitle }}</div>
-            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 10px">{{ aaaTopPeriod }}</div>
-            <sc-for list="{{ aaaTop }}" as="m" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid #f1f1f3">
-                <span style="flex:none;width:22px;font-size:13px;color:#9a9fa6">{{ m.rang }}</span>
-                <span style="flex:1;min-width:0;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.model }}</span>
-                <span style="font-size:14px;font-weight:600;color:#121214;font-variant-numeric:tabular-nums">{{ m.units }}</span>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><div style="font-size:15px;font-weight:600;color:#121214">France — mensuel</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">{{ aaaMonthsSub }}</div></div>
+            <span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;color:#9a6b00;background:#fdf3d6">série incomplète</span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:6px;height:230px;margin-top:16px;overflow-x:auto">
+            <sc-for list="{{ aaaMonths }}" as="m" hint-placeholder-count="15">
+              <div title="{{ m.tip }}" style="flex:1 1 0;min-width:44px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+                <span style="font-size:11.5px;font-weight:600;color:#7c63ee">{{ m.ev }}</span>
+                <div style="width:100%;flex:1;display:flex;align-items:flex-end;justify-content:center;min-height:0"><div style="{{ m.stack }}"><div style="{{ m.segRest }}"></div><div style="{{ m.segEv }}"></div></div></div>
+                <span style="font-size:11.5px;color:#6d727a;white-space:nowrap">{{ m.label }}</span>
+                <span style="font-size:11px;color:#9a9fa6">{{ m.volume }}</span>
               </div>
             </sc-for>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-            <div style="font-size:15px;font-weight:600;color:#121214">Europe — annuel</div>
-            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 10px">Immatriculations de voitures neuves, Union européenne + AELE + Royaume-Uni (ACEA).</div>
-            <sc-for list="{{ aaaEuAnnual }}" as="e" hint-placeholder-count="4">
-              <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid #f1f1f3">
-                <span style="flex:1;font-size:14px;color:#121214">{{ e.year }}</span>
-                <span style="font-size:14px;font-weight:600;color:#121214;font-variant-numeric:tabular-nums">{{ e.total }}</span>
-                <span style="{{ e.yoyStyle }}">{{ e.yoy }}</span>
-              </div>
-            </sc-for>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#6d727a;margin-top:14px">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#7c63ee"></span>électrique</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#e4defc"></span>reste du mix (thermique, hybride…)</span>
+            <span>hauteur totale = volume du mois</span>
           </div>
+          <details style="margin-top:14px"><summary style="cursor:pointer;font-size:13px;color:#7c63ee">Voir les données en tableau</summary>
+            <div style="overflow-x:auto;margin-top:10px">
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(90px,1fr));font-size:13px;min-width:420px">
+                <span style="font-weight:600;padding:6px 0;color:#6d727a">Mois</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Total</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Var. annuelle</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Électrique</span>
+                <sc-for list="{{ aaaMonthsRows }}" as="r" hint-placeholder-count="15">
+                  <span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.mois }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.total }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.yoy }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.ev }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </details>
         </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:15px">
+          <sc-for list="{{ aaaPodiums }}" as="pd" hint-placeholder-count="2">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><div style="font-size:15px;font-weight:600;color:#121214">{{ pd.title }}</div><span style="{{ pd.pillStyle }}">{{ pd.pill }}</span></div>
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;margin-top:14px">
+                <sc-for list="{{ pd.cols }}" as="c" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0">
+                    <div style="{{ c.imgBox }}"><img src="{{ c.img }}" alt="{{ c.name }}" style="max-width:100%;max-height:100%;object-fit:contain" data-keep></div>
+                    <div style="font-size:13.5px;font-weight:600;color:#121214;text-align:center;line-height:1.2">{{ c.name }}</div>
+                    <div style="font-size:13px;color:#6d727a;font-variant-numeric:tabular-nums">{{ c.value }}</div>
+                    <div style="{{ c.step }}">{{ c.rank }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <a href="{{ pd.src }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px"><span style="font-size:17px;font-weight:600;color:#121214">Europe</span><span style="font-size:13px;color:#9a9fa6">source ACEA · UE + AELE + Royaume-Uni</span></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:15px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15px;font-weight:600;color:#121214">Annuel 2022 – 2025</div><span style="font-size:12.5px;color:#9a9fa6">volume &amp; électrique</span></div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px">
+              <sc-for list="{{ aaaEuAnnual }}" as="y" hint-placeholder-count="4">
+                <div style="border:1px solid #efeff1;border-radius:12px;padding:12px 14px">
+                  <div style="display:flex;justify-content:space-between;font-size:13.5px;color:#6d727a"><span>{{ y.year }}</span><span>{{ y.yoy }}</span></div>
+                  <div style="font-size:22px;font-weight:600;color:#121214;margin-top:4px">{{ y.ev }}</div>
+                  <div style="font-size:12px;color:#9a9fa6;margin-bottom:6px">part électrique</div>
+                  <div style="height:6px;border-radius:3px;background:#f1f1f3;overflow:hidden"><div style="{{ y.evBar }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ aaaHasGroups }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15px;font-weight:600;color:#121214">{{ aaaGroupsTitle }}</div><span style="font-size:12.5px;color:#9a9fa6">part de marché</span></div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+              <sc-for list="{{ aaaGroups }}" as="g" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="flex:none;width:24px;height:24px;border-radius:50%;background:#f1eefe;color:#5b43d6;font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ g.rank }}</span>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;justify-content:space-between;font-size:14px;color:#121214;margin-bottom:5px"><span>{{ g.group }}</span><b>{{ g.share }}</b></div>
+                    <div style="height:6px;border-radius:3px;background:#f1f1f3;overflow:hidden"><div style="{{ g.bar }}"></div></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin-top:14px">{{ aaaGroupsFoot }}</div>
+            <a href="{{ aaaGroupsSrc }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a>
+          </div>
+          </sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px">
+          <sc-for list="{{ aaaPeriods }}" as="p" hint-placeholder-count="3">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
+                <div><div style="font-size:12.5px;color:#9a9fa6">{{ p.label }}</div><div style="font-size:34px;font-weight:600;letter-spacing:-.02em;color:#121214">{{ p.yoy }}</div></div>
+                <div style="font-size:13px;color:#6d727a;padding-bottom:6px">{{ p.ev }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-          <div style="font-size:15px;font-weight:600;color:#121214">Europe — pays</div>
-          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 10px">{{ aaaCountriesNote }}</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));column-gap:28px">
-            <sc-for list="{{ aaaCountries }}" as="c" hint-placeholder-count="12">
-              <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid #f1f1f3">
-                <span style="flex:1;min-width:0;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
-                <span style="font-size:14px;font-weight:600;color:#121214;font-variant-numeric:tabular-nums">{{ c.total }}</span>
-                <span style="{{ c.yoyStyle }}">{{ c.yoy }}</span>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><div style="font-size:15px;font-weight:600;color:#121214">Par pays · 2025</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">{{ aaaCountriesSub }}</div></div>
+            <span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;color:#5b43d6;background:#f1eefe">part du volume européen</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+            <sc-for list="{{ aaaCountriesTop }}" as="c" hint-placeholder-count="10">
+              <div style="display:flex;align-items:center;gap:14px">
+                <span style="flex:none;width:170px;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                <div style="flex:1;height:8px;border-radius:4px;background:#f1f1f3;overflow:hidden"><div style="{{ c.bar }}"></div></div>
+                <span style="flex:none;width:64px;text-align:right;font-size:13.5px;font-weight:600;color:#121214;font-variant-numeric:tabular-nums">{{ c.share }}</span>
               </div>
             </sc-for>
           </div>
+          <details style="margin-top:16px"><summary style="cursor:pointer;font-size:13px;color:#7c63ee">Voir les données en tableau</summary>
+            <div style="overflow-x:auto;margin-top:10px">
+              <div style="display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(3,minmax(110px,1fr));font-size:13px;min-width:520px">
+                <span style="font-weight:600;padding:6px 0;color:#6d727a">Pays</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Immatriculations</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Part de marché</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Var. annuelle</span>
+                <sc-for list="{{ aaaCountriesRows }}" as="r" hint-placeholder-count="31">
+                  <span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.name }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.total }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.share }}</span><span style="padding:6px 0;border-top:1px solid #f1f1f3">{{ r.yoy }}</span>
+                </sc-for>
+              </div>
+            </div>
+          </details>
+          <a href="{{ aaaCountriesSrc }}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:12px;font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a>
+        </div>
+
+        <div style="background:#f7f6fe;border:1px solid #e4defc;border-radius:16px;padding:16px 20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#7c63ee">LECTURE DES SOURCES</div>
+          <div style="font-size:13.5px;color:#4a4f57;margin-top:6px;line-height:1.5">{{ aaaNote }}</div>
         </div>
         </sc-if>
       </div>
@@ -5005,34 +5097,51 @@ class Component extends DCLogic {
     }
 
     const tbLeadsV = boLeads;
-    // ---------- AAA Data (marché automobile, data/market.json)
+    // ---------- AAA Data (marché automobile, data/market.json) : mêmes blocs que la page « AAA Data » de la newsletter
     const aaaMk=this._market||null, aaaMkOk=!!(aaaMk&&aaaMk.france&&aaaMk.europe);
     const aaaNf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
-    const aaaPct=(v,d)=>(v>0?'+':'')+(d?v.toFixed(1):String(Math.round(v))).replace('.',',')+' %';
-    const aaaYoyS=v=>`font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;${v>=0?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
+    const aaaP=(n,d)=>(d===undefined?String(n.toFixed(1)).replace(/\.0$/,''):n.toFixed(d)).replace('.',',')+' %';
+    const aaaSg=n=>(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(1).replace(/\.0$/,'').replace('.',',')+' %';
+    const aaaPill=v=>`font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;${v>=0?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
+    const aaaBar=(v,mx,c)=>`height:100%;width:${Math.max(0,Math.min(100,v/mx*100))}%;border-radius:3px;background:${c||'#7c63ee'}`;
     const AAA_MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const aaaML=m=>AAA_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4);
     const aaaFr=aaaMkOk?aaaMk.france:{}, aaaEu=aaaMkOk?aaaMk.europe:{};
-    const aaaFrAnnual=(aaaFr.annual||[]).map(a=>({year:String(a.year),total:typeof a.total==='number'?aaaNf(a.total):'—',yoy:aaaPct(a.yoy_pct,1),yoyStyle:aaaYoyS(a.yoy_pct),elec:String(a.electric_pct).replace('.',',')+' %'}));
-    const aaaEuAnnual=(aaaEu.annual||[]).map(a=>({year:String(a.year)+(typeof a.electric_pct==='number'?' · '+String(a.electric_pct).replace('.',',')+' % électrique':''),total:typeof a.total==='number'?aaaNf(a.total):(typeof a.total_approx==='number'?'≈ '+aaaNf(a.total_approx):'—'),yoy:aaaPct(a.yoy_pct,1),yoyStyle:aaaYoyS(a.yoy_pct)}));
-    const aaaTopRaw=(aaaFr.top_models_partial_2026&&aaaFr.top_models_partial_2026.items)||[];
-    const aaaTop=aaaTopRaw.map((m,i)=>({rang:String(i+1),model:m.model,units:aaaNf(m.units)}));
-    const aaaCty=((aaaEu.countries_2025&&aaaEu.countries_2025.items)||[]).slice().sort((a,b)=>b.registrations-a.registrations).slice(0,12);
-    const aaaCountries=aaaCty.map(c=>({name:c.name,total:aaaNf(c.registrations),yoy:aaaPct(c.yoy_pct,1),yoyStyle:aaaYoyS(c.yoy_pct)}));
-    const aaaMonthChart=(()=>{
-      const ms=(aaaFr.monthly||[]).slice(-15); if(!ms.length) return null;
-      const W=900,H=240,L=8,R=8,T=26,B=34, bw=(W-L-R)/ms.length, mx=Math.max(...ms.map(m=>m.total))*1.05;
-      const els=[];
-      ms.forEach((m,i)=>{
-        const x=L+i*bw+bw*.18, w=bw*.64, hh=(m.total/mx)*(H-T-B), y=H-B-hh;
-        els.push(h('rect',{key:'b'+i,x,y,width:w,height:hh,rx:5,fill:'#b6a5f8'}));
-        els.push(h('text',{key:'v'+i,x:x+w/2,y:y-15,textAnchor:'middle',fontSize:11,fontWeight:600,fill:'#121214'},aaaNf(m.total/1000)+' k'));
-        if(typeof m.yoy_pct==='number') els.push(h('text',{key:'y'+i,x:x+w/2,y:y-3,textAnchor:'middle',fontSize:10.5,fill:m.yoy_pct>=0?'#1f9254':'#a33c39'},aaaPct(m.yoy_pct,0)));
-        const mo=+m.month.slice(5,7);
-        els.push(h('text',{key:'l'+i,x:x+w/2,y:H-B+16,textAnchor:'middle',fontSize:11,fill:'#6d727a'},AAA_MOIS[mo-1]));
-        if(mo===1||i===0) els.push(h('text',{key:'a'+i,x:x+w/2,y:H-B+30,textAnchor:'middle',fontSize:10.5,fill:'#9a9fa6'},m.month.slice(0,4)));
-      });
-      return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',maxHeight:280}},els);
-    })();
+    const aaaFrA=aaaFr.annual||[], aaaEuA=aaaEu.annual||[];
+    const aaaFrAnnual=aaaFrA.map(a=>{ const parts=[];
+      if(a.petrol_pct!==undefined) parts.push('Essence '+aaaP(a.petrol_pct));
+      if(a.diesel_pct!==undefined) parts.push('diesel '+aaaP(a.diesel_pct));
+      if(a.phev_pct!==undefined) parts.push('hybride rechargeable '+aaaP(a.phev_pct));
+      if(a.hybrid_petrol_pct!==undefined&&!parts.length) parts.push('hybride non rechargeable '+aaaP(a.hybrid_petrol_pct));
+      return {year:String(a.year),yoy:aaaSg(a.yoy_pct),yoyStyle:aaaPill(a.yoy_pct),total:aaaNf(a.total),ev:aaaP(a.electric_pct||0),evBar:aaaBar(a.electric_pct||0,40),note:parts.join(' · ')}; });
+    const aaaFrSrc=aaaFrA.length?aaaFrA[aaaFrA.length-1].source_url:'';
+    const aaaMon=aaaFr.monthly||[];
+    const aaaMax=Math.max(1,...aaaMon.map(m=>m.total)), aaaMin=Math.min(...aaaMon.map(m=>m.total));
+    const aaaMonths=aaaMon.map(m=>{ const hasEv=typeof m.electric_pct==='number', barH=18+((m.total-aaaMin)/((aaaMax-aaaMin)||1))*82, evH=hasEv?m.electric_pct/100*100:0;
+      return {label:aaaML(m.month),volume:aaaNf(m.total/1000)+'k',ev:hasEv?aaaP(m.electric_pct,0):'—',
+        tip:aaaML(m.month)+' — '+aaaNf(m.total)+' immatriculations'+(hasEv?', électrique '+aaaP(m.electric_pct,0):''),
+        stack:`width:62%;max-width:46px;height:${barH}%;display:flex;flex-direction:column;border-radius:6px;overflow:hidden`,
+        segRest:`flex:1 1 0;background:#e4defc`, segEv:`flex:none;height:${evH}%;background:#7c63ee`}; });
+    const aaaMonthsSub=aaaMon.length?'AAA DATA · '+aaaMon.length+' mois couverts entre '+aaaML(aaaMon[0].month)+' et '+aaaML(aaaMon[aaaMon.length-1].month):'';
+    const aaaMonthsRows=aaaMon.map(m=>({mois:aaaML(m.month),total:aaaNf(m.total),yoy:typeof m.yoy_pct==='number'?aaaSg(m.yoy_pct):'—',ev:typeof m.electric_pct==='number'?aaaP(m.electric_pct,0):'—'}));
+    const aaaPodium=(title,pill,pillOk,items,src)=>({title,pill,pillStyle:`font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;${pillOk?'color:#1f9254;background:#eaf7ef':'color:#9a6b00;background:#fdf3d6'}`,src,
+      cols:[1,0,2].filter(r=>items[r]).map(r=>({name:items[r].model.replace(/ (V|VI|II|III)$/,''),value:aaaNf(items[r].units),img:items[r].image_url||'',rank:String(r+1),
+        imgBox:`width:100%;display:flex;align-items:flex-end;justify-content:center;height:${r===0?138:r===1?110:96}px`,
+        step:`width:100%;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-weight:600;color:${r===0?'#fff':'#5b43d6'};background:${r===0?'#7c63ee':'#f1eefe'};height:${r===0?86:r===1?58:40}px`}))});
+    const aaaPodiums=[];
+    const aaaModAnn=aaaFrA.slice().reverse().find(a=>a.top_models), aaaModPart=aaaFr.top_models_partial_2026;
+    if(aaaModAnn) aaaPodiums.push(aaaPodium('Top 3 modèles · '+aaaModAnn.year+' complet','année complète',true,aaaModAnn.top_models.items,aaaModAnn.top_models.source_url));
+    if(aaaModPart) aaaPodiums.push(aaaPodium('Aperçu '+String(aaaModPart.period||'').split(' (')[0],'provisoire',false,aaaModPart.items||[],aaaModPart.source_url));
+    const aaaEuAnnual=aaaEuA.map(y=>({year:String(y.year),yoy:aaaSg(y.yoy_pct),ev:typeof y.electric_pct==='number'?aaaP(y.electric_pct):'—',evBar:aaaBar(y.electric_pct||0,25)}));
+    const aaaEuLast=aaaEuA[aaaEuA.length-1]||{}, aaaGr=aaaEuLast.top_groups||[];
+    const aaaGroups=aaaGr.map((g,i)=>({rank:String(i+1),group:g.group,share:aaaP(g.share_pct),bar:aaaBar(g.share_pct,30)}));
+    const aaaPeriods=(aaaEu.periods_2026||[]).slice(-3).map(p=>({label:String(p.label).split(' (')[0],yoy:aaaSg(p.yoy_pct),ev:typeof p.electric_pct==='number'?'électrique '+aaaP(p.electric_pct):''}));
+    const aaaC25=aaaEu.countries_2025||null, aaaCS=aaaC25?aaaC25.items.slice().sort((a,b)=>b.share_pct-a.share_pct):[];
+    const aaaCRest=aaaCS.slice(8,-1), aaaCLast=aaaCS[aaaCS.length-1], aaaCMax=aaaCS.length?aaaCS[0].share_pct:1;
+    const aaaCountriesTop=aaaCS.slice(0,8).map(c=>({name:c.name,share:aaaP(c.share_pct,2),bar:aaaBar(c.share_pct,aaaCMax)}));
+    if(aaaCRest.length){ const rs=aaaCRest.reduce((a,c)=>a+c.share_pct,0); aaaCountriesTop.push({name:'… '+aaaCRest.length+' autres pays',share:aaaP(rs,1),bar:aaaBar(rs,aaaCMax)}); }
+    if(aaaCLast&&aaaCS.length>9) aaaCountriesTop.push({name:aaaCLast.name+' (dernier)',share:aaaP(aaaCLast.share_pct,2),bar:aaaBar(aaaCLast.share_pct,aaaCMax)});
+    const aaaCountriesRows=aaaCS.map(c=>({name:c.name,total:aaaNf(c.registrations),share:aaaP(c.share_pct,2),yoy:aaaSg(c.yoy_pct)}));
     // Leads BO publiés jusqu'à hier : au-delà, la période affichée n'est pas encore chargée (pas un zéro réel).
     const tbHier = (()=>{ const d=new Date(); d.setDate(d.getDate()-1); return d.toLocaleDateString('sv-SE',{timeZone:'Europe/Paris'}); })();
     const tbDispoNote = (fin > tbHier)
@@ -6024,7 +6133,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaEuAnnual, aaaTop, aaaTopTitle:'France — top modèles', aaaTopPeriod:(aaaFr.top_models_partial_2026&&aaaFr.top_models_partial_2026.period)||'', aaaCountries, aaaCountriesNote:'12 premiers marchés européens par immatriculations, 2025 ; évolution vs 2024.', aaaMonthChart, isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
