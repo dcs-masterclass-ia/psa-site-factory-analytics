@@ -85,15 +85,6 @@ def jour_fiable():
     return (datetime.now(PARIS).date() - timedelta(days=2)).isoformat()
 
 
-def jours_leads(mois, nb, jours_reels):
-    """Jours de LEADS du back-office à publier pour un mois : jusqu'à HIER (une journée écoulée est complète côté back-office),
-    sans attendre la consolidation de GA4 (J-2). Jamais moins que les jours GA4, jamais plus que le mois."""
-    auj = datetime.now(PARIS).date()
-    courant = auj.strftime("%Y-%m")
-    hier = (auj.day - 1) if mois == courant else (nb if mois < courant else 0)
-    return min(nb, max(jours_reels, hier))
-
-
 def jour_fiable_gsc():
     return (datetime.now(PARIS).date() - timedelta(days=DECALAGE_GSC)).isoformat()
 
@@ -440,7 +431,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # du jour precedent plutot que de publier un mois vide ou tronque.
         if s.nom in leads_extract.SITE_EXTRACT:
             try:
-                d["leads"][mois] = leads_extract.bloc_leads_mois(s.nom, mois, nb, jours_leads(mois, nb, jours_reels))
+                d["leads"][mois] = leads_extract.bloc_leads_mois(s.nom, mois, nb, jours_reels)
                 journal.append(f"{mois} : {d['leads'][mois]['total']} leads extraits "
                                f"automatiquement du back-office")
             except Exception as e:
