@@ -393,7 +393,7 @@ toujours Stellantis (plus de champ). Langues : fr, en, it, es, de — libellés,
 ## AAA Data — marché automobile (2026-10-14)
 Onglet « AAA Data » (`source:'aaa'`, profil complet) : lit `data/market.json` du repo de données (servi comme les autres JSON).
 Mise à jour : `.github/workflows/market.yml` (cron le 2 et le 25 de chaque mois, ou manuel avec `dry_run`) -> `python -m pipeline.market`.
-Un appel Claude (web_search + web_fetch limités au domaine de la source) lit le dernier communiqué de AAA Data (FR), ACEA (Europe, cumul annuel),
+Un agent Claude Code (abonnement via `CLAUDE_CODE_OAUTH_TOKEN`, pas de clé API ; WebFetch limité au domaine de chaque source) lit le dernier communiqué de AAA Data (FR), ACEA (Europe, cumul annuel),
 KBA (DE), UNRAE (IT), ANFAC (ES), SMMT (GB) ; chaque relevé est validé (période, plages, domaine de la source, citation, cohérence avec la série)
 avant d'être fusionné ; un relevé refusé laisse la série existante intacte. Les visuels des podiums viennent de domaines listés dans la CSP de `vercel.json`.
 Tests : `python -m unittest tests.py.test_market`, `tests/e2e/aaa-data.spec.js`.

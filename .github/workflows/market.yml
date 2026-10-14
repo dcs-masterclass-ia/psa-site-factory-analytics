@@ -2,6 +2,7 @@ name: Marché automobile (AAA Data, ACEA, DE / IT / ES / UK)
 
 # Collecte mensuelle des immatriculations pour l'onglet « AAA Data » : voir pipeline/market.py.
 # Le 2 du mois (communiqué AAA Data du 1er et marchés qui publient tôt) et le 25 (ACEA, publié vers le 20-25).
+# Abonnement Claude (claude-code-action + CLAUDE_CODE_OAUTH_TOKEN), aucune clé API.
 # Rien n'est écrit sans validation ; un relevé refusé laisse la série existante intacte.
 # Manuel : dry_run = collecte et affiche, n'écrit rien.
 
@@ -49,16 +50,42 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Collecter le marché
+      - name: Préparer la consigne de l'agent
+        id: consigne
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          IN_SOURCES: ${{ inputs.sources }}
+        run: |
+          ARGS=()
+          if [ -n "$IN_SOURCES" ]; then ARGS+=(--sources $IN_SOURCES); fi
+          mkdir -p market_in
+          {
+            echo "texte<<__FIN__"
+            python -m pipeline.market --prompt --dossier-sortie market_in "${ARGS[@]}"
+            echo "__FIN__"
+            echo "outils=$(python -m pipeline.market --outils "${ARGS[@]}")"
+          } >> "$GITHUB_OUTPUT"
+
+      # Abonnement Claude (pas de clé API) : l'agent lit les communiqués officiels (WebFetch limité aux domaines des
+      # sources) et dépose un JSON par marché dans market_in/. Il ne touche à aucun autre fichier.
+      - name: Agent de collecte (abonnement Claude)
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.consigne.outputs.texte }}
+          claude_args: >-
+            --max-turns 40
+            --allowedTools "${{ steps.consigne.outputs.outils }}"
+
+      - name: Valider et publier
+        env:
           IN_SOURCES: ${{ inputs.sources }}
           IN_DRY_RUN: ${{ inputs.dry_run }}
         run: |
           ARGS=()
           if [ "$IN_DRY_RUN" = "oui" ]; then ARGS+=(--dry-run); fi
           if [ -n "$IN_SOURCES" ]; then ARGS+=(--sources $IN_SOURCES); fi
-          python -m pipeline.market "${ARGS[@]}"
+          ls -la market_in || true
+          python -m pipeline.market --lire market_in "${ARGS[@]}"
 
       - name: Déclencher le redéploiement Vercel
         if: ${{ inputs.dry_run != 'oui' }}
