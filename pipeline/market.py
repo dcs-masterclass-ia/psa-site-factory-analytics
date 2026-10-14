@@ -49,8 +49,8 @@ SOURCES = {
     "EU": ("Europe", ["acea.auto"],
            "les communiqués de presse ACEA sur les immatriculations de voitures neuves dans l'Union européenne "
            "(https://www.acea.auto/news/ ou https://www.acea.auto/pc-registrations/, titre du type « New car registrations: +5.3% in August 2026 ; "
-           "battery-electric 21.7% market share » — l'URL contient « year-to-date »). Prends le communiqué le PLUS RÉCENT (août 2026 ou plus tard), "
-           "puis les 2 précédents ; chiffres cumulés depuis janvier"),
+           "battery-electric 21.7% market share » — l'URL contient « year-to-date »). Dernier communiqué connu : https://www.acea.auto/pc-registrations/new-car-registrations-5-3-in-august-2026-year-to-date-battery-electric-21-7-market-share/ "
+           "(lis-le d'abord, puis cherche s'il en existe un plus récent) ; ensuite le communiqué de juillet 2026 ; chiffres cumulés depuis janvier"),
     "DE": ("Allemagne", ["kba.de"],
            "le communiqué de presse mensuel du Kraftfahrt-Bundesamt (KBA) sur les Neuzulassungen de voitures particulières (Pkw) — "
            "série « Fahrzeugzulassungen » : https://www.kba.de/DE/Presse/Pressemitteilungen/Fahrzeugzulassungen/fahrzeugzulassungen_node.html, "
