@@ -2016,48 +2016,6 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       <sc-if value="{{ isTB }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:24px;animation:tabFadeIn .22s ease">
 
-        <sc-if value="{{ hhHas }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-            <span style="font-size:16px;font-weight:600;color:#121214">Leads heure par heure</span>
-            <span style="flex:1"></span>
-            <span>{{ hhSelect }}</span>
-            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
-              <span onClick="{{ hhJourAuj.pick }}" style="{{ hhJourAuj.style }}">Aujourd'hui</span>
-              <span onClick="{{ hhJourHier.pick }}" style="{{ hhJourHier.style }}">Hier</span>
-            </span>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px">
-            <span style="font-size:32px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ hhTitre }}</span>
-            <span style="font-size:13.5px;color:#6d727a">{{ hhSous }}</span>
-          </div>
-          <div>{{ hhChart }}</div>
-          <div style="display:flex;gap:18px;justify-content:center;font-size:12.5px;color:#6d727a;margin-top:6px">
-            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#f59e0b"></span>Habituel (moyenne des 4 mêmes jours)</span>
-            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#7c63ee"></span>Leads sur la journée</span>
-          </div>
-        </div>
-        </sc-if>
-        <sc-if value="{{ trHas }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
-            <span style="font-size:16px;font-weight:600;color:#121214">Leads par jour, tous sites confondus</span>
-            <span style="flex:1"></span>
-            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
-              <sc-for list="{{ trVues }}" as="v" hint-placeholder-count="4"><span onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.label }}</span></sc-for>
-            </span>
-          </div>
-          <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin:12px 0 8px;font-size:13.5px;color:#6d727a">
-            <span>Moyenne <b style="color:#121214;font-size:18px">{{ trMoy }}</b> leads / jour</span>
-            <span>{{ trDer }}</span>
-            <span style="font-size:12.5px;color:#9a9fa6">{{ trAide }}</span>
-          </div>
-          <div>{{ trChart }}</div>
-        </div>
-        </sc-if>
-
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
@@ -2092,6 +2050,51 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </sc-for>
             </div>
           </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:15px;align-items:stretch">
+        <sc-if value="{{ hhHas }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <span style="font-size:15px;font-weight:600;color:#121214">Leads heure par heure</span>
+            <span style="flex:1"></span>
+            <span>{{ hhSelect }}</span>
+            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
+              <span onClick="{{ hhJourAuj.pick }}" style="{{ hhJourAuj.style }}">Aujourd'hui</span>
+              <span onClick="{{ hhJourHier.pick }}" style="{{ hhJourHier.style }}">Hier</span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px">
+            <span style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ hhTitre }}</span>
+            <span style="font-size:13.5px;color:#6d727a">{{ hhSous }}</span>
+          </div>
+          <div>{{ hhChart }}</div>
+          <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:12px;color:#6d727a;margin-top:4px">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#f59e0b"></span>Habituel (moyenne des 4 mêmes jours)</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#7c63ee"></span>Leads sur la journée</span>
+          </div>
+        </div>
+        </sc-if>
+        <sc-if value="{{ trHas }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+            <span style="font-size:15px;font-weight:600;color:#121214">Leads par jour, tous sites</span>
+            <span style="flex:1"></span>
+            <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
+              <sc-for list="{{ trVues }}" as="v" hint-placeholder-count="4"><span onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.label }}</span></sc-for>
+            </span>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin:12px 0 8px;font-size:13.5px;color:#6d727a">
+            <span>Moyenne <b style="color:#121214;font-size:18px">{{ trMoy }}</b> leads / jour</span>
+            <span>{{ trDer }}</span>
+            
+          </div>
+          <div>{{ trChart }}</div>
+        </div>
+        </sc-if>
+
         </div>
 
       <sc-if value="{{ tbHasAdvanced }}" hint-placeholder-val="{{ true }}">
@@ -5529,7 +5532,7 @@ class Component extends DCLogic {
       const ecart=attendu>0?(total-attendu)/attendu*100:null;
       hhTitre=this.fmt(total);
       hhSous=`leads ${auj?'depuis minuit':'hier'} (${hhNom})`+(ecart!==null?` · ${(ecart>=0?'+':'−')+Math.abs(Math.round(ecart))} % vs habituel (≈${this.fmt(attendu)}${auj?' à cette heure':''})`:'');
-      const W=1200,H=250,L=46,R=12,T=12,B=28, bw=(W-L-R)/24;
+      const W=620,H=240,L=40,R=8,T=10,B=26, bw=(W-L-R)/24;
       const mx0=Math.max(1,...donn.map(v=>v||0),...base);
       const step=mx0<=60?10:mx0<=150?25:mx0<=400?50:100, mx=Math.ceil(mx0*1.05/step)*step;
       const Y=v=>T+(H-T-B)*(1-v/mx);
@@ -5541,14 +5544,14 @@ class Component extends DCLogic {
       let dpath='M'+pts[0][0]+','+pts[0][1];
       for(let i=1;i<pts.length;i++){ const [x0,y0]=pts[i-1],[x1,y1]=pts[i], cx=(x0+x1)/2; dpath+=` C${cx},${y0} ${cx},${y1} ${x1},${y1}`; }
       els.push(h('path',{key:'bl',d:dpath,fill:'none',stroke:'#f59e0b',strokeWidth:2.2}));
-      for(let i=0;i<24;i+=2) els.push(h('text',{key:'x'+i,x:L+i*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:11,fill:'#9a9fa6'},String(i).padStart(2,'0')+'h'));
+      for(let i=0;i<24;i+=3) els.push(h('text',{key:'x'+i,x:L+i*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:11,fill:'#9a9fa6'},String(i).padStart(2,'0')+'h'));
       hhChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
     }
     if(hhH){
       const opts=[h('option',{key:'f',value:'flotte'},'Toute la flotte'),
         h('optgroup',{key:'p',label:'Par pays'},hhPays.map(p=>h('option',{key:'p'+p,value:'pays:'+p},NOMS_PAYS_HH[p]||p))),
         h('optgroup',{key:'s',label:'Par site'},hhSitesNoms.map(n=>h('option',{key:'s'+n,value:'site:'+n},n)))];
-      hhSelect=h('select',{value:hhScope,onChange:e=>set({hhScope:e.target.value}),style:{fontFamily:'inherit',fontSize:'13.5px',padding:'7px 10px',borderRadius:'10px',border:'1px solid #e4e4e8',background:'#fff',color:'#121214'}},opts);
+      hhSelect=h('select',{value:hhScope,onChange:e=>set({hhScope:e.target.value}),style:{fontFamily:'inherit',fontSize:'13px',maxWidth:'150px',padding:'6px 8px',borderRadius:'10px',border:'1px solid #e4e4e8',background:'#fff',color:'#121214'}},opts);
     }
     const hhBtn=a=>`display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;font-weight:${a?600:500};${a?'background:#f1eefe;color:#5b43d6':'background:transparent;color:#6d727a'}`;
 
@@ -5576,7 +5579,7 @@ class Component extends DCLogic {
         trPts=Object.entries(an).sort().map(([y,c])=>({label:y,total:c.n?c.t/c.n:0,jours:1,we:false})); } }
     let trChart=null, trMoy='', trDer='';
     if(trPts.length>=2){
-      const W=1200,H=260,L=56,R=18,T=14,B=30, n=trPts.length;
+      const W=620,H=240,L=50,R=14,T=12,B=26, n=trPts.length;
       const vmax=Math.max(...trPts.map(p=>p.total)), vmin=Math.min(...trPts.map(p=>p.total));
       const rng=vmax-vmin||1, lo=Math.max(0,vmin-rng*.15), hi=vmax+rng*.1;
       const X=i=>L+(W-L-R)*(n===1?.5:i/(n-1)), Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
@@ -5587,8 +5590,8 @@ class Component extends DCLogic {
       els.push(h('path',{key:'ar',d:dp+` L${d[d.length-1][0]},${H-B} L${d[0][0]},${H-B} Z`,fill:'#7c63ee',opacity:.1}));
       els.push(h('path',{key:'ln',d:dp,fill:'none',stroke:'#7c63ee',strokeWidth:2.4}));
       trPts.forEach((p,i)=>els.push(h('circle',{key:'c'+i,cx:d[i][0],cy:d[i][1],r:4.5,fill:p.we?'#c8c8ce':'#fff',stroke:'#7c63ee',strokeWidth:2},h('title',null,`${p.label} : ${this.fmt(p.total)} leads`))));
-      const tick=Math.max(1,Math.ceil(n/8));
-      trPts.forEach((p,i)=>{ if(i%tick===0||i===n-1) els.push(h('text',{key:'x'+i,x:X(i),y:H-8,textAnchor:i===0?'start':i===n-1?'end':'middle',fontSize:11,fill:'#9a9fa6'},p.label)); });
+      const tick=Math.max(1,Math.ceil(n/5));
+      trPts.forEach((p,i)=>{ if((i%tick===0&&(n-1-i>=tick||i===n-1))||i===n-1) els.push(h('text',{key:'x'+i,x:X(i),y:H-8,textAnchor:i===0?'start':i===n-1?'end':'middle',fontSize:11,fill:'#9a9fa6'},p.label)); });
       trChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
       trMoy=this.fmt(trPts.reduce((a,p)=>a+p.total,0)/n);
       const last=trPts[n-1]; trDer=`${last.label} : ${this.fmt(last.total)} leads`;
