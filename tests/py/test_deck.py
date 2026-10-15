@@ -142,3 +142,38 @@ class ApercuMarques(unittest.TestCase):
         apercu_marques(ctx)
         textes = " ".join(c.text for sl in ctx.prs.slides for sh in sl.shapes if sh.has_table for r in sh.table.rows for c in r.cells)
         self.assertIn("Action saisie par le DKAM", textes)
+
+
+class CtaEtConquete(unittest.TestCase):
+    """Lecture des historiques leads_acq / leads (CTA du site marque, marque reprise) sur des fichiers fictifs."""
+
+    def _donnees(self, tmp):
+        import csv, gzip
+        from pathlib import Path
+        from pipeline.deck.donnees import Donnees
+        def ecrit(dossier, ent, lignes):
+            p = Path(tmp) / dossier
+            p.mkdir(parents=True, exist_ok=True)
+            with gzip.open(p / "peugeot-be.csv.gz", "wt", encoding="utf-8", newline="") as f:
+                w = csv.writer(f); w.writerow(ent); w.writerows(lignes)
+        ecrit("leads_acq", ["date", "site_id", "source_acq", "support", "campagne", "projet_achat", "marque_achat", "statut", "n"], [
+            ["2026-08-01", "1", "Main-Website", "footer", "CTA", "VN", "", "valide", "5"],
+            ["2026-08-02", "1", "Main-Website", "footer", "CTA", "VO", "", "valide", "2"],
+            ["2026-08-02", "1", "Main-Website", "footer", "CTA", "VN", "", "doublon", "9"],      # doublon : ignoré
+            ["2026-08-03", "1", "Display", "", "123", "VN", "", "valide", "7"],                    # pas Main-Website : ignoré
+            ["2026-05-03", "1", "Main-Website", "footer", "CTA", "VN", "", "valide", "4"]])        # hors période
+        ecrit("leads", ["date", "site_id", "source", "appareil", "carburant", "projet_achat", "marque_reprise", "statut", "n"], [
+            ["2026-08-01", "1", "", "", "", "VN", "PEUGEOT", "valide", "6"],
+            ["2026-08-01", "1", "", "", "", "VN", "CITROËN", "valide", "3"],
+            ["2026-08-02", "1", "", "", "", "VN", "RENAULT", "valide", "4"]])
+        d = Donnees(["BE"], ["PEUGEOT"], hist=tmp)
+        d.sites = [("PEUGEOT BE", "PEUGEOT", "BE")]
+        return d
+
+    def test_cta_et_reprises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._donnees(tmp)
+            p = Periode("trimestre", 2026, 3)
+            self.assertEqual(d.cta(p, "PEUGEOT"), {"footer": {"VN": 5, "SANS": 0, "VO": 2}})
+            self.assertEqual(d.reprises(p, "PEUGEOT"), {"PEUGEOT": 6, "CITROEN": 3, "RENAULT": 4})
+            self.assertIsNone(d.modeles(p, "PEUGEOT"))        # historique des modèles pas encore collecté

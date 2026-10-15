@@ -53,6 +53,23 @@ ORDRE_SOURCES = ["Display", "Emailing", "LLM", "Main-Website", "Search", "Social
 _SOURCE_VERS_GROUPE = {v: g for g, vs in GROUPES_SOURCES.items() for v in vs}
 
 
+MARQUES_STELLANTIS = {"PEUGEOT", "CITROEN", "DS", "OPEL", "VAUXHALL", "FIAT", "ALFA ROMEO", "JEEP", "LANCIA", "ABARTH", "LEAPMOTOR", "CHRYSLER", "DODGE", "RAM", "MASERATI", "SPOTICAR"}
+
+
+def norme_marque(brut):
+    """Marque normalisée : majuscules, sans accent (CITROËN -> CITROEN), FIAT PROFESSIONAL -> FIAT."""
+    import unicodedata
+    n = "".join(c for c in unicodedata.normalize("NFD", (brut or "").strip().upper()) if unicodedata.category(c) != "Mn")
+    return "FIAT" if n.startswith("FIAT") else n
+
+
+def Periode_fin_mois(mois):
+    """Dernier jour (AAAA-MM-JJ) du mois AAAA-MM."""
+    import calendar
+    a, m = int(mois[:4]), int(mois[5:7])
+    return f"{mois}-{calendar.monthrange(a, m)[1]:02d}"
+
+
 def groupe_source(brut):
     return _SOURCE_VERS_GROUPE.get((brut or "").strip().lower(), "Autre")
 
@@ -130,6 +147,47 @@ class Donnees:
     def dernier_jour_leads(self):
         self._charge_leads()
         return max((j for (_, j) in self._leads), default=None)
+
+    # ------------------------------------------------------- CTA du site marque, conquête / fidélité, modèles
+    def _periode_lignes(self, dossier, marque, periode, cle_date="date"):
+        """Lignes d'un historique (leads_acq, leads, leads_modeles) des sites de la marque sur la période ; date AAAA-MM-JJ ou mois AAAA-MM."""
+        deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
+        for nom, m, _ in self.sites:
+            if m != marque:
+                continue
+            for r in _lignes(self.hist / dossier / f"{slug(nom)}.csv.gz"):
+                j = r.get(cle_date) or ""
+                if len(j) == 7:                       # mois : retenu si le mois est entièrement dans la période
+                    if deb[:7] <= j <= fin[:7] and deb <= j + "-01" and Periode_fin_mois(j) <= fin:
+                        yield r
+                elif deb <= j <= fin:
+                    yield r
+
+    def cta(self, periode, marque):
+        """{support: {projet: n}} : leads valides du site de la marque (source Main-Website, campagne « CTA »), par emplacement du bouton."""
+        out = {}
+        for r in self._periode_lignes("leads_acq", marque, periode):
+            if r["statut"] == "valide" and groupe_source(r["source_acq"]) == "Main-Website" and (r["campagne"] or "").strip().lower() == "cta":
+                sup = (r["support"] or "").strip() or "(non renseigné)"
+                out.setdefault(sup, {p: 0 for p in PROJETS})[PROJET_BO.get(r["projet_achat"], "SANS")] += int(r["n"])
+        return out
+
+    def reprises(self, periode, marque):
+        """{marque reprise (normalisée): n} : leads valides par marque du véhicule repris."""
+        out = defaultdict(int)
+        for r in self._periode_lignes("leads", marque, periode):
+            if r["statut"] == "valide" and r["marque_reprise"].strip():
+                out[norme_marque(r["marque_reprise"])] += int(r["n"])
+        return dict(out)
+
+    def modeles(self, periode, marque):
+        """[(marque_reprise, modele_reprise, marque_achat, modele_achat, n)] sur la période, ou None si l'historique des modèles n'est pas encore collecté."""
+        if not any((self.hist / "leads_modeles" / f"{slug(nom)}.csv.gz").exists() for nom, m, _ in self.sites if m == marque):
+            return None
+        agg = defaultdict(int)
+        for r in self._periode_lignes("leads_modeles", marque, periode, "mois"):
+            agg[(norme_marque(r["marque_reprise"]), r["modele_reprise"].strip(), norme_marque(r["marque_achat"]), r["modele_achat"].strip())] += int(r["valides"])
+        return [(*k, n) for k, n in agg.items()]
 
     # ------------------------------------------------------- acquisition (sources)
     def _charge_acq(self):

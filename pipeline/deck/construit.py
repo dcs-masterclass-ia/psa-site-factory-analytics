@@ -338,6 +338,91 @@ def apercu_marques(ctx):
             g.texte(s, X0, 6.75, 12.4, 0.3, t["base_faible"], taille=8.5, couleur=g.GRIS, italique=True)
 
 
+def cta_marque(ctx, m):
+    """Leads issus des boutons trade-in du site de la marque (source Main-Website, campagne « CTA »), par emplacement et par projet d'achat."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    cur = d.cta(per, m)
+    if not cur or not d.acquisition_disponible(per):
+        return None
+    ref = d.cta(ctx.refs[0][1], m) if ctx.refs else {}
+    tot = lambda v: sum(v.values())
+    supports = sorted(cur, key=lambda k: -tot(cur[k]))
+    s = nouvelle(ctx, f"{ctx.nom(m)} — {'CTA du site de la marque' if fr else 'CTA on the brand website'} {ctx.et(per)}", ctx.perimetre, source_bo(ctx),
+                 notes=note_definitions(ctx, "CTA : leads valides de la source Main-Website, campagne « CTA », par SUPPORT (emplacement du bouton) ; la colonne de comparaison est la première période de comparaison."))
+    ent = [("Emplacement" if fr else "Placement")] + [t[pj] for pj in PROJETS] + [t["total"]]
+    if ctx.refs:
+        ent += [f"{t['total']} {ctx.et(ctx.refs[0][1])}", libelle_ref(ctx, ctx.refs[0][0])]
+    lignes = [ent]
+    for sup in supports:
+        row = [sup] + [t.nb(cur[sup][pj]) for pj in PROJETS] + [t.nb(tot(cur[sup]))]
+        if ctx.refs:
+            r = tot(ref.get(sup, {}))
+            row += [t.nb(r), t.evol(tot(cur[sup]), r)[0]]
+        lignes.append(row)
+    total = [t["total"]] + [t.nb(sum(cur[k][pj] for k in cur)) for pj in PROJETS] + [t.nb(sum(tot(v) for v in cur.values()))]
+    if ctx.refs:
+        tr = sum(tot(v) for v in ref.values())
+        total += [t.nb(tr), t.evol(sum(tot(v) for v in cur.values()), tr)[0]]
+    lignes.append(total)
+    nc = len(ent)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.6] + [(12.4 - 2.6) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.4, gras_derniere=True)
+    gtot = sum(tot(v) for v in cur.values())
+    top = supports[0]
+    g.encadre(s, X0, Y0 + 0.4 * len(lignes) + 0.4, 12.4, 1.2, ("Lecture" if fr else "Reading"), [
+        (f"« {top} » est l'emplacement qui génère le plus de leads : {t.nb(tot(cur[top]))} ({t.pct(tot(cur[top]) / gtot * 100, 0)} des leads CTA du site)."
+         if fr else f"“{top}” is the placement generating the most leads: {t.nb(tot(cur[top]))} ({t.pct(tot(cur[top]) / gtot * 100, 0)} of the site's CTA leads)."),
+        (f"{len(supports)} emplacements actifs sur la période." if fr else f"{len(supports)} active placements over the period.")], taille=11, couleur=g.BLEU)
+    return s
+
+
+def conquete_marque(ctx, m):
+    """Conquête vs fidélité : origine des clients (marque du véhicule repris), top marques reprises, et top modèles repris / lien repris -> acheté si l'historique des modèles est collecté."""
+    from .donnees import MARQUES_STELLANTIS, norme_marque
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    rep = d.reprises(per, m)
+    total = sum(rep.values())
+    if total < 100:
+        return None
+    nm = norme_marque(m)
+    fideles = rep.get(nm, 0)
+    autres = sum(n for k, n in rep.items() if k != nm and k in MARQUES_STELLANTIS)
+    conq = total - fideles - autres
+    s = nouvelle(ctx, f"{ctx.nom(m)} — {'Conquête vs fidélité' if fr else 'Conquest vs loyalty'} {ctx.et(per)}", ctx.perimetre, source_bo(ctx),
+                 notes=note_definitions(ctx, "Marque du véhicule repris (TRADE-IN BRAND) comparée à la marque du site : fidèles = même marque ; autres Stellantis ; concurrents = toutes les autres marques."))
+    lab = (f"Fidèles ({ctx.nom(m)})", "Autres Stellantis", "Concurrents") if fr else (f"Loyalty ({ctx.nom(m)})", "Other Stellantis", "Competitors")
+    g.texte(s, X0, Y0 - 0.05, 5.5, 0.3, "Origine des clients" if fr else "Customer origin", taille=12, gras=True, couleur=g.BLEU)
+    g.anneau(s, X0, Y0 + 0.25, 5.6, 2.6, list(lab), [fideles, autres, conq], couleurs=["4E79A7", "76B7B2", "F28E2B"], taille=10.5)
+    top = sorted(((k, n) for k, n in rep.items()), key=lambda kv: -kv[1])[:8]
+    g.texte(s, 6.4, Y0 - 0.05, 6.4, 0.3, ("Top marques reprises" if fr else "Top trade-in brands"), taille=12, gras=True, couleur=g.BLEU)
+    g.colonnes(s, 6.4, Y0 + 0.25, 6.5, 2.6, [(k if len(k) <= 3 else k.title()) for k, _ in top], [("n", [n for _, n in top], "4E79A7")], legende=False, taille=9, fmt=t.nb, largeur_barre=40)
+    lignes = [(f"{t.pct(fideles / total * 100, 0)} des clients du site reprennent un véhicule {ctx.nom(m)} (fidèles), {t.pct(autres / total * 100, 0)} une autre marque Stellantis "
+               f"et {t.pct(conq / total * 100, 0)} une marque concurrente, sur {t.nb(total)} leads." if fr else
+               f"{t.pct(fideles / total * 100, 0)} of the site's customers trade in a {ctx.nom(m)} (loyalty), {t.pct(autres / total * 100, 0)} another Stellantis brand and "
+               f"{t.pct(conq / total * 100, 0)} a competitor brand, out of {t.nb(total)} leads.")]
+    mods = d.modeles(per, m)
+    if mods:
+        stla = {}
+        hors = {}
+        for mr, mo, ma, mo_a, n in mods:
+            if mo:
+                (stla if mr in MARQUES_STELLANTIS else hors)[f"{mr.title()} {mo.title()}"] = (stla if mr in MARQUES_STELLANTIS else hors).get(f"{mr.title()} {mo.title()}", 0) + n
+        paires = {}
+        for mr, mo, ma, mo_a, n in mods:
+            if mo and mo_a:
+                paires[(f"{mr.title()} {mo.title()}", mo_a.title())] = paires.get((f"{mr.title()} {mo.title()}", mo_a.title()), 0) + n
+        if stla and hors:
+            ts, th = sorted(stla.items(), key=lambda kv: -kv[1])[:5], sorted(hors.items(), key=lambda kv: -kv[1])[:5]
+            lignes.append((f"Modèles Stellantis les plus repris : {', '.join(k for k, _ in ts)}. Modèles concurrents les plus repris : {', '.join(k for k, _ in th)}." if fr else
+                           f"Most traded-in Stellantis models: {', '.join(k for k, _ in ts)}. Most traded-in competitor models: {', '.join(k for k, _ in th)}."))
+        if paires:
+            tp = sorted(paires.items(), key=lambda kv: -kv[1])[:4]
+            lignes.append(("Reprise → achat les plus fréquents : " if fr else "Most frequent trade-in → purchase: ") + " ; ".join(f"{a} → {b} ({t.nb(n)})" for (a, b), n in tp))
+    g.encadre(s, X0, Y0 + 3.05, 12.4, 1.9, ("Lecture" if fr else "Reading"), lignes, taille=11, couleur=g.BLEU)
+    return s
+
+
 def vue_ensemble_table(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
     s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx))
@@ -642,7 +727,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     m = ctx.modules
     avoir_global = "global" in m
     avoir_projets = "projets" in m
-    avoir_marques = bool(m & {"trafic_marque", "sources", "cta"})
+    avoir_marques = bool(m & {"trafic_marque", "sources", "cta", "conquete"})
     sections = []
     if avoir_global or avoir_projets:
         sections.append(("global", ctx.t["vue_globale"]))
@@ -685,8 +770,10 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
                 leads_marque(ctx, marque)
             if "sources" in m:
                 sources_marque(ctx, marque)
-        if "cta" in m:
-            ctx.avertissements.append("Module « CTA du site » : non généré (à venir).")
+            if "cta" in m:
+                cta_marque(ctx, marque)
+            if "conquete" in m and marque not in ("SPOTICAR", "STELLANTIS &YOU"):
+                conquete_marque(ctx, marque)
     if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
         sommaire(ctx, sections, "points")
         points_ouverts(ctx)

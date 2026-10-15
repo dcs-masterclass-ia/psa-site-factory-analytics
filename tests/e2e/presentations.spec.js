@@ -91,7 +91,7 @@ test("brouillon et modèle : libellés explicites, enregistrement du brouillon, 
   expect(posts.length).toBe(1);
   expect(posts[0]).toMatchObject({ action: "save", brief: { client: "Stellantis", langue: "it", titre: "Stellantis BELUX — Reporting T3-2026", perimetre: { pays: ["BE", "LU"] }, comparaisons: { precedente: true, n1: true } } });
   expect(posts[0].brief.modules).toContain("analyse");
-  expect(posts[0].brief.modules).not.toContain("cta");
+  expect(posts[0].brief.modules).not.toContain("crm");   // module non disponible : jamais enregistré
   await expect(page.getByText("Mettre à jour le brouillon")).toBeVisible();
 });
 
