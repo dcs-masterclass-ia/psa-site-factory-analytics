@@ -615,6 +615,103 @@ def projection_mois(ctx):
     return s
 
 
+NOTE_C1ST = ("Source : C1ST (CRM Analytics) — leads VN envoyés vus par C1ST (type 1, activité VN, campagne Autobiz) ; périmètre propre à C1ST, non comparable au back-office.",
+             "Source: C1ST (CRM Analytics) — VN leads sent as seen by C1ST (type 1, VN activity, Autobiz campaign); C1ST's own scope, not comparable with the back-office.")
+
+
+def _c1st_lignes(ctx):
+    """[(marque, totaux C1ST sur la période, {clé de comparaison: totaux})] des marques du périmètre disposant des données C1ST complètes."""
+    out = []
+    for m in ctx.d.marques:
+        c = ctx.d.c1st(ctx.per, m)
+        if c and c["envoyes"] >= 100:
+            out.append((m, c, {cle: ctx.d.c1st(p, m) for cle, p in ctx.refs}))
+    return out
+
+
+def c1st_lead_management(ctx):
+    """Suivi des leads envoyés aux concessionnaires (C1ST) : contactés, contactés dans les délais, premier appel dans les délais, traités, non gérés."""
+    t, per = ctx.t, ctx.per
+    fr = ctx.langue == "fr"
+    lignes_m = _c1st_lignes(ctx)
+    if not lignes_m:
+        return None
+    ent = [t["marque"], ("Clients envoyés" if fr else "Customers sent"), ("Contactés" if fr else "Contacted"), ("Contactés dans les délais" if fr else "Contacted on time"),
+           ("1er appel dans les délais" if fr else "1st call on time"), ("Traités" if fr else "Treated"), ("Non gérés" if fr else "Not managed")]
+    pct = lambda a, b: t.pct(a / b * 100, 0) if b else "–"
+    def ligne(nom, c):
+        b = c["clients_envoyes"]
+        return [nom, t.nb(b), pct(c["contactes"], b), pct(c["contactes_delai"], b), pct(c["premier_appel_delai"], b), pct(c["traites"], b), pct(max(b - c["traites"], 0), b)]
+    lignes = [ent] + [ligne(ctx.nom(m), c) for m, c, _ in lignes_m]
+    tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
+    lignes.append(ligne(t["total"], tot))
+    s = nouvelle(ctx, ("Suivi des leads envoyés aux concessionnaires" if fr else "Follow-up of leads sent to dealers") + f" — {ctx.et(per)}", ctx.perimetre,
+                 NOTE_C1ST[0 if fr else 1], notes=note_definitions(ctx, "Taux calculés sur les clients uniques envoyés aux concessionnaires. Non gérés = envoyés − traités."), cle="c1st_lead_management")
+    nc = len(ent)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.2] + [(12.4 - 2.2) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    refs_txt = []
+    for cle, p in ctx.refs:
+        rt = {k: 0 for k in tot}
+        ok = True
+        for _, _, refs in lignes_m:
+            r = refs.get(cle)
+            if not r:
+                ok = False
+                break
+            for k in rt:
+                rt[k] += r[k]
+        if ok and rt["clients_envoyes"] >= 100:
+            d_ = (tot["traites"] / tot["clients_envoyes"] - rt["traites"] / rt["clients_envoyes"]) * 100
+            refs_txt.append((f"Part de leads traités : {t.pts(d_)} {libelle_ref(ctx, cle)}." if fr else f"Treated share: {t.pts(d_)} {libelle_ref(ctx, cle)}."))
+    g.encadre(s, X0, Y0 + 0.38 * len(lignes) + 0.4, 12.4, 1.2, ("Lecture" if fr else "Reading"), [
+        (f"{pct(max(tot['clients_envoyes'] - tot['traites'], 0), tot['clients_envoyes'])} des leads envoyés ne sont pas traités sur la période." if fr else
+         f"{pct(max(tot['clients_envoyes'] - tot['traites'], 0), tot['clients_envoyes'])} of the leads sent are not treated over the period.")] + refs_txt, taille=11, couleur=g.BLEU)
+    return s
+
+
+def c1st_conversion(ctx):
+    """Du lead à la commande (C1ST) : clients uniques, part avec opportunité, avec devis, commandes (jusqu'à 90 jours après le lead)."""
+    t, per = ctx.t, ctx.per
+    fr = ctx.langue == "fr"
+    lignes_m = _c1st_lignes(ctx)
+    if not lignes_m:
+        return None
+    ent = [t["marque"], ("Clients uniques" if fr else "Unique customers"), ("Avec opportunité" if fr else "With opportunity"), ("Avec devis" if fr else "With quote"),
+           ("Commandes" if fr else "Orders"), ("Taux de commande" if fr else "Order rate")]
+    pct = lambda a, b: t.pct(a / b * 100, 1) if b else "–"
+    def ligne(nom, c):
+        b = c["clients_uniques"]
+        return [nom, t.nb(b), pct(c["avec_opp"], b), pct(c["avec_devis"], b), t.nb(c["commandes"]), pct(c["commandes"], b)]
+    lignes = [ent] + [ligne(ctx.nom(m), c) for m, c, _ in lignes_m]
+    tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
+    lignes.append(ligne(t["total"], tot))
+    s = nouvelle(ctx, ("Du lead à la commande" if fr else "From lead to order") + f" — {ctx.et(per)}", ctx.perimetre, NOTE_C1ST[0 if fr else 1],
+                 notes=note_definitions(ctx, "Taux calculés sur les clients uniques. Commandes : commandes rattachées au lead entre 1 et 90 jours après sa création ; les périodes récentes continuent d'évoluer."),
+                 cle="c1st_conversion")
+    nc = len(ent)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.4] + [(12.4 - 2.4) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    refs_txt = []
+    for cle, p in ctx.refs:
+        rt = {k: 0 for k in tot}
+        ok = True
+        for _, _, refs in lignes_m:
+            r = refs.get(cle)
+            if not r:
+                ok = False
+                break
+            for k in rt:
+                rt[k] += r[k]
+        if ok and rt["clients_uniques"] >= 100:
+            d_ = (tot["commandes"] / tot["clients_uniques"] - rt["commandes"] / rt["clients_uniques"]) * 100
+            refs_txt.append((f"Taux de commande : {t.pts(d_)} {libelle_ref(ctx, cle)}." if fr else f"Order rate: {t.pts(d_)} {libelle_ref(ctx, cle)}."))
+    g.encadre(s, X0, Y0 + 0.38 * len(lignes) + 0.4, 12.4, 1.3, ("Lecture" if fr else "Reading"), [
+        (f"{t.nb(tot['commandes'])} commandes rattachées aux leads de la période, soit {pct(tot['commandes'], tot['clients_uniques'])} des clients uniques." if fr else
+         f"{t.nb(tot['commandes'])} orders linked to the period's leads, i.e. {pct(tot['commandes'], tot['clients_uniques'])} of unique customers."),
+        ("Les commandes sont comptées jusqu'à 90 jours après le lead : les périodes récentes sont encore incomplètes." if fr else
+         "Orders are counted up to 90 days after the lead: recent periods are still incomplete.")] + refs_txt, taille=11, couleur=g.BLEU)
+    return s
+
+
 def vue_ensemble_table(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
     s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx), cle="vue_trafic_leads")
@@ -945,6 +1042,8 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         projection_mois(ctx)
         classement_marches(ctx)
         entree_vehicule(ctx)
+        c1st_lead_management(ctx)
+        c1st_conversion(ctx)
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:

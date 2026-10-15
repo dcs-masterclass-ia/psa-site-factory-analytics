@@ -264,3 +264,48 @@ class EntreeEtV2(unittest.TestCase):
             v = d.v2("PEUGEOT")
             self.assertEqual(v["etapes"], [("Accueil", 1000, 2000), ("Estimation", 100, 400)])
             self.assertIsNone(d.v2("CITROEN"))
+
+
+class C1st(unittest.TestCase):
+    """Lecture du fichier c1st/kpi.json (leads VN envoyés vus par C1ST) et slides lead management / conversion."""
+
+    def _donnees(self, tmp, mois_manquant=None):
+        import json
+        from pathlib import Path
+        from pipeline.deck.donnees import Donnees
+        racine = Path(tmp)
+        (racine / "history").mkdir()
+        (racine / "c1st").mkdir()
+        mois = {}
+        for m in ("2026-07", "2026-08", "2026-09", "2026-04", "2026-05", "2026-06"):
+            if m == mois_manquant:
+                continue
+            mois[m] = {"leads": [{"marque": "AP", "leads": 1000, "envoyes": 990, "clients_envoyes": 980, "contactes": 490, "contactes_delai": 400, "premier_appel_delai": 500, "traites": 450, "traites_delai": 420, "avec_opp": 600}],
+                       "commandes": [{"marque": "AP", "clients_uniques": 1000, "avec_devis": 300, "commandes": 60}]}
+        (racine / "c1st" / "kpi.json").write_text(json.dumps({"donnees": {"FR": mois}}), encoding="utf-8")
+        d = Donnees(["FR"], ["PEUGEOT"], hist=racine / "history")
+        d.sites = [("PEUGEOT FR", "PEUGEOT", "FR")]
+        d.marques = ["PEUGEOT"]
+        return d
+
+    def test_totaux_sur_la_periode(self):
+        from pipeline.deck.periodes import Periode
+        with tempfile.TemporaryDirectory() as tmp:
+            c = self._donnees(tmp).c1st(Periode("trimestre", 2026, 3), "PEUGEOT")
+            self.assertEqual((c["envoyes"], c["commandes"], c["clients_uniques"]), (2970, 180, 3000))
+
+    def test_mois_manquant_pas_de_total_partiel(self):
+        from pipeline.deck.periodes import Periode
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(self._donnees(tmp, "2026-08").c1st(Periode("trimestre", 2026, 3), "PEUGEOT"))
+
+    def test_slides(self):
+        from pipeline.deck.construit import Ctx, c1st_lead_management, c1st_conversion
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["FR"], "marques": []},
+                     "comparaisons": {"precedente": True, "n1": False}, "modules": ["global"]}
+            ctx = Ctx(brief, self._donnees(tmp))
+            s1, s2 = c1st_lead_management(ctx), c1st_conversion(ctx)
+            texte = lambda s: " ".join(c.text for sh in s.shapes if sh.has_table for r in sh.table.rows for c in r.cells)
+            self.assertIn("2 970", texte(s1))          # clients envoyés : 3 x 990... 980 x 3 = 2 940 ; ici envoyés via clients_envoyes
+            self.assertIn("6,0", texte(s2).replace(" ", " "))   # 180 / 3000 = 6,0 %

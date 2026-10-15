@@ -235,6 +235,43 @@ class Donnees:
             return None
         return {"etapes": [(k, *etapes[k]) for k in ordre], "sites": n, "fenetres": fenetres}
 
+    # ------------------------------------------------------- C1ST : suivi des leads envoyés (fichier c1st/kpi.json du repo de données)
+    CODES_C1ST = {"AP": "PEUGEOT", "AC": "CITROEN", "DS": "DS", "OP": "OPEL", "FT": "FIAT", "FO": "FIAT PRO", "JE": "JEEP", "AR": "ALFA ROMEO", "LA": "LANCIA", "AH": "ABARTH"}
+    PAYS_C1ST = {"BE": "BE", "LU": "BE"}        # le Luxembourg est compté dans la Belgique côté C1ST ; DE et LU seul : aucun lead
+
+    def _c1st(self):
+        if getattr(self, "_c1st_data", None) is None:
+            try:
+                self._c1st_data = json.loads((self.hist.parent / "c1st" / "kpi.json").read_text(encoding="utf-8")).get("donnees", {})
+            except Exception:
+                self._c1st_data = {}
+        return self._c1st_data
+
+    def c1st(self, periode, marque):
+        """Totaux C1ST (leads VN envoyés vus par C1ST) de la marque sur les mois de la période, pour les marchés du périmètre ; None si un mois manque (jamais de total partiel)."""
+        champs = ("leads", "envoyes", "clients_envoyes", "contactes", "contactes_delai", "premier_appel_delai", "traites", "traites_delai", "avec_opp")
+        champs_c = ("clients_uniques", "avec_devis", "commandes")
+        code = next((c for c, m in self.CODES_C1ST.items() if m == marque), None)
+        cles = sorted({self.PAYS_C1ST.get(p, p) for p in self.pays})
+        data = self._c1st()
+        if not code or not data:
+            return None
+        tot = {k: 0 for k in champs + champs_c}
+        for pays in cles:
+            for a, mo in periode.mois():
+                m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
+                if not m or m.get("leads") is None or m.get("commandes") is None:
+                    return None
+                for r in m["leads"]:
+                    if r.get("marque") == code:
+                        for k in champs:
+                            tot[k] += r.get(k) or 0
+                for r in m["commandes"]:
+                    if r.get("marque") == code:
+                        for k in champs_c:
+                            tot[k] += r.get(k) or 0
+        return tot
+
     # ------------------------------------------------------- acquisition (sources)
     def _charge_acq(self):
         """(marque, jour) -> {(groupe_source, projet): n}"""

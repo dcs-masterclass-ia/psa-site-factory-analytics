@@ -434,3 +434,8 @@ Alimente les diapos « Conquest vs loyalty » des présentations (fidèles = mar
 ## Historique leads — envoyés (périmètre C1ST, 2026-10-15)
 `data/history/leads_envoyes/<site>.csv.gz` : par jour, leads ventilés par projet d'achat (`PURCHASE PROJECT`, colonne AX), `LEAD SENT` (colonne BB, YES / NO) et statut.
 C1ST ne voit que les leads **envoyés** (BB = YES) et **VN** (AX = VN) : c'est ce filtre, appliqué à l'extract BO (statut valide), qui doit redonner les chiffres de C1ST à un faible écart près.
+
+## C1ST dans les présentations (2026-10-15)
+Source : `c1st/kpi.json` du repo de données (totaux par marché, mois et marque, **aucune donnée personnelle**), produit ponctuellement avec la session C1ST de M. (scripts hors dépôt ; pas d'API officielle, session ≈ 3 h).
+Périmètre « leads VN envoyés vus par C1ST » : type 1, activité VN, campagne Autobiz, nature « 47 » (xP) ou « A68 » (xF) ; **non comparable au back-office** (écarts ≤ 3 % en FR/BE/IT xP, plus larges ailleurs — Opel/Alfa FR, Portugal : laissés tels quels, mention de périmètre sur chaque slide).
+`Donnees.c1st(periode, marque)` : jamais de total partiel (un mois manquant => None). Slides `c1st_lead_management` et `c1st_conversion` (global) ; BE et LU comptés ensemble (clé « BE »), DE et LU seul absents de C1ST.
