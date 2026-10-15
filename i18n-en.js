@@ -897,6 +897,7 @@ window.I18N_EN = {
 "année complète": "full year",
 "après la réunion se met à l'étape suivante, « Prochaines étapes ».": "after the meeting goes in the next step, “Next steps”.",
 "atteint : {0} · {1}": "reached: {0} · {1}",
+"aucun": "none",
 "aucun relevé": "no reading",
 "aucune donnée": "no data",
 "avant :": "before:",

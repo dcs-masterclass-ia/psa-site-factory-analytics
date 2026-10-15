@@ -4115,16 +4115,18 @@ class Component extends DCLogic {
       sk.push(h('line',{key:'g'+i,x1:SL,y1:yy,x2:SL+spw,y2:yy,stroke:'#f0f0f2',strokeWidth:1}));
       sk.push(h('text',{key:'t'+i,x:SL-10,y:yy+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
+    const hasDow=cntByDow.map(c=>c>0);   // un jour de semaine absent de la période (ex. 6 jours sans mercredi) n'a pas de valeur : jamais un 0 trompeur
     sess.forEach((v,i)=>{
       const bh=(v/maxSess)*sph;
-      sk.push(h('rect',{key:'b'+i,x:SL+i*sstep+sstep/2-20,y:STp+sph-bh,width:40,height:bh,rx:6,fill:i>4?'#e2dcfc':'#b6a5f8'}));
+      if(hasDow[i]) sk.push(h('rect',{key:'b'+i,x:SL+i*sstep+sstep/2-20,y:STp+sph-bh,width:40,height:bh,rx:6,fill:i>4?'#e2dcfc':'#b6a5f8'}));
+      else sk.push(h('text',{key:'na'+i,x:SL+i*sstep+sstep/2,y:STp+sph-8,textAnchor:'middle',fontSize:10,fill:'#b3b7bd',fontFamily:F},'aucun'));
       sk.push(h('text',{key:'x'+i,x:SL+i*sstep+sstep/2,y:SH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},JOURS[i]));
     });
     const maxLds=Math.max(1,...lds);
-    let sd=`M${SL+sstep/2},${STp+sph-(lds[0]/maxLds)*sph}`;
-    lds.forEach((v,i)=>{if(i)sd+=` L${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`;});
+    let sd=''; let sdOpen=false;
+    lds.forEach((v,i)=>{ if(!hasDow[i]){ sdOpen=false; return; } sd+=`${sdOpen?' L':' M'}${SL+i*sstep+sstep/2},${STp+sph-(v/maxLds)*sph}`; sdOpen=true; });
     if (!this.estLimite()) sk.push(h('path',{key:'ln',d:sd,fill:'none',stroke:'#3fae7a',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'}));
-    this._hov.cbSeason={W:SW,H:SH,top:STp,bottom:STp+sph,xs:sess.map((_,i)=>SL+i*sstep+sstep/2),rows:i=>({title:['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][i],items:[{n:'Sessions / jour (moyenne)',c:'#b6a5f8',v:this.fmt(Math.round(sess[i]))}].concat(this.estLimite()?[]:[{n:'Leads / jour (moyenne)',c:'#3fae7a',v:dec(lds[i],1)}])})};
+    this._hov.cbSeason={W:SW,H:SH,top:STp,bottom:STp+sph,xs:sess.map((_,i)=>SL+i*sstep+sstep/2),rows:i=>({title:['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][i],items:!hasDow[i]?[{n:'Aucun '+['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'][i]+' dans la période',v:'—'}]:[{n:'Sessions / jour (moyenne)',c:'#b6a5f8',v:this.fmt(Math.round(sess[i]))}].concat(this.estLimite()?[]:[{n:'Leads / jour (moyenne)',c:'#3fae7a',v:dec(lds[i],1)}])})};
     const seasonChart=h('svg',{viewBox:`0 0 ${SW} ${SH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},sk);
 
     const browserTotal = [...agg.browser.values()].reduce((a,v)=>a+v.sessions,0) || 1;
@@ -4198,8 +4200,9 @@ class Component extends DCLogic {
     { const cells=[]; canauxDevice.forEach(c=>['desktop','mobile','tablet'].forEach(dv=>{ const r=agg.convCanalDevice.get(c+'|'+dv); if (r&&r.sessions>=500) cells.push({n:c+' × '+({desktop:'desktop',mobile:'mobile',tablet:'tablette'})[dv],t:r.conversions/r.sessions*100}); }));
       if (cells.length>=3){ const b=cells.reduce((a,x)=>x.t>a.t?x:a), w=cells.reduce((a,x)=>x.t<a.t?x:a); insDevice=`Meilleure conversion : ${b.n} (${dec(b.t,1)} %) · plus faible : ${w.n} (${dec(w.t,1)} %) — parmi les combinaisons de plus de 500 sessions.`; } }
     let insAudience='';
-    { const tot=sess.reduce((a,b)=>a+b,0)/7;
-      if (tot>=1){ const pk=sess.indexOf(Math.max(...sess)), lw=sess.indexOf(Math.min(...sess));
+    { const idxPres=sess.map((_,i)=>i).filter(i=>cntByDow[i]>0);
+      const tot=idxPres.length?idxPres.reduce((a,i)=>a+sess[i],0)/idxPres.length:0;   // moyenne sur les jours réellement présents
+      if (tot>=1 && idxPres.length>=3){ const pk=idxPres.reduce((a,i)=>sess[i]>sess[a]?i:a,idxPres[0]), lw=idxPres.reduce((a,i)=>sess[i]<sess[a]?i:a,idxPres[0]);
         const nomsJ=['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
         insAudience=`Pic le ${nomsJ[pk]} (${signedPct((sess[pk]/tot-1)*100)} vs la moyenne), creux le ${nomsJ[lw]} (${signedPct((sess[lw]/tot-1)*100)}) — sessions du site de reprise.`; } }
     // ---- Qualité du trafic : sessions engagées / sessions par canal (convCanalDevice.engagees)
