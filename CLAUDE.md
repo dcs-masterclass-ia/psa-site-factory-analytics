@@ -422,3 +422,7 @@ les classements complets de Samar sont des images, donc seuls le top 5 des marqu
 `data/history/leads_modeles/<site>.csv.gz` (`pipeline/history.py: collecte_leads`) : par mois, leads valides ventilés par marque et modèle repris
 (`TRADE-IN BRAND` / `TRADE-IN MODEL`), marque et modèle d'achat (`PURCHASE BRAND` / `PURCHASE MODEL`) et projet. Comptages seulement, aucune donnée personnelle.
 Alimente les diapos « Conquest vs loyalty » des présentations (fidèles = marque reprise = marque d'achat, autres Stellantis, concurrents).
+
+## Historique leads — envoyés (périmètre C1ST, 2026-10-15)
+`data/history/leads_envoyes/<site>.csv.gz` : par jour, leads ventilés par projet d'achat (`PURCHASE PROJECT`, colonne AX), `LEAD SENT` (colonne BB, YES / NO) et statut.
+C1ST ne voit que les leads **envoyés** (BB = YES) et **VN** (AX = VN) : c'est ce filtre, appliqué à l'extract BO (statut valide), qui doit redonner les chiffres de C1ST à un faible écart près.

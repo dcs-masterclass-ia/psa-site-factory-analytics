@@ -142,6 +142,7 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
     quotidien = Counter()
     acq = Counter()      # acquisition : source, support (CTA), campagne, marque d'achat
     codes = Counter()
+    envoyes = Counter()  # lead envoye au reseau (colonne BB « LEAD SENT » : YES / NO) : perimetre de C1ST = envoyes + VN
     modeles = Counter()  # conquete / fidelite : marque et modele repris x marque et modele d'achat, par mois (leads valides)
     for sid, st in L.SITE_EXTRACT[nom]:
         # un an par requete d'abord ; coupe automatiquement si trop lourd
@@ -160,6 +161,7 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
                 # SUPPORT (menu, footer, page offre...), CAMPAGNE, marque d'achat.
                 acq[(jour, sid, (l.get("SOURCE_ACQUISITION") or "").strip(), (l.get("SUPPORT") or "").strip().lower()[:30],
                      _campagne(l.get("CAMPAGNE")), l.get(L.COL_PROJECT) or "", (l.get("PURCHASE BRAND") or "").strip().upper(), s)] += 1
+                envoyes[(jour, sid, l.get(L.COL_PROJECT) or "", (l.get("LEAD SENT") or "").strip().upper(), s)] += 1
                 if s == "valide":
                     codes[(jour[:7], l.get(L.COL_CODE) or "")] += 1
                     modeles[(jour[:7], sid, (l.get(L.COL_BRAND) or "").strip().upper(), (l.get("TRADE-IN MODEL") or "").strip().upper()[:40],
@@ -186,10 +188,13 @@ def collecte_leads(nom, depuis, fin, dry_run=False):
     p4 = racine / "leads_modeles" / f"{slug}.csv.gz"
     ecrit_csv_gz(p4, ["mois", "site_id", "marque_reprise", "modele_reprise", "marque_achat", "modele_achat", "projet_achat", "valides"],
                  sorted(remplace_depuis(p4, sorted((*k, v) for k, v in modeles.items()), depuis.isoformat()[:7])))
+    p5 = racine / "leads_envoyes" / f"{slug}.csv.gz"
+    ecrit_csv_gz(p5, ["date", "site_id", "projet_achat", "envoye", "statut", "n"],
+                 sorted(remplace_depuis(p5, sorted((*k, v) for k, v in envoyes.items()), depuis.isoformat())))
     valides = sum(v for k, v in quotidien.items() if k[-1] == "valide")
     jours = sorted({k[0] for k in quotidien})
     print(f"{nom} : {sum(quotidien.values())} leads bruts, {valides} valides, du {jours[0]} au {jours[-1]}")
-    return [p1, p2, p3, p4]
+    return [p1, p2, p3, p4, p5]
 
 
 # =====================================================================
