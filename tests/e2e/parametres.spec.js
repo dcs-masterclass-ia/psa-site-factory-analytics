@@ -23,6 +23,8 @@ test("Paramètres : ouverture par l'avatar et enregistrement d'une préférence"
   await expect.poll(() => sauve && sauve.periode).toBe("7");
   await page.getByText("Pilotage des leads", { exact: true }).last().click();
   await expect.poll(() => sauve && sauve.accueil).toBe("tb");
+  await page.getByText("Captain Reboot", { exact: true }).click();                   // mascotte -> avatar du menu
+  await expect.poll(() => sauve && sauve.avatar).toBe("ops");
   expect(erreurs).toEqual([]);
 });
 

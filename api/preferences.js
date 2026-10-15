@@ -1,6 +1,6 @@
 /**
  * Préférences d'affichage du compte connecté (page Paramètres) : thème, langue, onglet d'accueil, période et comparaison
- * par défaut, périmètre favori. Un fichier par compte dans le repo de données privé : preferences/<hash e-mail>.json.
+ * par défaut, périmètre favori, avatar (mascotte de l'équipe). Un fichier par compte dans le repo de données privé : preferences/<hash e-mail>.json.
  * Aucune donnée métier : lisible et modifiable par tout profil connecté, pour son propre compte uniquement.
  *
  *   GET /api/preferences            -> { prefs }
@@ -17,6 +17,7 @@ const LANGUES = ["fr", "en"];
 const ACCUEILS = ["ga", "sc", "ads", "ps", "tb", "pr", "aaa"];
 const PERIODES = ["7", "14", "30", "mois"];
 const COMPARAISONS = ["previous", "year", "none"];
+const AVATARS = ["bo", "po", "dkam", "qa", "ops"];   // mascottes de l'équipe ; absent = initiales
 
 function fichier(email) {
   return `preferences/${crypto.createHash("sha256").update(String(email).toLowerCase()).digest("hex").slice(0, 32)}.json`;
@@ -30,6 +31,7 @@ function nettoie(brut) {
   if (ACCUEILS.includes(p.accueil)) out.accueil = p.accueil;
   if (PERIODES.includes(p.periode)) out.periode = p.periode;
   if (COMPARAISONS.includes(p.comparaison)) out.comparaison = p.comparaison;
+  if (AVATARS.includes(p.avatar)) out.avatar = p.avatar;
   const per = p.perimetre;
   if (per && typeof per === "object") {
     if (per.mode === "sites" && Array.isArray(per.sites)) {

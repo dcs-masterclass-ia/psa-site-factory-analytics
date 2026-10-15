@@ -25,10 +25,10 @@ test("préférences : ne garde que des valeurs connues et borne le périmètre",
   fichiers = {};
   const s = { email: "m@autobiz.com", role: "full" };
   const r = res();
-  await handler({ method: "PUT", session: s, body: { prefs: { theme: "dark", lang: "xx", accueil: "tb", periode: "7", comparaison: "year",
+  await handler({ method: "PUT", session: s, body: { prefs: { theme: "dark", lang: "xx", accueil: "tb", periode: "7", comparaison: "year", avatar: "qa",
     perimetre: { mode: "sites", sites: ["OPEL FR", "OPEL FR", "", "PEUGEOT FR"] }, injecte: "<script>" } } }, r);
   assert.strictEqual(r.code, 200);
-  assert.deepStrictEqual(r.body.prefs, { theme: "dark", accueil: "tb", periode: "7", comparaison: "year", perimetre: { mode: "sites", sites: ["OPEL FR", "PEUGEOT FR"] } });
+  assert.deepStrictEqual(r.body.prefs, { theme: "dark", accueil: "tb", periode: "7", comparaison: "year", avatar: "qa", perimetre: { mode: "sites", sites: ["OPEL FR", "PEUGEOT FR"] } });
   const g = res(); await handler({ method: "GET", session: s }, g);
   assert.deepStrictEqual(g.body.prefs, r.body.prefs);
 });
