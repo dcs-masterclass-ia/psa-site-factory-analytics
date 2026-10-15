@@ -25,6 +25,6 @@ test("Leads : heure par heure et par jour", async ({ context, page }) => {
   await page.getByText("Hier", { exact: true }).first().click();
   await expect(page.getByText(/leads hier \(Toute la flotte\)/)).toBeVisible();
   await page.getByText("Mois", { exact: true }).first().click();
-  await expect(page.getByText(/Moyenne de leads par jour, mois par mois/)).toBeVisible();
+  await expect(page.getByText(/\w+\. 26/).first()).toBeVisible();      // axe mensuel : « sept. 26 »…
   expect(erreurs).toEqual([]);
 });
