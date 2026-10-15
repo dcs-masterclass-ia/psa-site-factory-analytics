@@ -156,5 +156,8 @@
  "Transforme les idées en réalité": "Turns ideas into reality",
  "Même légende, nouveau chapitre": "Same legend, new chapter",
  "Fait tomber les bugs (et les illusions)": "Takes down bugs (and illusions)",
- "Garde tout en vie": "Keeps everything alive"
+ "Garde tout en vie": "Keeps everything alive",
+ "Complétion du tunnel": "Funnel completion",
+ "Part des VISITEURS de la page d'accueil qui arrivent jusqu'à l'estimation (utilisateurs, étape par étape). Ce n'est pas le « Taux de conversion » du haut de page, qui compte les estimations ÷ les sessions du site de reprise (même définition que Looker).": "Share of home-page VISITORS who reach the estimate (users, step by step). It is not the « Conversion rate » at the top of the page, which counts estimates ÷ trade-in site sessions (same definition as Looker).",
+ "100 % moins la complétion du tunnel : part des visiteurs de l'accueil qui n'arrivent pas jusqu'à l'estimation.": "100 % minus funnel completion: share of home-page visitors who do not reach the estimate."
 }
