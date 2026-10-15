@@ -56,7 +56,7 @@ test.describe("chargement de l'application", () => {
     await expect(page.locator('[data-testid="scope-picker-toggle"]')).toContainText("Marché entier", { timeout: 10_000 });
 
     // les cartes KPI doivent afficher de vrais totaux, pas des zeros
-    const leadsCard = page.locator("text=Leads GA4").first();
+    const leadsCard = page.locator("text=Leads GA").first();
     await expect(leadsCard).toBeVisible();
   });
 });
@@ -217,7 +217,7 @@ test("GA4 > Analyses détaillées : navigation par questions, contribution en ca
   page.on("pageerror", (e) => erreurs.push(e.message));
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.getByText("Pourquoi ça bouge ?")).toBeVisible();
-  await expect(page.getByText("Contribution à l'évolution des estimations")).toBeVisible();
+  await expect(page.getByText("Contribution à l'évolution des leads GA")).toBeVisible();
   const hauteur = async () => page.evaluate(() => { const t = [...document.querySelectorAll("span")].find((s) => s.textContent.trim() === "Analyses détaillées"); return Math.round(t.parentElement.nextElementSibling.nextElementSibling.getBoundingClientRect().height); });
   const h0 = await hauteur();
   for (const [theme, vue] of [["Acquisition", "Sources"], ["Conversion", "Par jour"], ["Conversion", "Canal × device"], ["Audience", "Jour & navigateurs"], ["Évolution", "Sessions par canal"]]) {

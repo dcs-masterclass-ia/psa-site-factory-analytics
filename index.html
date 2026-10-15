@@ -496,7 +496,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ funChip }}">{{ funIcon }}</span>
               <div>
                 <div style="font-size:15px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
-                <div style="font-size:12.5px;color:#9a9fa6">Accueil → Estimation · 6 étapes</div>
+                <div style="font-size:12.5px;color:#9a9fa6">Accueil → Leads GA · 6 étapes</div>
               </div></div>
               <span style="font-size:12.5px;color:#6d727a;background:#f6f6f8;border-radius:999px;padding:5px 12px;text-align:right;max-width:260px">{{ stepLabel }}</span>
             </div>
@@ -509,18 +509,22 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </sc-for>
 
-            <div style="display:flex;align-items:center;gap:15px;margin-top:16px;padding-top:16px;border-top:1px solid #f2f2f4">
-              <div style="width:110px;flex:none;position:relative">
-                <div>{{ gauge }}</div>
-                <div style="position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:16px;font-weight:600;color:#121214">{{ compPctLabel }}</div>
+            <div style="display:flex;align-items:stretch;gap:18px;margin-top:16px;padding-top:16px;border-top:1px solid #f2f2f4;flex-wrap:wrap">
+              <div style="flex:1 1 300px;min-width:0;display:flex;align-items:center;gap:15px">
+                <div style="width:100px;flex:none;position:relative">
+                  <div>{{ gauge }}</div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;text-align:center;font-size:15px;font-weight:600;color:#121214">{{ compPctLabel }}</div>
+                </div>
+                <div style="min-width:0;flex:1">
+                  <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:3px">Conversion funnel<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des VISITEURS (utilisateurs) de la page d'accueil qui arrivent jusqu'aux leads GA, étape par étape. C'est la mesure du parcours, utile pour juger le funnel (V2, étapes qui fuient). Le taux global, à côté, compte les leads GA ÷ les sessions du site de reprise (même définition que Looker).</span></span></div>
+                  <div style="font-size:13px;line-height:1.45;color:#9a9fa6">Visiteurs de l'accueil menés jusqu'aux leads GA · {{ compMedianLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:8px;margin-top:5px"><span style="{{ funnelDelta.style }}">{{ funnelDelta.text }}</span><span style="font-size:12px;color:#9a9fa6">Abandon cumulé {{ abandonLabel }}</span></div>
+                </div>
               </div>
-              <div style="min-width:0;flex:1">
-                <div style="font-size:15.5px;font-weight:600;color:#121214;margin-bottom:3px">Complétion du tunnel<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des VISITEURS de la page d'accueil qui arrivent jusqu'à l'estimation (utilisateurs, étape par étape). Ce n'est pas le « Taux de conversion » du haut de page, qui compte les estimations ÷ les sessions du site de reprise (même définition que Looker).</span></span></div>
-                <div style="font-size:13.5px;line-height:1.45;color:#9a9fa6">Visiteurs de l'accueil menés jusqu'à l'estimation · {{ compMedianLabel }}</div>
-              </div>
-              <div style="flex:none;text-align:right">
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:2px">Abandon cumulé<span class="dc-info r" tabindex="0">i<span class="dc-tip">100 % moins la complétion du tunnel : part des visiteurs de l'accueil qui n'arrivent pas jusqu'à l'estimation.</span></span></div>
-                <div style="font-size:16px;font-weight:600;color:#a33c39">{{ abandonLabel }}</div>
+              <div style="flex:1 1 240px;min-width:0;border-left:1px solid #f2f2f4;padding-left:18px;display:flex;flex-direction:column;justify-content:center">
+                <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:3px">Conversion globale<span class="dc-info" tabindex="0">i<span class="dc-tip">Leads GA ÷ sessions du site de reprise, sur les jours exacts de la période : le taux « classique » de Looker et des présentations. Il ne tient pas compte du nombre d'étapes franchies.</span></span></div>
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214">{{ globalRateLabel }}</span><span style="{{ kpiRateDelta.style }}">{{ kpiRateDelta.text }}</span></div>
+                <div style="font-size:12.5px;color:#9a9fa6;margin-top:3px">{{ globalRateSub }}</div>
               </div>
             </div>
           </div>
@@ -595,7 +599,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ tChipT }}">{{ tIconT }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Contribution à l'évolution des estimations<span class="dc-info" tabindex="0">i<span class="dc-tip">Pourquoi les estimations (étape finale du tunnel) ont varié entre les deux périodes : effet de l'audience (visiteurs de la page d'accueil) puis de chaque étape du tunnel. Chaque effet est la part de l'écart attribuée par décomposition logarithmique ; leur somme redonne exactement l'écart. Axe tronqué : seules les barres d'évolution sont à lire.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Contribution à l'évolution des leads GA<span class="dc-info" tabindex="0">i<span class="dc-tip">Pourquoi les estimations (étape finale du tunnel) ont varié entre les deux périodes : effet de l'audience (visiteurs de la page d'accueil) puis de chaque étape du tunnel. Chaque effet est la part de l'écart attribuée par décomposition logarithmique ; leur somme redonne exactement l'écart. Axe tronqué : seules les barres d'évolution sont à lire.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">{{ contribRange }}</div>
               </div>
               </div>
@@ -764,13 +768,15 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div></div>
             <div style="font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin-bottom:12px;display:inline-block;align-self:flex-start">{{ entSummary }}</div>
             <sc-if value="{{ !entHas }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#9a9fa6;padding:30px 0;text-align:center">Les arrivées directes sont calculées au prochain rafraîchissement des données.</div></sc-if>
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 110px;gap:11px;padding:8px;font-size:14px;color:#9a9fa6"><span>Canal</span><span style="text-align:right">Sessions</span><span style="text-align:right">vs comp.</span><span style="text-align:right">Part</span></div>
             <sc-for list="{{ entRows }}" as="e" hint-placeholder-count="6">
-              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4">
                 <div style="min-width:0">
                   <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.name }}</div>
                   <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ e.bar }}"></div></div>
                 </div>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ e.sessions }}</span>
+                <span style="{{ e.vsStyle }}">{{ e.vs }}</span>
                 <span style="font-size:15px;font-weight:500;color:#121214;text-align:right">{{ e.share }}</span>
               </div>
             </sc-for>
@@ -795,7 +801,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <sc-if value="{{ utmHas }}" hint-placeholder-val="{{ true }}">
               <div style="display:grid;grid-template-columns:minmax(0,2.4fr) 90px 90px minmax(0,1.3fr) 90px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
-                <span>Source / campagne</span><span style="text-align:right">Sessions</span><span style="text-align:right">Engagement</span><span>Estimations</span><span style="text-align:right">Conversion</span>
+                <span>Source / campagne</span><span style="text-align:right">Sessions</span><span style="text-align:right">Engagement</span><span>Leads GA</span><span style="text-align:right">Conversion</span>
               </div>
               <sc-for list="{{ utmRows }}" as="r" hint-placeholder-count="8">
                 <div style="flex:1;display:grid;grid-template-columns:minmax(0,2.4fr) 90px 90px minmax(0,1.3fr) 90px;align-items:center;gap:11px;padding:6px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
@@ -825,16 +831,18 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span style="flex:1"></span>
             </div>
             <sc-if value="{{ tqHas }}" hint-placeholder-val="{{ true }}">
-              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 100px minmax(0,1.7fr) 100px 100px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
-                <span>Canal</span><span style="text-align:right">Sessions</span><span>Taux d'engagement</span><span style="text-align:right">vs comparaison</span><span style="text-align:right">Conversion</span>
+              <div style="display:grid;grid-template-columns:minmax(0,1.1fr) 84px 84px minmax(0,1.4fr) 84px 84px 84px;align-items:center;gap:10px;padding:8px;font-size:14px;color:#9a9fa6">
+                <span>Canal</span><span style="text-align:right">Sessions</span><span style="text-align:right">vs comp.</span><span>Taux d'engagement</span><span style="text-align:right">vs comp.</span><span style="text-align:right">Conversion</span><span style="text-align:right">vs comp.</span>
               </div>
               <sc-for list="{{ tqRows }}" as="r" hint-placeholder-count="6">
-                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.3fr) 100px minmax(0,1.7fr) 100px 100px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+                <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.1fr) 84px 84px minmax(0,1.4fr) 84px 84px 84px;align-items:center;gap:10px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                   <span style="font-size:15px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
                   <span style="font-size:15px;color:#2f2f33;text-align:right">{{ r.sessions }}</span>
+                  <span style="{{ r.sDeltaStyle }}">{{ r.sDelta }}</span>
                   <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ r.bar }}"></div></div><span style="font-size:14.5px;font-weight:600;color:#121214;min-width:52px;text-align:right">{{ r.eng }}</span></div>
                   <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
                   <span style="font-size:15px;color:#2f2f33;text-align:right">{{ r.conv }}</span>
+                  <span style="{{ r.cDeltaStyle }}">{{ r.cDelta }}</span>
                 </div>
               </sc-for>
             </sc-if>
@@ -849,7 +857,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ lChip }}">{{ lIcon }}</span><div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Fuites du tunnel par segment<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque appareil ou canal d'acquisition (Paid, Organic…) : part des visiteurs (sous chaque pourcentage : nombre d'utilisateurs ayant atteint l'étape) qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Fuites du tunnel par segment<span class="dc-info" tabindex="0">i<span class="dc-tip">Pour chaque appareil ou canal d'acquisition (Paid, Organic…) : part des visiteurs (sous chaque pourcentage : nombre d'utilisateurs ayant atteint l'étape) qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape. « ≥ 100 % » : GA4 compte chaque étape séparément ; des visiteurs atteignent l'étape sans être passés par la précédente (saut d'étape, retour en arrière), donc la part dépasse 100 %. Dernière colonne : conversion de bout en bout ; la ligne « Moyenne du site » est calculée sur le total des visiteurs, pas comme une moyenne de pourcentages.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">Passage d'une étape à la suivante · mois touchés par la période</div>
               </div>
               </div>
@@ -860,7 +868,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <sc-if value="{{ leakHas }}" hint-placeholder-val="{{ true }}">
               <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:8px;font-size:13.5px;color:#9a9fa6">
-                <span>Segment</span><span style="text-align:right">Accueil</span><span style="text-align:center">→ Version</span><span style="text-align:center">→ Km</span><span style="text-align:center">→ Coord.</span><span style="text-align:center">→ PDV</span><span style="text-align:center">→ Estim.</span><span style="text-align:right">Conv.</span>
+                <span>Segment</span><span style="text-align:right">Accueil</span><span style="text-align:center">→ Version</span><span style="text-align:center">→ Km</span><span style="text-align:center">→ Coord.</span><span style="text-align:center">→ PDV</span><span style="text-align:center">→ Leads GA</span><span style="text-align:right">Conv.</span>
               </div>
               <sc-for list="{{ leakRows }}" as="r" hint-placeholder-count="4">
                 <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:6px 8px;border-top:1px solid #f2f2f4">
@@ -871,7 +879,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
               <div style="display:grid;grid-template-columns:minmax(0,1.2fr) 90px repeat(5,minmax(74px,1fr)) 80px;align-items:center;gap:8px;padding:8px;border-top:1.5px solid #e8e8ec;font-size:13.5px;color:#6d727a">
-                <span style="font-weight:600">Moyenne du site</span><span></span><span style="text-align:center">{{ leakAvg1 }}</span><span style="text-align:center">{{ leakAvg2 }}</span><span style="text-align:center">{{ leakAvg3 }}</span><span style="text-align:center">{{ leakAvg4 }}</span><span style="text-align:center">{{ leakAvg5 }}</span><span></span>
+                <span style="font-weight:600">Moyenne du site</span><span></span><span style="text-align:center">{{ leakAvg1 }}</span><span style="text-align:center">{{ leakAvg2 }}</span><span style="text-align:center">{{ leakAvg3 }}</span><span style="text-align:center">{{ leakAvg4 }}</span><span style="text-align:center">{{ leakAvg5 }}</span><span style="text-align:right;font-weight:600;color:#121214">{{ leakAvgConv }}</span>
               </div>
             </sc-if>
             <sc-if value="{{ !leakHas }}" hint-placeholder-val="{{ false }}">
@@ -892,19 +900,21 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <span onClick="{{ openChannels }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ channelCount }} canaux</span>
             </div>
             <div style="font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin-bottom:12px;display:inline-block">{{ topChannelInsight }}</div>
-            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 100px 100px;align-items:center;gap:11px;padding:8px;font-size:14px;color:#9a9fa6">
               <span onClick="{{ sortByName }}" style="cursor:pointer">Canal</span>
               <span onClick="{{ sortBySessions }}" style="text-align:right;cursor:pointer">Sessions</span>
+              <span style="text-align:right">vs comp.</span>
               <span onClick="{{ sortByLeads }}" style="text-align:right;cursor:pointer">Leads</span>
               <span style="text-align:right">Part</span>
             </div>
             <sc-for list="{{ channels }}" as="ch" hint-placeholder-count="6">
-              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
+              <div style="flex:1;display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 100px 100px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                 <div style="min-width:0">
                   <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
                   <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ ch.bar }}"></div></div>
                 </div>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.sessions }}</span>
+                <span style="{{ ch.vsStyle }}">{{ ch.vs }}</span>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.leads }}</span>
                 <span style="font-size:15px;font-weight:500;color:#121214;text-align:right">{{ ch.share }}</span>
               </div>
@@ -1392,7 +1402,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:flex;align-items:center;gap:10px;min-width:0">
                 <span style="{{ pChip }}">{{ pIcon }}</span>
                 <div>
-                  <div style="font-size:15px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA4 et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
+                  <div style="font-size:15px;font-weight:600;color:#121214">Pages<span class="dc-info" tabindex="0">i<span class="dc-tip">Pages de la propriété Search Console par clics. Rebond, Leads GA et Conv. viennent de GA4 : le rebond se mesure par page vue ; les leads rattachent chaque demande d'estimation à la page d'atterrissage de la session, et Conv. = leads ÷ sessions d'atterrissage de la page (indiquée à partir de 100 sessions).</span></span></div>
                   <div style="font-size:12.5px;color:#9a9fa6">Search Console rapproché de GA4 par URL</div>
                 </div>
               </div>
@@ -1414,7 +1424,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </span>
             </div>
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:8px 4px;font-size:12.5px;color:#9a9fa6">
-              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
+              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA</span><span style="text-align:right">Conv.</span>
             </div>
             <sc-for list="{{ scPages }}" as="r" hint-placeholder-count="6">
               <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:10px;padding:10px 4px;border-top:1px solid #f2f2f4;border-radius:10px;transition:background .15s" style-hover="background:#f6f7fb">
@@ -1432,7 +1442,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ r.convStyle }}">{{ r.conv }}</span>
               </div>
             </sc-for>
-            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA4 et Conv. proviennent de GA4, rapprochés par page. Leads GA4 et Conv. suivent le canal choisi au-dessus et rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
+            <div style="font-size:12.5px;line-height:1.5;color:#9a9fa6;margin-top:12px;padding-top:12px;border-top:1px solid #f2f2f4">Rebond, Leads GA et Conv. proviennent de GA4, rapprochés par page. Leads GA et Conv. suivent le canal choisi au-dessus et rattachent chaque demande d'estimation à la page d'atterrissage de la session (la page d'entrée), pas à la page du formulaire. « — » signale un trafic insuffisant (&lt; 100 sessions d'atterrissage) ou la page d'accueil « / », commune au site parent et au site reprise donc non attribuable.</div>
             <div style="margin-top:14px">
                 <div style="display:flex;align-items:flex-start;gap:9px;border-top:1px solid #f2f2f4;padding-top:11px;margin-top:0">
                   <span style="width:16px;height:16px;flex:none;margin-top:1px;border-radius:50%;position:relative;overflow:hidden;background:#0c1120">
@@ -1490,7 +1500,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px">
                 <sc-for list="{{ sxConvTiles }}" as="t" hint-placeholder-count="3"><div style="background:#f7f6fe;border-radius:14px;padding:12px 14px"><div style="font-size:12.5px;color:#8a8f98;margin-bottom:2px">{{ t.label }}</div><div style="font-size:21px;font-weight:600;color:#121214">{{ t.value }}</div><div style="font-size:12px;color:#9a9fa6">{{ t.sub }}</div></div></sc-for>
               </div>
-              <div style="display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 110px 90px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Page</span><span style="text-align:right">Clics</span><span style="text-align:right">Sessions</span><span style="text-align:right">Estimations</span><span style="text-align:right">Conversion</span></div>
+              <div style="display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 110px 90px;align-items:center;gap:11px;padding:8px;font-size:13.5px;color:#9a9fa6"><span>Page</span><span style="text-align:right">Clics</span><span style="text-align:right">Sessions</span><span style="text-align:right">Leads GA</span><span style="text-align:right">Conversion</span></div>
               <sc-for list="{{ sxConvRows }}" as="r" hint-placeholder-count="6">
                 <div style="flex:1;display:grid;grid-template-columns:minmax(0,2fr) 90px 100px 110px 90px;align-items:center;gap:11px;padding:8px;border-top:1px solid #f2f2f4;border-radius:12px" style-hover="background:#f6f7fb">
                   <span style="font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ r.title }}">{{ r.name }}</span>
@@ -1761,7 +1771,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
             <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:12px;padding:12px 4px;font-size:13.5px;color:#9a9fa6;position:sticky;top:0;background:#fff">
-              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA4</span><span style="text-align:right">Conv.</span>
+              <span>URL</span><span style="text-align:center">Tendance</span><span style="text-align:right">Clics</span><span style="text-align:right">Impr.</span><span style="text-align:right">CTR</span><span style="text-align:right">Pos.</span><span style="text-align:right">Rebond</span><span style="text-align:right">Leads GA</span><span style="text-align:right">Conv.</span>
             </div>
             <sc-for list="{{ allPages }}" as="r" hint-placeholder-count="12">
               <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 68px 66px 92px 66px 76px 72px 78px 70px;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid #f2f2f4">
@@ -1797,16 +1807,17 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </span>
           </div>
           <div style="flex:1;min-height:0;overflow-y:auto;padding:8px 24px 20px">
-            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
-              <span>Canal</span><span style="text-align:right">Sessions</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span>
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 100px 100px;align-items:center;gap:11px;padding:12px 8px;font-size:14px;color:#9a9fa6;position:sticky;top:0;background:#fff">
+              <span>Canal</span><span style="text-align:right">Sessions</span><span style="text-align:right">vs comp.</span><span style="text-align:right">Leads</span><span style="text-align:right">Part</span>
             </div>
             <sc-for list="{{ allChannels }}" as="ch" hint-placeholder-count="12">
-              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 110px 110px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4">
+              <div style="display:grid;grid-template-columns:minmax(0,1.6fr) 130px 100px 100px 100px;align-items:center;gap:11px;padding:11px 8px;border-top:1px solid #f2f2f4">
                 <div style="min-width:0">
                   <div style="font-size:15px;color:#121214;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ ch.name }}</div>
                   <div style="height:6px;border-radius:3px;background:#f2f2f4;overflow:hidden"><div style="{{ ch.bar }}"></div></div>
                 </div>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.sessions }}</span>
+                <span style="{{ ch.vsStyle }}">{{ ch.vs }}</span>
                 <span style="font-size:15px;color:#2f2f33;text-align:right">{{ ch.leads }}</span>
                 <span style="font-size:15px;font-weight:500;color:#121214;text-align:right">{{ ch.share }}</span>
               </div>
@@ -2047,7 +2058,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div>
           <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
-            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA4 : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
+            <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Leads</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Leads du back-office (extraction BO) hors doublons, tests et leads hors production. Mesure distincte des Leads GA : le BO compte aussi les demandes que GA4 ne voit pas (consentement, bloqueurs).</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">{{ rangeLabel }} · toutes marques</span>
           </div>
@@ -3436,7 +3447,8 @@ class Component extends DCLogic {
     return r;
   }
   _aggregateImpl(debutIso, finIso) {
-    const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
+    const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
+    const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
@@ -3515,7 +3527,7 @@ class Component extends DCLogic {
       } else {
         const semainesUtiles = Object.values(d.funnelWeekly || {}).filter(w => w.fin>=debutIso && w.debut<=finIso);
         for (const w of semainesUtiles) {
-          if (!out.funnelSteps) out.funnelSteps = w.steps.map(x=>({step:x.step,users:0}));
+          if (!out.funnelSteps) out.funnelSteps = w.steps.map(x=>({step:nomEtape(x.step),users:0}));
           w.steps.forEach((x,i)=>{ if (out.funnelSteps[i]) out.funnelSteps[i].users += x.users; });
           siteSteps = true;
         }
@@ -3524,7 +3536,7 @@ class Component extends DCLogic {
           const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
           if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
             const fm = d.funnelMonth[mois];
-            if (!out.funnelSteps) out.funnelSteps = fm.steps.map(x=>({step:x.step,users:0}));
+            if (!out.funnelSteps) out.funnelSteps = fm.steps.map(x=>({step:nomEtape(x.step),users:0}));
             fm.steps.forEach((x,i)=>{ if (out.funnelSteps[i]) out.funnelSteps[i].users += x.users; });
             siteSteps = true;
           }
@@ -3536,7 +3548,7 @@ class Component extends DCLogic {
         out.convSess = true;
       } else if (Object.keys(fd).length) out.convUsers = true;
       if (d.v2 && d.v2.is_v2_split && d.v2steps && d.v2steps.length) {
-        if (!out.v2Steps) out.v2Steps = d.v2steps.map(x=>({step:x.step,a:0,b:0}));
+        if (!out.v2Steps) out.v2Steps = d.v2steps.map(x=>({step:nomEtape(x.step),a:0,b:0}));
         d.v2steps.forEach((x,i)=>{ if (out.v2Steps[i]) { out.v2Steps[i].a += x.a||0; out.v2Steps[i].b += x.b||0; } });
         const m = d.v2;
         if (!out.v2Meta) out.v2Meta = { sites:[], preHome:0, postHome:0, preEst:0, postEst:0 };
@@ -3976,7 +3988,7 @@ class Component extends DCLogic {
     const kpis=[
       {label:'Sessions site de la marque',chip:kPuce('#3b76e8'),icon:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),info:"Sessions GA4 de toute la propriété de la marque (tous ses domaines : site de la marque, boutique, réseau, outil de reprise…), une session n'étant comptée qu'une fois : c'est la carte « Visites site marque » de Looker. Mois entiers : total mensuel GA4. Le seul site de la marque (hôte principal) est dans l'infobulle du graphique.",value:this.fmt(brandSessions),...deltaBadgeAsKpi(deltaBadge(brandSessions, cmp&&cmpBrandSessions)),spark:safeSpark(trafficBuckets,'#7c63ee')},
       {label:'Sessions site reprise',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('path',{d:'M3 12a9 9 0 019-9 9 9 0 016.4 2.6L21 8'}),h('path',{d:'M21 3v5h-5'}),h('path',{d:'M21 12a9 9 0 01-9 9 9 9 0 01-6.4-2.6L3 16'}),h('path',{d:'M3 21v-5h5'})),info:"Sessions GA4 de l'outil de reprise (son nom d'hôte) sur la période.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
-      {label:'Leads GA4',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Demandes d'estimation sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leadsEv!=null?leadsEv:leads),...deltaBadgeAsKpi(deltaBadge(leadsEv!=null?leadsEv:leads, leadsEv!=null?cmpLeadsEv:(cmpFunnelLast||null))),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
+      {label:'Leads GA',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Demandes d'estimation sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leadsEv!=null?leadsEv:leads),...deltaBadgeAsKpi(deltaBadge(leadsEv!=null?leadsEv:leads, leadsEv!=null?cmpLeadsEv:(cmpFunnelLast||null))),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
     ];
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = homeBuckets.map((hb,i)=> hb ? estBuckets[i]/hb*100 : 0);
@@ -4052,6 +4064,10 @@ class Component extends DCLogic {
     const compPct = funnelFirst ? funnelLast/funnelFirst*100 : 0;
     const compPctLabel = dec(compPct,1)+' %';
     const abandonLabel = dec(100-compPct,1)+' %';
+    const cmpCompPct = cmpFirst ? cmpFunnelLast/cmpFirst*100 : null;
+    const funnelDelta = cmpCompPct==null ? {text:'',style:'display:none'} : ptDeltaBadge(compPct, cmpCompPct);
+    const globalRateLabel = rateGlobal==null ? '—' : dec(rateGlobal,1)+' %';
+    const globalRateSub = agg.convSessTot>0 ? `${this.fmt(agg.convEv)} leads GA ÷ ${this.fmt(agg.convSessTot)} sessions du site de reprise` : 'leads GA ÷ visiteurs de l\'accueil (sessions du site de reprise indisponibles sur la période)';
     const compMedianLabel = convMedianTunnel || convMedianLabel || 'médiane parc indisponible';
     const cx=100,cy=98,r=70;
     const arc=p=>{const a=Math.PI*(1-Math.max(0,Math.min(1,p)));return `M${cx-r},${cy} A${r},${r} 0 0 1 ${cx+r*Math.cos(a)},${cy-r*Math.sin(a)}`;};
@@ -4068,8 +4084,10 @@ class Component extends DCLogic {
     const tot = Object.values(totalParCanal).reduce((a,b)=>a+b,0) || 1;
     const mxs = Math.max(1, ...tousCanaux.map(c=>totalParCanal[c]));
     const sorters={name:(a,b)=>a.name.localeCompare(b.name),sessions:(a,b)=>b.s-a.s,leads:(a,b)=>b.l-a.l};
+    const cmpParCanal = {}; if (cmp) for (const j of Object.keys(cmp.canal||{})) for (const [c,v] of Object.entries(cmp.canal[j])) cmpParCanal[c]=(cmpParCanal[c]||0)+v;
+    const deltaSess = (now, prev) => { if (!cmp || !(prev>=100)) return {t:'—',st:'font-size:14.5px;text-align:right;color:#9a9fa6'}; const d=(now/prev-1)*100; return {t:(d>=0?'+':'−')+dec(Math.abs(d),1)+' %',st:`font-size:14.5px;font-weight:600;text-align:right;color:${d>1?'#1f9254':d<-1?'#a33c39':'#9a9fa6'}`}; };
     const mkChannelRow=c=>({
-      name:c.name, sessions:this.fmt(c.s), leads:'—', share:Math.round(c.s/tot*100)+' %',
+      name:c.name, sessions:this.fmt(c.s), leads:'—', share:Math.round(c.s/tot*100)+' %', vs:deltaSess(c.s,cmpParCanal[c.name]).t, vsStyle:deltaSess(c.s,cmpParCanal[c.name]).st,
       bar:`width:${(c.s/mxs*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8`
     });
     const allChannels=tousCanaux.map(c=>({name:c,s:totalParCanal[c]})).sort((a,b)=>sorters[st.sort]({name:a.name,s:a.s,l:a.s},{name:b.name,s:b.s,l:b.s})).map(mkChannelRow);
@@ -4124,7 +4142,7 @@ class Component extends DCLogic {
     const convMoy = convSomme(agg.convDaily,[debut,fin]);
     const convMoyCmp = cmp && cmpRange ? convSomme(cmp.convDaily,[cmpRange.debut,cmpRange.fin]) : null;
     const fmtJ = iso => iso ? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
-    const convRangeLabel = `${rangeDays} j (${fmtJ(debut)}→${fmtJ(fin)}) · ${convSessMode?'sessions → estimations':'utilisateurs accueil → estimation'}`;
+    const convRangeLabel = `${rangeDays} j (${fmtJ(debut)}→${fmtJ(fin)}) · ${convSessMode?'sessions → leads GA':'utilisateurs accueil → leads GA'}`;
     const convSummary = convMoy==null ? '' : `Conversion moyenne ${dec(convMoy,1)} %`+(convMoyCmp!=null?` · période précédente ${dec(convMoyCmp,1)} % (${convMoy>=convMoyCmp?'+':'−'}${dec(Math.abs(convMoy-convMoyCmp),1)} pt)`:'');
     const v2Dates = [...new Set(st.sites.map(n=>this.data&&this.data[n]&&this.data[n].v2_date).filter(Boolean))];
     const v2Marker = v2Dates.length===1 && st.sites.every(n=>this.data&&this.data[n]&&this.data[n].v2_date) ? v2Dates[0] : null;
@@ -4153,13 +4171,13 @@ class Component extends DCLogic {
       trace(convSerie.map(p=>p?p.pct:null),'#cdbffa',1.6,null,'jour');
       const ma = dates.map((_,i)=>{ let hh=0,ee=0; for (let k=Math.max(0,i-6);k<=i;k++){ const p=convSerie[k]; if (p){hh+=p.home;ee+=p.est;} } return hh? ee/hh*100 : null; });
       trace(ma,'#7c63ee',2.8,null,'ma7');
-      convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} estimations / ${this.fmt(p.home)} ${convSessMode?'sessions':'visiteurs accueil'})`))); });
+      convSerie.forEach((p,i)=>{ if (p) ck.push(h('circle',{key:'c'+i,cx:cx(i),cy:cy(p.pct),r:7,fill:'transparent'},h('title',null,`${dates[i].slice(8,10)}/${dates[i].slice(5,7)} : ${dec(p.pct,1)} % (${this.fmt(p.est)} leads GA / ${this.fmt(p.home)} ${convSessMode?'sessions':'visiteurs accueil'})`))); });
       const stepX=Math.max(1,Math.floor(dates.length/8));
       dates.forEach((j,i)=>{ if (i%stepX===0) ck.push(h('text',{key:'x'+i,x:cx(i),y:CH-10,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(8,10)+'/'+j.slice(5,7))); });
       const cmpV=(cmp&&cmpRange)?(()=>{ const cd=isoRange(cmpRange.debut,cmpRange.fin); return dates.map((_,i)=>{ const c=cmp.convDaily[cd[i]]; return c&&c[0]>0?c[1]/c[0]*100:null; }); })():null;
       this._hov.cbConv={W:CW,H:CH,top:CT,bottom:CT+cph,xs:dates.map((_,i)=>cx(i)),rows:i=>{ const p=convSerie[i]; const its=[];
         if (p) its.push({n:'Conversion du jour',c:'#cdbffa',v:dec(p.pct,1)+' %'}); if (ma[i]!=null) its.push({n:'Moyenne 7 jours',c:'#7c63ee',v:dec(ma[i],1)+' %'}); if (cmpV&&cmpV[i]!=null) its.push({n:'Période précédente',c:'#b3b7bd',v:dec(cmpV[i],1)+' %'});
-        if (p) its.push({n:convSessMode?'Estimations / sessions':'Estimations / accueil',v:this.fmt(p.est)+' / '+this.fmt(p.home)}); const ev=evVisible.filter(e=>e.date===dates[i]).map(e=>'◆ '+e.titre); return {title:fmtJL(dates[i]),items:its,foot:ev.length?ev:null}; }};
+        if (p) its.push({n:convSessMode?'Leads GA / sessions':'Leads GA / accueil',v:this.fmt(p.est)+' / '+this.fmt(p.home)}); const ev=evVisible.filter(e=>e.date===dates[i]).map(e=>'◆ '+e.titre); return {title:fmtJL(dates[i]),items:its,foot:ev.length?ev:null}; }};
       ck.push(...evMarks('ev',dates,cx,CT,CH-CB));
     }
     const convChart=h('svg',{viewBox:`0 0 ${CW} ${CH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck);
@@ -4174,7 +4192,7 @@ class Component extends DCLogic {
     const fdSum = (n,a0,b0) => { const fd=this.data[n].funnelDaily||{}; const t=[0,0,0,0,0,0]; let days=0; for (const j of Object.keys(fd)) { if (j>=a0&&j<=b0) { fd[j].forEach((v,i)=>{ t[i]+=v; }); days++; } } return { t, days }; };
     const v2CalDays = (a0,b0) => Math.max(0, Math.round((new Date(b0+'T00:00:00Z')-new Date(a0+'T00:00:00Z'))/86400000)+1);
     const fmtJ3 = iso => iso.slice(8,10)+'/'+iso.slice(5,7);
-    const STEPS_V2=["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Estimation"];
+    const STEPS_V2=["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const v2Acc = { a:[0,0,0,0,0,0], b:[0,0,0,0,0,0], preHome:0, postHome:0, preEst:0, postEst:0, n:0, postShort:0, daysA:0, daysB:0, mixA:0, mixB:0, lastDay:'' };
     let v2Msg = '';
     if (v2Mode==='dates' && !cmpRange) v2Msg = "Choisis une période de comparaison dans le calendrier (période précédente ou année précédente) pour comparer.";
@@ -4196,7 +4214,7 @@ class Component extends DCLogic {
     const v2Kpis = v2Has ? [
       { label:'Conversion', value: dec(v2ConvA,1)+' % → '+dec(v2ConvB,1)+' %', ...(()=>{ const b=ptDeltaBadge(v2ConvB,v2ConvA); return {delta:b.text,deltaStyle:b.style}; })() },
       { label:'Visiteurs accueil / jour', value: this.fmt(Math.round(v2m.preHome))+' → '+this.fmt(Math.round(v2m.postHome)), ...(()=>{ const b=deltaBadge(v2m.postHome,v2m.preHome); return {delta:b.text,deltaStyle:b.style}; })() },
-      { label:'Estimations / jour', value: this.fmt(Math.round(v2m.preEst))+' → '+this.fmt(Math.round(v2m.postEst)), ...(()=>{ const b=deltaBadge(v2m.postEst,v2m.preEst); return {delta:b.text,deltaStyle:b.style}; })() }
+      { label:'Leads GA / jour', value: this.fmt(Math.round(v2m.preEst))+' → '+this.fmt(Math.round(v2m.postEst)), ...(()=>{ const b=deltaBadge(v2m.postEst,v2m.preEst); return {delta:b.text,deltaStyle:b.style}; })() }
     ] : [];
     const v2DatesBp=[...new Set(v2SitesList.map(n=>this.data[n].v2_date))].sort();
     const v2DateTxt = v2DatesBp.length===1 ? 'V2 le '+fmtJ3(v2DatesBp[0]) : v2DatesBp.length+' dates de V2';
@@ -4284,7 +4302,7 @@ class Component extends DCLogic {
     });
 
     // ---- Contribution à l'évolution des estimations (tunnel, deux périodes) : décomposition logarithmique audience + 5 étapes
-    const FACT_NOMS=["Audience","Accueil → Version","Version → Km","Km → Coordonnées","Coordonnées → PDV","PDV → Estimation"];
+    const FACT_NOMS=["Audience","Accueil → Version","Version → Km","Km → Coordonnées","Coordonnées → PDV","PDV → Leads GA"];
     const stepsU=a=>a&&a.funnelSteps&&a.funnelSteps.length===6?a.funnelSteps.map(x=>x.users):null;
     const cuA=stepsU(agg), cuR=stepsU(cmp);
     const contribHas=!!(cuA&&cuR&&cuA.every(v=>v>0)&&cuR.every(v=>v>0));
@@ -4315,22 +4333,22 @@ class Component extends DCLogic {
         ck2.push(h('text',{key:'s'+i,x:x+bw/2,y:WH-26,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[0]+(parts.length>1?' →':'')));
         if (parts.length>1) ck2.push(h('text',{key:'s2'+i,x:x+bw/2,y:WH-13,textAnchor:'middle',fontSize:10,fill:'#6d727a',fontFamily:F},parts[1]));
       };
-      bar(0,yMin,Er,'#c9ccd3',this.fmt(Er),'Période de comparaison',T('Estimations de la période de comparaison :')+' '+this.fmt(Er));
+      bar(0,yMin,Er,'#c9ccd3',this.fmt(Er),'Période de comparaison',T('Leads GA de la période de comparaison :')+' '+this.fmt(Er));
       eff.forEach((e,i)=>{
         const rateTip=i===0?`${T("Visiteurs de l'accueil")} : ${this.fmt(cuR[0])} → ${this.fmt(cuA[0])}`:`${T(FACT_NOMS[i])} : ${dec(cuR[i]/cuR[i-1]*100,1)} % → ${dec(cuA[i]/cuA[i-1]*100,1)} %`;
         bar(i+1,lev[i],lev[i+1],e>=0?'#3fae7a':'#e8544a',(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e))),FACT_NOMS[i],rateTip+' · '+T('effet')+' '+(e>=0?'+':'−')+this.fmt(Math.abs(Math.round(e)))+' '+T('estimations'));
         const xa=CL2+(i+1)*slot-(slot-bw)/2, xb=CL2+(i+1)*slot+(slot-bw)/2;
         ck2.push(h('line',{key:'c'+i,x1:xa,y1:yy(lev[i]),x2:xb,y2:yy(lev[i]),stroke:'#cfd1d6',strokeWidth:1,strokeDasharray:'3 3'}));
       });
-      bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle',T('Estimations de la période actuelle :')+' '+this.fmt(Ec));
+      bar(7,yMin,Ec,'#7c63ee',this.fmt(Ec),'Période actuelle',T('Leads GA de la période actuelle :')+' '+this.fmt(Ec));
       if (yMin>0) ck2.push(h('text',{key:'cut',x:CL2,y:12,fontSize:10,fill:'#b3b7bd',fontFamily:F},'Axe tronqué : lire les barres d\'évolution'));
       const cLab=['Période de comparaison',...FACT_NOMS,'Période actuelle'];
-      this._hov.cbContrib={W:WW,H:WH,top:CT2,bottom:CT2+chei,xs:Array.from({length:8},(_,i)=>CL2+i*slot+slot/2),rows:i=>{ if (i===0) return {title:cLab[0],items:[{n:'Estimations',v:this.fmt(Er)}]}; if (i===7) return {title:cLab[7],items:[{n:'Estimations',v:this.fmt(Ec)}]};
-        const k=i-1, rate=k===0?{n:"Visiteurs de l'accueil",v:this.fmt(cuR[0])+' → '+this.fmt(cuA[0])}:{n:'Passage',v:dec(cuR[k]/cuR[k-1]*100,1)+' % → '+dec(cuA[k]/cuA[k-1]*100,1)+' %'}; return {title:FACT_NOMS[k],items:[rate,{n:'Effet sur les estimations',v:(eff[k]>=0?'+':'−')+this.fmt(Math.abs(Math.round(eff[k])))}]}; }};
+      this._hov.cbContrib={W:WW,H:WH,top:CT2,bottom:CT2+chei,xs:Array.from({length:8},(_,i)=>CL2+i*slot+slot/2),rows:i=>{ if (i===0) return {title:cLab[0],items:[{n:'Leads GA',v:this.fmt(Er)}]}; if (i===7) return {title:cLab[7],items:[{n:'Leads GA',v:this.fmt(Ec)}]};
+        const k=i-1, rate=k===0?{n:"Visiteurs de l'accueil",v:this.fmt(cuR[0])+' → '+this.fmt(cuA[0])}:{n:'Passage',v:dec(cuR[k]/cuR[k-1]*100,1)+' % → '+dec(cuA[k]/cuA[k-1]*100,1)+' %'}; return {title:FACT_NOMS[k],items:[rate,{n:'Effet sur les leads GA',v:(eff[k]>=0?'+':'−')+this.fmt(Math.abs(Math.round(eff[k])))}]}; }};
       contribChart=h('svg',{viewBox:`0 0 ${WW} ${WH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},ck2);
       const iMax=eff.reduce((m,e,i)=>Math.abs(e)>Math.abs(eff[m])?i:m,0);
       const evo=Er?Dl/Er*100:null;
-      contribInsight=`Estimations ${this.fmt(Er)} → ${this.fmt(Ec)}${evo!=null?' ('+(evo>=0?'+':'−')+dec(Math.abs(evo),1)+' %)':''} : le facteur principal est « ${FACT_NOMS[iMax]} » (${eff[iMax]>=0?'+':'−'}${this.fmt(Math.abs(Math.round(eff[iMax])))}).`;
+      contribInsight=`Leads GA ${this.fmt(Er)} → ${this.fmt(Ec)}${evo!=null?' ('+(evo>=0?'+':'−')+dec(Math.abs(evo),1)+' %)':''} : le facteur principal est « ${FACT_NOMS[iMax]} » (${eff[iMax]>=0?'+':'−'}${this.fmt(Math.abs(Math.round(eff[iMax])))}).`;
     }
     // ---- bandeaux « À retenir » des vues existantes
     const signedPct=v=>(v>=0?'+':'−')+dec(Math.abs(v),1)+' %';
@@ -4361,7 +4379,10 @@ class Component extends DCLogic {
     const tqRows=[...qa.entries()].filter(([,r])=>r.se>0).sort((x,y)=>y[1].s-x[1].s).slice(0,8).map(([name,r])=>{
       const eng=r.e/r.se*100, pr=qc&&qc.get(name)&&qc.get(name).se>=100&&qc.get(name).e>0?qc.get(name).e/qc.get(name).se*100:null, dpt=pr==null?null:eng-pr;
       const col=eng>=qAvg+5?'#3fae7a':eng<=qAvg-5?'#e8544a':'#b6a5f8';
-      return { name, sessions:this.fmt(r.s), eng:dec(eng,1)+' %', bar:`width:${Math.max(2,eng).toFixed(1)}%;height:100%;border-radius:4px;background:${col}`,
+      const q0=qc&&qc.get(name), dS=q0&&q0.s>=100?(r.s/q0.s-1)*100:null, dC=q0&&q0.s>=100&&r.s>0?r.c/r.s*100-q0.c/q0.s*100:null;
+      const dStyle=(v,seuil)=>`font-size:14px;font-weight:600;text-align:right;color:${v==null?'#9a9fa6':v>seuil?'#1f9254':v<-seuil?'#a33c39':'#9a9fa6'}`;
+      return { name, sessions:this.fmt(r.s), sDelta:dS==null?'—':(dS>=0?'+':'−')+dec(Math.abs(dS),1)+' %', sDeltaStyle:dStyle(dS,1),
+        cDelta:dC==null?'—':(dC>=0?'+':'−')+dec(Math.abs(dC),1)+' pt', cDeltaStyle:dStyle(dC,0.2), eng:dec(eng,1)+' %', bar:`width:${Math.max(2,eng).toFixed(1)}%;height:100%;border-radius:4px;background:${col}`,
         delta:dpt==null?'—':(dpt>=0?'+':'−')+dec(Math.abs(dpt),1)+' pt', deltaStyle:`font-size:14px;font-weight:600;text-align:right;color:${dpt==null?'#9a9fa6':dpt>0.5?'#1f9254':dpt<-0.5?'#a33c39':'#9a9fa6'}`,
         conv:dec(r.c/r.s*100,1)+' %' };
     });
@@ -4381,7 +4402,7 @@ class Component extends DCLogic {
     const utmHas=utmArr.length>0, utmMaxC=Math.max(1,...utmArr.map(r=>r.c));
     const utmRows=utmArr.slice(0,9).map(r=>({ name:r.name, title:r.title||r.name, sessions:this.fmt(r.s), eng:dec(r.e/r.s*100,0)+' %', est:this.fmt(r.c), conv:dec(r.c/r.s*100,1)+' %', bar:`width:${(r.c/utmMaxC*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8` }));
     const mkChips=(opts,cur,key)=>opts.map(([v,l])=>({label:l,pick:()=>set({[key]:v}),style:`display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:9px;font-size:13px;cursor:pointer;white-space:nowrap;${cur===v?'background:#f1eefe;color:#5b43d6;font-weight:600':'color:#6d727a'}`}));
-    const utmGroupChips=mkChips([['sm','Source / médium'],['camp','Campagne']],utmGroup,'utmGroup'), utmSortChips=mkChips([['sessions','Sessions'],['est','Estimations'],['conv','Conversion']],utmSort,'utmSort');
+    const utmGroupChips=mkChips([['sm','Source / médium'],['camp','Campagne']],utmGroup,'utmGroup'), utmSortChips=mkChips([['sessions','Sessions'],['est','Leads GA'],['conv','Conversion']],utmSort,'utmSort');
     let insUtm='';
     if (utmHas) { const totS=utmArr.reduce((x,r)=>x+r.s,0); const best=utmArr.filter(r=>r.s>=300).sort((x,y)=>y.c/y.s-x.c/x.s)[0];
       const sansC=[...agg.utm.values()].filter(r=>!r.camp||r.camp==='(not set)').reduce((x,r)=>x+r.sessions,0), totAll=[...agg.utm.values()].reduce((x,r)=>x+r.sessions,0);
@@ -4395,11 +4416,13 @@ class Component extends DCLogic {
     const segTot=[0,0,0,0,0,0]; for (const v of segMap.values()) v.forEach((x,i)=>{ segTot[i]+=x; });
     const trans=v=>[1,2,3,4,5].map(k=>v[k-1]>0?v[k]/v[k-1]*100:null);
     const leakAvg=trans(segTot), leakHas=segTot[0]>=100;
-    const TR_NOMS=['Version','Kilométrage','Coordonnées','Point de vente','Estimation'];
+    const TR_NOMS=['Version','Kilométrage','Coordonnées','Point de vente','Leads GA'];
     const leakSegs=[...segMap.entries()].filter(([,v])=>v[0]>=100).sort((x,y)=>y[1][0]-x[1][0]);
     const cellS=(v,avg)=>{ const d=v==null||avg==null?0:v-avg; const bg=d>=2?'#e8f6ee':d<=-2?'#fdecec':'#f6f6f8', col=d>=2?'#1f7a4d':d<=-2?'#a33c39':'#2f2f33'; return `padding:9px 4px;border-radius:10px;text-align:center;font-size:14px;font-weight:600;background:${bg};color:${col}`; };
-    const leakRows=leakSegs.map(([name,v])=>{ const t=trans(v); const o={name:leakDim==='device'?(DEV_FR[name]||name):name, home:this.fmt(v[0]), conv:dec(v[5]/v[0]*100,1)+' %'}; t.forEach((x,i)=>{ o['n'+(i+1)]=this.fmt(v[i+1]); o['c'+(i+1)]=x==null?'—':dec(x,1)+' %'; o['s'+(i+1)]=cellS(x,leakAvg[i]); }); return o; });
+    const leakRows=leakSegs.map(([name,v])=>{ const t=trans(v); const o={name:leakDim==='device'?(DEV_FR[name]||name):name, home:this.fmt(v[0]), conv:dec(v[5]/v[0]*100,1)+' %'}; t.forEach((x,i)=>{ o['n'+(i+1)]=this.fmt(v[i+1]); o['c'+(i+1)]=x==null?'—':(x>100?'≥ 100 %':dec(x,1)+' %'); o['s'+(i+1)]=cellS(x,leakAvg[i]); }); return o; });
     const leakAvgO={}; leakAvg.forEach((x,i)=>{ leakAvgO['leakAvg'+(i+1)]=x==null?'—':dec(x,1)+' %'; });
+    // conversion finale de la ligne « Moyenne du site » : calculée sur le TOTAL (pondérée par les visiteurs de chaque segment), jamais une moyenne de pourcentages
+    leakAvgO.leakAvgConv = segTot[0]>0 ? dec(segTot[5]/segTot[0]*100,1)+' %' : '—';
     let insLeaks='';
     if (leakHas) { let worst=null; leakSegs.filter(([,v])=>v[0]>=1000).forEach(([name,v])=>{ trans(v).forEach((x,i)=>{ if (x!=null&&leakAvg[i]!=null){ const d=x-leakAvg[i]; if (!worst||d<worst.d) worst={d,name:leakDim==='device'?(DEV_FR[name]||name):name,i,x}; } }); });
       insLeaks=worst&&worst.d<=-2?`Plus gros écart à la moyenne : ${worst.name} à l'étape « ${TR_NOMS[worst.i]} » (${dec(worst.x,1)} % contre ${dec(leakAvg[worst.i],1)} %).`:'Aucun segment important ne s\'écarte de plus de 2 points de la moyenne du site sur une étape.'; }
@@ -4408,7 +4431,7 @@ class Component extends DCLogic {
 
     // ---- Même période, années passées (histMonth : sessions reprise / accueil / estimations par mois depuis 2022)
     const histMetric=st.histMetric||'est';
-    const HM={est:{l:'Estimations',g:a=>a[3]>0?a[3]:null},sess:{l:'Sessions',g:a=>a[0]>0?a[0]:null},home:{l:'Visiteurs accueil',g:a=>a[2]>0?a[2]:null},conv:{l:'Conversion',g:a=>a[2]>=100&&a[3]>0?a[3]/a[2]*100:null}};
+    const HM={est:{l:'Leads GA',g:a=>a[3]>0?a[3]:null},sess:{l:'Sessions',g:a=>a[0]>0?a[0]:null},home:{l:'Visiteurs accueil',g:a=>a[2]>0?a[2]:null},conv:{l:'Conversion',g:a=>a[2]>=100&&a[3]>0?a[3]/a[2]*100:null}};
     const moisCourant=todayIso.slice(0,7), anCourant=+todayIso.slice(0,4);
     const hySet=new Set([...agg.histMonth.keys()].map(k=>+k.slice(0,4)));
     const histYears=[...hySet].sort().filter(y=>y>=anCourant-3);
@@ -4440,7 +4463,7 @@ class Component extends DCLogic {
       if (cur!=null&&prev.length) { const all=[{y:an,v:cur},...prev].sort((x,y)=>y.v-x.v); const rank=all.findIndex(x=>x.y===an)+1, last=prev[prev.length-1];
         const fm=v=>histMetric==='conv'?dec(v,1)+' %':this.fmt(v);
         insHist=`${MOISF[mi].charAt(0).toUpperCase()+MOISF[mi].slice(1)} ${an} : ${fm(cur)} — ${rank===1?'le plus haut':rank===all.length?'le plus bas':rank+'ᵉ rang'} sur ${all.length} années ; ${last.y} : ${fm(last.v)}`+(histMetric!=='conv'&&last.v?` (${signedPct((cur/last.v-1)*100)})`:'')+'.'; } }
-    const histChips=mkChips([['est','Estimations'],['sess','Sessions'],['home','Accueil'],['conv','Conversion']],histMetric,'histMetric');
+    const histChips=mkChips([['est','Leads GA'],['sess','Sessions'],['home','Accueil'],['conv','Conversion']],histMetric,'histMetric');
     const hIcon=kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 14l3-4 3 3 5-7'})), hChip=kPuce('#7c63ee');
 
     // ---- Calendrier d'événements (liste filtrée sur la sélection de sites ; repères sur les courbes)
@@ -5011,7 +5034,7 @@ class Component extends DCLogic {
         bounce:bounce!=null?dec(bounce,1)+' %':'—',
         bounceStyle:'font-size:14px;text-align:right;white-space:nowrap;color:'+(bounce==null?'#c2c5cb':bounce>65?'#a33c39':bounce<35?'#2b8f62':'#2f2f33'),
         leads:leadsVal!=null?this.fmt(leadsVal):'—',
-        leadsTitle: ambigu ? "Page d'accueil commune au site parent et au site reprise : leads non attribuables" : 'Leads GA4 dont la session a commencé sur cette page',
+        leadsTitle: ambigu ? "Page d'accueil commune au site parent et au site reprise : leads non attribuables" : 'Leads GA dont la session a commencé sur cette page',
         leadsStyle:'font-size:14px;font-weight:'+(leadsVal?600:400)+';text-align:right;white-space:nowrap;color:'+(leadsVal==null?'#c2c5cb':'#121214'),
         conv:conv!=null?dec(conv,2)+' %':'—',
         convStyle:'font-size:14px;font-weight:'+(conv!=null?600:400)+';text-align:right;white-space:nowrap;color:'+(conv==null?'#c2c5cb':conv>=2?'#2b8f62':'#121214'),
@@ -5130,7 +5153,7 @@ class Component extends DCLogic {
     const sxConvHas=convPages.length>0&&cvSess>0;
     const cvMax=Math.max(1,...convPages.map(([,v])=>v.landingLeads||0));
     const sxConvRows=convPages.map(([path,v])=>({name:path,title:v.pageUrl||path,clics:this.fmt(v.clics),sessions:v.landingSessions?this.fmt(v.landingSessions):'—',est:v.landingSessions?this.fmt(v.landingLeads):'—',conv:v.landingSessions>=SEUIL_SESSIONS_FIABLE?dec(v.landingLeads/v.landingSessions*100,2)+' %':'—',bar:`width:${((v.landingLeads||0)/cvMax*100).toFixed(1)}%;height:100%;border-radius:3px;background:#b6a5f8`}));
-    const sxConvTiles=[{label:'Clics Search Console',value:this.fmt(cvClics),sub:'pages principales, hors accueil'},{label:'Sessions arrivées sur ces pages',value:this.fmt(cvSess),sub:`${dec(shr(cvSess,cvClics),0)} % des clics (canal GA4 filtré)`},{label:'Estimations déclenchées',value:this.fmt(cvLeads),sub:cvSess?`${dec(shr(cvLeads,cvSess),2)} % des sessions`:'—'}];
+    const sxConvTiles=[{label:'Clics Search Console',value:this.fmt(cvClics),sub:'pages principales, hors accueil'},{label:'Sessions arrivées sur ces pages',value:this.fmt(cvSess),sub:`${dec(shr(cvSess,cvClics),0)} % des clics (canal GA4 filtré)`},{label:'Leads GA déclenchés',value:this.fmt(cvLeads),sub:cvSess?`${dec(shr(cvLeads,cvSess),2)} % des sessions`:'—'}];
     const sxConvSub='Pages principales (hors accueil) · canal GA4 : '+((pagesCanaux.find(c=>/font-weight:600|background:#fff/.test(c.style||''))||{label:'Organic Search'}).label||'Organic Search');
     let insSxConv='';
     if (sxConvHas&&convPages[0]) { const [path,v]=convPages[0]; insSxConv=`${path} génère le plus d'estimations (${this.fmt(v.landingLeads||0)})`+(v.landingSessions>=SEUIL_SESSIONS_FIABLE?` avec une conversion de ${dec(v.landingLeads/v.landingSessions*100,2)} %`:'')+` ; au global, ${dec(shr(cvLeads,cvClics),1)} estimation pour 100 clics.`; }
@@ -5792,7 +5815,8 @@ class Component extends DCLogic {
     // entrée directe sur la reprise (Looker « Traffic landing on Trade In ») : canaux, part vs site marque
     const entA = agg.entree || {canaux:new Map(),total:0,marque:0,mois:[]};
     const entTotal = entA.total, entHas = entTotal>0;
-    const entRows = [...entA.canaux.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>({name:n,sessions:this.fmt(c),share:entTotal?dec(c/entTotal*100,1)+' %':'—',
+    const entC = cmp && cmp.entree ? cmp.entree : null;
+    const entRows = [...entA.canaux.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>({name:n,sessions:this.fmt(c),vs:(()=>{ const p=entC&&entC.canaux.get(n); if(!entC||!(p>=50)) return '—'; const d=(c/p-1)*100; return (d>=0?'+':'−')+dec(Math.abs(d),1)+' %'; })(),vsStyle:(()=>{ const p=entC&&entC.canaux.get(n); const d=entC&&p>=50?(c/p-1)*100:null; return `font-size:14.5px;font-weight:600;text-align:right;color:${d==null?'#9a9fa6':d>1?'#1f9254':d<-1?'#a33c39':'#9a9fa6'}`; })(),share:entTotal?dec(c/entTotal*100,1)+' %':'—',
       bar:`display:block;height:100%;width:${entTotal?Math.max(2,c/entTotal*100).toFixed(1):0}%;border-radius:3px;background:#7c63ee`}));
     const entAll = entTotal+entA.marque;
     const entSummary = entHas ? `${this.fmt(entTotal)} sessions arrivent directement sur la reprise (${dec(entTotal/entAll*100,1)} %), ${this.fmt(entA.marque)} depuis le site marque (${dec(entA.marque/entAll*100,1)} %).` : '';
@@ -6805,9 +6829,9 @@ class Component extends DCLogic {
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
-      convDefLabel: convSessMode ? 'estimations ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts'),
+      convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
-      compPctLabel, compMedianLabel, abandonLabel,
+      compPctLabel, compMedianLabel, abandonLabel, funnelDelta, globalRateLabel, globalRateSub,
       steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),

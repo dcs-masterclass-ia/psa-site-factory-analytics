@@ -51,7 +51,7 @@ test("module Pages (Search Console) : leads GA4 rattachés à la page d'atterris
   await page.locator('div[title="Search Console"]').first().click();
   await page.getByText("Pages", { exact: true }).first().click();      // thème « Pages » (vue Top pages par défaut)
 
-  await expect(page.getByText("Leads GA4", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Leads GA", { exact: true }).first()).toBeVisible();
   // filtre canal : Organique par defaut, pastille active sombre ; "Tous canaux" = totaux
   for (const c of ["Organique", "Payant", "Direct", "Autres", "Tous canaux"]) await expect(page.getByText(c, { exact: true }).first()).toBeVisible();
   await page.getByText("Tous canaux", { exact: true }).first().click();
@@ -84,7 +84,7 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
   await page.getByText("14 j", { exact: true }).click();
   await expect(page.getByText(/avant : 14 jours précédant la bascule/)).toBeVisible();
   await expect(page.getByText("Visiteurs accueil / jour")).toBeVisible();
-  await expect(page.getByText("Estimations / jour")).toBeVisible();
+  await expect(page.getByText("Leads GA / jour")).toBeVisible();
   // écarts de conversion en POINTS (jamais une variation relative étiquetée pt)
   await expect(page.getByText(/[+−]\d+,\d pt/).first()).toBeVisible();
   // info-bulle : visible au survol
@@ -160,7 +160,7 @@ test("Tableau : prévision, année sur année, saisonnalité, ruptures, qualité
   page.on("pageerror", (e) => erreurs.push(e.message));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Pilotage des leads"]').first().click();
-  for (const t of ["Prévision", "Année sur année", "Saisonnalité", "Ruptures de tendance", "Qualité des leads", "Marques reprises", "Marchés des sites"]) {
+  for (const t of ["Prévision", "Année sur année", "Saisonnalité", "Ruptures de tendance", "Qualité des leads", "Marques reprises", "Carburant des véhicules repris"]) {
     await expect(page.getByText(t, { exact: true }).first()).toBeVisible();
   }
   await expect(page.getByText(/Projection fin \d{4}/).first()).toBeVisible();
