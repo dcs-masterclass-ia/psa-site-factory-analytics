@@ -307,5 +307,5 @@ class C1st(unittest.TestCase):
             ctx = Ctx(brief, self._donnees(tmp))
             s1, s2 = c1st_lead_management(ctx), c1st_conversion(ctx)
             texte = lambda s: " ".join(c.text for sh in s.shapes if sh.has_table for r in sh.table.rows for c in r.cells)
-            self.assertIn("2 970", texte(s1))          # clients envoyés : 3 x 990... 980 x 3 = 2 940 ; ici envoyés via clients_envoyes
+            self.assertIn("2\u00a0940", texte(s1))          # clients envoyés : 3 mois x 980
             self.assertIn("6,0", texte(s2).replace(" ", " "))   # 180 / 3000 = 6,0 %
