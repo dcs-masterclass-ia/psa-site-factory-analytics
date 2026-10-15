@@ -40,11 +40,11 @@ const TYPES_PERIODE = ["mois", "trimestre", "semestre", "annee"];
 const MAX_INDICE = { mois: 12, trimestre: 4, semestre: 2, annee: 0 };
 const MAX_BRIEFS = 200;
 const MAX_FILE_BYTES = 900 * 1024;
-const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "conquete", "crm", "analyse", "points_ouverts", "prochaines_etapes", "nps", "utm"];
+const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "conquete", "ytd", "seo", "marche", "objectifs", "crm", "analyse", "points_ouverts", "prochaines_etapes", "nps", "utm"];
 const LANGUES = ["fr", "en", "it", "es", "de"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
 
-const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion", "c1st_ventes_additionnelles"];
+const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion", "c1st_ventes_additionnelles", "ytd", "seo", "seo_vue", "marche", "objectifs"];
 const RE_MARQUE = /^[A-Z0-9 &'.-]{1,40}$/;
 
 const txt = (v, max) => String(v == null ? "" : v).replace(/\u0000/g, "").trim().slice(0, max);

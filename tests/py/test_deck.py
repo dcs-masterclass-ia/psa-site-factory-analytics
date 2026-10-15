@@ -371,7 +371,7 @@ class Traductions(unittest.TestCase):
         from pathlib import Path
         from pipeline.deck.traductions import traduit_texte, LANGUES, PHRASES, _COMPILES
         fonctions = {"apercu_marques", "cta_marque", "conquete_marque", "classement_marches", "projection_mois", "entree_vehicule", "v2_marque",
-                     "c1st_lead_management", "c1st_conversion", "apercu_marque"}
+                     "c1st_lead_management", "c1st_conversion", "apercu_marque", "ytd_marque", "seo_vue", "seo_marque", "marche_pays", "objectifs_vue"}
         racine = Path(__file__).resolve().parents[2] / "pipeline" / "deck"
         manquants = set()
         for f in ("construit.py", "analyse.py"):
@@ -434,3 +434,146 @@ class VentesAdditionnelles(unittest.TestCase):
             self.assertIn("+360", cellules)     # cumul Jan-Sep : 900 - 540
             d._c1st_data["FR"].pop("2025-08")   # un mois manque -> pas de slide (jamais de total partiel)
             self.assertIsNone(c1st_ventes_additionnelles(ctx))
+
+
+class SlidesReference(unittest.TestCase):
+    """Modules ytd / seo / marche / objectifs et design des decks de référence (phrase-clé, encadré bleu pointillé, drapeau)."""
+
+    def _ctx(self, tmp, modules, pays=("PT",), langue="en", periode=None):
+        import json
+        from collections import defaultdict
+        from pathlib import Path
+        from pipeline.deck.construit import Ctx
+        from pipeline.deck.donnees import Donnees
+        racine = Path(tmp)
+        (racine / "history").mkdir()
+        brief = {"client": "x", "langue": langue, "periode": periode or {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": list(pays), "marques": []},
+                 "comparaisons": {"precedente": True, "n1": True}, "modules": modules, "contact": {}, "pointsOuverts": [], "prochainesEtapes": []}
+        d = Donnees(list(pays), None, hist=racine / "history")
+        d.sites = [(f"PEUGEOT {pays[0]}", "PEUGEOT", pays[0]), (f"CITROEN {pays[0]}", "CITROEN", pays[0])]
+        d.marques = ["PEUGEOT", "CITROEN"]
+        leads = defaultdict(lambda: defaultdict(int))
+        for a, base in ((2025, 50), (2026, 100)):
+            for mo in range(1, 10):
+                for marque, k in (("PEUGEOT", 1), ("CITROEN", 2)):
+                    leads[(marque, f"{a}-{mo:02d}-15")]["VN"] += base * k
+                    leads[(marque, f"{a}-{mo:02d}-16")]["VO"] += 10
+        d._leads = leads
+        return Ctx(brief, d), racine
+
+    def test_ytd_marque(self):
+        from pipeline.deck.construit import ytd_marque
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, _ = self._ctx(tmp, ["ytd"])
+            s = ytd_marque(ctx, "PEUGEOT")
+            self.assertIn("YTD leads trends", s.shapes.title.text)
+            sous = [p for p in s.placeholders if p.placeholder_format.idx == 12][0].text
+            self.assertIn("880 leads year to date in 2026", sous)           # 8 mois écoulés (les leads s'arrêtent au 16/09) x (100 VN + 10 VO)
+            self.assertIn("+83% vs 2025", sous)                             # même 8 mois en 2025 : 8 x (50 + 10) = 480
+            formes = {sh.name for sh in s.shapes}
+            self.assertTrue(any(n.startswith("Rectangle") for n in formes))      # encadré bleu pointillé
+            self.assertTrue(any(n.startswith("Picture") for n in formes))        # drapeau
+
+    def test_design_titre_reference(self):
+        from pipeline.deck.construit import ytd_marque
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, _ = self._ctx(tmp, ["ytd"])
+            s = ytd_marque(ctx, "PEUGEOT")
+            r = s.shapes.title.text_frame.paragraphs[0].runs[0].font
+            self.assertEqual((r.name, r.size.pt, r.bold, str(r.color.rgb)), ("Calibri", 28.0, True, "043882"))
+            r2 = [p for p in s.placeholders if p.placeholder_format.idx == 12][0].text_frame.paragraphs[0].runs[0].font
+            self.assertEqual((r2.bold, str(r2.color.rgb)), (True, "043882"))
+            box = [sh for sh in s.shapes if sh.name.startswith("Rectangle")][0]
+            self.assertEqual(str(box.fill.fore_color.rgb), "F3F8FF")
+            self.assertIn("prstDash", box._element.xml)
+
+    def test_objectifs(self):
+        import json
+        from pipeline.deck.construit import objectifs_vue
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, racine = self._ctx(tmp, ["objectifs"])
+            self.assertIsNone(objectifs_vue(ctx))                           # aucun objectif saisi : pas de slide
+            (racine / "objectifs").mkdir()
+            (racine / "objectifs" / "objectifs.json").write_text(json.dumps({"annees": {"2026": {"PEUGEOT PT": 3000, "CITROEN PT": 5000}}}), encoding="utf-8")
+            s = objectifs_vue(ctx)
+            self.assertEqual(s.shapes.title.text, "Objectives 2026")
+            cellules = " ".join(c.text for sh in s.shapes if getattr(sh, "has_table", False) and sh.has_table for r in sh.table.rows for c in r.cells)
+            self.assertIn("3,000", cellules)
+            self.assertIn("8,000", cellules)                                # total des objectifs
+
+    def test_marche(self):
+        import json
+        from pipeline.deck.construit import marche_pays
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, racine = self._ctx(tmp, ["marche"])
+            self.assertIsNone(marche_pays(ctx, "PT"))                       # market.json absent
+            (racine / "market.json").write_text(json.dumps({"markets": {"PT": {"monthly": [{"month": "2026-09", "total": 20000, "yoy_pct": 10.0, "source_url": "https://www.acap.pt/x"}]}}}), encoding="utf-8")
+            ctx.d._market = None
+            s = marche_pays(ctx, "PT")
+            self.assertIn("Leads vs market", s.shapes.title.text)
+            self.assertIsNone(marche_pays(ctx, "BE"))                       # marché non couvert
+
+    def test_seo(self):
+        from collections import defaultdict
+        from pipeline.deck.construit import seo_vue, seo_marque
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, _ = self._ctx(tmp, ["seo"])
+            ctx.d._gsc = defaultdict(lambda: [0, 0, 0.0]); ctx.d._gsc_min = {}
+            self.assertIsNone(seo_vue(ctx))                                  # aucune donnée Search Console
+            for a in (2025, 2026):
+                for mo in range(1, 10):
+                    for marque in ("PEUGEOT", "CITROEN"):
+                        v = ctx.d._gsc[(marque, f"{a}-{mo:02d}-10")]
+                        v[0], v[1], v[2] = (100 if a == 2026 else 80), 5000, 7.0 * 5000
+                        ctx.d._gsc_min[marque] = "2025-01-10"
+            s = seo_vue(ctx)
+            self.assertIn("Search Console overview", s.shapes.title.text)
+            self.assertIsNotNone(seo_marque(ctx, "PEUGEOT"))
+
+    def test_assemblage_sans_donnees_pas_de_section_vide(self):
+        """Modules choisis sans données : aucun sommaire orphelin, un avertissement par module."""
+        import os
+        from pipeline.deck.construit import construit
+        from pipeline.deck.donnees import Donnees
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = {"client": "x", "langue": "en", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["BE"], "marques": []},
+                     "comparaisons": {"precedente": True, "n1": True}, "modules": ["global", "crm", "seo", "marche", "objectifs"], "contact": {}, "pointsOuverts": [], "prochainesEtapes": []}
+            d = Donnees(["BE"], None, hist=tmp)
+            d.utilisateurs = lambda *a, **k: {"utilisateurs": 0, "in_journey": 0, "hot_leads": 0}
+            ctx = construit(brief, d, os.path.join(tmp, "t.pptx"))
+            avert = " ".join(ctx.avertissements)
+            for mot in ("C1ST", "SEO", "marché", "objectifs"):
+                self.assertIn(mot, avert)
+            titres = [s.shapes.title.text for s in ctx.prs.slides if s.shapes.title is not None]
+            self.assertNotIn("SEO — Search Console overview", titres)
+
+    def test_traductions_completes_dans_les_slides(self):
+        """it / es / de : aucun mot anglais ne doit rester dans les slides ytd / seo / marché / objectifs (une phrase générique peut en avaler une plus longue)."""
+        import json, re
+        from collections import defaultdict
+        from pipeline.deck.construit import ytd_marque, seo_vue, seo_marque, marche_pays, objectifs_vue
+        from pipeline.deck.traductions import traduit_deck
+        anglais = re.compile(r"\b(year to date|clicks?|organic|registrations|Market|Best month|Latest month|projection|target|expected|furthest|leads per)\b", re.I)
+        for langue in ("it", "es", "de"):
+            with tempfile.TemporaryDirectory() as tmp:
+                ctx, racine = self._ctx(tmp, ["ytd"], langue="en")
+                ctx.langue = "en"
+                (racine / "objectifs").mkdir()
+                (racine / "objectifs" / "objectifs.json").write_text(json.dumps({"annees": {"2026": {"PEUGEOT PT": 3000, "CITROEN PT": 5000}}}), encoding="utf-8")
+                (racine / "market.json").write_text(json.dumps({"markets": {"PT": {"monthly": [{"month": "2026-09", "total": 20000, "yoy_pct": 10.0, "source_url": "https://www.acap.pt/x"}]}}}), encoding="utf-8")
+                ctx.d._gsc = defaultdict(lambda: [0, 0, 0.0]); ctx.d._gsc_min = {}
+                for a in (2025, 2026):
+                    for mo in range(1, 10):
+                        for marque in ("PEUGEOT", "CITROEN"):
+                            v = ctx.d._gsc[(marque, f"{a}-{mo:02d}-10")]
+                            v[0], v[1], v[2] = (100 if a == 2026 else 80), 5000, 7.0 * 5000
+                            ctx.d._gsc_min[marque] = "2025-01-10"
+                for f, args in ((ytd_marque, ("PEUGEOT",)), (seo_vue, ()), (seo_marque, ("PEUGEOT",)), (marche_pays, ("PT",)), (objectifs_vue, ())):
+                    self.assertIsNotNone(f(ctx, *args), f.__name__)
+                traduit_deck(ctx.prs, langue)
+                restes = []
+                for s in ctx.prs.slides:
+                    for sh in s.shapes:
+                        if sh.has_text_frame:
+                            restes += [p.text for p in sh.text_frame.paragraphs if anglais.search(p.text)]
+                self.assertEqual(restes, [], langue)

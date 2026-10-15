@@ -19,7 +19,7 @@ const appelle = (method, body, query) => new Promise(resolve => {
   handler({ method, body, query, headers: {} }, res);
 });
 const brief = { titre: "Stellantis BELUX T3-2026", client: "Stellantis", langue: "en", perimetre: { pays: ["be", "LU"], marques: ["Peugeot", "Citroën"] },
-  periode: { type: "trimestre", annee: 2026, indice: 3 }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "inconnu"],
+  periode: { type: "trimestre", annee: 2026, indice: 3 }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "ytd", "seo", "marche", "objectifs", "crm", "inconnu"],
   contact: { nom: "B. Moumni", fonction: "DKAM", email: "b.moumni@autobiz.com" },
   pointsOuverts: [{ titre: "Pop-in", texte: "À déployer" }, { titre: "", texte: "" }],
   prochainesEtapes: [{ item: "Promo Master", responsable: "autobiz", statut: "en_cours", echeance: "sept-26" }, { item: "", responsable: "x" }], commentaire: "RAS" };
@@ -37,7 +37,7 @@ test("création : nettoyée (pays en majuscules, module inconnu et lignes vides 
   const b = r.body.brief;
   assert.match(b.id, /^B-/); assert.equal(b.statut, "brouillon");
   assert.deepEqual(b.perimetre.pays, ["BE", "LU"]);
-  assert.deepEqual(b.modules, ["global", "trafic_marque"]);
+  assert.deepEqual(b.modules, ["global", "trafic_marque", "ytd", "seo", "marche", "objectifs", "crm"]);
   assert.equal(b.pointsOuverts.length, 1); assert.equal(b.prochainesEtapes.length, 1);
   assert.equal(b.auteur, "m.foureau@autobiz.com");
 });

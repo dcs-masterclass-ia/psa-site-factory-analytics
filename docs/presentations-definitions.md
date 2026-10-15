@@ -96,3 +96,21 @@ Remplace la règle du 10/10 « utilisateurs distincts partout » : la chaîne de
 In Journey (sessions sur « form page » / « lead page ») → Hot leads (évènements `tradein_request`), canaux = « Stellantis Custom Channel Group ».
 Les utilisateurs distincts restent disponibles dans les données (`utilisateurs`) mais ne sont plus affichés. Le cache GA4 des
 présentations est versionné (`v2|…`) : les anciennes valeurs en utilisateurs ne sont pas réutilisées.
+
+## Modules ajoutés d'après les decks de référence (16/10/2026)
+Analyse de 6 decks réels (BE T3, ES sept., PT T3, FR août, DS FR, Opel FR) face au générateur : ce qui manquait est maintenant produit.
+- **`crm` — Suivi des leads par les concessionnaires (C1ST)** : les 3 slides C1ST (suivi, du lead à la commande, ventes additionnelles) ne sont plus cachées dans « Vue globale » ;
+  section d'agenda « Performance commerciale ». Sans marché C1ST dans le périmètre : avertissement, pas de section.
+- **`ytd` — Tendance annuelle par marque** : leads mensuels de l'année de la période face à N-1 (total et New cars), limités aux **mois écoulés** (le mois entamé n'est pas compté,
+  plafonné au dernier jour de leads connu). Équivalent des « YTD Leads Trends » du deck FR.
+- **`seo` — Visibilité SEO (Search Console)** : une vue d'ensemble par marque (clics, impressions, CTR, position moyenne pondérée par les impressions, évolution des clics vs références) puis,
+  par marque, les clics mensuels de l'année face à N-1 (historique GSC de 16 mois : un mois non couvert n'affiche rien) et les 7 principales requêtes des mois de la période (`searchMonth`).
+  Section « Visibilité SEO ». Les marques sans historique couvrant la période sont omises.
+- **`marche` — Leads vs marché** : par marché du périmètre présent dans `market.json` (FR, ES, PT, IT, DE, PL, GB), sur les mois de la période pour lesquels une immatriculation est publiée :
+  croissance annuelle du marché face à celle des leads New cars (VN), et **leads pour 1 000 immatriculations**. BE / LU : pas de données de marché, pas de slide. Les relevés de marché sont épars
+  (certains marchés n'ont qu'un mois) : la slide ne montre que les mois réellement publiés.
+- **`objectifs` — Objectifs de l'année** : objectifs saisis dans le dashboard (GA4 > Pilotage > Objectifs, `objectifs/objectifs.json` du repo de données), additionnés par marque ;
+  *attendu à date* = objectif × part de l'année N-1 écoulée à la même date, *projection* = cumul ÷ cette part. Sans objectif saisi : avertissement, pas de section.
+- **Design « reporting pays »** (`nouvelle_ref` dans `construit.py`) repris de la slide 3 du deck PT T3 : titre Calibri gras 28 pt bleu 043882, **phrase-clé** en sous-titre (gras 18 pt, réduite
+  à 16 / 14 pt si elle dépasse 82 / 100 caractères), drapeau du marché (1 pays) à côté du logo, graphiques à gauche, **encadré bleu pointillé** à droite (fond F3F8FF, trait pointillé,
+  puces • 12 pt, texte centré verticalement, 5 puces au plus de 150 caractères). Le titre / sous-titre au format de référence s'applique à toutes les diapositives.

@@ -1,0 +1,20 @@
+{
+ "Synthèse, leads par groupe de marques (hors Spoticar), leads par marque (vs période précédente et N-1), tendance dans la période, leads New cars, vue d'ensemble par marque, classement des marchés, mode de saisie du véhicule (plaque), projection du mois (édition mensuelle en cours)": "Summary, leads by brand group (excl. Spoticar), leads by brand (vs previous period and N-1), trend within the period, New cars leads, overview by brand, market ranking, vehicle entry mode (plate), month projection (current monthly edition)",
+ "Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads par marque, parcours avant / après V2": "For each brand: trade-in traffic, users → In Journey → Hot leads funnel, channels, leads by brand, journey before / after V2",
+ "Suivi des leads par les concessionnaires (C1ST)": "Lead follow-up by dealers (C1ST)",
+ "Contact, traitement, 1er appel, opportunités, devis, commandes NSC et ventes additionnelles par marque (marchés suivis par C1ST : FR, BE/LU, ES, PT, IT)": "Contact, processing, first call, opportunities, quotes, NSC orders and additional sales by brand (markets tracked by C1ST: FR, BE/LU, ES, PT, IT)",
+ "Tendance annuelle des leads par marque (YTD)": "Annual lead trend by brand (YTD)",
+ "Visibilité SEO (Search Console)": "SEO visibility (Search Console)",
+ "Leads vs marché (immatriculations)": "Leads vs market (registrations)",
+ "Pour chaque marché couvert par AAA Data / sources officielles : immatriculations mensuelles face aux leads New cars autobiz": "For each market covered by AAA Data / official sources: monthly registrations against autobiz New cars leads",
+ "Objectifs de l'année": "Targets for the year",
+ "Objectifs de leads saisis dans le dashboard (GA4 > Pilotage > Objectifs) face au réalisé, à l'attendu à date et à la projection, par marque": "Lead targets entered in the dashboard (GA4 > Steering > Targets) against actuals, year-to-date expected and projection, by brand",
+ "Aucun marché suivi par C1ST dans le périmètre : aucune diapositive": "No market tracked by C1ST in the scope: no slides",
+ "Aucun marché du périmètre n'a de données de marché": "No market in the scope has market data",
+ "Revue mensuelle France": "Monthly review France",
+ "Revue mensuelle du marché français : vue globale, suivi C1ST, projets d'achat, trafic, sources, CTA, conquête, tendance annuelle, SEO, analyse, points ouverts, prochaines étapes": "Monthly review of the French market: global view, C1ST follow-up, purchase projects, traffic, sources, CTAs, conquest, annual trend, SEO, analysis, open points, next steps",
+ "Bilan annuel et plan d'action": "Annual review and action plan",
+ "Bilan de l'année : vue globale, suivi C1ST, projets, trafic, sources, CTA, conquête, tendance annuelle, SEO, objectifs, analyse, points ouverts, prochaines étapes": "Year review: global view, C1ST follow-up, projects, traffic, sources, CTAs, conquest, annual trend, SEO, targets, analysis, open points, next steps",
+ "Reporting trimestriel pays": "Quarterly country reporting",
+ "Reporting trimestriel d'un pays : vue globale, suivi C1ST, projets, trafic, sources, conquête, leads vs marché, objectifs, analyse, points ouverts, prochaines étapes": "Quarterly reporting for a country: global view, C1ST follow-up, projects, traffic, sources, conquest, leads vs market, targets, analysis, open points, next steps"
+}

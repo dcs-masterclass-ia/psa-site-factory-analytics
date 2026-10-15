@@ -184,6 +184,91 @@ ETAPES = {
 }
 
 
+# ------------------------------------------------------------------ SEO, YTD, marché, objectifs (slides au design des decks de référence)
+LIBELLES.update({
+    "SEO — Search Console overview": ("SEO — panoramica Search Console", "SEO — visión general de Search Console", "SEO — Search-Console-Überblick"),
+    "Source: Google Search Console": ("Fonte: Google Search Console", "Fuente: Google Search Console", "Quelle: Google Search Console"),
+    "Sources: autobiz back-office and registrations (AAA Data, ACEA, official sources)": (
+        "Fonti: back-office autobiz e immatricolazioni (AAA Data, ACEA, fonti ufficiali)", "Fuentes: back-office autobiz y matriculaciones (AAA Data, ACEA, fuentes oficiales)",
+        "Quellen: autobiz-Back-Office und Zulassungen (AAA Data, ACEA, offizielle Quellen)"),
+    "Clicks": ("Clic", "Clics", "Klicks"),
+    "Impressions": ("Impressioni", "Impresiones", "Impressionen"),
+    "Avg. position": ("Pos. media", "Posición media", "Ø Position"),
+    "Query": ("Query di ricerca", "Consulta", "Suchanfrage"),
+    "Position": ("Posizione", "Posición", "Position"),
+    "Month": ("Mese", "Mes", "Monat"),
+    "Registrations": ("Immatricolazioni", "Matriculaciones", "Zulassungen"),
+    "Market vs last year": ("Mercato vs anno prec.", "Mercado vs año anterior", "Markt ggü. Vorjahr"),
+    "New-car leads": ("Lead auto nuove", "Leads de coches nuevos", "Neuwagen-Leads"),
+    "Leads vs last year": ("Lead vs anno prec.", "Leads vs año anterior", "Leads ggü. Vorjahr"),
+    "Leads / 1,000 reg.": ("Lead / 1.000 immatr.", "Leads / 1.000 matric.", "Leads / 1.000 Zul."),
+    "Market (% vs last year)": ("Mercato (% vs anno prec.)", "Mercado (% vs año anterior)", "Markt (% ggü. Vorjahr)"),
+    "New-car leads (% vs last year)": ("Lead auto nuove (% vs anno prec.)", "Leads de coches nuevos (% vs año anterior)", "Neuwagen-Leads (% ggü. Vorjahr)"),
+    "Year to date": ("Da inizio anno", "Acumulado", "Seit Jahresbeginn"),
+    "Expected to date": ("Atteso a oggi", "Esperado a la fecha", "Erwartet bis heute"),
+    "vs expected": ("vs atteso", "vs esperado", "ggü. Erwartung"),
+    "Projection": ("Proiezione", "Proyección", "Prognose"),
+    "% of target": ("% dell'obiettivo", "% del objetivo", "% des Ziels"),
+    "Expected to date = target × last year's seasonality.": (
+        "Atteso a oggi = obiettivo × stagionalità dell'anno precedente.", "Esperado a la fecha = objetivo × estacionalidad del año anterior.",
+        "Erwartet bis heute = Ziel × Saisonalität des Vorjahres."),
+})
+
+PHRASES += [
+    ("{b} — SEO performance {p}", "{b} — Performance SEO {p}", "{b} — Rendimiento SEO {p}", "{b} — SEO-Performance {p}"),
+    ("{b} — YTD leads trends", "{b} — Andamento dei lead da inizio anno", "{b} — Evolución de leads en el año", "{b} — Lead-Entwicklung im Jahresverlauf"),
+    ("{p} — Leads vs market", "{p} — Lead vs mercato", "{p} — Leads vs mercado", "{p} — Leads vs. Markt"),
+    ("Objectives {y}", "Obiettivi {y}", "Objetivos {y}", "Ziele {y}"),
+    ("Target {y}", "Obiettivo {y}", "Objetivo {y}", "Ziel {y}"),
+    ("Clicks {r}", "Clic {r}", "Clics {r}", "Klicks {r}"),
+    # YTD
+    ("{b}: {n} leads year to date in {y}, {e} vs {z}", "{b}: {n} lead da inizio {y}, {e} vs {z}", "{b}: {n} leads acumulados en {y}, {e} vs {z}", "{b}: {n} Leads seit Jahresbeginn {y}, {e} ggü. {z}"),
+    ("{n} leads year to date in {y}, {e} vs the same months of {z} ({p}).", "{n} lead da inizio {y}, {e} vs gli stessi mesi del {z} ({p}).",
+     "{n} leads acumulados en {y}, {e} vs los mismos meses de {z} ({p}).", "{n} Leads seit Jahresbeginn {y}, {e} ggü. denselben Monaten {z} ({p})."),
+    ("New cars: {n} leads, {p} of the total ({e} vs {y}).", "Auto nuove: {n} lead, pari a {p} del totale ({e} vs {y}).",
+     "Coches nuevos: {n} leads, es decir {p} del total ({e} vs {y}).", "Neuwagen: {n} Leads, {p} des Gesamtvolumens ({e} ggü. {y})."),
+    ("Best month of {y}: {m} ({n}).", "Mese migliore del {y}: {m} ({n}).", "Mejor mes de {y}: {m} ({n}).", "Bester Monat {y}: {m} ({n})."),
+    ("Latest month ({m}): {e} vs {k} {y}.", "Ultimo mese ({m}): {e} vs {k} {y}.", "Último mes ({m}): {e} vs {k} {y}.", "Letzter Monat ({m}): {e} ggü. {k} {y}."),
+    # SEO
+    ("Organic search: {n} clicks in {p}, {e} {r}; average position {x}.", "Ricerca organica: {n} clic su {p}, {e} {r}; posizione media {x}.",
+     "Búsqueda orgánica: {n} clics en {p}, {e} {r}; posición media {x}.", "Organische Suche: {n} Klicks in {p}, {e} {r}; Ø Position {x}."),
+    ("Organic search: {n} clicks in {p}; average position {x}.", "Ricerca organica: {n} clic su {p}; posizione media {x}.",
+     "Búsqueda orgánica: {n} clics en {p}; posición media {x}.", "Organische Suche: {n} Klicks in {p}; Ø Position {x}."),
+    ("{b}: {e} clicks {r}, the largest increase.", "{b}: {e} di clic {r}, il maggiore aumento.", "{b}: {e} de clics {r}, el mayor aumento.", "{b}: {e} Klicks {r}, der stärkste Anstieg."),
+    ("{b}: {e} clicks {r}, the largest decrease.", "{b}: {e} di clic {r}, il maggiore calo.", "{b}: {e} de clics {r}, la mayor caída.", "{b}: {e} Klicks {r}, der stärkste Rückgang."),
+    ("Average CTR: {c}; average position: {x}.", "CTR medio: {c}; posizione media: {x}.", "CTR medio: {c}; posición media: {x}.", "Ø CTR: {c}; Ø Position: {x}."),
+    ("{b}: {n} organic clicks in {p}, {e} {r}", "{b}: {n} clic organici su {p}, {e} {r}", "{b}: {n} clics orgánicos en {p}, {e} {r}", "{b}: {n} organische Klicks in {p}, {e} {r}"),
+    ("{b}: {n} organic clicks in {p}", "{b}: {n} clic organici su {p}", "{b}: {n} clics orgánicos en {p}", "{b}: {n} organische Klicks in {p}"),
+    ("{b}: top queries in {p}", "{b}: principali query su {p}", "{b}: principales consultas en {p}", "{b}: wichtigste Suchanfragen in {p}"),
+    ("{n} clicks in {p} ({e} {r}).", "{n} clic su {p} ({e} {r}).", "{n} clics en {p} ({e} {r}).", "{n} Klicks in {p} ({e} {r})."),
+    ("{n} impressions, CTR {c}.", "{n} impressioni, CTR {c}.", "{n} impresiones, CTR {c}.", "{n} Impressionen, CTR {c}."),
+    ("Average position: {x}.", "Posizione media: {x}.", "Posición media: {x}.", "Ø Position: {x}."),
+    ("Top query: “{q}” ({n} clicks).", "Query principale: “{q}” ({n} clic).", "Consulta principal: “{q}” ({n} clics).", "Top-Suchanfrage: „{q}“ ({n} Klicks)."),
+    # marché
+    ("{p}: market {e} in {m}, New-car leads {l}", "{p}: mercato {e} a {m}, lead auto nuove {l}", "{p}: mercado {e} en {m}, leads de coches nuevos {l}", "{p}: Markt {e} im {m}, Neuwagen-Leads {l}"),
+    ("Market: {n} registrations in {m}, {e} vs last year.", "Mercato: {n} immatricolazioni a {m}, {e} vs anno precedente.",
+     "Mercado: {n} matriculaciones en {m}, {e} vs año anterior.", "Markt: {n} Zulassungen im {m}, {e} ggü. Vorjahr."),
+    # (la phrase générique ci-dessous est placée APRÈS la puce plus longue qu'elle pourrait avaler)
+    ("{p}: {n} registrations in {m}", "{p}: {n} immatricolazioni a {m}", "{p}: {n} matriculaciones en {m}", "{p}: {n} Zulassungen im {m}"),
+    ("New-car leads: {n}, {e} vs last year.", "Lead auto nuove: {n}, {e} vs anno precedente.", "Leads de coches nuevos: {n}, {e} vs año anterior.", "Neuwagen-Leads: {n}, {e} ggü. Vorjahr."),
+    ("New-car leads grew faster than the market ({g}).", "I lead auto nuove crescono più del mercato ({g}).", "Los leads de coches nuevos crecen más rápido que el mercado ({g}).",
+     "Die Neuwagen-Leads wachsen schneller als der Markt ({g})."),
+    ("New-car leads grew slower than the market ({g}).", "I lead auto nuove crescono meno del mercato ({g}).", "Los leads de coches nuevos crecen más despacio que el mercado ({g}).",
+     "Die Neuwagen-Leads wachsen langsamer als der Markt ({g})."),
+    ("{x} leads per 1,000 registrations.", "{x} lead ogni 1.000 immatricolazioni.", "{x} leads por cada 1.000 matriculaciones.", "{x} Leads pro 1.000 Zulassungen."),
+    ("Registrations: {s}.", "Immatricolazioni: {s}.", "Matriculaciones: {s}.", "Zulassungen: {s}."),
+    # objectifs
+    ("{a} leads year to date against an annual target of {b}: {c} reached, projection {d} ({e}).",
+     "{a} lead da inizio anno su un obiettivo annuo di {b}: {c} raggiunto, proiezione {d} ({e}).",
+     "{a} leads acumulados sobre un objetivo anual de {b}: {c} alcanzado, proyección {d} ({e}).",
+     "{a} Leads seit Jahresbeginn bei einem Jahresziel von {b}: {c} erreicht, Prognose {d} ({e})."),
+    ("Year-end projection: {n} leads ({p} of the target).", "Proiezione a fine anno: {n} lead ({p} dell'obiettivo).",
+     "Proyección a fin de año: {n} leads ({p} del objetivo).", "Prognose zum Jahresende: {n} Leads ({p} des Ziels)."),
+    ("{b}: {e} vs expected to date, the furthest ahead.", "{b}: {e} vs atteso a oggi, il più avanti.", "{b}: {e} vs esperado a la fecha, el más adelantado.", "{b}: {e} ggü. Erwartung bis heute, am weitesten voraus."),
+    ("{b}: {e} vs expected to date, the furthest behind.", "{b}: {e} vs atteso a oggi, il più indietro.", "{b}: {e} vs esperado a la fecha, el más rezagado.", "{b}: {e} ggü. Erwartung bis heute, am weitesten im Rückstand."),
+]
+
+
 def _regex(modele):
     parties = re.split(r"(\{[a-z]+\})", modele)
     return re.compile("^" + "".join((f"(?P<{p[1:-1]}>.+?)" if p.startswith("{") else re.escape(p)) for p in parties if p) + "$", re.S)

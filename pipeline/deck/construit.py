@@ -58,13 +58,28 @@ class Ctx:
 
 
 # ------------------------------------------------------------------ squelette de diapositive
-def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitle", notes=None, cle=None):
+def _style_titre(forme, taille):
+    """Titre / sous-titre au format des decks de référence : Calibri gras, bleu 043882 (28 pt le titre, 18 pt le sous-titre)."""
+    for para in forme.text_frame.paragraphs:
+        for r in para.runs:
+            r.font.name = "Calibri"; r.font.bold = True; r.font.size = Pt(taille); r.font.color.rgb = g.rgb(g.TITRE_REF)
+
+
+def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitle", notes=None, cle=None, message=None):
+    """Nouvelle diapositive. `message` = phrase-clé affichée en sous-titre, sur toute la largeur (format des decks de référence) ;
+    sinon `sous_titre` (périmètre / périodes) comme avant."""
     s = ctx.prs.slides.add_slide(ctx.lay[layout])
     ctx.n += 1
     s.shapes.title.text = titre
+    _style_titre(s.shapes.title, 28)
+    if message:
+        sous_titre = message
     for ph in s.placeholders:
         if ph.placeholder_format.idx == 12:
             ph.text = sous_titre or ""
+            _style_titre(ph, 18 if not message or len(message) <= 82 else 16 if len(message) <= 100 else 14)      # une phrase-clé longue réduit la taille plutôt que de passer sous le filet
+            if message:
+                ph.left, ph.top, ph.width, ph.height = Inches(0.28), Inches(0.67), Inches(9.9), Inches(0.75)
     if sous_titre is None and layout == "Title and Subtitle":
         for ph in list(s.placeholders):
             if ph.placeholder_format.idx == 12:
@@ -77,6 +92,23 @@ def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitl
     if cle:
         commentaire_diapo(ctx, s, cle)
     return s
+
+
+def nouvelle_ref(ctx, titre, message, source=None, puces=None, notes=None, cle=None):
+    """Diapositive au design des decks de référence (reporting pays) : grand titre, phrase-clé en sous-titre, drapeau du marché à côté du logo,
+    graphiques à gauche (zone X0_REF..X1_REF) et encadré bleu pointillé de commentaires à droite (`puces`, 5 au plus)."""
+    s = nouvelle(ctx, titre, source=source, notes=notes, cle=cle, message=message)
+    pays = [p.upper() for p in ctx.brief["perimetre"]["pays"]]
+    if len(pays) == 1:
+        g.drapeau(s, pays[0])
+    elif sorted(pays) == ["BE", "LU"]:
+        g.drapeau(s, "BE", x=9.55, w=0.8, h=0.54, y=0.3); g.drapeau(s, "LU", x=10.45, w=0.8, h=0.54, y=0.3)
+    if puces:
+        g.boite_pointillee(s, 10.84, 1.44, 2.29, 5.55, [l[:150] for l in puces[:5]], taille=12)
+    return s
+
+
+X0_REF, X1_REF = 0.44, 10.07     # zone des graphiques (à gauche de l'encadré de commentaires)
 
 
 def commentaire_diapo(ctx, s, cle):
@@ -1097,18 +1129,283 @@ def diapo_analyse(ctx, titre, r):
     return s
 
 
+# ------------------------------------------------------------------ slides au design des decks de référence : YTD, SEO, marché, objectifs
+def _mois_ecoules(ctx):
+    """Nombre de mois écoulés de l'année de la période : jusqu'à la fin de la période, plafonné au dernier jour de leads connu (le mois entamé n'est pas compté)."""
+    import calendar
+    n = ctx.per.fin.month
+    dj = ctx.d.dernier_jour_leads()
+    if dj and dj < ctx.per.fin.isoformat():
+        a, mo = int(dj[:4]), int(dj[5:7])
+        n = (mo if int(dj[8:10]) == calendar.monthrange(a, mo)[1] else mo - 1) if a == ctx.per.annee else (0 if a < ctx.per.annee else n)
+    return max(0, n)
+
+
+def ytd_marque(ctx, m):
+    """Tendance annuelle des leads de la marque (« YTD Leads Trends ») : mois de l'année en cours face à l'année précédente, total et New cars."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    an, n = per.annee, _mois_ecoules(ctx)
+    cur, prev = d.leads_mensuels(an, m), d.leads_mensuels(an - 1, m)
+    cur_vn, prev_vn = d.leads_mensuels(an, m, "VN"), d.leads_mensuels(an - 1, m, "VN")
+    if n < 1 or sum(cur[:n]) + sum(prev[:n]) == 0:
+        return None
+    mois = MOIS_COURTS[ctx.langue]
+    ytd, ytd_p, vn, vn_p = sum(cur[:n]), sum(prev[:n]), sum(cur_vn[:n]), sum(prev_vn[:n])
+    ev = t.evol(ytd, ytd_p)[0]
+    nom = ctx.nom(m)
+    pad = lambda v: [x if i < n else None for i, x in enumerate(v)]
+    puces = [
+        f"{t.nb(ytd)} leads cumulés en {an}, {ev} vs la même période {an - 1} ({t.nb(ytd_p)})." if fr else
+        f"{t.nb(ytd)} leads year to date in {an}, {ev} vs the same months of {an - 1} ({t.nb(ytd_p)}).",
+        f"New cars : {t.nb(vn)} leads, soit {t.pct(t.taux(vn, ytd) or 0, 0)} du total ({t.evol(vn, vn_p)[0]} vs {an - 1})." if fr else
+        f"New cars: {t.nb(vn)} leads, {t.pct(t.taux(vn, ytd) or 0, 0)} of the total ({t.evol(vn, vn_p)[0]} vs {an - 1}).",
+    ]
+    mx = max(range(n), key=lambda i: cur[i])
+    puces.append(f"Meilleur mois {an} : {mois[mx]} ({t.nb(cur[mx])})." if fr else f"Best month of {an}: {mois[mx]} ({t.nb(cur[mx])}).")
+    puces.append(f"Dernier mois ({mois[n - 1]}) : {t.evol(cur[n - 1], prev[n - 1])[0]} vs {mois[n - 1]} {an - 1}." if fr else
+                 f"Latest month ({mois[n - 1]}): {t.evol(cur[n - 1], prev[n - 1])[0]} vs {mois[n - 1]} {an - 1}.")
+    s = nouvelle_ref(ctx, f"{nom} — " + ("Tendance des leads sur l'année" if fr else "YTD leads trends"),
+                     f"{nom} : {t.nb(ytd)} leads cumulés en {an}, {ev} vs {an - 1}" if fr else f"{nom}: {t.nb(ytd)} leads year to date in {an}, {ev} vs {an - 1}",
+                     source=source_bo(ctx), puces=puces, notes=note_definitions(ctx, "Leads valides par mois ; année en cours limitée aux mois écoulés."), cle=f"marque:{m}")
+    g.lignes_chart(s, X0_REF, 1.55, X1_REF - X0_REF, 5.4, mois, [
+        (f"{t['leads']} {an}", pad(cur), g.TITRE_REF, True), (f"{t['leads']} {an - 1}", prev, "9DB2D6", False),
+        (f"{t['leads_nc']} {an}", pad(cur_vn), "F28E2B", True), (f"{t['leads_nc']} {an - 1}", prev_vn, "F5C88F", False)], taille=10)
+    return s
+
+
+def _ctr(c, i):
+    return c / i * 100 if i else 0
+
+
+def seo_vue(ctx):
+    """SEO — vue d'ensemble Search Console par marque : clics, impressions, CTR, position, évolution des clics."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    lignes_m = []
+    for m in d.marques:
+        cur = d.gsc(per, m)
+        if cur:
+            lignes_m.append((m, cur, [(cle, d.gsc(p, m)) for cle, p in ctx.refs]))
+    if not lignes_m:
+        return None
+    lignes_m.sort(key=lambda x: -x[1][0])
+    tc, ti = sum(x[1][0] for x in lignes_m), sum(x[1][1] for x in lignes_m)
+    tp = sum(x[1][2] * x[1][1] for x in lignes_m) / ti if ti else 0
+    refs_tot = []
+    for j, (cle, p) in enumerate(ctx.refs):
+        pr = [r[j][1] for _, _, r in lignes_m if r[j][1]]
+        refs_tot.append((cle, sum(x[0] for x in pr) if len(pr) == len(lignes_m) else None))
+    ent = [t["marque"], "Clics" if fr else "Clicks", "Impressions", "CTR", "Position moy." if fr else "Avg. position"] + \
+          [(f"Clics {libelle_ref(ctx, cle)}" if fr else f"Clicks {libelle_ref(ctx, cle)}") for cle, _ in ctx.refs]
+    lignes = [ent]
+    for m, (c, i, pos), refs in lignes_m:
+        lignes.append([ctx.nom(m), t.nb(c), t.nb(i), t.pct(_ctr(c, i), 1), t.dec(pos, 1)] + [(t.evol(c, r[1][0] if r[1] else None)[0]) for r in refs])
+    lignes.append([t["total"], t.nb(tc), t.nb(ti), t.pct(_ctr(tc, ti), 1), t.dec(tp, 1)] + [t.evol(tc, rt)[0] for _, rt in refs_tot])
+    ref0 = libelle_ref(ctx, ctx.refs[0][0]) if ctx.refs else ""
+    ev0 = t.evol(tc, refs_tot[0][1])[0] if refs_tot else ""
+    puces = []
+    if refs_tot and len(lignes_m) >= 2:
+        mv = [(m, t.evol(c[0], r[0][1][0] if r[0][1] else None)) for m, c, r in lignes_m if c[0] >= 100]
+        mv = [(m, e) for m, e in mv if e[2] is not None]
+        if mv:
+            hi, lo = max(mv, key=lambda x: x[1][2]), min(mv, key=lambda x: x[1][2])
+            puces.append(f"{ctx.nom(hi[0])} : {hi[1][0]} de clics {ref0}, la plus forte hausse." if fr else f"{ctx.nom(hi[0])}: {hi[1][0]} clicks {ref0}, the largest increase.")
+            if lo[1][2] < 0 and lo[0] != hi[0]:
+                puces.append(f"{ctx.nom(lo[0])} : {lo[1][0]} de clics {ref0}, la plus forte baisse." if fr else f"{ctx.nom(lo[0])}: {lo[1][0]} clicks {ref0}, the largest decrease.")
+    puces.append(f"CTR moyen : {t.pct(_ctr(tc, ti), 1)} ; position moyenne : {t.dec(tp, 1)}." if fr else f"Average CTR: {t.pct(_ctr(tc, ti), 1)}; average position: {t.dec(tp, 1)}.")
+    msg = (f"Recherche naturelle : {t.nb(tc)} clics sur {ctx.et(per)}, {ev0} {ref0} ; position moyenne {t.dec(tp, 1)}." if fr else
+           f"Organic search: {t.nb(tc)} clicks in {ctx.et(per)}, {ev0} {ref0}; average position {t.dec(tp, 1)}.") if ref0 else \
+          (f"Recherche naturelle : {t.nb(tc)} clics sur {ctx.et(per)} ; position moyenne {t.dec(tp, 1)}." if fr else
+           f"Organic search: {t.nb(tc)} clicks in {ctx.et(per)}; average position {t.dec(tp, 1)}.")
+    s = nouvelle_ref(ctx, "SEO — vue d'ensemble Search Console" if fr else "SEO — Search Console overview", msg, source="Source : Google Search Console" if fr else "Source: Google Search Console",
+                     puces=puces, notes="Clics, impressions et position moyenne (pondérée par les impressions) des sites de reprise, Google Search Console. Les marques sans historique couvrant la période ne sont pas affichées.",
+                     cle="seo_vue")
+    nc = len(ent)
+    g.tableau(s, X0_REF, 1.6, X1_REF - X0_REF, lignes, largeurs=[2.0] + [(X1_REF - X0_REF - 2.0) / (nc - 1)] * (nc - 1), taille=(11 if len(lignes) <= 9 else 10),
+              hauteur_ligne=min(0.42, 5.2 / len(lignes)), gras_derniere=True)
+    return s
+
+
+def seo_marque(ctx, m):
+    """SEO de la marque : clics mensuels de l'année face à N-1 (Search Console) et principales requêtes de la période."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    cur = d.gsc(per, m)
+    requetes = d.gsc_requetes(per, m)
+    if not cur and not requetes:
+        return None
+    an = per.annee
+    mois = MOIS_COURTS[ctx.langue]
+    serie = lambda a: [(x[0] if x else None) for x in d.gsc_mensuel(a, m)]       # None : mois non couvert par l'historique (pas de barre, pas d'étiquette « 0 »)
+    nom = ctx.nom(m)
+    puces = []
+    if cur:
+        c, i, pos = cur
+        for cle, p in ctx.refs:
+            r = d.gsc(p, m)
+            puces.append(f"{t.nb(c)} clics sur {ctx.et(per)} ({t.evol(c, r[0] if r else None)[0]} {libelle_ref(ctx, cle)})." if fr else
+                         f"{t.nb(c)} clicks in {ctx.et(per)} ({t.evol(c, r[0] if r else None)[0]} {libelle_ref(ctx, cle)}).")
+        puces.append(f"{t.nb(i)} impressions, CTR {t.pct(_ctr(c, i), 1)}." if fr else f"{t.nb(i)} impressions, CTR {t.pct(_ctr(c, i), 1)}.")
+        puces.append(f"Position moyenne : {t.dec(pos, 1)}." if fr else f"Average position: {t.dec(pos, 1)}.")
+    if requetes:
+        puces.append(f"Requête n°1 : « {requetes[0][0]} » ({t.nb(requetes[0][1])} clics)." if fr else f"Top query: “{requetes[0][0]}” ({t.nb(requetes[0][1])} clicks).")
+    r0 = d.gsc(ctx.refs[0][1], m) if (cur and ctx.refs) else None
+    lib0 = libelle_ref(ctx, ctx.refs[0][0]) if ctx.refs else ""
+    if cur and r0 and lib0:
+        msg = f"{nom} : {t.nb(cur[0])} clics organiques sur {ctx.et(per)}, {t.evol(cur[0], r0[0])[0]} {lib0}" if fr else \
+              f"{nom}: {t.nb(cur[0])} organic clicks in {ctx.et(per)}, {t.evol(cur[0], r0[0])[0]} {lib0}"
+    elif cur:
+        msg = f"{nom} : {t.nb(cur[0])} clics organiques sur {ctx.et(per)}" if fr else f"{nom}: {t.nb(cur[0])} organic clicks in {ctx.et(per)}"
+    else:
+        msg = f"{nom} : principales requêtes sur {ctx.et(per)}" if fr else f"{nom}: top queries in {ctx.et(per)}"
+    s = nouvelle_ref(ctx, f"{nom} — {'Performance SEO' if fr else 'SEO performance'} {ctx.et(per)}", msg, source="Source : Google Search Console" if fr else "Source: Google Search Console",
+                     puces=puces, notes="Clics mensuels (Search Console, historique de 16 mois) et principales requêtes des mois de la période.", cle=f"marque:{m}")
+    y = 1.55
+    if any(v for v in serie(an)) or any(v for v in serie(an - 1)):
+        g.colonnes(s, X0_REF, y, X1_REF - X0_REF, 2.45, mois, [((f"Clics {an - 1}" if fr else f"Clicks {an - 1}"), serie(an - 1), "9DB2D6"),
+                   ((f"Clics {an}" if fr else f"Clicks {an}"), serie(an), g.TITRE_REF)], taille=9, fmt=t.nb)
+        y += 2.6
+    if requetes:
+        ent = ["Requête" if fr else "Query", "Clics" if fr else "Clicks", "Impressions", "CTR", "Position"]
+        lignes = [ent] + [[q[:46], t.nb(c), t.nb(i), t.pct(_ctr(c, i), 1), t.dec(pos, 1)] for q, c, i, pos in requetes[:7]]
+        g.tableau(s, X0_REF, y, X1_REF - X0_REF, lignes, largeurs=[4.3, 1.2, 1.5, 1.2, 1.4], taille=10, hauteur_ligne=0.3)
+    return s
+
+
+def marche_pays(ctx, pays):
+    """Leads New cars autobiz face au marché (immatriculations AAA Data / sources officielles) : croissance annuelle et leads pour 1 000 immatriculations."""
+    t, per = ctx.t, ctx.per
+    fr = ctx.langue == "fr"
+    mk = ctx.d.marche_mensuel(pays)
+    cles = [(a, mo) for a, mo in per.mois() if f"{a}-{mo:02d}" in mk]
+    if not cles:
+        return None
+    dd = Donnees([pays], ctx.brief["perimetre"].get("marques") or None, hist=ctx.d.hist)
+    mois = MOIS_COURTS[ctx.langue]
+    lignes = [["Mois" if fr else "Month", "Immatriculations" if fr else "Registrations", "Marché vs N-1" if fr else "Market vs last year", "Leads New cars" if fr else "New-car leads",
+               "Leads vs N-1" if fr else "Leads vs last year", "Leads / 1 000 immat." if fr else "Leads / 1,000 reg."]]
+    cat, s_mk, s_ld, ratios = [], [], [], []
+    for a, mo in cles:
+        e = mk[f"{a}-{mo:02d}"]
+        ld = dd.leads_mensuels(a, None, "VN")[mo - 1]
+        ld_p = dd.leads_mensuels(a - 1, None, "VN")[mo - 1]
+        ev_l = t.evol(ld, ld_p)
+        ratio = ld / e["total"] * 1000
+        ratios.append(ratio)
+        yoy = e.get("yoy_pct")
+        lignes.append([f"{mois[mo - 1]} {a}", t.nb(e["total"]), t.pct(yoy, 1, signe=True) if yoy is not None else "–", t.nb(ld), ev_l[0], t.dec(ratio, 1)])
+        cat.append(f"{mois[mo - 1]} {a}")
+        s_mk.append(yoy if yoy is not None else 0)
+        s_ld.append(round(ev_l[2], 1) if ev_l[2] is not None else 0)
+    a, mo = cles[-1]
+    e = mk[f"{a}-{mo:02d}"]
+    ld = dd.leads_mensuels(a, None, "VN")[mo - 1]
+    ld_p = dd.leads_mensuels(a - 1, None, "VN")[mo - 1]
+    ev_l = t.evol(ld, ld_p)
+    yoy = e.get("yoy_pct")
+    src = (e.get("source_url") or "").split("/")[2] if (e.get("source_url") or "").count("/") >= 2 else ""
+    puces = [f"Marché : {t.nb(e['total'])} immatriculations en {mois[mo - 1]} {a}, {t.pct(yoy, 1, signe=True)} vs N-1." if fr else
+             f"Market: {t.nb(e['total'])} registrations in {mois[mo - 1]} {a}, {t.pct(yoy, 1, signe=True)} vs last year."] if yoy is not None else []
+    puces.append(f"Leads New cars : {t.nb(ld)}, {ev_l[0]} vs N-1." if fr else f"New-car leads: {t.nb(ld)}, {ev_l[0]} vs last year.")
+    if yoy is not None and ev_l[2] is not None:
+        gain = ev_l[2] - yoy
+        if gain >= 0:
+            puces.append(f"Les leads New cars progressent plus vite que le marché ({t.pts(gain)})." if fr else f"New-car leads grew faster than the market ({t.pts(gain)}).")
+        else:
+            puces.append(f"Les leads New cars progressent moins vite que le marché ({t.pts(gain)})." if fr else f"New-car leads grew slower than the market ({t.pts(gain)}).")
+    puces.append(f"{t.dec(ratios[-1], 1)} leads pour 1 000 immatriculations." if fr else f"{t.dec(ratios[-1], 1)} leads per 1,000 registrations.")
+    if src:
+        puces.append(f"Immatriculations : {src}." if fr else f"Registrations: {src}.")
+    msg = (f"{pays} : marché {t.pct(yoy, 1, signe=True)} en {mois[mo - 1]} {a}, leads New cars {ev_l[0]}" if fr else
+           f"{pays}: market {t.pct(yoy, 1, signe=True)} in {mois[mo - 1]} {a}, New-car leads {ev_l[0]}") if yoy is not None else \
+          (f"{pays} : {t.nb(e['total'])} immatriculations en {mois[mo - 1]} {a}" if fr else f"{pays}: {t.nb(e['total'])} registrations in {mois[mo - 1]} {a}")
+    s = nouvelle_ref(ctx, f"{pays} — {'Leads vs marché' if fr else 'Leads vs market'}", msg,
+                     source=("Sources : back-office autobiz et immatriculations (AAA Data, ACEA, sources officielles)" if fr else "Sources: autobiz back-office and registrations (AAA Data, ACEA, official sources)"),
+                     puces=puces, notes="Immatriculations de voitures neuves (market.json, relevés publiés) face aux leads New cars du back-office autobiz sur les mois couverts.", cle="marche")
+    g.colonnes(s, X0_REF, 1.55, X1_REF - X0_REF, 2.9, cat, [("Marché (% vs N-1)" if fr else "Market (% vs last year)", s_mk, "9DB2D6"),
+               ("Leads New cars (% vs N-1)" if fr else "New-car leads (% vs last year)", s_ld, g.TITRE_REF)], taille=9, format_nombre="0.0")
+    g.tableau(s, X0_REF, 4.6, X1_REF - X0_REF, lignes, largeurs=[1.5, 1.8, 1.7, 1.5, 1.6, 1.5], taille=10, hauteur_ligne=min(0.34, 2.3 / len(lignes)))
+    return s
+
+
+def objectifs_vue(ctx):
+    """Objectifs de leads de l'année (saisis dans le dashboard) face au réalisé, à l'attendu à date (saisonnalité N-1) et à la projection, par marque."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    an, n = per.annee, _mois_ecoules(ctx)
+    cibles = d.objectifs(an)
+    cibles = {m: v for m, v in cibles.items() if m in d.marques}
+    if not cibles or n < 1:
+        return None
+    lignes_m, tot = [], [0, 0, 0.0, 0.0]
+    for m in sorted(cibles, key=lambda x: -cibles[x]):
+        cur, prev = d.leads_mensuels(an, m), d.leads_mensuels(an - 1, m)
+        ytd = sum(cur[:n])
+        part = sum(prev[:n]) / sum(prev) if sum(prev) else n / 12      # part de l'année N-1 écoulée à la même date
+        att = cibles[m] * part
+        proj = ytd / part if part else None
+        lignes_m.append((m, cibles[m], ytd, att, proj))
+        tot = [tot[0] + cibles[m], tot[1] + ytd, tot[2] + att, tot[3] + (proj or 0)]
+    ent = [t["marque"], f"Objectif {an}" if fr else f"Target {an}", "Cumul" if fr else "Year to date", "Attendu à date" if fr else "Expected to date", "vs attendu" if fr else "vs expected",
+           "Projection" if fr else "Projection", "% de l'objectif" if fr else "% of target"]
+    ligne = lambda nom, c, y, a, p: [nom, t.nb(c), t.nb(y), t.nb(a), t.pct((y / a - 1) * 100, 0, signe=True) if a else "–", t.nb(p) if p else "–", t.pct(p / c * 100, 0) if (p and c) else "–"]
+    lignes = [ent] + [ligne(ctx.nom(m), c, y, a, p) for m, c, y, a, p in lignes_m] + [ligne(t["total"], *tot)]
+    pp = t.pct(tot[3] / tot[0] * 100, 0) if tot[0] else "–"
+    puces = [f"Projection de fin d'année : {t.nb(tot[3])} leads ({pp} de l'objectif)." if fr else f"Year-end projection: {t.nb(tot[3])} leads ({pp} of the target)."]
+    ecarts = [(m, y / a - 1) for m, c, y, a, p in lignes_m if a >= 100]
+    if ecarts:
+        hi, lo = max(ecarts, key=lambda x: x[1]), min(ecarts, key=lambda x: x[1])
+        puces.append(f"{ctx.nom(hi[0])} : {t.pct(hi[1] * 100, 0, signe=True)} vs l'attendu à date, la plus en avance." if fr else
+                     f"{ctx.nom(hi[0])}: {t.pct(hi[1] * 100, 0, signe=True)} vs expected to date, the furthest ahead.")
+        if lo[0] != hi[0] and lo[1] < 0:
+            puces.append(f"{ctx.nom(lo[0])} : {t.pct(lo[1] * 100, 0, signe=True)} vs l'attendu à date, la plus en retard." if fr else
+                         f"{ctx.nom(lo[0])}: {t.pct(lo[1] * 100, 0, signe=True)} vs expected to date, the furthest behind.")
+    puces.append("Attendu à date = objectif × saisonnalité de l'année précédente." if fr else "Expected to date = target × last year's seasonality.")
+    msg = (f"{t.nb(tot[1])} leads cumulés pour un objectif annuel de {t.nb(tot[0])} : {t.pct(tot[1] / tot[0] * 100, 0)} atteint, projection {t.nb(tot[3])} ({pp})." if fr else
+           f"{t.nb(tot[1])} leads year to date against an annual target of {t.nb(tot[0])}: {t.pct(tot[1] / tot[0] * 100, 0)} reached, projection {t.nb(tot[3])} ({pp}).")
+    s = nouvelle_ref(ctx, f"Objectifs {an}" if fr else f"Objectives {an}", msg, source=source_bo(ctx), puces=puces, cle="objectifs",
+                     notes="Objectifs annuels de leads par site (dashboard, GA4 > Pilotage > Objectifs), additionnés par marque. Attendu à date : objectif x part de l'année N-1 écoulée à la même date ; projection : cumul / cette part.")
+    nc = len(ent)
+    g.tableau(s, X0_REF, 1.6, X1_REF - X0_REF, lignes, largeurs=[2.2] + [(X1_REF - X0_REF - 2.2) / (nc - 1)] * (nc - 1), taille=(11 if len(lignes) <= 9 else 10),
+              hauteur_ligne=min(0.42, 5.2 / len(lignes)), gras_derniere=True)
+    return s
+
+
 # ------------------------------------------------------------------ assemblage
 def construit(brief, donnees, sortie, gabarit=GABARIT):
     ctx = Ctx(brief, donnees, gabarit)
     m = ctx.modules
     avoir_global = "global" in m
     avoir_projets = "projets" in m
-    avoir_marques = bool(m & {"trafic_marque", "sources", "cta", "conquete"})
+    avoir_marques = bool(m & {"trafic_marque", "sources", "cta", "conquete", "ytd"})
+    d, per = ctx.d, ctx.per
+    # modules à données optionnelles : la section n'est créée que si les données existent (sinon avertissement, jamais de diapositive vide)
+    avoir_crm = "crm" in m and bool(d._c1st()) and bool({d.PAYS_C1ST.get(p, p) for p in d.pays} & {"FR", "BE", "ES", "PT", "IT"})
+    if "crm" in m and not avoir_crm:
+        ctx.avertissements.append("Module C1ST sélectionné mais aucun marché du périmètre n'est suivi par C1ST (ou fichier c1st/kpi.json absent) : section non générée.")
+    avoir_seo = "seo" in m and any(d.gsc(per, mq) or d.gsc_requetes(per, mq, 1) for mq in d.marques)
+    if "seo" in m and not avoir_seo:
+        ctx.avertissements.append("Module SEO sélectionné mais aucune donnée Search Console ne couvre la période : section non générée.")
+    pays_marche = [p for p in dict.fromkeys(x.upper() for x in brief["perimetre"]["pays"]) if "marche" in m and any(f"{a}-{mo:02d}" in d.marche_mensuel(p) for a, mo in per.mois())]
+    if "marche" in m and not pays_marche:
+        ctx.avertissements.append("Module marché sélectionné mais aucun marché du périmètre n'a d'immatriculations sur la période : section non générée.")
+    avoir_obj = "objectifs" in m and bool({k for k in d.objectifs(per.annee) if k in d.marques}) and _mois_ecoules(ctx) > 0
+    if "objectifs" in m and not avoir_obj:
+        ctx.avertissements.append("Module objectifs sélectionné mais aucun objectif de leads n'est saisi pour cette année (dashboard, GA4 > Pilotage > Objectifs) : section non générée.")
     sections = []
     if avoir_global or avoir_projets:
         sections.append(("global", ctx.t["vue_globale"]))
+    if avoir_crm:
+        sections.append(("sales", ctx.t["sales_performance"]))
     if avoir_marques:
         sections.append(("marques", ctx.t["detail_marques"]))
+    if avoir_seo:
+        sections.append(("seo", ctx.t["visibilite_seo"]))
+    if pays_marche:
+        sections.append(("marche", ctx.t["contexte_marche"]))
+    if avoir_obj:
+        sections.append(("objectifs", ctx.t["objectifs"]))
     if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
         sections.append(("points", ctx.t["points_ouverts"]))
     if "prochaines_etapes" in m and (brief.get("prochainesEtapes") or []):
@@ -1129,11 +1426,13 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         projection_mois(ctx)
         classement_marches(ctx)
         entree_vehicule(ctx)
-        c1st = [c1st_lead_management(ctx), c1st_conversion(ctx), c1st_ventes_additionnelles(ctx)]
-        if all(x is None for x in c1st) and ctx.d._c1st() and {ctx.d.PAYS_C1ST.get(p, p) for p in ctx.d.pays} & {"FR", "BE", "ES", "PT", "IT"}:
-            ctx.avertissements.append("Données C1ST absentes pour cette période (collecte mensuelle c1st.yml à vérifier) : diapositives C1ST non générées.")
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
+    if avoir_crm:
+        sommaire(ctx, sections, "sales")
+        c1st = [c1st_lead_management(ctx), c1st_conversion(ctx), c1st_ventes_additionnelles(ctx)]
+        if all(x is None for x in c1st):
+            ctx.avertissements.append("Données C1ST absentes pour cette période (collecte c1st.yml à vérifier) : diapositives C1ST non générées.")
     if avoir_projets:
         for nom_g, ms in (("xp", GROUPES_MARQUES["XP"]), ("xf", GROUPES_MARQUES["XF"])):
             projets_groupe(ctx, nom_g, ms)
@@ -1151,12 +1450,26 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
                 trafic_marque(ctx, marque)
                 leads_marque(ctx, marque)
                 v2_marque(ctx, marque)
+            if "ytd" in m:
+                ytd_marque(ctx, marque)
             if "sources" in m:
                 sources_marque(ctx, marque)
             if "cta" in m:
                 cta_marque(ctx, marque)
             if "conquete" in m and marque not in ("SPOTICAR", "STELLANTIS &YOU"):
                 conquete_marque(ctx, marque)
+    if avoir_seo:
+        sommaire(ctx, sections, "seo")
+        seo_vue(ctx)
+        for marque in ctx.d.marques:
+            seo_marque(ctx, marque)
+    if pays_marche:
+        sommaire(ctx, sections, "marche")
+        for p in pays_marche:
+            marche_pays(ctx, p)
+    if avoir_obj:
+        sommaire(ctx, sections, "objectifs")
+        objectifs_vue(ctx)
     if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
         sommaire(ctx, sections, "points")
         points_ouverts(ctx)

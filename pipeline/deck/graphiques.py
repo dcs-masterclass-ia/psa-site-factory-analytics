@@ -2,7 +2,7 @@
 
 from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
-from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION, XL_TICK_LABEL_POSITION
+from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION, XL_LEGEND_POSITION, XL_MARKER_STYLE, XL_TICK_LABEL_POSITION
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu, Inches, Pt
@@ -233,3 +233,98 @@ def encadre(slide, x, y, w, h, titre, lignes, taille=11.5, couleur=None):
     if titre:
         texte(slide, x + 0.15, y, w - 0.15, 0.32, titre, taille=12, gras=True, couleur=couleur or BLEU)
     puces(slide, x + 0.1, y + (0.34 if titre else 0), w - 0.1, h - (0.34 if titre else 0), lignes, taille=taille)
+
+
+# ------------------------------------------------------------------ design « reporting pays » (decks de référence ES / PT / FR)
+TITRE_REF = "043882"          # bleu des titres et sous-titres des decks de référence
+FOND_BOITE = "F3F8FF"         # fond de l'encadré de commentaires à droite
+BORD_BOITE = "1F3F7A"         # trait pointillé de l'encadré
+
+
+def boite_pointillee(slide, x, y, w, h, lignes, taille=12):
+    """Encadré de commentaires à droite des decks de référence : fond bleu très clair, trait pointillé, puces • (retrait suspendu), texte centré
+    verticalement, 12 pt, 12 pt d'espace après chaque paragraphe (valeurs relevées sur la diapositive 3 du deck « Reporting PT T3 2026 »)."""
+    from pptx.oxml.ns import qn
+    from lxml import etree
+    from pptx.enum.dml import MSO_LINE
+    forme = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    forme.shadow.inherit = False
+    forme.fill.solid(); forme.fill.fore_color.rgb = rgb(FOND_BOITE)
+    forme.line.color.rgb = rgb(BORD_BOITE)
+    forme.line.width = Pt(1.25)
+    forme.line.dash_style = MSO_LINE.DASH
+    tf = forme.text_frame
+    tf.word_wrap = True
+    tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+    tf.margin_left = tf.margin_right = Inches(0.1)
+    for i, l in enumerate(lignes):
+        para = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+        para.alignment = PP_ALIGN.LEFT
+        para.space_after = Pt(12)
+        run = para.add_run()
+        run.text = l if isinstance(l, str) else l[0]
+        run.font.size = Pt(taille); run.font.name = "Calibri"; run.font.bold = False if isinstance(l, str) else bool(l[1])
+        run.font.color.rgb = rgb("000000")
+        ppr = para._p.get_or_add_pPr()
+        ppr.set("marL", "173736"); ppr.set("indent", "-173736")
+        for tag in ("a:buNone", "a:buChar", "a:buFont"):
+            for e in ppr.findall(qn(tag)):
+                ppr.remove(e)
+        bu_font = etree.SubElement(ppr, qn("a:buFont")); bu_font.set("typeface", "Arial")
+        bu = etree.SubElement(ppr, qn("a:buChar")); bu.set("char", "•")
+    return forme
+
+
+def drapeau(slide, code, x=10.29, y=0.22, w=1.21, h=0.81):
+    """Drapeau du marché en haut à droite (à côté du logo autobiz), comme dans les decks de référence ; sans effet si le drapeau n'existe pas."""
+    from pathlib import Path
+    f = Path(__file__).resolve().parent / "drapeaux" / f"{code}.png"
+    if f.exists():
+        slide.shapes.add_picture(str(f), Inches(x), Inches(y), Inches(w), Inches(h))
+
+
+def lignes_chart(slide, x, y, w, h, categories, series, taille=10, legende=True, etiquettes=True, format_nombre="#,##0", axe_valeurs=False):
+    """Courbes natives avec marqueurs. series = [(nom, [valeurs ou None], couleur_hex)] ; une valeur None laisse un trou (mois non écoulé)."""
+    if not categories:
+        return texte(slide, x, y, w, 0.4, "Aucune donnée sur ce périmètre.", taille=11, couleur=GRIS, italique=True)
+    cd = CategoryChartData()
+    cd.categories = categories
+    for nom, vals, *_ in series:
+        cd.add_series(nom, list(vals))
+    gf = slide.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS, Inches(x), Inches(y), Inches(w), Inches(h), cd)
+    ch = gf.chart
+    ch.font.size = Pt(taille); ch.font.color.rgb = rgb(TEXTE)
+    ch.has_title = False
+    ch.has_legend = legende
+    if legende:
+        ch.legend.position = XL_LEGEND_POSITION.BOTTOM
+        ch.legend.include_in_layout = False
+        _police(ch.legend, taille)
+    va = ch.value_axis
+    va.visible = axe_valeurs
+    va.has_major_gridlines = axe_valeurs
+    if axe_valeurs:
+        va.major_gridlines.format.line.color.rgb = rgb(GRIS_CLAIR)
+        va.format.line.fill.background()
+        va.tick_labels.font.size = Pt(taille - 1)
+    ca = ch.category_axis
+    ca.format.line.color.rgb = rgb(GRIS_CLAIR)
+    ca.tick_labels.font.size = Pt(taille)
+    ca.has_major_gridlines = False
+    plot = ch.plots[0]
+    for i, (nom, vals, coul, *opt) in enumerate(series):        # opt[0] : étiquettes de valeurs pour cette série (défaut : `etiquettes`)
+        s = plot.series[i]
+        s.smooth = False
+        s.format.line.color.rgb = rgb(coul); s.format.line.width = Pt(2.25)
+        s.marker.style = XL_MARKER_STYLE.CIRCLE; s.marker.size = 6
+        s.marker.format.fill.solid(); s.marker.format.fill.fore_color.rgb = rgb(coul)
+        s.marker.format.line.color.rgb = rgb(coul)
+        if (opt[0] if opt else etiquettes):
+            dl = s.data_labels
+            dl.show_value = True
+            dl.number_format = format_nombre
+            dl.number_format_is_linked = False
+            dl.font.size = Pt(taille - 1)
+            dl.font.color.rgb = rgb(coul)
+            dl.position = XL_LABEL_POSITION.ABOVE
+    return gf

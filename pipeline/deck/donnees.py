@@ -297,6 +297,56 @@ class Donnees:
                 total += sum(r.get("commandes_nsc") or 0 for r in m["nsc"] if r.get("marque") == code)
         return total
 
+    # ------------------------------------------------------- Search Console (SEO) : série mensuelle et principales requêtes
+    def gsc_mensuel(self, annee, marque=None):
+        """12 valeurs (janvier..décembre) : (clics, impressions, position) Search Console du mois, ou None (mois non couvert / non écoulé)."""
+        from .periodes import Periode
+        return [self.gsc(Periode("mois", annee, m), marque) for m in range(1, 13)]
+
+    def gsc_requetes(self, periode, marque, n=8):
+        """Principales requêtes Search Console de la marque sur les mois de la période (data/<site>.json -> searchMonth) :
+        [(requête, clics, impressions, position moyenne pondérée)], triées par clics ; [] si non disponible."""
+        agg = defaultdict(lambda: [0, 0, 0.0])
+        for nom, m, _ in self.sites:
+            if m != marque:
+                continue
+            d = self._site_json(nom)
+            for a, mo in periode.mois():
+                for q in (((d or {}).get("searchMonth") or {}).get(f"{a}-{mo:02d}") or {}).get("queries") or []:
+                    v = agg[q.get("requete")]
+                    imp = q.get("impressions") or 0
+                    v[0] += q.get("clics") or 0; v[1] += imp; v[2] += (q.get("position") or 0) * imp
+        top = sorted(((r, c, i, (pos / i if i else 0)) for r, (c, i, pos) in agg.items() if r), key=lambda x: -x[1])
+        return top[:n]
+
+    # ------------------------------------------------------- marché (data/market.json : immatriculations AAA Data, ACEA, UNRAE, ANFAC, ACAP…)
+    MARCHES = {"FR": "france", "IT": "IT", "ES": "ES", "PT": "PT", "DE": "DE", "PL": "PL", "GB": "GB", "UK": "GB"}
+
+    def marche_mensuel(self, pays):
+        """{'AAAA-MM': {total, yoy_pct, ytd_total, ytd_yoy_pct, …}} des immatriculations de voitures neuves du marché, ou {} si le marché n'est pas couvert."""
+        try:
+            m = json.loads((self.hist.parent / "market.json").read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+        cle = self.MARCHES.get(pays)
+        if not cle:
+            return {}
+        liste = (m.get("france") or {}).get("monthly") if cle == "france" else ((m.get("markets") or {}).get(cle) or {}).get("monthly")
+        return {x["month"]: x for x in (liste or []) if x.get("month") and x.get("total")}
+
+    # ------------------------------------------------------- objectifs de leads saisis dans le dashboard (data/objectifs/objectifs.json)
+    def objectifs(self, annee):
+        """{marque: objectif annuel de leads} sur le périmètre : somme des objectifs des sites de la marque (GA4 > Pilotage > Objectifs) ; {} si aucun."""
+        try:
+            cibles = (json.loads((self.hist.parent / "objectifs" / "objectifs.json").read_text(encoding="utf-8")).get("annees") or {}).get(str(annee)) or {}
+        except Exception:
+            return {}
+        out = defaultdict(int)
+        for nom, marque, _ in self.sites:
+            if cibles.get(nom):
+                out[marque] += int(cibles[nom])
+        return dict(out)
+
     # ------------------------------------------------------- acquisition (sources)
     def _charge_acq(self):
         """(marque, jour) -> {(groupe_source, projet): n}"""
