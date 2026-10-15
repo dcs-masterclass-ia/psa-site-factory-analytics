@@ -242,9 +242,11 @@ class Donnees:
     def _c1st(self):
         if getattr(self, "_c1st_data", None) is None:
             try:
-                self._c1st_data = json.loads((self.hist.parent / "c1st" / "kpi.json").read_text(encoding="utf-8")).get("donnees", {})
+                brut = json.loads((self.hist.parent / "c1st" / "kpi.json").read_text(encoding="utf-8"))
+                self._c1st_data = brut.get("donnees", {})
+                self._c1st_partiel = str((brut.get("collecte") or {}).get("date", ""))[:7]      # collecte quotidienne : le mois de la collecte est partiel
             except Exception:
-                self._c1st_data = {}
+                self._c1st_data, self._c1st_partiel = {}, ""
         return self._c1st_data
 
     def c1st(self, periode, marque):
@@ -259,6 +261,8 @@ class Donnees:
         tot = {k: 0 for k in champs + champs_c}
         for pays in cles:
             for a, mo in periode.mois():
+                if f"{a}-{mo:02d}" == getattr(self, "_c1st_partiel", ""):
+                    return None
                 m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
                 if not m or m.get("leads") is None or m.get("commandes") is None or m.get("nsc") is None:
                     return None
@@ -285,6 +289,8 @@ class Donnees:
         total = 0
         for pays in cles:
             for a, mo in periode.mois():
+                if f"{a}-{mo:02d}" == getattr(self, "_c1st_partiel", ""):
+                    return None
                 m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
                 if not m or m.get("nsc") is None:
                     return None

@@ -295,6 +295,30 @@ class C1st(unittest.TestCase):
             c = self._donnees(tmp).c1st(Periode("trimestre", 2026, 3), "PEUGEOT")
             self.assertEqual((c["envoyes"], c["commandes"], c["clients_uniques"]), (2970, 180, 3000))
 
+    def test_mois_de_la_collecte_est_partiel(self):
+        """Collecte quotidienne : le mois de `collecte.date` est partiel, jamais utilisé comme un mois complet."""
+        import json
+        from pathlib import Path
+        from pipeline.deck.periodes import Periode
+        with tempfile.TemporaryDirectory() as tmp:
+            d = self._donnees(tmp)
+            f = Path(tmp) / "c1st" / "kpi.json"
+            brut = json.loads(f.read_text(encoding="utf-8"))
+            brut["collecte"] = {"date": "2026-09-16"}
+            f.write_text(json.dumps(brut), encoding="utf-8")
+            d = self._donnees_relu(tmp)
+            self.assertIsNone(d.c1st(Periode("trimestre", 2026, 3), "PEUGEOT"))          # septembre est partiel
+            self.assertIsNone(d.c1st_nsc(Periode("trimestre", 2026, 3), "PEUGEOT"))
+            self.assertIsNotNone(d.c1st(Periode("trimestre", 2026, 2), "PEUGEOT"))        # T2 entièrement écoulé : inchangé
+
+    def _donnees_relu(self, tmp):
+        from pathlib import Path
+        from pipeline.deck.donnees import Donnees
+        d = Donnees(["FR"], ["PEUGEOT"], hist=Path(tmp) / "history")
+        d.sites = [("PEUGEOT FR", "PEUGEOT", "FR")]
+        d.marques = ["PEUGEOT"]
+        return d
+
     def test_mois_manquant_pas_de_total_partiel(self):
         from pipeline.deck.periodes import Periode
         with tempfile.TemporaryDirectory() as tmp:

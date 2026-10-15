@@ -13,8 +13,9 @@ Ce que collecte le module (mêmes définitions que celles validées contre les g
   - périmètre : type 1, activité VN, campagne Autobiz, nature 47 (xP) ou A68 (xF) ; Spoticar (SP) : activité VO, nature « 15.Buyback request »
 Seuls des totaux sont écrits : aucune donnée personnelle.
 
-Usage : python -m pipeline.c1st_collecte [--depuis AAAA-MM] [--derniers N] [--pays FR,BE,...] [--sortie data/c1st/kpi.json]
+Usage : python -m pipeline.c1st_collecte [--depuis AAAA-MM] [--derniers N] [--courant] [--pays FR,BE,...] [--sortie data/c1st/kpi.json]
 Par défaut : les 4 derniers mois terminés (les commandes sont rattachées jusqu'à 90 jours après le lead : les mois récents bougent encore).
+--courant (collecte quotidienne) : le mois en cours + les 3 précédents ; le mois de `collecte.date` est PARTIEL, les consommateurs ne l'utilisent jamais comme un mois complet.
 Codes de sortie : 0 = ok, 1 = au moins une requête a échoué (ce qui a réussi est écrit), 3 = secrets non configurés.
 """
 
@@ -108,12 +109,12 @@ class NonConfigure(Exception):
 
 def jeton(env=None):
     """(access_token, instance_url) par OAuth JWT bearer. Lève NonConfigure si les secrets manquent."""
-    import httpx
-    import jwt
     env = os.environ if env is None else env
     manquants = [k for k in ("C1ST_CLIENT_ID", "C1ST_USERNAME", "C1ST_PRIVATE_KEY") if not env.get(k)]
     if manquants:
         raise NonConfigure("secrets C1ST absents : " + ", ".join(manquants))
+    import httpx
+    import jwt
     login = (env.get("C1ST_LOGIN_URL") or "https://login.salesforce.com").rstrip("/")
     audience = (env.get("C1ST_AUDIENCE") or "https://login.salesforce.com").rstrip("/")
     assertion = jwt.encode({"iss": env["C1ST_CLIENT_ID"], "sub": env["C1ST_USERNAME"], "aud": audience, "exp": int(time.time()) + 180},
@@ -151,9 +152,10 @@ class Client:
 
 
 # ------------------------------------------------------------------ mois à collecter, fusion
-def mois_a_collecter(aujourdhui, depuis=None, derniers=4):
-    """Liste de (année, mois) : de « depuis » au dernier mois TERMINÉ, ou les `derniers` mois terminés."""
-    y, m = aujourdhui.year, aujourdhui.month - 1
+def mois_a_collecter(aujourdhui, depuis=None, derniers=4, courant=False):
+    """Liste de (année, mois) : de « depuis » au dernier mois TERMINÉ, ou les `derniers` mois terminés.
+    courant=True : le mois en cours (partiel) est le dernier de la liste et compte parmi les `derniers`."""
+    y, m = aujourdhui.year, aujourdhui.month - (0 if courant else 1)
     if m == 0:
         y, m = y - 1, 12
     fin = (y, m)
@@ -195,6 +197,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--depuis")
     ap.add_argument("--derniers", type=int, default=4)
+    ap.add_argument("--courant", action="store_true", help="inclure le mois en cours (partiel) : collecte quotidienne")
     ap.add_argument("--pays", default=",".join(PAYS))
     ap.add_argument("--sortie", default=str(FICHIER))
     a = ap.parse_args(argv)
@@ -206,7 +209,7 @@ def main(argv=None):
     client = Client(token, instance)
     sortie = Path(a.sortie)
     existant = json.loads(sortie.read_text(encoding="utf-8")) if sortie.exists() else {}
-    mois = mois_a_collecter(date.today(), a.depuis, a.derniers)
+    mois = mois_a_collecter(date.today(), a.depuis, a.derniers, a.courant)
     ok = ko = ignores = 0
     for pays in a.pays.split(","):
         for y, m in mois:
@@ -221,7 +224,7 @@ def main(argv=None):
                 ko += 1
                 print(f"  {pays} {cle} : {type(e).__name__}: {e}", file=sys.stderr)
             time.sleep(0.4)
-    existant["collecte"] = {"date": date.today().isoformat(), "source": "C1ST (CRM Analytics), collecte automatique mensuelle — totaux par marché, mois et marque, aucune donnée personnelle",
+    existant["collecte"] = {"date": date.today().isoformat(), "source": "C1ST (CRM Analytics), collecte automatique — totaux par marché, mois et marque, aucune donnée personnelle ; le mois de la date de collecte est partiel",
                             "mois": f"{mois[0][0]}-{mois[0][1]:02d} à {mois[-1][0]}-{mois[-1][1]:02d} (derniers mois collectés)", "pays": a.pays.split(",")}
     existant["perimetre"] = "type 1, activité VN, campagne Autobiz, nature 47 (xP) ou A68 (xF) ; SPOTICAR (SP) : activité VO, nature 15.Buyback request (leads de rachat)"
     sortie.parent.mkdir(parents=True, exist_ok=True)

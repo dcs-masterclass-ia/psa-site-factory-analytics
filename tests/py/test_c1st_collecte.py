@@ -41,6 +41,12 @@ class Mois(unittest.TestCase):
     def test_enjambe_l_annee(self):
         self.assertEqual(c.mois_a_collecter(date(2027, 1, 6)), [(2026, 9), (2026, 10), (2026, 11), (2026, 12)])
 
+    def test_mois_en_cours_inclus_collecte_quotidienne(self):
+        self.assertEqual(c.mois_a_collecter(date(2026, 10, 16), courant=True), [(2026, 7), (2026, 8), (2026, 9), (2026, 10)])
+
+    def test_mois_en_cours_en_janvier(self):
+        self.assertEqual(c.mois_a_collecter(date(2027, 1, 3), courant=True), [(2026, 10), (2026, 11), (2026, 12), (2027, 1)])
+
     def test_depuis(self):
         m = c.mois_a_collecter(date(2026, 11, 6), depuis="2025-01")
         self.assertEqual((m[0], m[-1], len(m)), ((2025, 1), (2026, 10), 22))

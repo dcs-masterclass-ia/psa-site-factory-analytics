@@ -1,19 +1,20 @@
-name: Collecte C1ST (mensuelle)
+name: Collecte C1ST (quotidienne)
 
 # Collecte les totaux C1ST (leads envoyés, suivi, devis, commandes NSC) par marché, mois et marque -> c1st/kpi.json du repo de données.
 # Alimente les diapositives C1ST des présentations (voir pipeline/c1st_collecte.py).
-# Le 6 de chaque mois : les 4 derniers mois terminés sont recollectés (les commandes sont rattachées au lead jusqu'à 90 jours après).
+# Chaque nuit à 02:30 UTC (avant le rechargement des jeux C1ST du jour : 04:11 / 07:38 / 11:36 UTC le 15/10/2026, on lit donc l'instantané cohérent de la veille) :
+# le mois en cours (partiel : le mois de `collecte.date` n'est jamais utilisé comme complet) + les 3 précédents, recollectés (les commandes sont rattachées au lead jusqu'à 90 jours après).
 # Manuel : « depuis » (AAAA-MM) pour un rattrapage plus long.
 # Authentification sans navigateur : Connected App OAuth (JWT bearer). Tant que les secrets C1ST_* ne sont pas créés, le workflow
 # s'arrête en « non configuré » sans échec (les decks n'affichent simplement pas les diapositives C1ST d'une période absente).
 
 on:
   schedule:
-    - cron: "0 6 6 * *"
+    - cron: "30 2 * * *"
   workflow_dispatch:
     inputs:
       depuis:
-        description: "Mois de début AAAA-MM (vide = les 4 derniers mois terminés)"
+        description: "Mois de début AAAA-MM (vide = le mois en cours + les 3 précédents)"
         required: false
         default: ""
 
@@ -57,7 +58,7 @@ jobs:
           DEPUIS: ${{ inputs.depuis }}
         run: |
           set +e
-          if [ -n "$DEPUIS" ]; then python -m pipeline.c1st_collecte --depuis "$DEPUIS"; else python -m pipeline.c1st_collecte; fi
+          if [ -n "$DEPUIS" ]; then python -m pipeline.c1st_collecte --courant --depuis "$DEPUIS"; else python -m pipeline.c1st_collecte --courant; fi
           code=$?
           if [ "$code" -eq 3 ]; then echo "::notice::C1ST non configuré (secrets C1ST_* absents) : rien collecté"; echo "NON_CONFIGURE=1" >> "$GITHUB_ENV"; exit 0; fi
           exit $code
@@ -70,6 +71,6 @@ jobs:
           git config user.email "m.foureau@autobiz.com"
           git add c1st/kpi.json
           if git diff --cached --quiet; then echo "Aucun changement"; exit 0; fi
-          git commit -m "C1ST : collecte mensuelle ($(date -u +%Y-%m-%d))"
+          git commit -m "C1ST : collecte quotidienne ($(date -u +%Y-%m-%d))"
           git pull --rebase origin main
           git push origin HEAD:main
