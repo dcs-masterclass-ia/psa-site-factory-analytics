@@ -281,7 +281,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </sc-if>
 
     <span style="flex:1"></span>
-    <div onClick="{{ openPrefs }}" style="width:36px;height:36px;flex:none;border-radius:18px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:{{ prefsAvatarRing }};overflow:hidden;{{ avatarBg }}" title="Paramètres · {{ userEmail }}">{{ avatarInitials }}</div>
+    <div data-keep onClick="{{ openPrefs }}" style="width:36px;height:36px;flex:none;border-radius:18px;background:linear-gradient(160deg,#cfc4fb,#9d88f3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer;box-shadow:{{ prefsAvatarRing }};overflow:hidden;{{ avatarBg }}" title="Paramètres · {{ userEmail }}">{{ avatarInitials }}</div>
   </div>
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column">
@@ -2724,7 +2724,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
               <sc-for list="{{ prefAvatars }}" as="a" hint-placeholder-count="6">
                 <div onClick="{{ a.pick }}" style="{{ a.boxStyle }}">
-                  <div style="{{ a.imgStyle }}">{{ a.texte }}</div>
+                  <div data-keep style="{{ a.imgStyle }}">{{ a.texte }}</div>
                   <div style="font-size:13px;font-weight:600;color:#121214;line-height:1.2">{{ a.nom }}</div>
                   <div style="font-size:11.5px;color:#7c63ee;font-weight:600">{{ a.role }}</div>
                 </div>
@@ -5720,19 +5720,18 @@ class Component extends DCLogic {
     // ---------- Paramètres (clic sur l'avatar) ----------
     const prefs0 = this._prefs || {};
     const prefChip = (label, actif, pick) => ({ label, pick, style:`display:inline-flex;align-items:center;height:34px;padding:0 14px;border-radius:10px;font-size:13.5px;cursor:pointer;white-space:nowrap;font-weight:${actif?600:500};border:1px solid ${actif?'#b6a5f8':'#e4e4e8'};${actif?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#4a4f57'}` });
-    const S3M='https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Image+ChatGPT+15+oct.+2026%2C+';
     const MASCOTTES=[
-      {k:'bo',nom:'Le Fou du BO',role:'Back-office',phrase:'Organise le chaos',img:S3M+'09_44_45.webp'},
-      {k:'po',nom:'Le PO en Or',role:'Product',phrase:'Transforme les idées en réalité',img:S3M+'09_44_40.webp'},
-      {k:'dkam',nom:'DKAM is Back',role:'Comeback',phrase:'Même légende, nouveau chapitre',img:S3M+'09_44_48.webp'},
-      {k:'qa',nom:'Briseur de rêves',role:'QA',phrase:'Fait tomber les bugs (et les illusions)',img:S3M+'09_44_53.webp'},
-      {k:'ops',nom:'Captain Reboot',role:'Ops',phrase:'Garde tout en vie',img:S3M+'09_44_50.webp'}];
+      {k:'bo',nom:'Le Fou du BO',role:'Back-office',phrase:'Organise le chaos',img:'mascottes/bo.webp'},
+      {k:'po',nom:'Le PO en Or',role:'Product',phrase:'Transforme les idées en réalité',img:'mascottes/po.webp'},
+      {k:'dkam',nom:'DKAM is Back',role:'Comeback',phrase:'Même légende, nouveau chapitre',img:'mascottes/dkam.webp'},
+      {k:'qa',nom:'Briseur de rêves',role:'QA',phrase:'Fait tomber les bugs (et les illusions)',img:'mascottes/qa.webp'},
+      {k:'ops',nom:'Captain Reboot',role:'Ops',phrase:'Garde tout en vie',img:'mascottes/ops.webp'}];
     const mascNow = MASCOTTES.find(m=>m.k===prefs0.avatar)||null;
-    const avatarBg = mascNow ? `background:#f1eefe url(${mascNow.img}) center 14%/170% no-repeat;` : '';
+    const avatarBg = mascNow ? `background:rgba(124,99,238,.14) url(${mascNow.img}) center 12%/150% no-repeat;` : '';
     const avatarInitials = mascNow ? '' : userInitials;
     const prefAvatars = [{nom:'Initiales',role:'Par défaut',phrase:userInitials,img:'',actif:!mascNow,initiales:true,pick:()=>this.setPref('avatar','')}].concat(MASCOTTES.map(m=>({nom:m.nom,role:m.role,phrase:m.phrase,img:m.img,actif:!!mascNow&&mascNow.k===m.k,initiales:false,pick:()=>this.setPref('avatar',m.k)})))
       .map(m=>({...m,texte:m.initiales?m.phrase:'',boxStyle:`cursor:pointer;border-radius:14px;padding:10px;border:1.5px solid ${m.actif?'#7c63ee':'#ececee'};background:${m.actif?'#f7f6fe':'#fff'};display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center`,
-        imgStyle:m.initiales?'width:72px;height:72px;border-radius:50%;background:linear-gradient(160deg,#cfc4fb,#9d88f3);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600':`width:72px;height:72px;border-radius:50%;background:#f1eefe url(${m.img}) center 14%/170% no-repeat`}));
+        imgStyle:m.initiales?'width:72px;height:72px;border-radius:50%;background:linear-gradient(160deg,#cfc4fb,#9d88f3);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600':`width:72px;height:72px;border-radius:50%;background:rgba(124,99,238,.14) url(${m.img}) center 12%/150% no-repeat`}));
     const prefAvatarNom = mascNow ? `${mascNow.nom} · ${mascNow.role}` : 'Initiales';
     const prefThemeNow = prefs0.theme || st.theme || 'system';
     const prefTheme = [['system','Automatique'],['light','Clair'],['dark','Sombre']].map(([k,l])=>prefChip(l,prefThemeNow===k,()=>this.setPref('theme',k)));

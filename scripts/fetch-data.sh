@@ -51,4 +51,5 @@ rm -rf public
 mkdir -p public
 cp index.html support.js i18n.js i18n-en.js style.css script.js hermes-agui.js \
    favicon.png favicon-preprod.png logo-blanc.png logo-noir.png public/
+cp -R mascottes public/mascottes
 cp -R data public/data
