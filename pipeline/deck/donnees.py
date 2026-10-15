@@ -236,7 +236,7 @@ class Donnees:
         return {"etapes": [(k, *etapes[k]) for k in ordre], "sites": n, "fenetres": fenetres}
 
     # ------------------------------------------------------- C1ST : suivi des leads envoyés (fichier c1st/kpi.json du repo de données)
-    CODES_C1ST = {"AP": "PEUGEOT", "AC": "CITROEN", "DS": "DS", "OP": "OPEL", "FT": "FIAT", "FO": "FIAT PRO", "JE": "JEEP", "AR": "ALFA ROMEO", "LA": "LANCIA", "AH": "ABARTH"}
+    CODES_C1ST = {"AP": "PEUGEOT", "AC": "CITROEN", "DS": "DS", "OP": "OPEL", "FT": "FIAT", "FO": "FIAT PRO", "JE": "JEEP", "AR": "ALFA ROMEO", "LA": "LANCIA", "AH": "ABARTH", "SP": "SPOTICAR"}
     PAYS_C1ST = {"BE": "BE", "LU": "BE"}        # le Luxembourg est compté dans la Belgique côté C1ST ; DE et LU seul : aucun lead
 
     def _c1st(self):
@@ -271,6 +271,22 @@ class Donnees:
                         for k in champs_c:
                             tot[k] += r.get(k) or 0
         return tot
+
+    def c1st_nsc(self, periode, marque):
+        """Commandes NSC (jeu « SUB » de C1ST, 1 à 90 jours après le lead) de la marque sur les mois de la période, pour les marchés du périmètre ; None si un mois manque."""
+        code = next((c for c, m in self.CODES_C1ST.items() if m == marque), None)
+        cles = sorted({self.PAYS_C1ST.get(p, p) for p in self.pays})
+        data = self._c1st()
+        if not code or not data:
+            return None
+        total = 0
+        for pays in cles:
+            for a, mo in periode.mois():
+                m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
+                if not m or m.get("nsc") is None:
+                    return None
+                total += sum(r.get("commandes_nsc") or 0 for r in m["nsc"] if r.get("marque") == code)
+        return total
 
     # ------------------------------------------------------- acquisition (sources)
     def _charge_acq(self):

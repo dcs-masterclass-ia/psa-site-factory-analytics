@@ -375,3 +375,37 @@ class Traductions(unittest.TestCase):
                         if traduit_texte(texte, lg) == texte and not any(rx.match(texte) for rx, _ in _COMPILES):      # (« Traffic » reste « Traffic » en allemand)
                             manquants.add((lg, texte[:90]))
         self.assertEqual(sorted(manquants), [])
+
+
+class VentesAdditionnelles(unittest.TestCase):
+    """Ventes additionnelles = commandes NSC de la période − celles de la même période l'an dernier ; cumul de l'année ; jamais de total partiel."""
+
+    def test_calcul_et_slide(self):
+        import json
+        from pathlib import Path
+        from datetime import date
+        from pipeline.deck.construit import Ctx, c1st_ventes_additionnelles
+        from pipeline.deck.donnees import Donnees
+        with tempfile.TemporaryDirectory() as tmp:
+            racine = Path(tmp)
+            (racine / "history").mkdir(); (racine / "c1st").mkdir()
+            mois = {}
+            for a in (2025, 2026):
+                for m in range(1, 10):
+                    mois[f"{a}-{m:02d}"] = {"nsc": [{"marque": "AP", "commandes_nsc": 100 if a == 2026 else 60}]}
+            (racine / "c1st" / "kpi.json").write_text(json.dumps({"donnees": {"FR": mois}}), encoding="utf-8")
+            d = Donnees(["FR"], ["PEUGEOT"], hist=racine / "history")
+            d.sites = [("PEUGEOT FR", "PEUGEOT", "FR")]
+            d.marques = ["PEUGEOT"]
+            brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["FR"], "marques": []},
+                     "comparaisons": {"precedente": True, "n1": True}, "modules": ["global"]}
+            ctx = Ctx(brief, d)
+            ctx.aujourdhui = date(2027, 6, 1)
+            s = c1st_ventes_additionnelles(ctx)
+            cellules = [c.text.replace(" ", " ") for sh in s.shapes if sh.has_table for r in sh.table.rows for c in r.cells]
+            self.assertIn("300", cellules)      # T3 2026 : 3 mois x 100
+            self.assertIn("180", cellules)      # T3 2025 : 3 mois x 60
+            self.assertIn("+120", cellules)     # ventes additionnelles de la période
+            self.assertIn("+360", cellules)     # cumul Jan-Sep : 900 - 540
+            d._c1st_data["FR"].pop("2025-08")   # un mois manque -> pas de slide (jamais de total partiel)
+            self.assertIsNone(c1st_ventes_additionnelles(ctx))

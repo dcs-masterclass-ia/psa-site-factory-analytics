@@ -86,7 +86,7 @@ def commentaire_diapo(ctx, s, cle):
     if not txt or cle in ctx.comm_utilises:
         return
     ctx.comm_utilises.add(cle)
-    g.encadre(s, 4.7, 0.78, 8.2, 0.42, None, [txt[:240]], taille=9.5, couleur=g.ORANGE)
+    g.encadre(s, 4.5, 0.62, 8.4, 0.6, None, [txt[:240]], taille=11.5, couleur=g.ORANGE)
 
 
 def source_bo(ctx):
@@ -624,6 +624,9 @@ PERIMETRE_C1ST = ("Périmètre : leads VN envoyés vus par C1ST (type 1, activit
                   "Scope: VN leads sent as seen by C1ST (type 1, VN activity, Autobiz campaign); C1ST's own scope, not comparable with the back-office.")
 
 
+SANS_SUIVI_C1ST = ("SPOTICAR",)      # C1ST ne suit ni le contact, ni le traitement, ni les commandes de Spoticar (leads de rachat) : « n.d. », exclu des totaux de taux
+
+
 def _c1st_lignes(ctx):
     """[(marque, totaux C1ST sur la période, {clé de comparaison: totaux})] des marques du périmètre disposant des données C1ST complètes."""
     out = []
@@ -644,23 +647,32 @@ def c1st_lead_management(ctx):
     ent = [t["marque"], ("Clients envoyés" if fr else "Customers sent"), ("Contactés" if fr else "Contacted"), ("Contactés dans les délais" if fr else "Contacted on time"),
            ("1er appel dans les délais" if fr else "1st call on time"), ("Traités" if fr else "Treated"), ("Non traités" if fr else "Not treated")]
     pct = lambda a, b: t.pct(a / b * 100, 0) if b else "–"
-    def ligne(nom, c):
+    def ligne(nom, c, suivi=True):
         b = c["clients_envoyes"]
+        if not suivi:
+            return [nom, t.nb(b)] + [t["non_dispo"]] * 5
         return [nom, t.nb(b), pct(c["contactes"], b), pct(c["contactes_delai"], b), pct(c["premier_appel_delai"], b), pct(c["traites"], b), pct(max(b - c["traites"], 0), b)]
-    lignes = [ent] + [ligne(ctx.nom(m), c) for m, c, _ in lignes_m]
-    tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
+    suivies = [x for x in lignes_m if x[0] not in SANS_SUIVI_C1ST]
+    if not suivies:
+        return None
+    lignes = [ent] + [ligne(ctx.nom(m), c, m not in SANS_SUIVI_C1ST) for m, c, _ in lignes_m]
+    tot = {k: sum(c[k] for _, c, _ in suivies) for k in suivies[0][1]}
     lignes.append(ligne(t["total"], tot))
     s = nouvelle(ctx, ("Suivi des leads envoyés aux concessionnaires" if fr else "Follow-up of leads sent to dealers") + f" — {ctx.et(per)}", ctx.perimetre,
                  SOURCE_C1ST[0 if fr else 1], notes=note_definitions(ctx, "Taux calculés sur les clients uniques envoyés aux concessionnaires. Non traités = envoyés − traités (statuts saisis par les concessionnaires dans C1ST ; pas de comparaison dans le temps)."), cle="c1st_lead_management")
     nc = len(ent)
-    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.2] + [(12.4 - 2.2) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    hl = min(0.38, 3.6 / len(lignes))
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.2] + [(12.4 - 2.2) / (nc - 1)] * (nc - 1), taille=(10.5 if len(lignes) <= 8 else 9.5), hauteur_ligne=hl, gras_derniere=True)
     nt = pct(max(tot["clients_envoyes"] - tot["traites"], 0), tot["clients_envoyes"])
-    g.encadre(s, X0, Y0 + 0.38 * len(lignes) + 0.4, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
+    g.encadre(s, X0, Y0 + 0.1 + hl * len(lignes) + 0.2, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
         (f"{nt} des leads envoyés n'ont pas de statut de traitement dans C1ST sur la période." if fr else f"{nt} of the leads sent have no treatment status in C1ST over the period."),
         ("Ces taux reflètent les statuts saisis par les concessionnaires dans C1ST : le suivi est déployé progressivement selon les marchés et les marques, ils ne sont donc pas comparables d'une période à l'autre."
-         if fr else "These rates reflect the statuses entered by dealers in C1ST: the follow-up is being rolled out gradually by market and brand, so they cannot be compared from one period to another.")],
-        taille=11, couleur=g.BLEU)
-    g.texte(s, X0, 6.55, 12.4, 0.5, PERIMETRE_C1ST[0 if fr else 1], taille=9, couleur=g.GRIS, italique=True)
+         if fr else "These rates reflect the statuses entered by dealers in C1ST: the follow-up is being rolled out gradually by market and brand, so they cannot be compared from one period to another.")]
+        + ([("Spoticar : C1ST ne suit pas le contact ni le traitement de ces leads de rachat (n.d.) ; la marque est exclue du total."
+             if fr else "Spoticar: C1ST does not track contact or treatment of these buyback leads (n/a); the brand is excluded from the total.")]
+           if any(m in SANS_SUIVI_C1ST for m, _, _ in lignes_m) else []),
+        taille=10, couleur=g.BLEU)
+    g.texte(s, X0, 6.72, 12.4, 0.35, PERIMETRE_C1ST[0 if fr else 1], taille=8.5, couleur=g.GRIS, italique=True)
     return s
 
 
@@ -674,17 +686,23 @@ def c1st_conversion(ctx):
     ent = [t["marque"], ("Clients uniques" if fr else "Unique customers"), ("Avec opportunité" if fr else "With opportunity"), ("Avec devis" if fr else "With quote"),
            ("Commandes" if fr else "Orders"), ("Taux de commande" if fr else "Order rate")]
     pct = lambda a, b: t.pct(a / b * 100, 1) if b else "–"
-    def ligne(nom, c):
+    def ligne(nom, c, suivi=True):
         b = c["clients_uniques"]
+        if not suivi:
+            return [nom, t.nb(b), pct(c["avec_opp"], b), pct(c["avec_devis"], b), t["non_dispo"], t["non_dispo"]]
         return [nom, t.nb(b), pct(c["avec_opp"], b), pct(c["avec_devis"], b), t.nb(c["commandes"]), pct(c["commandes"], b)]
-    lignes = [ent] + [ligne(ctx.nom(m), c) for m, c, _ in lignes_m]
-    tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
+    suivies = [x for x in lignes_m if x[0] not in SANS_SUIVI_C1ST]
+    if not suivies:
+        return None
+    lignes = [ent] + [ligne(ctx.nom(m), c, m not in SANS_SUIVI_C1ST) for m, c, _ in lignes_m]
+    tot = {k: sum(c[k] for _, c, _ in suivies) for k in suivies[0][1]}
     lignes.append(ligne(t["total"], tot))
     s = nouvelle(ctx, ("Du lead à la commande" if fr else "From lead to order") + f" — {ctx.et(per)}", ctx.perimetre, SOURCE_C1ST[0 if fr else 1],
                  notes=note_definitions(ctx, "Taux calculés sur les clients uniques. Commandes : commandes rattachées au lead entre 1 et 90 jours après sa création ; les périodes récentes continuent d'évoluer."),
                  cle="c1st_conversion")
     nc = len(ent)
-    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.4] + [(12.4 - 2.4) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    hl = min(0.38, 3.6 / len(lignes))
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.4] + [(12.4 - 2.4) / (nc - 1)] * (nc - 1), taille=(10.5 if len(lignes) <= 8 else 9.5), hauteur_ligne=hl, gras_derniere=True)
     from datetime import timedelta as _td
     seuil = ctx.aujourdhui - _td(days=90)
     mur = lambda p: p.fin <= seuil
@@ -696,7 +714,7 @@ def c1st_conversion(ctx):
         for cle, p in ctx.refs:
             rt = {k: 0 for k in tot}
             ok = mur(p)
-            for _, _, refs in lignes_m:
+            for _, _, refs in suivies:
                 r = refs.get(cle)
                 if not r:
                     ok = False
@@ -706,11 +724,78 @@ def c1st_conversion(ctx):
             if ok and rt["clients_uniques"] >= 100:
                 d_ = (tot["commandes"] / tot["clients_uniques"] - rt["commandes"] / rt["clients_uniques"]) * 100
                 refs_txt.append((f"Taux de commande : {t.pts(d_)} {libelle_ref(ctx, cle)}." if fr else f"Order rate: {t.pts(d_)} {libelle_ref(ctx, cle)}."))
-    g.encadre(s, X0, Y0 + 0.38 * len(lignes) + 0.4, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
+    g.encadre(s, X0, Y0 + 0.1 + hl * len(lignes) + 0.2, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
         (f"{t.nb(tot['commandes'])} commandes rattachées aux leads de la période, soit {pct(tot['commandes'], tot['clients_uniques'])} des clients uniques." if fr else
          f"{t.nb(tot['commandes'])} orders linked to the period's leads, i.e. {pct(tot['commandes'], tot['clients_uniques'])} of unique customers."),
-        ("Les commandes sont comptées jusqu'à 90 jours après le lead." if fr else "Orders are counted up to 90 days after the lead.")] + refs_txt, taille=11, couleur=g.BLEU)
-    g.texte(s, X0, 6.55, 12.4, 0.5, PERIMETRE_C1ST[0 if fr else 1], taille=9, couleur=g.GRIS, italique=True)
+        ("Les commandes sont comptées jusqu'à 90 jours après le lead." if fr else "Orders are counted up to 90 days after the lead.")]
+        + ([("Spoticar : pas de commandes dans C1ST pour ces leads de rachat (n.d.) ; la marque est exclue du total."
+             if fr else "Spoticar: no orders in C1ST for these buyback leads (n/a); the brand is excluded from the total.")]
+           if any(m in SANS_SUIVI_C1ST for m, _, _ in lignes_m) else []) + refs_txt, taille=10, couleur=g.BLEU)
+    g.texte(s, X0, 6.72, 12.4, 0.35, PERIMETRE_C1ST[0 if fr else 1], taille=8.5, couleur=g.GRIS, italique=True)
+    return s
+
+
+def c1st_ventes_additionnelles(ctx):
+    """Ventes additionnelles (C1ST) = commandes NSC de la période − commandes NSC de la même période l'an dernier, par marque, et cumul de l'année."""
+    from datetime import timedelta as _td
+    t, per = ctx.t, ctx.per
+    fr = ctx.langue == "fr"
+    if per.type == "annee" and False:
+        return None
+    n1 = per.n1()
+
+    class _Cumul:                                        # du 1er janvier à la fin de la période
+        def __init__(self, annee, mois_fin):
+            self._m = [(annee, m) for m in range(1, mois_fin + 1)]
+        def mois(self):
+            return self._m
+    fin_m = per.mois()[-1][1]
+    cumul, cumul_n1 = _Cumul(per.annee, fin_m), _Cumul(per.annee - 1, fin_m)
+    avec_cumul = per.mois()[0] != (per.annee, 1)
+    lignes_m = []
+    for m in ctx.d.marques:
+        if m in SANS_SUIVI_C1ST:
+            continue
+        a, b = ctx.d.c1st_nsc(per, m), ctx.d.c1st_nsc(n1, m)
+        if a is None or b is None:
+            continue
+        ca, cb = (ctx.d.c1st_nsc(cumul, m), ctx.d.c1st_nsc(cumul_n1, m)) if avec_cumul else (None, None)
+        lignes_m.append((m, a, b, ca, cb))
+    if not lignes_m:
+        return None
+    sg = lambda v: ("+" if v > 0 else "−" if v < 0 else "") + t.nb(abs(v))
+    ent = [t["marque"], f"NSC orders {ctx.et(per)}" if not fr else f"Commandes NSC {ctx.et(per)}", f"NSC orders {ctx.et(n1)}" if not fr else f"Commandes NSC {ctx.et(n1)}",
+           ("Ventes additionnelles" if fr else "Additional sales")]
+    if avec_cumul:
+        ent += [(f"Commandes NSC cumul {per.annee}" if fr else f"YTD NSC orders {per.annee}"), (f"Commandes NSC cumul {per.annee - 1}" if fr else f"YTD NSC orders {per.annee - 1}"),
+                ("Ventes additionnelles cumul" if fr else "Additional sales (YTD)")]
+    lignes = [ent]
+    for m, a, b, ca, cb in lignes_m:
+        row = [ctx.nom(m), t.nb(a), t.nb(b), sg(a - b)]
+        if avec_cumul:
+            row += [t.nb(ca), t.nb(cb), sg(ca - cb)] if ca is not None and cb is not None else [t["non_dispo"]] * 3
+        lignes.append(row)
+    ta, tb = sum(x[1] for x in lignes_m), sum(x[2] for x in lignes_m)
+    tot = [t["total"], t.nb(ta), t.nb(tb), sg(ta - tb)]
+    if avec_cumul:
+        cc = [x for x in lignes_m if x[3] is not None and x[4] is not None]
+        tot += [t.nb(sum(x[3] for x in cc)), t.nb(sum(x[4] for x in cc)), sg(sum(x[3] - x[4] for x in cc))]
+    lignes.append(tot)
+    s = nouvelle(ctx, (f"Ventes additionnelles — {ctx.et(per)}" if fr else f"Additional sales — {ctx.et(per)}"), ctx.perimetre, SOURCE_C1ST[0 if fr else 1],
+                 notes=note_definitions(ctx, "Ventes additionnelles = commandes NSC de la période − commandes NSC de la même période l'an dernier (commandes rattachées au lead entre 1 et 90 jours après sa création)."),
+                 cle="c1st_ventes_additionnelles")
+    nc = len(ent)
+    hl = min(0.38, 3.6 / len(lignes))
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.0] + [(12.4 - 2.0) / (nc - 1)] * (nc - 1), taille=(10.5 if len(lignes) <= 8 else 9.5), hauteur_ligne=hl, gras_derniere=True)
+    mur = per.fin <= ctx.aujourdhui - _td(days=90)
+    g.encadre(s, X0, Y0 + 0.1 + hl * len(lignes) + 0.2, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
+        (f"Ventes additionnelles vs la même période l'an dernier : {sg(ta - tb)} ({t.nb(ta)} commandes NSC contre {t.nb(tb)})." if fr else
+         f"Additional sales vs the same period last year: {sg(ta - tb)} ({t.nb(ta)} NSC orders vs {t.nb(tb)})."),
+        ("Ventes additionnelles = commandes NSC de la période − commandes NSC de la même période l'an dernier (commandes rattachées au lead jusqu'à 90 jours après sa création)." if fr else
+         "Additional sales = NSC orders of the period − NSC orders of the same period last year (orders linked to the lead up to 90 days after its creation).")]
+        + ([] if mur else [("Période récente : les commandes continuent d'être rattachées aux leads pendant 90 jours, les ventes additionnelles affichées sont provisoires." if fr else
+                            "Recent period: orders keep being linked to the leads for 90 days, so the additional sales shown are provisional.")]), taille=10, couleur=g.BLEU)
+    g.texte(s, X0, 6.72, 12.4, 0.35, PERIMETRE_C1ST[0 if fr else 1], taille=8.5, couleur=g.GRIS, italique=True)
     return s
 
 
@@ -1046,6 +1131,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         entree_vehicule(ctx)
         c1st_lead_management(ctx)
         c1st_conversion(ctx)
+        c1st_ventes_additionnelles(ctx)
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:

@@ -69,6 +69,24 @@ LIBELLES = {
         "Periodo recente: gli ordini continuano a essere associati ai lead per 90 giorni, quindi i tassi sono provvisori e non viene calcolata alcuna evoluzione.",
         "Período reciente: los pedidos se siguen asociando a los leads durante 90 días, por lo que las tasas son provisionales y no se calcula ninguna evolución.",
         "Aktueller Zeitraum: Bestellungen werden Leads noch 90 Tage lang zugeordnet; die Quoten sind daher vorläufig und es wird keine Veränderung berechnet."),
+    "Spoticar: C1ST does not track contact or treatment of these buyback leads (n/a); the brand is excluded from the total.": (
+        "Spoticar: C1ST non monitora il contatto né il trattamento di questi lead di riacquisto (n.d.); il marchio è escluso dal totale.",
+        "Spoticar: C1ST no registra el contacto ni el tratamiento de estos leads de recompra (n.d.); la marca se excluye del total.",
+        "Spoticar: C1ST erfasst weder Kontakt noch Bearbeitung dieser Ankauf-Leads (k. A.); die Marke ist im Gesamt nicht enthalten."),
+    "Spoticar: no orders in C1ST for these buyback leads (n/a); the brand is excluded from the total.": (
+        "Spoticar: nessun ordine in C1ST per questi lead di riacquisto (n.d.); il marchio è escluso dal totale.",
+        "Spoticar: sin pedidos en C1ST para estos leads de recompra (n.d.); la marca se excluye del total.",
+        "Spoticar: keine Bestellungen in C1ST für diese Ankauf-Leads (k. A.); die Marke ist im Gesamt nicht enthalten."),
+    "Additional sales": ("Vendite aggiuntive", "Ventas adicionales", "Zusätzliche Verkäufe"),
+    "Additional sales (YTD)": ("Vendite aggiuntive cumulate", "Ventas adicionales acumuladas", "Zusätzliche Verkäufe kumuliert"),
+    "Additional sales = NSC orders of the period − NSC orders of the same period last year (orders linked to the lead up to 90 days after its creation).": (
+        "Vendite aggiuntive = ordini NSC del periodo − ordini NSC dello stesso periodo dell'anno precedente (ordini associati al lead fino a 90 giorni dopo la sua creazione).",
+        "Ventas adicionales = pedidos NSC del período − pedidos NSC del mismo período del año anterior (pedidos asociados al lead hasta 90 días después de su creación).",
+        "Zusätzliche Verkäufe = NSC-Bestellungen des Zeitraums − NSC-Bestellungen desselben Zeitraums im Vorjahr (Bestellungen, die dem Lead bis zu 90 Tage nach dessen Erstellung zugeordnet werden)."),
+    "Recent period: orders keep being linked to the leads for 90 days, so the additional sales shown are provisional.": (
+        "Periodo recente: gli ordini continuano a essere associati ai lead per 90 giorni, quindi le vendite aggiuntive mostrate sono provvisorie.",
+        "Período reciente: los pedidos se siguen asociando a los leads durante 90 días, por lo que las ventas adicionales mostradas son provisionales.",
+        "Aktueller Zeitraum: Bestellungen werden Leads noch 90 Tage lang zugeordnet; die angezeigten zusätzlichen Verkäufe sind daher vorläufig."),
     "Orders are counted up to 90 days after the lead.": ("Gli ordini sono conteggiati fino a 90 giorni dopo il lead.", "Los pedidos se cuentan hasta 90 días después del lead.", "Bestellungen werden bis zu 90 Tage nach dem Lead gezählt."),
     "1 V2 site in scope. Before: the 28 days before the switch; after: since the switch.": (
         "1 sito V2 nel perimetro. Prima: i 28 giorni precedenti il passaggio; dopo: dal passaggio.",
@@ -121,6 +139,13 @@ PHRASES = [
      "{n} ordini associati ai lead del periodo, ovvero il {p} dei clienti unici.",
      "{n} pedidos asociados a los leads del período, es decir, el {p} de los clientes únicos.",
      "{n} Bestellungen zu den Leads des Zeitraums, d. h. {p} der eindeutigen Kunden."),
+    ("NSC orders {p}", "Ordini NSC {p}", "Pedidos NSC {p}", "NSC-Bestellungen {p}"),
+    ("YTD NSC orders {y}", "Ordini NSC cumulati {y}", "Pedidos NSC acumulados {y}", "NSC-Bestellungen kumuliert {y}"),
+    ("Additional sales vs the same period last year: {x} ({a} NSC orders vs {b}).",
+     "Vendite aggiuntive rispetto allo stesso periodo dell'anno precedente: {x} ({a} ordini NSC contro {b}).",
+     "Ventas adicionales frente al mismo período del año anterior: {x} ({a} pedidos NSC frente a {b}).",
+     "Zusätzliche Verkäufe gegenüber demselben Zeitraum im Vorjahr: {x} ({a} NSC-Bestellungen gegenüber {b})."),
+    ("Additional sales — {p}", "Vendite aggiuntive — {p}", "Ventas adicionales — {p}", "Zusätzliche Verkäufe — {p}"),
     ("Order rate: {x} {r}.", "Tasso di ordine: {x} {r}.", "Tasa de pedido: {x} {r}.", "Bestellquote: {x} {r}."),
     ("New cars share {x} {r}", "Quota auto nuove {x} {r}", "Cuota de coches nuevos {x} {r}", "Neuwagenanteil {x} {r}"),
     ("Traffic {x} {r}", "Traffico {x} {r}", "Tráfico {x} {r}", "Traffic {x} {r}"),

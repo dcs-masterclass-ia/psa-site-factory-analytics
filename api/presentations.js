@@ -44,7 +44,7 @@ const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "ct
 const LANGUES = ["fr", "en", "it", "es", "de"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
 
-const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion"];
+const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion", "c1st_ventes_additionnelles"];
 const RE_MARQUE = /^[A-Z0-9 &'.-]{1,40}$/;
 
 const txt = (v, max) => String(v == null ? "" : v).replace(/\u0000/g, "").trim().slice(0, max);
