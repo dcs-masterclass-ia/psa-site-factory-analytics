@@ -309,3 +309,19 @@ class C1st(unittest.TestCase):
             texte = lambda s: " ".join(c.text for sh in s.shapes if sh.has_table for r in sh.table.rows for c in r.cells)
             self.assertIn("2\u00a0940", texte(s1))          # clients envoyés : 3 mois x 980
             self.assertIn("6,0", texte(s2).replace(" ", " "))   # 180 / 3000 = 6,0 %
+
+    def test_pas_de_comparaison_sur_traitement_ni_sur_periode_immature(self):
+        from datetime import date
+        from pipeline.deck.construit import Ctx, c1st_lead_management, c1st_conversion
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["FR"], "marques": []},
+                     "comparaisons": {"precedente": True, "n1": False}, "modules": ["global"]}
+            ctx = Ctx(brief, self._donnees(tmp))
+            ctx.aujourdhui = date(2026, 10, 15)                       # T3 2026 fini depuis moins de 90 jours : provisoire
+            tout = lambda s: " ".join(sh.text_frame.text for sh in s.shapes if sh.has_text_frame)
+            self.assertNotIn("vs période précédente", tout(c1st_lead_management(ctx)))      # jamais d'évolution sur le traitement
+            self.assertIn("provisoires", tout(c1st_conversion(ctx)))
+        with tempfile.TemporaryDirectory() as tmp2:
+            ctx2 = Ctx(brief, self._donnees(tmp2))
+            ctx2.aujourdhui = date(2027, 3, 1)                        # plus de 90 jours après la fin du T3 : plus de mention provisoire
+            self.assertNotIn("provisoires", tout(c1st_conversion(ctx2)))
