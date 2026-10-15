@@ -281,7 +281,8 @@ class C1st(unittest.TestCase):
             if m == mois_manquant:
                 continue
             mois[m] = {"leads": [{"marque": "AP", "leads": 1000, "envoyes": 990, "clients_envoyes": 980, "contactes": 490, "contactes_delai": 400, "premier_appel_delai": 500, "traites": 450, "traites_delai": 420, "avec_opp": 600}],
-                       "commandes": [{"marque": "AP", "clients_uniques": 1000, "avec_devis": 300, "commandes": 60}]}
+                       "commandes": [{"marque": "AP", "clients_uniques": 1000, "avec_devis": 300, "commandes": 999}],
+                       "nsc": [{"marque": "AP", "commandes_nsc": 60}]}
         (racine / "c1st" / "kpi.json").write_text(json.dumps({"donnees": {"FR": mois}}), encoding="utf-8")
         d = Donnees(["FR"], ["PEUGEOT"], hist=racine / "history")
         d.sites = [("PEUGEOT FR", "PEUGEOT", "FR")]

@@ -684,7 +684,7 @@ def c1st_conversion(ctx):
     if not lignes_m:
         return None
     ent = [t["marque"], ("Clients uniques" if fr else "Unique customers"), ("Avec opportunité" if fr else "With opportunity"), ("Avec devis" if fr else "With quote"),
-           ("Commandes" if fr else "Orders"), ("Taux de commande" if fr else "Order rate")]
+           ("Commandes NSC" if fr else "NSC orders"), ("Taux de commande" if fr else "Order rate")]
     pct = lambda a, b: t.pct(a / b * 100, 1) if b else "–"
     def ligne(nom, c, suivi=True):
         b = c["clients_uniques"]
@@ -698,7 +698,7 @@ def c1st_conversion(ctx):
     tot = {k: sum(c[k] for _, c, _ in suivies) for k in suivies[0][1]}
     lignes.append(ligne(t["total"], tot))
     s = nouvelle(ctx, ("Du lead à la commande" if fr else "From lead to order") + f" — {ctx.et(per)}", ctx.perimetre, SOURCE_C1ST[0 if fr else 1],
-                 notes=note_definitions(ctx, "Taux calculés sur les clients uniques. Commandes : commandes rattachées au lead entre 1 et 90 jours après sa création ; les périodes récentes continuent d'évoluer."),
+                 notes=note_definitions(ctx, "Taux calculés sur les clients uniques. Commandes NSC : commandes (jeu « SUB » de C1ST) rattachées au lead entre 1 et 90 jours après sa création ; taux de commande = commandes NSC ÷ clients uniques ; les périodes récentes continuent d'évoluer."),
                  cle="c1st_conversion")
     nc = len(ent)
     hl = min(0.38, 3.6 / len(lignes))
@@ -725,8 +725,8 @@ def c1st_conversion(ctx):
                 d_ = (tot["commandes"] / tot["clients_uniques"] - rt["commandes"] / rt["clients_uniques"]) * 100
                 refs_txt.append((f"Taux de commande : {t.pts(d_)} {libelle_ref(ctx, cle)}." if fr else f"Order rate: {t.pts(d_)} {libelle_ref(ctx, cle)}."))
     g.encadre(s, X0, Y0 + 0.1 + hl * len(lignes) + 0.2, 12.4, 1.5, ("Lecture" if fr else "Reading"), [
-        (f"{t.nb(tot['commandes'])} commandes rattachées aux leads de la période, soit {pct(tot['commandes'], tot['clients_uniques'])} des clients uniques." if fr else
-         f"{t.nb(tot['commandes'])} orders linked to the period's leads, i.e. {pct(tot['commandes'], tot['clients_uniques'])} of unique customers."),
+        (f"{t.nb(tot['commandes'])} commandes NSC rattachées aux leads de la période, soit {pct(tot['commandes'], tot['clients_uniques'])} des clients uniques." if fr else
+         f"{t.nb(tot['commandes'])} NSC orders linked to the period's leads, i.e. {pct(tot['commandes'], tot['clients_uniques'])} of unique customers."),
         ("Les commandes sont comptées jusqu'à 90 jours après le lead." if fr else "Orders are counted up to 90 days after the lead.")]
         + ([("Spoticar : pas de commandes dans C1ST pour ces leads de rachat (n.d.) ; la marque est exclue du total."
              if fr else "Spoticar: no orders in C1ST for these buyback leads (n/a); the brand is excluded from the total.")]

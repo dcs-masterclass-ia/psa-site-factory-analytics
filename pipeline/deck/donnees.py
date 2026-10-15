@@ -260,7 +260,7 @@ class Donnees:
         for pays in cles:
             for a, mo in periode.mois():
                 m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
-                if not m or m.get("leads") is None or m.get("commandes") is None:
+                if not m or m.get("leads") is None or m.get("commandes") is None or m.get("nsc") is None:
                     return None
                 for r in m["leads"]:
                     if r.get("marque") == code:
@@ -268,8 +268,11 @@ class Donnees:
                             tot[k] += r.get(k) or 0
                 for r in m["commandes"]:
                     if r.get("marque") == code:
-                        for k in champs_c:
+                        for k in ("clients_uniques", "avec_devis"):
                             tot[k] += r.get(k) or 0
+                for r in m["nsc"]:                       # commandes = commandes NSC (jeu « SUB » de C1ST), comme le graphique « NSC Orders »
+                    if r.get("marque") == code:
+                        tot["commandes"] += r.get("commandes_nsc") or 0
         return tot
 
     def c1st_nsc(self, periode, marque):
