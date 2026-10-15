@@ -325,6 +325,8 @@ de données. Tests : `node --test tests/api/tickets.test.js` (API, sans réseau)
 
 ## Onglet Présentations (2026-10-11)
 
+Commentaires et actions (étape 7 du questionnaire) : champs `commentaires` ({clé: texte ≤ 240}, clés fixes de `CLES_COMMENTAIRE` dans `api/presentations.js` + `marque:NOM`) et `actionsMarques` ({MARQUE: [≤ 5 lignes]}). Générateur : `construit.commentaire_diapo` affiche le commentaire sous le titre à droite, une seule fois par clé ; les actions saisies remplacent celles de `analyse.apercu_marque` pour la marque.
+
 Classement des marchés (`construit.classement_marches`) : leads New cars (VN, valides) de tous les marchés autobiz sur la période, rang, part, évolution vs N-1, cumul de l'année ; BE + LU regroupés (BELUX), GB + UK regroupés. Générée dans la vue d'ensemble de toute édition.
 
 Projection du mois (`construit.projection_mois`) : générée dans la vue d'ensemble d'une édition **mensuelle** dont le mois n'est pas terminé ; leads New cars du 1er au dernier jour connu des leads BO, ramenés à la durée du mois au rythme moyen constant (indicatif), comparés au même mois N-1 et au mois précédent. Aucune slide si le mois est terminé.

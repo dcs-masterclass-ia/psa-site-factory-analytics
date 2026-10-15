@@ -220,3 +220,23 @@ class ClassementMarches(unittest.TestCase):
         for l in ("fr", "en"):
             self.assertEqual(NOMS_PAYS[l]["BE"], NOMS_PAYS[l]["LU"])      # BELUX regroupé
             self.assertEqual(NOMS_PAYS[l]["GB"], NOMS_PAYS[l]["UK"])      # deux codes, un seul marché
+
+
+class Commentaires(unittest.TestCase):
+    """Commentaires du DKAM saisis dans le brief : affichés une seule fois par clé, sur la bonne diapositive."""
+
+    def test_commentaire_une_fois(self):
+        from pipeline.deck.construit import Ctx, nouvelle
+        brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["BE"], "marques": []},
+                 "comparaisons": {}, "modules": ["global"], "commentaires": {"marque:PEUGEOT": "Insister sur le display."}}
+
+        class D:
+            marques = []
+        ctx = Ctx(brief, D())
+        s1 = nouvelle(ctx, "A", cle="marque:PEUGEOT")
+        s2 = nouvelle(ctx, "B", cle="marque:PEUGEOT")      # deuxième diapositive de la marque : pas de doublon
+        s3 = nouvelle(ctx, "C", cle="marque:CITROEN")      # pas de commentaire saisi
+        texte = lambda s: " ".join(sh.text_frame.text for sh in s.shapes if sh.has_text_frame)
+        self.assertIn("Insister sur le display.", texte(s1))
+        self.assertNotIn("Insister sur le display.", texte(s2))
+        self.assertNotIn("Insister", texte(s3))

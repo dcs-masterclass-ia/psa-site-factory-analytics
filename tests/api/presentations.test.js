@@ -147,3 +147,13 @@ test("verrouillé : seules les adresses de PRESENTATIONS_EMAILS accèdent à la 
   process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
   session = { email: "m.foureau@autobiz.com", role: "full" };
 });
+
+test("commentaires et actions par marque : clés connues seulement, texte borné, lignes vides retirées", async () => {
+  const r = await appelle("POST", { action: "save", brief: { ...brief, commentaires: { synthese: "  Bon trimestre ", "marque:PEUGEOT": "Insister sur le display", inconnue: "x", "marque:<script>": "x", marches: "" },
+    actionsMarques: { PEUGEOT: "Renforcer le display\n\n  Compléter l'UTM  ", "bad<name>": ["x"], CITROEN: ["a".repeat(500)] } } });
+  assert.equal(r.code, 200);
+  assert.deepEqual(r.body.brief.commentaires, { synthese: "Bon trimestre", "marque:PEUGEOT": "Insister sur le display" });
+  assert.deepEqual(r.body.brief.actionsMarques.PEUGEOT, ["Renforcer le display", "Compléter l'UTM"]);
+  assert.equal(r.body.brief.actionsMarques.CITROEN[0].length, 160);
+  assert.equal(Object.keys(r.body.brief.actionsMarques).length, 2);
+});

@@ -37,6 +37,7 @@ class Ctx:
         if comp.get("n1"):
             self.refs.append(("n1", self.per.n1()))
         self.n = 0                         # numéro de diapositive
+        self.comm_utilises = set()         # clés de commentaires déjà affichées
         self.avertissements = []
         self.modules = set(brief.get("modules") or [])
         pays = [p.upper() for p in brief["perimetre"]["pays"]]
@@ -56,7 +57,7 @@ class Ctx:
 
 
 # ------------------------------------------------------------------ squelette de diapositive
-def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitle", notes=None):
+def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitle", notes=None, cle=None):
     s = ctx.prs.slides.add_slide(ctx.lay[layout])
     ctx.n += 1
     s.shapes.title.text = titre
@@ -72,7 +73,19 @@ def nouvelle(ctx, titre, sous_titre=None, source=None, layout="Title and Subtitl
     g.texte(s, 12.2, 7.1, 0.8, 0.3, str(ctx.n), taille=9, couleur=g.GRIS, align=PP_ALIGN.RIGHT)
     if notes:
         s.notes_slide.notes_text_frame.text = notes
+    if cle:
+        commentaire_diapo(ctx, s, cle)
     return s
+
+
+def commentaire_diapo(ctx, s, cle):
+    """Commentaire du DKAM saisi dans le questionnaire (brief["commentaires"][clé]), affiché sous le titre à droite ; une clé n'est affichée qu'une fois
+    (la clé « marque:X » apparaît donc sur la première diapositive de la marque)."""
+    txt = ((ctx.brief.get("commentaires") or {}).get(cle) or "").strip()
+    if not txt or cle in ctx.comm_utilises:
+        return
+    ctx.comm_utilises.add(cle)
+    g.encadre(s, 4.7, 0.78, 8.2, 0.42, None, [txt[:240]], taille=9.5, couleur=g.ORANGE)
 
 
 def source_bo(ctx):
@@ -153,7 +166,7 @@ def sommaire(ctx, sections, actif=None):
 
 def synthese(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
-    s = nouvelle(ctx, f"{t['synthese']} — {ctx.et(per)}", f"{ctx.perimetre}", source_les_deux(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, f"{t['synthese']} — {ctx.et(per)}", f"{ctx.perimetre}", source_les_deux(ctx), notes=note_definitions(ctx), cle="synthese")
     leads = d.leads(per); tot = sum(leads.values()); nc = leads["VN"]
     sess_cur = sum(sum(d.canaux(per, m).values()) for m in d.marques)
     # tuiles
@@ -214,7 +227,7 @@ def vue_groupes(ctx):
         return None
     periodes = ctx.periodes
     L = lambda p, ms: sum(d.leads_total(p, m) for m in ms)
-    s = nouvelle(ctx, f"{t['groupes']} — {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, f"{t['groupes']} — {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx), cle="groupes")
     couleurs = ["1F3F7A", "F58A1F", "7FB7B0", "9AA3B2"]
     series = [(k, [L(p, ms) for p in periodes], couleurs[i % 4]) for i, (k, ms) in enumerate(grp.items())]
     g.colonnes(s, X0, Y0, 5.6, 4.2, [ctx.et(p) for p in periodes], series, empile=True, taille=10, fmt=t.nb)
@@ -268,7 +281,7 @@ def leads_par_marque(ctx, cle, ref):
     cur = [d.leads_total(per, m) for m in marques]
     rf = [d.leads_total(ref, m) for m in marques]
     s = nouvelle(ctx, f"{t['leads']} — {ctx.et(per)} {libelle_ref(ctx, cle)}", f"{ctx.perimetre} · {ctx.et(per)} / {ctx.et(ref)}", source_bo(ctx),
-                 notes=note_definitions(ctx))
+                 notes=note_definitions(ctx), cle="leads_marques")
     perso = [None] + [[f"{t.nb(c)}\n{t.evol(c, r)[0]}" if t.evol(c, r)[2] is not None else t.nb(c) for c, r in zip(cur, rf)]]
     g.colonnes(s, X0, Y0, 8.9, 4.2, [ctx.nom(m) for m in marques],
                [(ctx.et(ref), rf, g.COULEURS_PERIODES[1]), (ctx.et(per), cur, g.COULEURS_PERIODES[2])],
@@ -292,7 +305,7 @@ def leads_mensuels(ctx, projet=None):
     if not annees:
         return None
     titre = (t["leads_nc"] if projet else t["leads"]) + f" {t['par_mois']}"
-    s = nouvelle(ctx, titre, ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, titre, ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx), cle=("leads_nc_mensuels" if projet else "leads_mensuels"))
     g.texte(s, X1 - 5.5, 1.12, 5.5, 0.3, ("Mois complets uniquement" if ctx.langue == "fr" else "Complete months only"), taille=9.5, couleur=g.GRIS, align=PP_ALIGN.RIGHT, italique=True)
     series = []
     for i, a in enumerate(annees):
@@ -322,7 +335,7 @@ def apercu_marques(ctx):
             s = nouvelle(ctx, f"{t['leads']} overview — {ctx.et(ctx.per)}{suite}" if not fr else f"Vue d'ensemble des leads — {ctx.et(ctx.per)}{suite}",
                          f"{ctx.perimetre} · {nom_lot}", source_bo(ctx),
                          notes=note_definitions(ctx, "Moteurs : écarts de leads par canal d'acquisition (back-office), part New cars et trafic GA4, vs la première période de comparaison. "
-                                                     "Actions : suggestions calculées, à relire ; le champ « actionsMarques » du brief les remplace."))
+                                                     "Actions : suggestions calculées, à relire ; le champ « actionsMarques » du brief les remplace."), cle="apercu")
             ent = [t["marque"], ("Tendance & part New cars" if fr else "Lead trend & NC share"), ("Moteurs de la variation" if fr else "Drivers of increase / decrease"),
                    ("Actions recommandées" if fr else "Recommended actions")]
             lignes = [ent]
@@ -349,7 +362,7 @@ def cta_marque(ctx, m):
     tot = lambda v: sum(v.values())
     supports = sorted(cur, key=lambda k: -tot(cur[k]))
     s = nouvelle(ctx, f"{ctx.nom(m)} — {'CTA du site de la marque' if fr else 'CTA on the brand website'} {ctx.et(per)}", ctx.perimetre, source_bo(ctx),
-                 notes=note_definitions(ctx, "CTA : leads valides de la source Main-Website, campagne « CTA », par SUPPORT (emplacement du bouton) ; la colonne de comparaison est la première période de comparaison."))
+                 notes=note_definitions(ctx, "CTA : leads valides de la source Main-Website, campagne « CTA », par SUPPORT (emplacement du bouton) ; la colonne de comparaison est la première période de comparaison."), cle=f"marque:{m}")
     ent = [("Emplacement" if fr else "Placement")] + [t[pj] for pj in PROJETS] + [t["total"]]
     if ctx.refs:
         ent += [f"{t['total']} {ctx.et(ctx.refs[0][1])}", libelle_ref(ctx, ctx.refs[0][0])]
@@ -390,7 +403,7 @@ def conquete_marque(ctx, m):
     autres = sum(n for k, n in rep.items() if k != nm and k in MARQUES_STELLANTIS)
     conq = total - fideles - autres
     s = nouvelle(ctx, f"{ctx.nom(m)} — {'Conquête vs fidélité' if fr else 'Conquest vs loyalty'} {ctx.et(per)}", ctx.perimetre, source_bo(ctx),
-                 notes=note_definitions(ctx, "Marque du véhicule repris (TRADE-IN BRAND) comparée à la marque du site : fidèles = même marque ; autres Stellantis ; concurrents = toutes les autres marques."))
+                 notes=note_definitions(ctx, "Marque du véhicule repris (TRADE-IN BRAND) comparée à la marque du site : fidèles = même marque ; autres Stellantis ; concurrents = toutes les autres marques."), cle=f"marque:{m}")
     lab = (f"Fidèles ({ctx.nom(m)})", "Autres Stellantis", "Concurrents") if fr else (f"Loyalty ({ctx.nom(m)})", "Other Stellantis", "Competitors")
     g.texte(s, X0, Y0 - 0.05, 5.5, 0.3, "Origine des clients" if fr else "Customer origin", taille=12, gras=True, couleur=g.BLEU)
     g.anneau(s, X0, Y0 + 0.25, 5.6, 2.6, list(lab), [fideles, autres, conq], couleurs=["4E79A7", "76B7B2", "F28E2B"], taille=10.5)
@@ -469,7 +482,7 @@ def classement_marches(ctx):
     classe = sorted(par_pays.items(), key=lambda kv: -kv[1]["cur"])
     mon = noms.get(ctx.brief["perimetre"]["pays"][0].upper(), ctx.perimetre)
     s = nouvelle(ctx, ("Classement des marchés — leads New cars" if fr else "Market ranking — New cars leads"), ctx.perimetre, source_bo(ctx),
-                 notes=note_definitions(ctx, "Leads New cars (projet VN, leads valides) de tous les marchés autobiz ; Belgique et Luxembourg regroupés. Cumul = du 1er janvier à la fin de la période (ou au dernier jour connu)."))
+                 notes=note_definitions(ctx, "Leads New cars (projet VN, leads valides) de tous les marchés autobiz ; Belgique et Luxembourg regroupés. Cumul = du 1er janvier à la fin de la période (ou au dernier jour connu)."), cle="marches")
     ent = [("Rang" if fr else "Rank"), ("Marché" if fr else "Market"), f"{t['leads_nc']} {ctx.et(per)}", t["part_total"], libelle_ref(ctx, "n1"),
            (f"Cumul {per.annee}" if fr else f"YTD {per.annee}"), (f"Part du cumul" if fr else "YTD share")]
     lignes = [ent]
@@ -519,7 +532,7 @@ def projection_mois(ctx):
         return None
     lignes.append([t["total"], t.nb(tot[0]), t.nb(tot[1]), t.nb(tot[2]), t.evol(tot[1], tot[2])[0], t.nb(tot[3]), t.evol(tot[1], tot[3])[0]])
     s = nouvelle(ctx, (f"Projection {ctx.et(per)} — leads New cars" if fr else f"{ctx.et(per)} projection — New cars leads"), ctx.perimetre, source_bo(ctx),
-                 notes=note_definitions(ctx, f"Projection = leads New cars du 1er au {jours_ecoules} ÷ {jours_ecoules} jours × {jours_mois} jours : rythme moyen constant, indicatif (ne tient pas compte de la saisonnalité intra-mois)."))
+                 notes=note_definitions(ctx, f"Projection = leads New cars du 1er au {jours_ecoules} ÷ {jours_ecoules} jours × {jours_mois} jours : rythme moyen constant, indicatif (ne tient pas compte de la saisonnalité intra-mois)."), cle="projection")
     g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.1, 1.7, 1.9, 1.7, 1.7, 1.7, 1.6], taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
     g.texte(s, X0, 6.55, 12.4, 0.5,
             (f"Données du 1er au {jours_ecoules} {MOIS_COURTS[ctx.langue][per.mois_debut - 1]} : la projection prolonge le rythme moyen quotidien sur les {jours_mois} jours du mois (indicatif)."
@@ -530,7 +543,7 @@ def projection_mois(ctx):
 
 def vue_ensemble_table(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
-    s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx), cle="vue_trafic_leads")
     ent = [t["marque"], f"{t['sessions_col']} {ctx.et(per)}"] + [f"{libelle_ref(ctx, c)}" for c, _ in ctx.refs] + [f"{t['leads']} {ctx.et(per)}"] + [f"{libelle_ref(ctx, c)}" for c, _ in ctx.refs]
     lignes = [ent]
     tot_s, tot_l = 0, 0
@@ -563,7 +576,7 @@ def projets_groupe(ctx, nom_groupe, marques):
     marques = [m for m in marques if m in d.marques and d.leads_total(per, m) > 0]
     if not marques:
         return None
-    s = nouvelle(ctx, f"{t['projets']} — {t[nom_groupe]}", f"{ctx.perimetre} · {ctx.et(per)}", source_bo(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, f"{t['projets']} — {t[nom_groupe]}", f"{ctx.perimetre} · {ctx.et(per)}", source_bo(ctx), notes=note_definitions(ctx), cle="projets")
     ref = ctx.refs[-1][1] if ctx.refs else None            # n1 en priorité (dernier ajouté)
     larg = 6.1 if ref else 8.9
     def graphique(x, p):
@@ -596,7 +609,7 @@ def trafic_marque(ctx, m):
         ctx.avertissements.append(f"{ctx.nom(m)} : aucune donnée de trafic sur la période, diapositive non générée.")
         return None
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['trafic']} {ctx.et(per)}", ctx.perimetre, source_ga4(ctx),
-                 notes=note_definitions(ctx, "Chaîne GA4 comme Looker, calculée sur la période entière : sessions (total GA4) ; In Journey = sessions sur une page formulaire ou lead (page_category « form page » / « lead page ») ; hot leads = évènements tradein_request. CVR = hot leads ÷ sessions. Canaux = Stellantis Custom Channel Group. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
+                 notes=note_definitions(ctx, "Chaîne GA4 comme Looker, calculée sur la période entière : sessions (total GA4) ; In Journey = sessions sur une page formulaire ou lead (page_category « form page » / « lead page ») ; hot leads = évènements tradein_request. CVR = hot leads ÷ sessions. Canaux = Stellantis Custom Channel Group. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."), cle=f"marque:{m}")
     ga = d.utilisateurs(per, m)
     y, h, w = 1.55, 1.25, 2.55
     if ga is None:
@@ -674,7 +687,7 @@ def trafic_marque(ctx, m):
 def leads_marque(ctx, m):
     t, d, per = ctx.t, ctx.d, ctx.per
     periodes = ctx.periodes
-    s = nouvelle(ctx, f"{ctx.nom(m)} — {t['leads']} {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx))
+    s = nouvelle(ctx, f"{ctx.nom(m)} — {t['leads']} {ctx.et(per)}", ctx.perimetre, source_bo(ctx), notes=note_definitions(ctx), cle=f"marque:{m}")
     series = [(t[pj], [d.leads(p, m)[pj] for p in periodes], g.COULEURS_PROJETS[pj]) for pj in PROJETS]
     g.colonnes(s, X0, Y0, 6.2, 4.2, [ctx.et(p) for p in periodes], series, empile=True, taille=11, fmt=t.nb)
     tots = [d.leads_total(p, m) for p in periodes]
@@ -708,7 +721,7 @@ def sources_marque(ctx, m):
     t, d, per = ctx.t, ctx.d, ctx.per
     periodes = ctx.periodes
     s = nouvelle(ctx, f"{ctx.nom(m)} — {'Sources d\'acquisition' if ctx.langue == 'fr' else 'Acquisition sources'} {ctx.et(per)}", ctx.perimetre,
-                 source_bo(ctx), notes=note_definitions(ctx, "Sources d'acquisition : SOURCE_ACQUISITION du back-office regroupée (voir pipeline/deck/donnees.py)."))
+                 source_bo(ctx), notes=note_definitions(ctx, "Sources d'acquisition : SOURCE_ACQUISITION du back-office regroupée (voir pipeline/deck/donnees.py)."), cle=f"marque:{m}")
     if not ctx.d.acquisition_disponible(periodes[0]):
         g.texte(s, X0, 2.0, 12, 0.6, t["acq_indispo"], taille=14, couleur=g.GRIS)
         return s

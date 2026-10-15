@@ -2996,6 +2996,25 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp6_next }}" style="{{ stp6_nextStyle }}">{{ stp6_nextLabel }}</span></div>
             </div></div></div>
           </div>
+          <div style="{{ stp7_cardStyle }}">
+            <div onClick="{{ stp7_toggle }}" style="{{ stp7_head }}">
+              <span style="{{ stp7_circle }}">{{ stp7_num }}</span>
+              <div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Commentaires et actions recommandées</div><sc-if value="{{ stp7_showSum }}" hint-placeholder-val="{{ true }}"><div style="font-size:12.5px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ stp7_sum }}</div></sc-if></div>
+              <span style="{{ stp7_statStyle }}">{{ stp7_stat }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <div style="{{ stp7_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
+                <div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Ajoute un mot du DKAM sur une diapositive (une ligne, 240 caractères au plus, affichée en haut à droite) et corrige, marque par marque, les actions recommandées calculées automatiquement.</div>
+                <sc-if value="{{ prHasCommVues }}" hint-placeholder-val="{{ true }}"><div style="font-size:13px;font-weight:600;color:#121214;margin:14px 0 8px">Commentaire par vue</div>
+                  <sc-for list="{{ prCommVues }}" as="c" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:center;margin-bottom:8px"><span style="font-size:13px;color:#4b4b4f">{{ c.label }}</span><input type="text" value="{{ c.value }}" onInput="{{ c.on }}" placeholder="Commentaire (facultatif)" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;width:100%;box-sizing:border-box"/></div></sc-for></sc-if>
+                <sc-if value="{{ prHasCommMarques }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;font-weight:600;color:#121214;margin:14px 0 4px">Commentaire par marque</div><div style="font-size:12px;color:#9a9fa6;margin-bottom:8px">Affiché sur la première diapositive de la marque.</div>
+                  <sc-for list="{{ prCommMarques }}" as="c" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:center;margin-bottom:8px"><span style="font-size:13px;color:#4b4b4f">{{ c.label }}</span><input type="text" value="{{ c.value }}" onInput="{{ c.on }}" placeholder="Commentaire (facultatif)" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;width:100%;box-sizing:border-box"/></div></sc-for></sc-if>
+                <sc-if value="{{ prHasAct }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;font-weight:600;color:#121214;margin:14px 0 4px">Actions recommandées par marque</div><div style="font-size:12px;color:#9a9fa6;margin-bottom:8px">Une action par ligne (5 au plus). Laisse vide pour garder les actions calculées automatiquement.</div>
+                  <sc-for list="{{ prActMarques }}" as="c" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:start;margin-bottom:8px"><span style="font-size:13px;color:#4b4b4f;padding-top:8px">{{ c.label }}</span><textarea value="{{ c.value }}" onInput="{{ c.on }}" rows="3" placeholder="Suggestions automatiques conservées" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;width:100%;box-sizing:border-box"></textarea></div></sc-for></sc-if>
+                <sc-if value="{{ stp7_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px"></div></sc-if>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp7_next }}" style="{{ stp7_nextStyle }}">{{ stp7_nextLabel }}</span></div>
+            </div></div></div>
+          </div>
           </div>
 
           <div style="position:sticky;top:0;display:flex;flex-direction:column;gap:12px;min-width:0">
@@ -6467,7 +6486,7 @@ class Component extends DCLogic {
     const prNormPeriode = p => (p&&p.type) ? p : (p&&p.trimestre!=null ? {type:'trimestre',annee:p.annee,indice:p.trimestre} : prDernierePeriode('trimestre'));
     const prLabelPeriode = p0 => { const p=prNormPeriode(p0); return p.type==='mois'?PR_MOIS[(p.indice||1)-1]+' '+p.annee : p.type==='trimestre'?'T'+p.indice+'-'+p.annee : p.type==='semestre'?'S'+p.indice+'-'+p.annee : String(p.annee); };
     const PR_MODULES = [
-      {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par groupe de marques (hors Spoticar), leads par marque (vs période précédente et N-1), tendance dans la période, leads New cars', dispo:'ok', base:7},
+      {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par groupe de marques (hors Spoticar), leads par marque (vs période précédente et N-1), tendance dans la période, leads New cars, vue d\'ensemble par marque, classement des marchés, projection du mois (édition mensuelle en cours)', dispo:'ok', base:10},
       {id:'projets',     titre:'Projets d\'achat',             desc:'New cars / Trade-in only / Used cars, par groupe de marques (XP, XF)', dispo:'ok', base:2},
       {id:'trafic_marque',titre:'Trafic et leads par marque',  desc:'Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads', dispo:'ok', parMarque:2},
       {id:'sources',     titre:'Sources d\'acquisition',       desc:'Display, Search, Emailing, Main-Website… par projet d\'achat, par marque, avec le détail du regroupement des sources', dispo:'ok', note:'', parMarque:1},
@@ -6482,7 +6501,7 @@ class Component extends DCLogic {
     ];
     const prDef = {
       id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null,
-      modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:'', reco:null, tplNom:''
+      modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:'', commentaires:{}, actionsMarques:{}, reco:null, tplNom:''
     };
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
     const per = prNormPeriode(pr.periode);
@@ -6562,13 +6581,20 @@ class Component extends DCLogic {
     const prValidMods = pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
     const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = prValidMods.length>0;
     const prS2ok = prTitreOk&&prLangueOk&&prPaysOk;
+    // ---- commentaires du DKAM par diapositive et actions recommandées corrigées par marque (champs `commentaires` et `actionsMarques` du brief)
+    const PR_COMM_VUES = [['synthese','Synthèse'],['groupes','Leads par groupe de marques'],['leads_marques','Leads par marque (vs période précédente / N-1)'],['leads_mensuels','Leads par mois'],['leads_nc_mensuels','Leads New cars par mois'],['projection','Projection du mois (édition mensuelle en cours)'],['marches','Classement des marchés'],['apercu','Vue d\'ensemble des leads par marque'],['vue_trafic_leads','Trafic et leads (tableau)'],['projets','Projets d\'achat']];
+    const prCommSet = (cle,v) => prSet({commentaires:Object.assign({},pr.commentaires||{},{[cle]:v.slice(0,240)})});
+    const prCommVues = PR_COMM_VUES.filter(([k])=>k==='projets'?pr.modules.includes('projets'):(pr.modules.includes('global')&&(k!=='projection'||per.type==='mois'))).map(([k,label])=>({label,value:(pr.commentaires||{})[k]||'',on:e=>prCommSet(k,e.target.value)}));
+    const prCommMarques = (pr.modules.some(m=>['trafic_marque','sources','cta','conquete'].includes(m))?prMarquesSel:[]).map(m=>({label:m.charAt(0)+m.slice(1).toLowerCase(),value:(pr.commentaires||{})['marque:'+m]||'',on:e=>prCommSet('marque:'+m,e.target.value)}));
+    const prActMarques = (pr.modules.includes('global')?prMarquesSel:[]).map(m=>({label:m.charAt(0)+m.slice(1).toLowerCase(),value:(pr.actionsMarques||{})[m]||'',on:e=>prSet({actionsMarques:Object.assign({},pr.actionsMarques||{},{[m]:e.target.value.slice(0,800)})})}));
     const prStepsDef = [
       {n:1,titre:'Choisir un modèle',req:true,ok:prTplOk,unl:true},
       {n:2,titre:'Cadrage de la présentation',req:true,ok:prS2ok,unl:prTplOk},
       {n:3,titre:'Contenu',req:true,ok:prModsOk,unl:prTplOk&&prS2ok},
       {n:4,titre:'Points ouverts',req:false,ok:pr.pointsOuverts.length>0,unl:prTplOk&&prS2ok&&prModsOk},
       {n:5,titre:'Prochaines étapes',req:false,ok:pr.prochainesEtapes.length>0,unl:prTplOk&&prS2ok&&prModsOk},
-      {n:6,titre:'Contact',req:false,ok:!!(pr.contact.nom||pr.contact.email),unl:prTplOk&&prS2ok&&prModsOk}];
+      {n:6,titre:'Contact',req:false,ok:!!(pr.contact.nom||pr.contact.email),unl:prTplOk&&prS2ok&&prModsOk},
+      {n:7,titre:'Commentaires et actions',req:false,ok:Object.values(pr.commentaires||{}).some(Boolean)||Object.values(pr.actionsMarques||{}).some(Boolean),unl:prTplOk&&prS2ok&&prModsOk}];
     const prReady = prStepsDef.slice(0,3).every(x=>x.ok);
     const prFirstTodo = prStepsDef.find(x=>x.req&&!x.ok);
     const prStepOpen = (()=>{ const w=st.prStep; if (w===0) return 0; if (w&&prStepsDef[w-1]&&prStepsDef[w-1].unl) return w; return prFirstTodo?prFirstTodo.n:4; })();
@@ -6579,7 +6605,7 @@ class Component extends DCLogic {
       set({prBusy:true, prMsg:null});
       try {
         const brief = { id:pr.id, titre:pr.titre.trim(), client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
-          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire };
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
         this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
@@ -6610,7 +6636,7 @@ class Component extends DCLogic {
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
       periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
-      pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', reco:(b.modules||[]).slice(), tplNom:'' });
+      pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', commentaires:b.commentaires||{}, actionsMarques:Object.fromEntries(Object.entries(b.actionsMarques||{}).map(([k,v])=>[k,(Array.isArray(v)?v:[v]).join('\n')])), reco:(b.modules||[]).slice(), tplNom:'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
       meta:prLabelPeriode(b.periode)+' · '+((b.perimetre&&b.perimetre.pays)||[]).join('+')+' · '+(b.modules||[]).length+' modules',
@@ -6668,6 +6694,7 @@ class Component extends DCLogic {
       case 3: return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
       case 4: return pr.pointsOuverts.length?pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':'')+' à traiter':'Aucun point ouvert';
       case 5: return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
+      case 7: { const nc=Object.values(pr.commentaires||{}).filter(Boolean).length, na=Object.values(pr.actionsMarques||{}).filter(Boolean).length; return (nc||na)?[nc?nc+' commentaire'+(nc>1?'s':''):'',na?na+' marque'+(na>1?'s':'')+' avec actions corrigées':''].filter(Boolean).join(' · '):'Aucun commentaire'; }
       default: return pr.contact.nom||pr.contact.email||'Non renseigné'; } };
     const PR_STAT_UI={locked:['Verrouillée','#9a9fa6','#f2f2f5'],todo:['À compléter','#a15c07','#fdf3e3'],open:['En cours','#5b43d6','#f1eefe'],done:['Terminée','#1f7a4d','#e8f6ee'],opt:['Facultatif','#6d727a','#f2f2f5']};
     const prStepUi={};
@@ -6682,7 +6709,7 @@ class Component extends DCLogic {
         toggle:()=>{ if (d.unl) set({prStep:open?0:d.n}); },
         err:!!(prTried[d.n]&&d.req&&!d.ok),
         next:()=>{ if (d.req&&!d.ok) { set({prTried:Object.assign({},prTried,{[d.n]:true})}); return; } set({prStep:next?next.n:0}); },
-        nextLabel:d.n===6?'Terminer':(d.req?'Continuer':(d.ok?'Continuer':'Passer cette étape')),
+        nextLabel:d.n===7?'Terminer':(d.req?'Continuer':(d.ok?'Continuer':'Passer cette étape')),
         nextStyle:`display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;${!prReady&&d.req?'background:#121214;color:#fff':'background:#fff;color:#4b4b4f;border:1px solid #e1e1e6'}` }; });
     const prStepUiFlat={}; Object.keys(prStepUi).forEach(k=>{ Object.keys(prStepUi[k]).forEach(f=>{ prStepUiFlat[k+'_'+f]=prStepUi[k][f]; }); });
     // étape 1 : cartes de modèles
@@ -6815,6 +6842,7 @@ class Component extends DCLogic {
       prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
       prLangues, prBelux, prPaysChips, prMarquesChips, prTypesChips, prIndiceChips, prAnneesChips, prHasIndice:per.type!=='annee', prCompar, prPeriodeLabel, prPerimetreLabel,
       prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
+      prCommVues, prCommMarques, prActMarques, prHasCommVues:prCommVues.length>0, prHasCommMarques:prCommMarques.length>0, prHasAct:prActMarques.length>0,
       prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },
       prEtapes, prAddEtape:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:'',responsable:'',statut:'a_faire',echeance:''}])}); },
       prContactNom:pr.contact.nom||'', onPrContactNom:e=>prSet({contact:Object.assign({},pr.contact,{nom:e.target.value.slice(0,80)})}),

@@ -44,6 +44,9 @@ const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "ct
 const LANGUES = ["fr", "en", "it", "es", "de"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
 
+const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets"];
+const RE_MARQUE = /^[A-Z0-9 &'.-]{1,40}$/;
+
 const txt = (v, max) => String(v == null ? "" : v).replace(/\u0000/g, "").trim().slice(0, max);
 const liste = (v, max, f) => (Array.isArray(v) ? v.slice(0, max).map(f).filter(Boolean) : []);
 
@@ -78,11 +81,37 @@ function nettoieCommun(b) {
   };
 }
 
+/** Commentaires du DKAM par diapositive : clé fixe ou « marque:NOM », 240 caractères maximum. */
+function nettoieCommentaires(v) {
+  const out = {};
+  if (!v || typeof v !== "object" || Array.isArray(v)) return out;
+  Object.keys(v).slice(0, 60).forEach(k => {
+    const ok = CLES_COMMENTAIRE.includes(k) || (k.startsWith("marque:") && RE_MARQUE.test(k.slice(7)));
+    const t = txt(v[k], 240);
+    if (ok && t) out[k] = t;
+  });
+  return out;
+}
+
+/** Actions recommandées corrigées à la main, par marque : remplacent les suggestions calculées (5 lignes de 160 caractères au plus). */
+function nettoieActionsMarques(v) {
+  const out = {};
+  if (!v || typeof v !== "object" || Array.isArray(v)) return out;
+  Object.keys(v).slice(0, 24).forEach(k => {
+    const brut = Array.isArray(v[k]) ? v[k] : String(v[k] == null ? "" : v[k]).split("\n");
+    const l = liste(brut, 5, x => txt(x, 160) || null);
+    if (RE_MARQUE.test(k) && l.length) out[k] = l;
+  });
+  return out;
+}
+
 function nettoie(b) {
   b = b && typeof b === "object" ? b : {};
   return Object.assign(nettoieCommun(b), {
     titre: txt(b.titre, 120),
     periode: nettoiePeriode(b.periode),
+    commentaires: nettoieCommentaires(b.commentaires),
+    actionsMarques: nettoieActionsMarques(b.actionsMarques),
     pointsOuverts: liste(b.pointsOuverts, 8, p => (p && (txt(p.titre, 100) || txt(p.texte, 600)) ? { titre: txt(p.titre, 100), texte: txt(p.texte, 600) } : null)),
     prochainesEtapes: liste(b.prochainesEtapes, 15, e => (e && txt(e.item, 160)
       ? { item: txt(e.item, 160), responsable: txt(e.responsable, 60), statut: STATUTS_ACTION.includes(e.statut) ? e.statut : "a_faire", echeance: txt(e.echeance, 30) } : null)),

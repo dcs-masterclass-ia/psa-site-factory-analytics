@@ -224,3 +224,24 @@ test("périmètre : un clic sélectionne une seule entrée, Cmd/Maj + clic en aj
   await expect(page.getByText(new RegExp(`^${n} marques ×`)).first()).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("commentaires et actions : étape dédiée, saisie envoyée dans le brief", async ({ page }) => {
+  const posts = [];
+  await page.route("**/api/presentations", async (route) => {
+    const req = route.request();
+    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } });
+    const body = req.postDataJSON(); posts.push(body);
+    return route.fulfill({ json: { ok: true, brief: { ...body.brief, id: "B-t3", statut: "brouillon", auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() } } });
+  });
+  await ouvre(page);
+  await choisitModele(page);
+  await page.getByPlaceholder("Titre de la présentation").fill("Test commentaires");
+  await continuer(page);   // -> étape 3
+  await page.getByText("Commentaires et actions recommandées").first().click();   // étape 7 (facultative)
+  await page.getByPlaceholder("Commentaire (facultatif)").first().fill("Bon trimestre malgré l'été");
+  await page.getByPlaceholder("Suggestions automatiques conservées").first().fill("Renforcer le display\nCompléter l'UTM");
+  await page.getByText("Enregistrer le brouillon").click();
+  await expect.poll(() => posts.length).toBe(1);
+  expect(Object.values(posts[0].brief.commentaires)).toContain("Bon trimestre malgré l'été");
+  expect(Object.values(posts[0].brief.actionsMarques)[0]).toContain("Renforcer le display");
+});
