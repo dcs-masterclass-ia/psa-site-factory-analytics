@@ -181,6 +181,33 @@ def dim_canal(pid):
     return dim
 
 
+def domaine_marque(hote_parent):
+    """Domaine du site marque à partir de son hôte (« www.opel.fr » -> « opel.fr »), pour repérer le parcours « depuis le site marque »."""
+    h = (hote_parent or "").split("|")[0].strip().lower()
+    return h[4:] if h.startswith("www.") else h
+
+
+def entree_directe_par_canal(cli, pid, hote_reprise, hote_parent, debut, fin):
+    """Sessions du site de reprise qui ARRIVENT DIRECTEMENT sur la reprise, par canal : c'est le tableau « Traffic landing on Trade In »
+    de Looker (filtres : nom d'hôte = reprise, page_category = « home page », et le champ « Site marque vs Entrée directe » =
+    entrée directe, soit un référent qui n'est PAS le site marque). Les sessions venues du site marque sont comptées à part
+    (« Brand Websites » dans le graphique en anneau de Looker).
+    Retourne {"canaux": {canal: sessions}, "total": entrée directe, "marque": depuis le site marque, "domaine": domaine marque}."""
+    dom = domaine_marque(hote_parent)
+    if not dom or not hote_reprise:
+        return None
+    dim = dim_canal(pid)
+    base = [_egal("hostName", hote_reprise),
+            FilterExpression(filter=Filter(field_name="customEvent:page_category",
+                                           string_filter=Filter.StringFilter(value="home page", match_type=Filter.StringFilter.MatchType.EXACT)))]
+    ref = FilterExpression(filter=Filter(field_name="pageReferrer",
+                                         string_filter=Filter.StringFilter(value=dom, match_type=Filter.StringFilter.MatchType.CONTAINS)))
+    directe = _rapport(cli, pid, debut, fin, [dim], ["sessions"], _et(*base, FilterExpression(not_expression=ref)))
+    marque = _rapport(cli, pid, debut, fin, [dim], ["sessions"], _et(*base, ref))
+    canaux = {c: int(float(n)) for c, n in directe if int(float(n)) > 0}
+    return {"canaux": canaux, "total": sum(canaux.values()), "marque": sum(int(float(n)) for _, n in marque), "domaine": dom}
+
+
 def sessions_propriete_par_jour(cli, pid, debut, fin):
     """Sessions de TOUTE la propriété (tous les domaines, une session comptée une fois) par jour : {« AAAA-MM-JJ »: n}.
     C'est le périmètre de la carte « Visites site marque » de Looker."""

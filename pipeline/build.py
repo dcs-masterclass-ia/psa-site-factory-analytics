@@ -195,6 +195,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("landingMonth", {})
     d.setdefault("convCanalDevice", {})
     d.setdefault("utmMonth", {})
+    d.setdefault("entreeMonth", {})   # entrée directe sur la reprise par canal (tableau « Traffic landing on Trade In » de Looker)
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
                                           # remplie plus bas seulement si la
@@ -230,6 +231,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # de plus par passage et par site, jusqu'à ce que tout l'historique en dispose.
         rattrapage = {m for m in reversed(mois_liste) if m not in d["utmMonth"]}
         rattrapage = set(sorted(rattrapage, reverse=True)[:3])
+        rattrapage_entree = {m for m in reversed(mois_liste) if m not in d["entreeMonth"]}
+        rattrapage |= set(sorted(rattrapage_entree, reverse=True)[:3])
         # idem pour les analyses SEO (6 derniers mois), 3 par passage et par site
         rattrapage_seo = {m for m in mois_liste[-6:] if "positions" not in (d["searchMonth"].get(m) or {})}
         rattrapage_seo = set(sorted(rattrapage_seo, reverse=True)[:3])
@@ -291,6 +294,14 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             d["utmMonth"][mois] = ga4.sources_utm(cli, s.propriete, hote_reprise, deb, f_iso, funnel.EVENEMENT_ESTIMATION)
         except Exception as e:
             journal.append(f"{mois} : campagnes/UTM en erreur ({type(e).__name__})")
+
+        # entrée directe sur la reprise par canal (alignement Looker « Traffic landing on Trade In »)
+        try:
+            ed = ga4.entree_directe_par_canal(cli, s.propriete, hote_reprise, hote_parent, deb, f_iso)
+            if ed is not None:
+                d["entreeMonth"][mois] = ed
+        except Exception as e:
+            journal.append(f"{mois} : entrée directe par canal en erreur ({type(e).__name__})")
 
         # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
         # on n'ecrase jamais un funnel existant par un echec : si les deux
@@ -475,7 +486,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice", "utmMonth"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice", "utmMonth", "entreeMonth"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 
