@@ -264,6 +264,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">Leads</span>
     </div>
+    <div onClick="{{ pickC1ST }}" title="C1ST" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+    <div style="{{ srcC1ST }}" style-hover="background:#f4f4f6">
+      <img src="{{ c1LogoMini }}" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain;border-radius:6px">
+    </div>
+    <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">C1ST</span>
+    </div>
     <sc-if value="{{ canPres }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickPR }}" title="Présentations" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcPR }}" style-hover="background:#f4f4f6">
@@ -2501,6 +2507,133 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
       </div>
       </sc-if>
+      <sc-if value="{{ isC1ST }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="{{ c1Logo }}" data-keep alt="C1ST" width="44" height="44" style="display:block;flex:none;border-radius:11px">
+          <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#7c63ee">CRM ANALYTICS · STELLANTIS</div>
+            <div style="font-size:21px;font-weight:600;letter-spacing:-.02em;color:#121214">C1ST</div>
+          </div>
+        </div>
+        <div style="font-size:13.5px;color:#6d727a">Ce que deviennent les leads de reprise une fois envoyés aux concessionnaires : contact, traitement, opportunité, devis et commandes. Totaux par marché et par marque, mis à jour chaque nuit (dernière collecte le {{ c1Date }}).</div>
+        <sc-if value="{{ !c1Ok }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données C1ST indisponibles pour le moment.</div></sc-if>
+        <sc-if value="{{ c1Ok }}" hint-placeholder-val="{{ true }}">
+
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px">
+              <div onClick="{{ c1Prec }}" title="Mois précédent" style="width:30px;height:30px;border-radius:9px;border:1px solid #ececee;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6d727a;font-size:16px">‹</div>
+              <span style="font-size:16px;font-weight:600;color:#121214;min-width:150px;text-align:center;font-variant-numeric:tabular-nums">{{ c1PeriodeLabel }}</span>
+              <div onClick="{{ c1Suiv }}" title="Mois suivant" style="width:30px;height:30px;border-radius:9px;border:1px solid #ececee;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6d727a;font-size:16px">›</div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1ChipsDuree }}" as="c" hint-placeholder-count="3"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1ChipsCmp }}" as="c" hint-placeholder-count="3"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
+          </div>
+          <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">Périmètre : {{ c1Perim }}. Le marché et les marques suivent les sites sélectionnés en haut de page ; la période est propre à cet onglet (C1ST est mensuel).</div>
+          <sc-if value="{{ c1HasHors }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#9a6b00">{{ c1Hors }}</div></sc-if>
+        </div>
+
+        <sc-if value="{{ c1Vide }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">{{ c1Pend }}</div></sc-if>
+        <sc-if value="{{ !c1Vide }}" hint-placeholder-val="{{ true }}">
+
+        <div style="font-size:13px;color:#9a9fa6;margin-top:2px">{{ c1SubPer }}</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px">
+          <sc-for list="{{ c1Cards }}" as="k" hint-placeholder-count="6">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:17px 19px">
+              <div style="font-size:13.5px;color:#6d727a">{{ k.title }}</div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 6px"><span style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ k.big }}</span><sc-if value="{{ k.hasPill }}" hint-placeholder-val="{{ false }}"><span style="{{ k.pillStyle }}">{{ k.pill }}</span></sc-if></div>
+              <div style="font-size:12.5px;color:#6d727a;line-height:1.45">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:15px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Suivi par les concessionnaires</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients envoyés. À comparer entre marques seulement : les statuts sont saisis par les concessionnaires, déployés progressivement selon les marchés.</div>
+            <sc-for list="{{ c1Suivi }}" as="b" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px">
+                <span style="color:#4a4f57">{{ b.label }}</span>
+                <div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div>
+                <span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Du lead à la commande</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients uniques. Commandes NSC rattachées au lead entre 1 et 90 jours après sa création.</div>
+            <sc-for list="{{ c1Conv }}" as="b" hint-placeholder-count="4">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px">
+                <span style="color:#4a4f57">{{ b.label }}</span>
+                <div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div>
+                <span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="font-size:15px;font-weight:600;color:#121214">Évolution mensuelle</div>
+          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 0">Leads VN vus par C1ST, 15 mois. Au-dessus de chaque barre : taux de commande, seulement quand les commandes sont complètes (plus de 90 jours). Clique sur un mois pour le sélectionner.</div>
+          <div style="display:flex;align-items:flex-end;gap:6px;height:230px;margin-top:16px;overflow-x:auto">
+            <sc-for list="{{ c1Mois }}" as="m" hint-placeholder-count="15">
+              <div title="{{ m.tip }}" onClick="{{ m.pick }}" style="{{ m.col }}">
+                <span style="font-size:11.5px;font-weight:600;color:#1f9254">{{ m.taux }}</span>
+                <div style="width:100%;flex:1;display:flex;align-items:flex-end;min-height:0"><div style="{{ m.bar }}"></div></div>
+                <span style="font-size:11.5px;color:#6d727a;white-space:nowrap">{{ m.label }}</span>
+                <span style="font-size:11px;color:#9a9fa6">{{ m.vol }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#6d727a;margin-top:14px">
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#7c63ee"></span>période sélectionnée</span>
+            <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#d9d1fb"></span>autres mois</span>
+            <span>barre pâle et transparente = mois en cours (partiel)</span>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><div style="font-size:15px;font-weight:600;color:#121214">Détail du périmètre</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">Évolution des leads comparée à la période de comparaison. Spoticar : C1ST ne suit pas contact, traitement ni commandes (n.d.).</div></div>
+            <div style="display:flex;gap:6px"><sc-for list="{{ c1ChipsVue }}" as="c" hint-placeholder-count="2"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
+          </div>
+          <div style="overflow-x:auto;margin-top:12px">
+            <div style="display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(8,minmax(78px,1fr));font-size:13px;min-width:820px">
+              <span style="font-weight:600;padding:6px 0;color:#6d727a"></span><span style="font-weight:600;padding:6px 0;color:#6d727a">Leads VN</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Clients envoyés</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Contactés</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Dans les délais</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Traités</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Taux de commande</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Commandes NSC</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Évol. leads</span>
+              <sc-for list="{{ c1Rows }}" as="r" hint-placeholder-count="8">
+                <span style="padding:7px 0;border-top:1px solid #f1f1f3;font-weight:600;color:#121214">{{ r.nom }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.leads }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.envoyes }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.contact }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.delai }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.traite }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.taux }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.nsc }}</span><span style="{{ r.evolStyle }}">{{ r.evol }}</span>
+              </sc-for>
+              <span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;color:#121214">{{ c1Tot.nom }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.leads }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.envoyes }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.contact }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.delai }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.traite }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.taux }}</span><span style="padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;font-variant-numeric:tabular-nums">{{ c1Tot.nsc }}</span><span style="{{ c1Tot.evolStyle }}">{{ c1Tot.evol }}</span>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ c1HasRapp }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="font-size:15px;font-weight:600;color:#121214">Rapprochement back-office ↔ C1ST</div>
+          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px;line-height:1.5">Leads de reprise avec un projet d'achat VN dans le back-office, face aux leads VN vus par C1ST, sur la même période. Un écart durable au-delà de 5 % signale des leads qui n'arrivent pas dans C1ST (ou l'inverse). Les deux sources n'ont pas exactement le même périmètre : l'écart est un signal à vérifier, pas une erreur. Connu : Opel et Alfa Romeo France, Portugal.</div>
+          <div style="overflow-x:auto"><div style="display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(3,minmax(100px,1fr));font-size:13px;min-width:460px">
+            <span style="font-weight:600;padding:6px 0;color:#6d727a">Marque</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Back-office (VN)</span><span style="font-weight:600;padding:6px 0;color:#6d727a">C1ST</span><span style="font-weight:600;padding:6px 0;color:#6d727a">Écart</span>
+            <sc-for list="{{ c1Rapp }}" as="r" hint-placeholder-count="4">
+              <span style="padding:7px 0;border-top:1px solid #f1f1f3;font-weight:600;color:#121214">{{ r.nom }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.bo }}</span><span style="padding:7px 0;border-top:1px solid #f1f1f3;font-variant-numeric:tabular-nums">{{ r.c1 }}</span><span style="{{ r.style }}">{{ r.ecart }}</span>
+            </sc-for>
+          </div></div>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ c1HasLectures }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#f7f6fe;border:1px solid #e4defc;border-radius:16px;padding:17px 21px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#5b43d6;margin-bottom:8px">À RETENIR</div>
+          <sc-for list="{{ c1Lectures }}" as="l" hint-placeholder-count="4"><div style="font-size:13.5px;color:#2a2d33;line-height:1.55;margin-top:5px">{{ l }}</div></sc-for>
+        </div>
+        </sc-if>
+
+        </sc-if>
+        <div style="font-size:12.5px;color:#9a9fa6;line-height:1.55">Périmètre : leads de type 1 (urgents), activité VN, campagne Autobiz, nature 47 (xP) ou A68 (xF), clients B2B/B2C, circuit marque ou central, hors liste noire ; Spoticar : leads de rachat (activité VO). C1ST couvre la France, la Belgique (avec le Luxembourg), l'Espagne, le Portugal et l'Italie. Ce périmètre n'est pas celui du back-office. Commandes NSC : rattachées au lead entre 1 et 90 jours après sa création, donc provisoires pendant 90 jours ; taux de commande = commandes NSC ÷ clients uniques.</div>
+        </sc-if>
+      </div>
+      </sc-if>
       <sc-if value="{{ isAAA }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
         <div style="display:flex;flex-direction:column;gap:4px">
@@ -3208,7 +3341,7 @@ class Component extends DCLogic {
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
   static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','sites','sort','brandSort','hidden',
-    'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr'];
+    'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr','c1Mois','c1Duree','c1Cmp','c1Vue'];
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
@@ -3418,6 +3551,7 @@ class Component extends DCLogic {
       }));
       this.data = loaded;
       if (!limite) { try { this._market = await (await fetch('/data/market.json')).json(); } catch (e) {} }
+      if (!limite) { try { this._c1st = await (await fetch('/data/c1st/kpi.json')).json(); } catch (e) {} }
       if (!limite) { this.chargeHoraire(true); if (!this._hhTimer) this._hhTimer = setInterval(() => { if (this.state && this.state.source === 'tb') this.chargeHoraire(); }, 120000); }
       if (!limite) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
       // préférences du compte (page Paramètres) : serveur, sinon dernier réglage local
@@ -3445,7 +3579,7 @@ class Component extends DCLogic {
             if (Array.isArray(sv.sites)) { const ok = sv.sites.filter(n => this._allSites.includes(n)); initial.sites = ok.length ? ok : this._allSites.slice(); }
             ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
             // un onglet réservé (Pilotage des leads, Présentations) n'est repris que si le profil y a toujours droit
-            if (!['ga','sc','ps','tb','pr','aaa','ads','prefs'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
+            if (!['ga','sc','ps','tb','pr','aaa','ads','c1st','prefs'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads','c1st'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
           }
         } catch (e) {}
       }
@@ -3458,7 +3592,7 @@ class Component extends DCLogic {
         if (pf.lang && window.i18n && window.i18n.lang !== pf.lang) window.i18n.set(pf.lang);
         if (!restaure) {
           const ancre = this._pipelineToday;
-          const onglets = ['ga','sc','ps'].concat(this.estLimite() ? [] : ['ads','tb','aaa']).concat(!this.estLimite() && this.presentationsOuvertes() ? ['pr'] : []);
+          const onglets = ['ga','sc','ps'].concat(this.estLimite() ? [] : ['ads','tb','c1st','aaa']).concat(!this.estLimite() && this.presentationsOuvertes() ? ['pr'] : []);
           if (pf.accueil && onglets.includes(pf.accueil)) initial.source = pf.accueil;
           if (pf.periode && ancre) { initial.to = ancre; initial.from = pf.periode === 'mois' ? ancre.slice(0, 8) + '01' : this.decale(ancre, -(parseInt(pf.periode, 10) - 1)); }
           if (['previous','year','none'].includes(pf.comparaison)) initial.cmpMode = pf.comparaison;
@@ -3932,7 +4066,7 @@ class Component extends DCLogic {
       backdrop:`position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px;animation:${ctl.isClosing?'modalBackdropOut .18s ease forwards':'modalBackdropIn .18s ease'}`,
       panel:`${panelBase};animation:${ctl.isClosing?'modalPanelOut .18s ease forwards':'modalPanelIn .2s cubic-bezier(.16,1,.3,1)'}`
     });
-    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Pilotage des leads',gcp:'Google Cloud',pr:'Présentations',aaa:'AAA Data',ads:'Google Ads',prefs:'Paramètres'};
+    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Pilotage des leads',gcp:'Google Cloud',pr:'Présentations',aaa:'AAA Data',c1st:'C1ST',ads:'Google Ads',prefs:'Paramètres'};
     const srcStyle=a=>`width:38px;height:38px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;${a?'background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8':'background:transparent'}`;
 
     const badge=(t,up)=>`font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;${up?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
@@ -5529,6 +5663,118 @@ class Component extends DCLogic {
     }
 
     const tbLeadsV = boLeads;
+    // ---------- C1ST (data/c1st/kpi.json : suivi des leads par les concessionnaires, collecte quotidienne ; profil complet seulement)
+    // Totaux par marché, mois et marque, jamais de donnée personnelle. Définitions = celles des présentations (pipeline/deck, CLAUDE.md « C1ST ») :
+    // suivi = % des clients envoyés ; conversion = % des clients uniques, commandes NSC rattachées au lead de 1 à 90 jours après sa création.
+    // logo C1ST provisoire (pastille « C1 ») : remplacer ces deux constantes par le vrai logo (data URI ou fichier public)
+    const c1Svg=(fond,txt)=>'data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44"><rect width="44" height="44" rx="11" fill="'+fond+'"/><text x="22" y="29" text-anchor="middle" font-family="Poppins,Arial,sans-serif" font-size="21" font-weight="700" fill="'+txt+'">C1</text></svg>');
+    const c1Logo=c1Svg('#7c63ee','#ffffff'), c1LogoMini=c1Svg('#7c63ee','#ffffff');
+    const c1Raw=this._c1st||null, c1Ok=!!(c1Raw&&c1Raw.donnees);
+    const C1_CODES={'PEUGEOT':'AP','CITROEN':'AC','DS':'DS','OPEL':'OP','FIAT':'FT','FIAT PRO':'FO','JEEP':'JE','ALFA ROMEO':'AR','LANCIA':'LA','ABARTH':'AH','SPOTICAR':'SP'};
+    const C1_NOMS=Object.fromEntries(Object.entries(C1_CODES).map(([n,c])=>[c,n]));
+    const C1_PAYS=['FR','BE','ES','PT','IT'], C1_PAYS_NOM={FR:'France',BE:'Belgique + Luxembourg',ES:'Espagne',PT:'Portugal',IT:'Italie'};
+    const C1_MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const c1ML=m=>C1_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(0,4);
+    const c1Nf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+    const c1Pc=(a,b,d)=>b>0?(a/b*100).toFixed(d||0).replace('.',',')+' %':'–';
+    const c1Sg=(v,u,d)=>(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(d===undefined?1:d).replace(/\.0$/,'').replace('.',',')+(u||'');
+    const c1Pill=v=>'font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;'+(v>=0?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fdf0ef');
+    const c1PillAttente='font-size:12px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;color:#9a6b00;background:#fdf3d6';
+    const c1Shift=(ym,k)=>{ let y=+ym.slice(0,4), m=+ym.slice(5,7)-1+k; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+'-'+String(m+1).padStart(2,'0'); };
+    const c1Span=(fin,n)=>Array.from({length:n},(_,i)=>c1Shift(fin,i-n+1));
+    const c1Finmois=ym=>new Date(Date.UTC(+ym.slice(0,4),+ym.slice(5,7),0)).toISOString().slice(0,10);
+    const c1Mapped=(()=>{ const pairs=new Map(), hors=[]; for(const n of (st.sites||[])){ const pt=n.split(' '); let p=pt[pt.length-1]; const mq=pt.slice(0,-1).join(' '); if(p==='LU') p='BE'; const code=C1_CODES[mq];
+      if(!code||!C1_PAYS.includes(p)){ hors.push({n,pays:C1_PAYS.includes(p)?null:pt[pt.length-1],marque:code?null:mq}); continue; } pairs.set(p+'|'+code,{pays:p,code}); } return {pairs:[...pairs.values()],hors}; })();
+    const c1AllMonths=c1Ok?[...new Set(Object.values(c1Raw.donnees).flatMap(o=>Object.keys(o)))].sort():[];
+    const c1Partiel=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(0,7):'';      // le mois de la collecte est partiel
+    const c1Entiers=c1AllMonths.filter(m=>m!==c1Partiel);
+    const c1Sel=c1AllMonths.includes(st.c1Mois)?st.c1Mois:(c1Entiers[c1Entiers.length-1]||c1AllMonths[c1AllMonths.length-1]||'');
+    const c1Duree=[1,3,12].includes(st.c1Duree)?st.c1Duree:1, c1CmpMode=['prev','yoy','none'].includes(st.c1Cmp)?st.c1Cmp:'prev', c1Vue=st.c1Vue==='marche'?'marche':'marque';
+    const c1Zero=()=>({leads:0,envoyes:0,clients_envoyes:0,contactes:0,contactes_delai:0,premier_appel_delai:0,traites:0,traites_delai:0,avec_opp:0,clients_uniques:0,avec_devis:0,nsc:0});
+    const c1Add=(t,mo,code)=>{ for(const r of (mo.leads||[])) if(r.marque===code) for(const k of ['leads','envoyes','clients_envoyes','contactes','contactes_delai','premier_appel_delai','traites','traites_delai','avec_opp']) t[k]+=r[k]||0;
+      for(const r of (mo.commandes||[])) if(r.marque===code){ t.clients_uniques+=r.clients_uniques||0; t.avec_devis+=r.avec_devis||0; }
+      for(const r of (mo.nsc||[])) if(r.marque===code) t.nsc+=r.commandes_nsc||0; };
+    // totaux du périmètre sur une liste de mois ; manque = un mois absent pour un marché demandé (jamais de total partiel présenté comme complet)
+    const c1Agg=(months,filtre)=>{ const t=c1Zero(); let manque=false; const pr=c1Mapped.pairs.filter(filtre||(()=>true)); if(!pr.length) return {t,manque:true};
+      for(const p of pr) for(const m of months){ const mo=(c1Raw.donnees[p.pays]||{})[m]; if(!mo){ manque=true; continue; } c1Add(t,mo,p.code); } return {t,manque}; };
+    const c1HorsSP=p=>p.code!=='SP';
+    const c1Cur=c1Span(c1Sel,c1Duree);
+    const c1CmpMois=c1CmpMode==='none'?null:c1Span(c1CmpMode==='yoy'?c1Shift(c1Sel,-12):c1Shift(c1Sel,-c1Duree),c1Duree);
+    const c1Mature=months=>c1Finmois(months[months.length-1])<=this.decale(todayIso,-90);      // commandes rattachées jusqu'à 90 jours après le lead
+    const c1CurPartiel=c1Cur.includes(c1Partiel), c1CurMature=c1Ok&&c1Mature(c1Cur);
+    const c1A=c1Ok?c1Agg(c1Cur,c1HorsSP):{t:c1Zero(),manque:true}, c1B=c1Ok&&c1CmpMois?c1Agg(c1CmpMois,c1HorsSP):null;
+    const c1CmpOk=!!(c1B&&!c1B.manque&&!c1A.manque&&c1B.t.leads>0&&!c1CurPartiel);
+    const c1CmpMature=!!(c1CmpOk&&c1Mature(c1CmpMois));
+    const c1PeriodeLabel=c1Ok&&c1Sel?(c1Duree===1?c1ML(c1Sel):c1ML(c1Cur[0])+' → '+c1ML(c1Sel)):'';
+    const c1CmpLabel=c1CmpMois?(c1Duree===1?c1ML(c1CmpMois[0]):c1ML(c1CmpMois[0])+' → '+c1ML(c1CmpMois[c1CmpMois.length-1])):'';
+    const c1PctVar=(a,b)=>b>0?(a-b)/b*100:null;
+    const c1Pts=(a,b)=>a-b;
+    // cartes
+    const c1Cards=[]; const A=c1A.t, B=c1B?c1B.t:null;
+    const c1CarteVol=(titre,v,vb,note,exige)=>{ let pill='',ps=''; if(c1CmpOk&&vb>0&&(!exige||c1CurMature)){ const d=c1PctVar(v,vb); pill=c1Sg(d,' %'); ps=c1Pill(d); } else if(exige&&!c1CurMature){ pill=T('provisoire'); ps=c1PillAttente; }
+      c1Cards.push({title:titre,big:c1Nf(v),pill,pillStyle:ps,hasPill:!!pill,sub:note}); };
+    // taux de suivi (contact, traitement) : jamais d'évolution, ils reflètent des statuts saisis par les concessionnaires (déploiement progressif)
+    const c1CarteTaux=(titre,a,b,note)=>{ c1Cards.push({title:titre,big:c1Pc(a,b,0),pill:'',pillStyle:'',hasPill:false,sub:note}); };
+    const hasSuivi=A.clients_envoyes>0;
+    c1CarteVol(T('Leads VN (C1ST)'),A.leads,B?B.leads:0,T('dont envoyés aux concessionnaires')+' : '+c1Nf(A.envoyes),false);
+    c1CarteVol(T('Clients envoyés'),A.clients_envoyes,B?B.clients_envoyes:0,T('clients uniques')+' · '+c1Pc(A.clients_envoyes,A.leads)+' '+T('des leads'),false);
+    c1CarteTaux(T('Contactés'),A.contactes,A.clients_envoyes,T('dont dans les délais')+' : '+c1Pc(A.contactes_delai,A.clients_envoyes));
+    c1CarteTaux(T('Traités'),A.traites,A.clients_envoyes,T('non traités')+' : '+c1Pc(Math.max(A.clients_envoyes-A.traites,0),A.clients_envoyes));
+    c1CarteVol(T('Commandes NSC'),A.nsc,B?B.nsc:0,T('rattachées au lead sous 90 jours'),true);
+    { const tx=A.clients_uniques?A.nsc/A.clients_uniques*100:0, txB=B&&B.clients_uniques?B.nsc/B.clients_uniques*100:0; let pill='',ps='';
+      if(!c1CurMature){ pill=T('provisoire'); ps=c1PillAttente; } else if(c1CmpMature&&B&&B.clients_uniques>0){ const d=tx-txB; pill=c1Sg(d,' pt'); ps=c1Pill(d); }
+      c1Cards.push({title:T('Taux de commande'),big:c1Pc(A.nsc,A.clients_uniques,1),pill,pillStyle:ps,hasPill:!!pill,sub:T('commandes NSC ÷ clients uniques')}); }
+    // entonnoirs (barres proportionnelles à la 1re étape)
+    const c1Bar=(lib,v,base,couleur)=>({label:lib,val:c1Nf(v),pct:c1Pc(v,base,base&&v/base<0.1?1:0),barStyle:'height:100%;border-radius:6px;background:'+couleur+';width:'+(base>0?Math.max(2,Math.min(100,v/base*100)):0)+'%'});
+    const c1Suivi=hasSuivi?[c1Bar(T('Clients envoyés'),A.clients_envoyes,A.clients_envoyes,'#cfc4fb'),c1Bar(T('Contactés'),A.contactes,A.clients_envoyes,'#a794f6'),c1Bar(T('Contactés dans les délais'),A.contactes_delai,A.clients_envoyes,'#8f78f1'),c1Bar(T('1er appel dans les délais'),A.premier_appel_delai,A.clients_envoyes,'#7c63ee'),c1Bar(T('Traités'),A.traites,A.clients_envoyes,'#5b43d6')]:[];
+    const c1Conv=A.clients_uniques>0?[c1Bar(T('Clients uniques'),A.clients_uniques,A.clients_uniques,'#cfe8d9'),c1Bar(T('Avec opportunité'),A.avec_opp,A.clients_uniques,'#8fcfab'),c1Bar(T('Avec devis'),A.avec_devis,A.clients_uniques,'#4fb67f'),c1Bar(T('Commandes NSC'),A.nsc,A.clients_uniques,'#1f9254')]:[];
+    // évolution mensuelle du périmètre (15 mois se terminant au mois choisi)
+    const c1Hist=c1Ok&&c1Sel?c1Span(c1Sel,15).filter(m=>c1AllMonths.includes(m)).map(m=>{ const g=c1Agg([m],c1HorsSP); return {m,t:g.t,vide:g.manque||!g.t.leads}; }).filter(x=>!x.vide):[];
+    const c1MaxH=Math.max(1,...c1Hist.map(x=>x.t.leads));
+    const c1Mois=c1Hist.map(x=>{ const dans=c1Cur.includes(x.m), mat=c1Mature([x.m]), part=x.m===c1Partiel; const tx=x.t.clients_uniques?x.t.nsc/x.t.clients_uniques*100:null;
+      return {label:C1_MOIS[parseInt(x.m.slice(5,7),10)-1]+' '+x.m.slice(2,4),vol:c1Nf(x.t.leads),taux:mat&&tx!==null?tx.toFixed(1).replace('.',',')+' %':'—',
+        tip:c1ML(x.m)+' · '+c1Nf(x.t.leads)+' leads'+(part?' ('+T('mois partiel')+')':'')+(mat?'':' · '+T('commandes provisoires')),
+        pick:()=>set({c1Mois:x.m}),
+        col:'flex:1 1 0;min-width:40px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:pointer',
+        bar:'width:100%;border-radius:6px 6px 0 0;height:'+Math.max(3,x.t.leads/c1MaxH*100)+'%;background:'+(dans?'#7c63ee':'#d9d1fb')+(part?';opacity:.55':'')}; });
+    // tableaux (par marque ou par marché)
+    const c1Ligne=(nom,t,tb,sansSuivi,lettre)=>{ const ok=!sansSuivi; let ev='',es='';
+      if(c1CmpOk&&tb&&tb.leads>0){ const d=c1PctVar(t.leads,tb.leads); ev=c1Sg(d,' %'); es='font-weight:600;font-variant-numeric:tabular-nums;color:'+(d>=0?'#1f9254':'#a33c39')+';'; }
+      return {nom,leads:c1Nf(t.leads),envoyes:c1Nf(t.clients_envoyes),contact:ok?c1Pc(t.contactes,t.clients_envoyes):'n.d.',delai:ok?c1Pc(t.contactes_delai,t.clients_envoyes):'n.d.',traite:ok?c1Pc(t.traites,t.clients_envoyes):'n.d.',
+        taux:ok?c1Pc(t.nsc,t.clients_uniques,1):'n.d.',nsc:ok?c1Nf(t.nsc):'n.d.',evol:ev||'—',evolStyle:(lettre?'padding:8px 0;border-top:2px solid #e4e4e8;font-weight:700;':'padding:7px 0;border-top:1px solid #f1f1f3;')+(es||'color:#9a9fa6')}; };
+    const c1Groupes=(cle)=>{ const cles=[...new Set(c1Mapped.pairs.map(p=>p[cle]))]; return cles.map(k=>{ const f=p=>p[cle]===k; const a=c1Agg(c1Cur,f), b=c1CmpMois?c1Agg(c1CmpMois,f):null; return {k,a:a.t,b:b&&!b.manque?b.t:null,manque:a.manque}; }).filter(x=>!x.manque&&x.a.leads>0).sort((x,y)=>y.a.leads-x.a.leads); };
+    const c1ParMarque=c1Ok?c1Groupes('code').map(x=>c1Ligne(C1_NOMS[x.k],x.a,x.b,x.k==='SP')):[];
+    const c1ParMarche=c1Ok?c1Groupes('pays').map(x=>c1Ligne(C1_PAYS_NOM[x.k],x.a,x.b,false)):[];
+    const c1Rows=c1Vue==='marche'?c1ParMarche:c1ParMarque;
+    const c1Tot=c1Ligne(T('Total (hors Spoticar)'),A,B,false,true);
+    // rapprochement back-office ↔ C1ST (leads VN) : contrôle de la chaîne BO → C1ST, hors Spoticar
+    const c1Rapp=(()=>{ const bo={}; for(const n of (st.sites||[])){ const pt=n.split(' '); const mq=pt.slice(0,-1).join(' '), code=C1_CODES[mq]; let p=pt[pt.length-1]; if(p==='LU') p='BE'; if(!code||code==='SP'||!C1_PAYS.includes(p)) continue; const d=this.data&&this.data[n]; if(!d||!d.leads) continue;
+        let tot=0, ok=true; for(const m of c1Cur){ const lm=d.leads[m]; if(!lm){ ok=false; break; } const pv=(lm.project||[]).find(x=>x[0]==='VN'); tot+=pv?pv[1]:0; } if(!ok) continue; bo[code]=(bo[code]||0)+tot; }
+      return Object.keys(bo).map(code=>{ const a=c1Agg(c1Cur,p=>p.code===code); if(a.manque) return null; const c=a.t.leads, b=bo[code]; if(!b) return null; const ec=(c-b)/b*100, fort=Math.abs(ec)>5;
+        return {nom:C1_NOMS[code],bo:c1Nf(b),c1:c1Nf(c),ecart:c1Sg(ec,' %'),style:'padding:7px 0;border-top:1px solid #f1f1f3;font-weight:600;font-variant-numeric:tabular-nums;color:'+(fort?'#a33c39':'#1f9254')+';',fort,nb:b}; }).filter(Boolean).sort((x,y)=>y.nb-x.nb); })();
+    // lecture automatique (règles simples, jamais de texte généré)
+    const c1Lectures=[]; if(c1Ok&&A.leads>0){
+      c1Lectures.push(T('Sur la période')+' '+c1PeriodeLabel+' : '+c1Nf(A.leads)+' '+T('leads VN vus par C1ST')+(c1CmpOk&&B.leads>0?', '+c1Sg(c1PctVar(A.leads,B.leads),' %')+' '+T('vs')+' '+c1CmpLabel:'')+'.');
+      if(c1CurPartiel) c1Lectures.push(T('Le mois en cours est partiel : aucune comparaison n\'est calculée tant qu\'il n\'est pas terminé.'));
+      const brs=c1Groupes('code').filter(x=>x.k!=='SP'&&x.a.clients_envoyes>=200);
+      if(brs.length>=2){ const tr=brs.map(x=>({n:C1_NOMS[x.k],v:x.a.traites/x.a.clients_envoyes*100})).sort((x,y)=>y.v-x.v); c1Lectures.push(T('Suivi concessionnaires')+' : '+T('meilleur taux de leads traités')+' '+tr[0].n+' ('+tr[0].v.toFixed(0)+' %), '+T('plus faible')+' '+tr[tr.length-1].n+' ('+tr[tr.length-1].v.toFixed(0)+' %). '+T('À comparer entre marques seulement : les statuts sont saisis par les concessionnaires.')); }
+      if(c1CurMature&&brs.length>=2){ const cm=brs.filter(x=>x.a.clients_uniques>=200).map(x=>({n:C1_NOMS[x.k],v:x.a.nsc/x.a.clients_uniques*100})).sort((x,y)=>y.v-x.v); if(cm.length>=2) c1Lectures.push(T('Taux de commande')+' : '+cm[0].n+' '+cm[0].v.toFixed(1).replace('.',',')+' %, '+T('plus faible')+' '+cm[cm.length-1].n+' '+cm[cm.length-1].v.toFixed(1).replace('.',',')+' %.'); }
+      else if(!c1CurMature) c1Lectures.push(T('Les commandes continuent d\'être rattachées aux leads pendant 90 jours : taux de commande et commandes sont provisoires, sans évolution calculée.'));
+      const gros=c1Rapp.filter(r=>r.fort); if(gros.length) c1Lectures.push(T('Écart BO ↔ C1ST supérieur à 5 %')+' : '+gros.map(r=>r.nom+' '+r.ecart).join(', ')+'.');
+      if(c1Mapped.pairs.some(p=>p.code==='SP')) c1Lectures.push(T('Spoticar : C1ST ne suit ni contact, ni traitement, ni commandes de ces leads de rachat (n.d.), la marque est exclue des totaux.'));
+    }
+    const c1Hors=c1Mapped.hors.length?c1Mapped.hors.length+' '+T('site(s) sélectionné(s) non inclus')+' : '+[ [...new Set(c1Mapped.hors.map(x=>x.pays).filter(Boolean))].sort().join(', ')&&T('marchés hors C1ST')+' ('+[...new Set(c1Mapped.hors.map(x=>x.pays).filter(Boolean))].sort().join(', ')+')', [...new Set(c1Mapped.hors.map(x=>x.marque).filter(Boolean))].sort().join(', ')&&T('marques non suivies')+' ('+[...new Set(c1Mapped.hors.map(x=>x.marque).filter(Boolean))].sort().join(', ')+')' ].filter(Boolean).join(' · ')+'.':'';
+    const c1Chip=(on,fn,l)=>({label:l,pick:fn,style:this.prChipLite(on)});
+    const c1ChipsDuree=[[1,T('Mois')],[3,T('Trimestre')],[12,T('12 mois')]].map(([v,l])=>c1Chip(c1Duree===v,()=>set({c1Duree:v}),l));
+    const c1ChipsCmp=[['prev',T('vs période précédente')],['yoy',T('vs même période N-1')],['none',T('Sans comparaison')]].map(([v,l])=>c1Chip(c1CmpMode===v,()=>set({c1Cmp:v}),l));
+    const c1ChipsVue=[['marque',T('Par marque')],['marche',T('Par marché')]].map(([v,l])=>c1Chip(c1Vue===v,()=>set({c1Vue:v}),l));
+    const c1Idx=c1AllMonths.indexOf(c1Sel);
+    const c1Prec=()=>{ if(c1Idx>0) set({c1Mois:c1AllMonths[c1Idx-1]}); }, c1Suiv=()=>{ if(c1Idx>=0&&c1Idx<c1AllMonths.length-1) set({c1Mois:c1AllMonths[c1Idx+1]}); };
+    const c1Date=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(8,10)+'/'+String(c1Raw.collecte.date).slice(5,7)+'/'+String(c1Raw.collecte.date).slice(0,4):'—';
+    const c1Perim=c1Mapped.pairs.length?[...new Set(c1Mapped.pairs.map(p=>C1_PAYS_NOM[p.pays]))].join(', ')+' · '+[...new Set(c1Mapped.pairs.map(p=>C1_NOMS[p.code]))].join(', '):'';
+    const c1Vide=c1Ok&&(!c1Mapped.pairs.length||c1A.manque||!A.leads);
+    const c1Pend=c1Ok&&!c1Mapped.pairs.length?T('Aucun site sélectionné n\'est suivi par C1ST : choisis des sites de France, Belgique, Espagne, Portugal ou Italie.'):(c1Ok&&(c1A.manque||!A.leads)?T('Pas de données C1ST pour tout ou partie de cette période.'):'');
+    const c1SubPer=c1PeriodeLabel+(c1CmpLabel&&c1CmpOk?' · '+T('comparée à')+' '+c1CmpLabel:'')+(c1CurPartiel?' · '+T('mois partiel'):'');
     // ---------- AAA Data (marché automobile, data/market.json) : mêmes blocs que la page « AAA Data » de la newsletter
     const aaaMk=this._market||null, aaaMkOk=!!(aaaMk&&aaaMk.france&&aaaMk.europe);
     const aaaNf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
@@ -5869,7 +6115,7 @@ class Component extends DCLogic {
     const prefTheme = [['system','Automatique'],['light','Clair'],['dark','Sombre']].map(([k,l])=>prefChip(l,prefThemeNow===k,()=>this.setPref('theme',k)));
     const prefLangNow = prefs0.lang || (window.i18n&&window.i18n.lang) || 'fr';
     const prefLang = [['fr','Français'],['en','English']].map(([k,l])=>prefChip(l,prefLangNow===k,()=>this.setPref('lang',k)));
-    const ONGLETS_PREF = [['ga','Google Analytics 4',true],['sc','Search Console',true],['ads','Google Ads',!this.estLimite()],['ps','PageSpeed',true],['tb','Pilotage des leads',!this.estLimite()],['pr','Présentations',!this.estLimite()&&this.presentationsOuvertes()],['aaa','AAA Data',!this.estLimite()]].filter(x=>x[2]);
+    const ONGLETS_PREF = [['ga','Google Analytics 4',true],['sc','Search Console',true],['ads','Google Ads',!this.estLimite()],['ps','PageSpeed',true],['tb','Pilotage des leads',!this.estLimite()],['pr','Présentations',!this.estLimite()&&this.presentationsOuvertes()],['c1st','C1ST',!this.estLimite()],['aaa','AAA Data',!this.estLimite()]].filter(x=>x[2]);
     const prefAccueilNow = prefs0.accueil || 'ga';
     const prefAccueil = ONGLETS_PREF.map(([k,l])=>prefChip(l,prefAccueilNow===k,()=>this.setPref('accueil',k)));
     const prefPeriodeNow = prefs0.periode || '30';
@@ -6809,7 +7055,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite(), c1Ok, c1Logo, c1LogoMini, c1Date, c1Prec, c1Suiv, c1PeriodeLabel, c1ChipsDuree, c1ChipsCmp, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
@@ -6913,9 +7159,9 @@ class Component extends DCLogic {
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché',ads:'Google Ads',prefs:'Paramètres'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickADS:()=>{ if (!this.estLimite()) set({source:'ads'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickC1ST:()=>{ if (!this.estLimite()) set({source:'c1st'}); }, pickADS:()=>{ if (!this.estLimite()) set({source:'ads'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
-      srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
+      srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcC1ST:srcStyle(st.source==='c1st'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
       convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,

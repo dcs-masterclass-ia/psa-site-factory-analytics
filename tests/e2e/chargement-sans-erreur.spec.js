@@ -3,7 +3,7 @@
 // le premier rendu a lieu avant que les données soient chargées (listes de sites, mois… encore absentes).
 const { test, expect } = require("@playwright/test");
 
-for (const source of ["ga", "sc", "tb", "aaa"]) {
+for (const source of ["ga", "sc", "tb", "aaa", "c1st"]) {
   test(`premier rendu sans erreur — ${source}`, async ({ context, page }) => {
     const erreurs = [];
     page.on("console", (m) => { if (/renderVals|FAILED/.test(m.text())) erreurs.push(m.text().slice(0, 200)); });
