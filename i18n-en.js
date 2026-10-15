@@ -425,6 +425,7 @@ window.I18N_EN = {
 "Leads issus des CTA du site de la marque, par emplacement": "Leads coming from the brand site's CTAs, by placement",
 "Leads par canal": "Leads by channel",
 "Leads par jour nécessaires pour atteindre l'objectif d'ici fin d'année, comparés au rythme des 30 derniers jours. La date est celle à laquelle la projection centrale franchit le cap.": "Leads per day needed to reach the target by year end, compared with the pace of the last 30 days. The date is when the central projection crosses the mark.",
+"Leads par jour, tous sites": "Leads per day, all sites",
 "Leads par jour, tous sites confondus": "Leads per day, all sites combined",
 "Leads par mois": "Leads per month",
 "Leads sur la journée": "Leads over the day",
