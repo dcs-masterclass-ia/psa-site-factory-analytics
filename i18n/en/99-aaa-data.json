@@ -100,5 +100,6 @@
  "Moyenne de leads par jour, année par année.": "Average leads per day, year by year.",
  "leads depuis minuit ({0})": "leads since midnight ({0})",
  "leads hier ({0})": "leads yesterday ({0})",
- "Leads par jour, tous sites": "Leads per day, all sites"
+ "Leads par jour, tous sites": "Leads per day, all sites",
+ "Leads par jour": "Leads per day"
 }

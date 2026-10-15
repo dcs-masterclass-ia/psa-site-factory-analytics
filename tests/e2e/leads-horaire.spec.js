@@ -21,7 +21,7 @@ test("Leads : heure par heure et par jour", async ({ context, page }) => {
   await page.reload({ waitUntil: "networkidle" });
   await expect(page.getByText("Leads heure par heure")).toBeVisible();
   await expect(page.getByText(/leads depuis minuit \(Toute la flotte\)/)).toBeVisible();
-  await expect(page.getByText("Leads par jour, tous sites")).toBeVisible();
+  await expect(page.getByText("Leads par jour", { exact: true })).toBeVisible();
   await page.getByText("Hier", { exact: true }).first().click();
   await expect(page.getByText(/leads hier \(Toute la flotte\)/)).toBeVisible();
   await page.getByText("Mois", { exact: true }).first().click();
