@@ -101,5 +101,11 @@
  "leads depuis minuit ({0})": "leads since midnight ({0})",
  "leads hier ({0})": "leads yesterday ({0})",
  "Leads par jour, tous sites": "Leads per day, all sites",
- "Leads par jour": "Leads per day"
+ "Leads par jour": "Leads per day",
+ "Leads par heure": "Leads per hour",
+ "Leads aujourd'hui": "Leads today",
+ "Leads hier": "Leads yesterday",
+ "Habituel": "Usual",
+ "vs moyenne de la période": "vs period average",
+ "Leads / jour (moyenne)": "Leads / day (average)"
 }

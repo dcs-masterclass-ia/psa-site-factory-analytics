@@ -19,12 +19,19 @@ test("Leads : heure par heure et par jour", async ({ context, page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate(() => sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "tb" })));
   await page.reload({ waitUntil: "networkidle" });
-  await expect(page.getByText("Leads heure par heure")).toBeVisible();
+  await expect(page.getByText("Leads par heure")).toBeVisible();
   await expect(page.getByText(/leads depuis minuit \(Toute la flotte\)/)).toBeVisible();
   await expect(page.getByText("Leads par jour", { exact: true })).toBeVisible();
   await page.getByText("Hier", { exact: true }).first().click();
   await expect(page.getByText(/leads hier \(Toute la flotte\)/)).toBeVisible();
   await page.getByText("Mois", { exact: true }).first().click();
   await expect(page.getByText(/\w+\. 26/).first()).toBeVisible();      // axe mensuel : « sept. 26 »…
+  // survol : info-bulle sur les trois graphiques de la page Leads
+  for (const id of ["tbSparkBox", "hhBox", "trBox"]) {
+    const b = await page.locator("#" + id).boundingBox();
+    await page.mouse.move(b.x + b.width * 0.55, b.y + b.height * 0.5);
+    await expect(page.locator("#chartHovTip")).toBeVisible();
+    await expect(page.locator("#chartHovTip")).toContainText("Leads");
+  }
   expect(erreurs).toEqual([]);
 });

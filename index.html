@@ -2030,7 +2030,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ tbLeadsDelta.style }}margin-bottom:10px">{{ tbLeadsDelta.text }}</span>
                 <sc-if value="{{ tbDispoNote }}"><span style="font-size:13px;color:#8a8f98;margin-bottom:10px">{{ tbDispoNote }}</span></sc-if>
               </div>
-              <div style="margin:16px 0 4px">{{ tbSpark }}</div>
+              <div id="tbSparkBox" data-hov style="margin:16px 0 4px">{{ tbSpark }}</div>
               <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#6d727a;flex-wrap:wrap">
                 <span>{{ perimetreTbLabel }}</span>
                 <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
@@ -2057,7 +2057,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
-            <span style="font-size:15px;font-weight:600;color:#121214">Leads heure par heure</span>
+            <span style="font-size:15px;font-weight:600;color:#121214">Leads par heure</span>
             <span style="flex:1"></span>
             <span>{{ hhSelect }}</span>
             <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
@@ -2069,7 +2069,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="font-size:26px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ hhTitre }}</span>
             <span style="font-size:13.5px;color:#6d727a">{{ hhSous }}</span>
           </div>
-          <div>{{ hhChart }}</div>
+          <div id="hhBox" data-hov>{{ hhChart }}</div>
           <div style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:12px;color:#6d727a;margin-top:4px">
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#f59e0b"></span>Habituel (moyenne des 4 mêmes jours)</span>
             <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:11px;height:11px;border-radius:3px;background:#7c63ee"></span>Leads sur la journée</span>
@@ -2091,7 +2091,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span>{{ trDer }}</span>
             
           </div>
-          <div>{{ trChart }}</div>
+          <div id="trBox" data-hov>{{ trChart }}</div>
         </div>
         </sc-if>
 
@@ -5383,6 +5383,12 @@ class Component extends DCLogic {
     // meme carte "hero" large que le taux de conversion GA4 -- meme
     // correctif de largeur/hauteur de viewBox (cf. rateSpark).
     const tbSpark = safeSpark(leadsBuckets.length?leadsBuckets:[0,0,0,0,0,0,0],'#7c63ee',600,110);
+    // survol du graphique « Leads » : 7 points = 7 tranches de jours de la période
+    { const nB=(leadsBuckets.length?leadsBuckets:[0,0,0,0,0,0,0]).length, tr=dates.length/nB;
+      this._hov.tbSparkBox={W:600,H:110,top:0,bottom:110,xs:Array.from({length:nB},(_,i)=>nB>1?i/(nB-1)*600:300),rows:i=>{
+        const sI=Math.floor(i*tr), eI=Math.max(Math.floor((i+1)*tr),sI+1)-1; if(!dates.length) return null;
+        const j0=dates[Math.min(sI,dates.length-1)], j1=dates[Math.min(eI,dates.length-1)];
+        return {title:j0===j1?fmtJL(j0):fmtJL(j0)+' → '+fmtJL(j1),items:[{n:'Leads',c:'#7c63ee',v:this.fmt((leadsBuckets[i])||0)}]}; }}; }
     const nbSitesTb = st.sites.length;
     const nbMarquesTb = new Set(st.sites.map(marqueDeSiteTb)).size;
     const perimetreTbLabel = nbSitesTb+' site'+(nbSitesTb>1?'s':'')+' · '+nbMarquesTb+' marque'+(nbMarquesTb>1?'s':'');
@@ -5546,6 +5552,8 @@ class Component extends DCLogic {
       els.push(h('path',{key:'bl',d:dpath,fill:'none',stroke:'#f59e0b',strokeWidth:2.2}));
       for(let i=0;i<24;i+=3) els.push(h('text',{key:'x'+i,x:L+i*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:11,fill:'#9a9fa6'},String(i).padStart(2,'0')+'h'));
       hhChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
+      this._hov.hhBox={W,H,top:T,bottom:H-B,xs:Array.from({length:24},(_,i)=>L+i*bw+bw/2),rows:i=>({title:String(i).padStart(2,'0')+'h – '+String((i+1)%24).padStart(2,'0')+'h',
+        items:[{n:auj?'Leads aujourd\'hui':'Leads hier',c:'#7c63ee',v:vals[i]===null?'—':this.fmt(vals[i])},{n:'Habituel',c:'#f59e0b',v:dec(base[i],1)}]})};
     }
     const hhBtn=a=>`display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;font-weight:${a?600:500};${a?'background:#f1eefe;color:#5b43d6':'background:transparent;color:#6d727a'}`;
 
@@ -5587,6 +5595,9 @@ class Component extends DCLogic {
       const tick=Math.max(1,Math.ceil(n/5));
       trPts.forEach((p,i)=>{ if((i%tick===0&&(n-1-i>=tick||i===n-1))||i===n-1) els.push(h('text',{key:'x'+i,x:X(i),y:H-8,textAnchor:i===0?'start':i===n-1?'end':'middle',fontSize:11,fill:'#9a9fa6'},p.label)); });
       trChart=h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block'}},els);
+      this._hov.trBox={W,H,top:T,bottom:H-B,xs:trPts.map((_,i)=>X(i)),rows:i=>{ const p=trPts[i]; const moy=trPts.reduce((a,q)=>a+q.total,0)/n;
+        const dv=moy?(p.total-moy)/moy*100:0;
+        return {title:p.label+(p.we?' · week-end':''),items:[{n:trVue==='jour'?'Leads':'Leads / jour (moyenne)',c:'#7c63ee',v:this.fmt(p.total)},{n:'vs moyenne de la période',v:(dv>=0?'+':'−')+Math.abs(Math.round(dv))+' %'}]}; }};
       trMoy=this.fmt(trPts.reduce((a,p)=>a+p.total,0)/n);
       const last=trPts[n-1]; trDer=`${last.label} : ${this.fmt(last.total)} leads`;
     }
