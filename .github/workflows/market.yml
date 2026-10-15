@@ -58,7 +58,7 @@ jobs:
         run: |
           mkdir -p market_in
           case " $IN_SOURCES " in
-            "  "|*" PT "*) which pdftotext >/dev/null || sudo apt-get install -y -q poppler-utils; python -m pipeline.market_pt market_in/PT.json || echo "::warning::collecte directe PT en échec" ;;
+            "  "|*" PT "*) which pdftotext >/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q poppler-utils; } || echo "::warning::poppler-utils indisponible (mix par énergie ignoré)"; python -m pipeline.market_pt market_in/PT.json || echo "::warning::collecte directe PT en échec" ;;
             *) echo "PT non demandé" ;;
           esac
 
