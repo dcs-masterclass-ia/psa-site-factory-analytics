@@ -161,5 +161,7 @@
  "Part des VISITEURS de la page d'accueil qui arrivent jusqu'à l'estimation (utilisateurs, étape par étape). Ce n'est pas le « Taux de conversion » du haut de page, qui compte les estimations ÷ les sessions du site de reprise (même définition que Looker).": "Share of home-page VISITORS who reach the estimate (users, step by step). It is not the « Conversion rate » at the top of the page, which counts estimates ÷ trade-in site sessions (same definition as Looker).",
  "100 % moins la complétion du tunnel : part des visiteurs de l'accueil qui n'arrivent pas jusqu'à l'estimation.": "100 % minus funnel completion: share of home-page visitors who do not reach the estimate.",
  "Arrivées directes sur la reprise": "Direct arrivals on the trade-in site",
- "Sessions dont la 1ʳᵉ page est l'accueil de la reprise, hors venues du site marque · comme « Traffic landing on Trade In » de Looker · {0}": "Sessions whose first page is the trade-in home page, excluding visits coming from the brand site · like Looker's « Traffic landing on Trade In » · {0}"
+ "Sessions dont la 1ʳᵉ page est l'accueil de la reprise, hors venues du site marque · comme « Traffic landing on Trade In » de Looker · {0}": "Sessions whose first page is the trade-in home page, excluding visits coming from the brand site · like Looker's « Traffic landing on Trade In » · {0}",
+ "Arrivées directes": "Direct arrivals",
+ "Les arrivées directes sont calculées au prochain rafraîchissement des données.": "Direct arrivals are computed at the next data refresh."
 }
