@@ -49,7 +49,7 @@ jobs:
           python-version: "3.12"
       - run: pip install python-pptx google-analytics-data
         working-directory: .
-      - run: python -m unittest tests.py.test_deck tests.py.test_alertes tests.py.test_tickets_auto tests.py.test_tickets_agent tests.py.test_market
+      - run: python -m unittest tests.py.test_deck tests.py.test_alertes tests.py.test_tickets_auto tests.py.test_tickets_agent tests.py.test_market tests.py.test_market_pt tests.py.test_entree_directe tests.py.test_in_journey
         working-directory: .
       - run: npm test
 

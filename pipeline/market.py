@@ -87,6 +87,8 @@ CHAMPS_NUM = {
     "ytd_electric_units": (100, 20_000_000),
     "ytd_electric_pct": (0, 100),
     "hybrid_pct": (0, 100), "phev_pct": (0, 100), "petrol_pct": (0, 100), "diesel_pct": (0, 100),
+    "ytd_petrol_pct": (0, 100), "ytd_diesel_pct": (0, 100), "ytd_hybrid_pct": (0, 100), "ytd_phev_pct": (0, 100),
+    "particuliers_share_pct": (0, 100), "flottes_share_pct": (0, 100),
     "particuliers_yoy_pct": (-80, 300), "particuliers_electric_pct": (0, 100),
     "flottes_yoy_pct": (-80, 300), "flottes_electric_pct": (0, 100),
     "vo_total": (50_000, 20_000_000),       # transactions de voitures d'occasion
@@ -96,7 +98,9 @@ CHAMPS_NUM = {
 # listes : nom -> (clé du libellé, clés numériques autorisées avec bornes)
 CHAMPS_LISTE = {
     "top_models": ("model", {"units": (1, 500_000)}),
-    "marques": ("name", {"units": (1, 2_000_000), "share_pct": (0, 100), "yoy_pct": (-100, 1000)}),
+    "marques": ("name", {"units": (1, 2_000_000), "share_pct": (0, 100), "yoy_pct": (-100, 1000), "ytd_units": (1, 20_000_000), "ytd_yoy_pct": (-100, 1000)}),
+    "ytd_marques": ("name", {"units": (1, 20_000_000), "share_pct": (0, 100), "yoy_pct": (-100, 1000)}),
+    "ytd_top_models": ("model", {"units": (1, 2_000_000), "yoy_pct": (-100, 1000)}),
     "countries": ("name", {"yoy_pct": (-100, 1000), "bev_yoy_pct": (-100, 5000), "units": (1, 5_000_000)}),
 }
 # Europe (cumul ACEA) : mix par motorisation du cumul, en plus de yoy_pct / electric_pct
@@ -107,6 +111,9 @@ CHAMPS_UE = {"total": (100_000, 30_000_000), "yoy_pct": (-80, 150), "electric_pc
 CHAMPS_JSON = ('{"periode":"AAAA-MM","source_url":"<URL exacte de la page lue>","citation":"<phrase exacte de la page qui contient le chiffre>",\n'
                + ", ".join(f'"{k}":<nombre ou null>' for k in CHAMPS_NUM) + ",\n"
                '"top_models":[{"model":"…","units":<entier>}],  "marques":[{"name":"…","units":<entier ou null>,"share_pct":<nombre ou null>,"yoy_pct":<nombre ou null>}]}')
+
+# Sources lues par un programme, sans agent : le fichier market_in/<id>.json est produit avant l'agent (voir .github/workflows/market.yml)
+DETERMINISTES = {"PT": "pipeline.market_pt"}
 
 PROMPT_SOURCE = """### {sid} — {nom}
 Trouve {consigne}. Domaine autorisé : {domaines} (WebFetch et WebSearch uniquement sur ce domaine).
@@ -131,12 +138,10 @@ EXTRA = {
     "ES": "Pour ES : total = matriculaciones de turismos du mois ; electric_pct = cuota de eléctricos ; « marques » si le communiqué en cite.",
     "PL": "Pour PL (marché demandé en détail pour le positionnement des marques Stellantis) : total = rejestracje nowych samochodów osobowych du mois ; "
           "ytd_total + ytd_yoy_pct = cumul annuel ; electric_pct (BEV) ; hybrid_pct, phev_pct, petrol_pct, diesel_pct si donnés ; "
-          "« marques » : TOUTES les marques du classement publié (Opel, Peugeot, Citroën, DS, Fiat, Jeep, Alfa Romeo, Lancia, Leapmotor + concurrents), "
-          "avec units, share_pct et yoy_pct ; top_models : les 10 premiers modèles avec units.",
-    "PT": "Pour PT (marché demandé en détail) : « total » = automóveis ligeiros de passageiros matriculados dans le mois (PAS le total tous véhicules) ; "
-          "ytd_total + ytd_yoy_pct = cumul janvier→mois ; electric_pct (« elétricos (BEV) » du mois) et ytd_electric_pct ; hybrid_pct, phev_pct, petrol_pct, diesel_pct si donnés ; "
-          "« marques » : le classement par marque (Opel, Peugeot, Citroën, DS, Fiat, Jeep, Alfa Romeo, Lancia, Leapmotor + concurrents) avec units, share_pct, yoy_pct ; "
-          "top_models : les 10 premiers modèles ; si ACAP publie les ligeiros de mercadorias (utilitaires), ignore-les.",
+          "particuliers_share_pct / flottes_share_pct = part des clients indywidualni / firm dans le mois ; "
+          "« marques » (classement DU MOIS) et « ytd_marques » (classement du CUMUL annuel) : les marques publiées dans le texte de la page, avec units, share_pct, yoy_pct ; "
+          "« top_models » (du mois) et « ytd_top_models » (cumul) avec units et yoy_pct. Ne mets une liste que si les chiffres sont écrits dans la page ; sinon laisse-la vide. "
+          "Les classements complets étant parfois des images, ne lis pas d'image : prends seulement ce que le texte donne, et laisse le reste à null.",
     "GB": "Pour GB : total = new car registrations du mois ; electric_pct = BEV market share ; « marques » : classement par marque cité (Vauxhall, Peugeot, Citroën, Fiat, Jeep… si cité).",
 }
 
@@ -207,7 +212,7 @@ def valide_releve(r, domaines, serie, aujourdhui=None, champs=None):
         if not isinstance(lst, list):
             raise Refus(f"{cle} n'est pas une liste")
         ok = []
-        for x in lst[:12]:
+        for x in lst[:80]:
             if not isinstance(x, dict) or not str(x.get(lib) or "").strip():
                 continue
             y = {lib: str(x[lib]).strip()[:60]}
@@ -319,7 +324,7 @@ def applique(market, resultats):
 # ---------------------------------------------------------------- consigne agent + lecture
 
 def consigne(dossier, sources=None, n=6, aujourdhui=None):
-    ids = sources or list(SOURCES)
+    ids = [i for i in (sources or list(SOURCES)) if i not in DETERMINISTES]
     blocs = []
     for sid in ids:
         nom, domaines, texte = SOURCES[sid]
@@ -331,7 +336,7 @@ def consigne(dossier, sources=None, n=6, aujourdhui=None):
 
 def outils_autorises(sources=None):
     """Liste --allowedTools pour claude-code-action : WebFetch limité aux domaines des sources, WebSearch, Write."""
-    doms = [d for sid in (sources or SOURCES) for d in SOURCES[sid][1]]
+    doms = [d for sid in (sources or SOURCES) if sid not in DETERMINISTES for d in SOURCES[sid][1]]
     # la règle domain: vise un nom d'hôte exact : on autorise aussi la variante www. (cas de toutes ces sources)
     hotes = [h for d in doms for h in (d, "www." + d)]
     return ",".join([f"WebFetch(domain:{h})" for h in hotes] + ["WebSearch", "Write", "Read"])

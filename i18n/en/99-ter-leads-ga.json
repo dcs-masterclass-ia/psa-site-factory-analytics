@@ -2,5 +2,13 @@
  "Pour chaque jour : leads GA (demandes d'estimation) ÷ sessions du site de reprise, toutes sessions confondues (comme Looker). Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des sessions sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuation requests ÷ trade-in site sessions (like Looker). Thick line = 7-day rolling average (sum of valuations ÷ sum of sessions over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
  "· leads GA ÷ sessions du site de reprise": "· GA leads ÷ trade-in site sessions",
  "Leads GA (demandes d'estimation) sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.": "Valuation requests over the period: GA4 tradein_request events (Looker's “Hot leads”), sum of the exact days. The funnel counts distinct users instead, hence a slightly lower figure. GA4 data, distinct from back-office leads.",
- "TOUTES les sessions GA4 du site de reprise (son nom d'hôte) sur la période, sans filtre sur la provenance : y compris celles qui arrivent depuis le site de la marque. Pour le seul trafic qui arrive directement sur la reprise, voir Acquisition > Arrivées directes.": "ALL GA4 sessions of the trade-in site (its host name) over the period, with no filter on the origin: including those that come from the brand site. For the traffic that arrives directly on the trade-in site only, see Acquisition > Direct arrivals."
+ "TOUTES les sessions GA4 du site de reprise (son nom d'hôte) sur la période, sans filtre sur la provenance : y compris celles qui arrivent depuis le site de la marque. Pour le seul trafic qui arrive directement sur la reprise, voir Acquisition > Arrivées directes.": "ALL GA4 sessions of the trade-in site (its host name) over the period, with no filter on the origin: including those that come from the brand site. For the traffic that arrives directly on the trade-in site only, see Acquisition > Direct arrivals.",
+ "Marques · {0} (mois · cumul)": "Brands · {0} (month · year to date)",
+ "Marques · cumul depuis janvier": "Brands · year to date",
+ "Modèles · {0}": "Models · {0}",
+ "Modèles · cumul depuis janvier": "Models · year to date",
+ "Particuliers {0} du marché": "Private buyers {0} of the market",
+ "entreprises {0}": "companies {0}",
+ "Part": "Share",
+ "Cumul": "YTD"
 }
