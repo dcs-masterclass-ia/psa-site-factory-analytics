@@ -325,3 +325,53 @@ class C1st(unittest.TestCase):
             ctx2 = Ctx(brief, self._donnees(tmp2))
             ctx2.aujourdhui = date(2027, 3, 1)                        # plus de 90 jours après la fin du T3 : plus de mention provisoire
             self.assertNotIn("provisoires", tout(c1st_conversion(ctx2)))
+
+
+class Traductions(unittest.TestCase):
+    """Les textes anglais des diapositives sont traduits en italien, espagnol et allemand ; un nouveau texte oublié fait échouer le test de couverture."""
+
+    def test_exemples(self):
+        from pipeline.deck.traductions import traduit_texte
+        self.assertEqual(traduit_texte("Reading", "it"), "Lettura")
+        self.assertEqual(traduit_texte("• Decrease: Display (−171), Emailing (−149)", "es"), "• Descenso: Display (−171), Emailing (−149)")
+        self.assertEqual(traduit_texte("+13% vs previous period | −31% vs last year", "de"), "+13% ggü. Vorperiode | −31% ggü. Vorjahr")
+        self.assertEqual(traduit_texte("Peugeot — Journey before / after V2", "es"), "Peugeot — Recorrido antes / después de la V2")
+        self.assertEqual(traduit_texte("Page d'accueil", "en"), "Homepage")                  # nom d'étape (donnée en français)
+        self.assertEqual(traduit_texte("Kilométrage", "de"), "Kilometerstand")
+        self.assertEqual(traduit_texte("Reading", "fr"), "Reading")                          # le français n'est pas touché
+
+    def test_couverture_des_textes_anglais(self):
+        """Chaque texte anglais (statique ou à gabarit) des nouvelles diapositives a une traduction dans les trois langues."""
+        import ast, re
+        from pathlib import Path
+        from pipeline.deck.traductions import traduit_texte, LANGUES, PHRASES, _COMPILES
+        fonctions = {"apercu_marques", "cta_marque", "conquete_marque", "classement_marches", "projection_mois", "entree_vehicule", "v2_marque",
+                     "c1st_lead_management", "c1st_conversion", "apercu_marque"}
+        racine = Path(__file__).resolve().parents[2] / "pipeline" / "deck"
+        manquants = set()
+        for f in ("construit.py", "analyse.py"):
+            src = (racine / f).read_text(encoding="utf-8")
+            for fn in [n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.FunctionDef) and n.name in fonctions]:
+                for n in ast.walk(fn):
+                    en = None
+                    if isinstance(n, ast.IfExp) and ast.get_source_segment(src, n.test) in ("fr", 'ctx.langue == "fr"'):
+                        en = n.orelse
+                    elif isinstance(n, ast.Call) and getattr(n.func, "id", "") == "F" and len(n.args) == 2:
+                        en = n.args[1]
+                    if en is None:
+                        continue
+                    if isinstance(en, ast.Constant) and isinstance(en.value, str):
+                        texte = en.value
+                    elif isinstance(en, ast.JoinedStr):
+                        texte = "".join(v.value if isinstance(v, ast.Constant) else "X" for v in en.values)
+                    else:
+                        continue
+                    texte = texte.strip().replace("siteX", "sites")
+                    if not re.search(r"[A-Za-z]{3}", texte):
+                        continue
+                    if any(texte.rstrip(":").strip() in p[0] for p in PHRASES):      # fragment d'un titre ou d'une phrase dont la version complète est traduite
+                        continue
+                    for lg in LANGUES:
+                        if traduit_texte(texte, lg) == texte and not any(rx.match(texte) for rx, _ in _COMPILES):      # (« Traffic » reste « Traffic » en allemand)
+                            manquants.add((lg, texte[:90]))
+        self.assertEqual(sorted(manquants), [])

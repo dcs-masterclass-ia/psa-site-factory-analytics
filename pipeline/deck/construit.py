@@ -333,7 +333,7 @@ def apercu_marques(ctx):
         for i in range(0, len(marques), taille_lot or 6):
             morceau = marques[i:i + taille_lot]
             suite = "" if nb_diapos <= 1 else f" ({i // taille_lot + 1}/{nb_diapos})"
-            s = nouvelle(ctx, f"{t['leads']} overview — {ctx.et(ctx.per)}{suite}" if not fr else f"Vue d'ensemble des leads — {ctx.et(ctx.per)}{suite}",
+            s = nouvelle(ctx, f"Leads overview — {ctx.et(ctx.per)}{suite}" if not fr else f"Vue d'ensemble des leads — {ctx.et(ctx.per)}{suite}",
                          f"{ctx.perimetre} · {nom_lot}", source_bo(ctx),
                          notes=note_definitions(ctx, "Moteurs : écarts de leads par canal d'acquisition (back-office), part New cars et trafic GA4, vs la première période de comparaison. "
                                                      "Actions : suggestions calculées, à relire ; le champ « actionsMarques » du brief les remplace."), cle="apercu")
@@ -438,6 +438,9 @@ def conquete_marque(ctx, m):
 
 
 NOMS_PAYS = {
+    "it": {"FR": "Francia", "BE": "BELUX", "LU": "BELUX", "ES": "Spagna", "PT": "Portogallo", "IT": "Italia", "DE": "Germania", "PL": "Polonia", "GB": "Regno Unito", "UK": "Regno Unito", "AT": "Austria"},
+    "es": {"FR": "Francia", "BE": "BELUX", "LU": "BELUX", "ES": "España", "PT": "Portugal", "IT": "Italia", "DE": "Alemania", "PL": "Polonia", "GB": "Reino Unido", "UK": "Reino Unido", "AT": "Austria"},
+    "de": {"FR": "Frankreich", "BE": "BELUX", "LU": "BELUX", "ES": "Spanien", "PT": "Portugal", "IT": "Italien", "DE": "Deutschland", "PL": "Polen", "GB": "Vereinigtes Königreich", "UK": "Vereinigtes Königreich", "AT": "Österreich"},
     "fr": {"FR": "France", "BE": "BELUX", "LU": "BELUX", "ES": "Espagne", "PT": "Portugal", "IT": "Italie", "DE": "Allemagne", "PL": "Pologne", "GB": "Royaume-Uni", "UK": "Royaume-Uni", "AT": "Autriche"},
     "en": {"FR": "France", "BE": "BELUX", "LU": "BELUX", "ES": "Spain", "PT": "Portugal", "IT": "Italy", "DE": "Germany", "PL": "Poland", "GB": "United Kingdom", "UK": "United Kingdom", "AT": "Austria"},
 }
@@ -616,8 +619,9 @@ def projection_mois(ctx):
     return s
 
 
-NOTE_C1ST = ("Source : C1ST (CRM Analytics) — leads VN envoyés vus par C1ST (type 1, activité VN, campagne Autobiz) ; périmètre propre à C1ST, non comparable au back-office.",
-             "Source: C1ST (CRM Analytics) — VN leads sent as seen by C1ST (type 1, VN activity, Autobiz campaign); C1ST's own scope, not comparable with the back-office.")
+SOURCE_C1ST = ("Source : C1ST (CRM Analytics)", "Source: C1ST (CRM Analytics)")
+PERIMETRE_C1ST = ("Périmètre : leads VN envoyés vus par C1ST (type 1, activité VN, campagne Autobiz) ; périmètre propre à C1ST, non comparable au back-office.",
+                  "Scope: VN leads sent as seen by C1ST (type 1, VN activity, Autobiz campaign); C1ST's own scope, not comparable with the back-office.")
 
 
 def _c1st_lignes(ctx):
@@ -647,7 +651,7 @@ def c1st_lead_management(ctx):
     tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
     lignes.append(ligne(t["total"], tot))
     s = nouvelle(ctx, ("Suivi des leads envoyés aux concessionnaires" if fr else "Follow-up of leads sent to dealers") + f" — {ctx.et(per)}", ctx.perimetre,
-                 NOTE_C1ST[0 if fr else 1], notes=note_definitions(ctx, "Taux calculés sur les clients uniques envoyés aux concessionnaires. Non traités = envoyés − traités (statuts saisis par les concessionnaires dans C1ST ; pas de comparaison dans le temps)."), cle="c1st_lead_management")
+                 SOURCE_C1ST[0 if fr else 1], notes=note_definitions(ctx, "Taux calculés sur les clients uniques envoyés aux concessionnaires. Non traités = envoyés − traités (statuts saisis par les concessionnaires dans C1ST ; pas de comparaison dans le temps)."), cle="c1st_lead_management")
     nc = len(ent)
     g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.2] + [(12.4 - 2.2) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
     nt = pct(max(tot["clients_envoyes"] - tot["traites"], 0), tot["clients_envoyes"])
@@ -656,6 +660,7 @@ def c1st_lead_management(ctx):
         ("Ces taux reflètent les statuts saisis par les concessionnaires dans C1ST : le suivi est déployé progressivement selon les marchés et les marques, ils ne sont donc pas comparables d'une période à l'autre."
          if fr else "These rates reflect the statuses entered by dealers in C1ST: the follow-up is being rolled out gradually by market and brand, so they cannot be compared from one period to another.")],
         taille=11, couleur=g.BLEU)
+    g.texte(s, X0, 6.55, 12.4, 0.5, PERIMETRE_C1ST[0 if fr else 1], taille=9, couleur=g.GRIS, italique=True)
     return s
 
 
@@ -675,7 +680,7 @@ def c1st_conversion(ctx):
     lignes = [ent] + [ligne(ctx.nom(m), c) for m, c, _ in lignes_m]
     tot = {k: sum(c[k] for _, c, _ in lignes_m) for k in lignes_m[0][1]}
     lignes.append(ligne(t["total"], tot))
-    s = nouvelle(ctx, ("Du lead à la commande" if fr else "From lead to order") + f" — {ctx.et(per)}", ctx.perimetre, NOTE_C1ST[0 if fr else 1],
+    s = nouvelle(ctx, ("Du lead à la commande" if fr else "From lead to order") + f" — {ctx.et(per)}", ctx.perimetre, SOURCE_C1ST[0 if fr else 1],
                  notes=note_definitions(ctx, "Taux calculés sur les clients uniques. Commandes : commandes rattachées au lead entre 1 et 90 jours après sa création ; les périodes récentes continuent d'évoluer."),
                  cle="c1st_conversion")
     nc = len(ent)
@@ -705,6 +710,7 @@ def c1st_conversion(ctx):
         (f"{t.nb(tot['commandes'])} commandes rattachées aux leads de la période, soit {pct(tot['commandes'], tot['clients_uniques'])} des clients uniques." if fr else
          f"{t.nb(tot['commandes'])} orders linked to the period's leads, i.e. {pct(tot['commandes'], tot['clients_uniques'])} of unique customers."),
         ("Les commandes sont comptées jusqu'à 90 jours après le lead." if fr else "Orders are counted up to 90 days after the lead.")] + refs_txt, taille=11, couleur=g.BLEU)
+    g.texte(s, X0, 6.55, 12.4, 0.5, PERIMETRE_C1ST[0 if fr else 1], taille=9, couleur=g.GRIS, italique=True)
     return s
 
 
@@ -1079,6 +1085,8 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     sommaire(ctx, sections, "qa")
     questions(ctx)
     contacts(ctx)
+    from .traductions import traduit_deck
+    traduit_deck(ctx.prs, ctx.langue)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
     ctx.prs.save(str(sortie))
     return ctx
