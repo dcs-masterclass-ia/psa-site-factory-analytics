@@ -212,3 +212,11 @@ class ProjectionMois(unittest.TestCase):
     def test_mois_termine_pas_de_projection(self):
         from pipeline.deck.construit import projection_mois
         self.assertIsNone(projection_mois(self._ctx("2026-10-31")))
+
+
+class ClassementMarches(unittest.TestCase):
+    def test_pays_regroupes(self):
+        from pipeline.deck.construit import NOMS_PAYS
+        for l in ("fr", "en"):
+            self.assertEqual(NOMS_PAYS[l]["BE"], NOMS_PAYS[l]["LU"])      # BELUX regroupé
+            self.assertEqual(NOMS_PAYS[l]["GB"], NOMS_PAYS[l]["UK"])      # deux codes, un seul marché

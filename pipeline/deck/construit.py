@@ -423,6 +423,72 @@ def conquete_marque(ctx, m):
     return s
 
 
+NOMS_PAYS = {
+    "fr": {"FR": "France", "BE": "BELUX", "LU": "BELUX", "ES": "Espagne", "PT": "Portugal", "IT": "Italie", "DE": "Allemagne", "PL": "Pologne", "GB": "Royaume-Uni", "UK": "Royaume-Uni", "AT": "Autriche"},
+    "en": {"FR": "France", "BE": "BELUX", "LU": "BELUX", "ES": "Spain", "PT": "Portugal", "IT": "Italy", "DE": "Germany", "PL": "Poland", "GB": "United Kingdom", "UK": "United Kingdom", "AT": "Austria"},
+}
+
+
+def classement_marches(ctx):
+    """Leads New cars (VN) par marché autobiz sur la période : rang, part du total, évolution vs N-1 et cumul de l'année. Belgique et Luxembourg sont regroupés (BELUX)."""
+    from datetime import date as _d
+    from pipeline.leads_extract import SITE_EXTRACT
+    t, per = ctx.t, ctx.per
+    fr = ctx.langue == "fr"
+    tous = sorted({nom.rsplit(" ", 1)[1] for nom in SITE_EXTRACT})
+    if len(tous) < 3:
+        return None
+    noms = NOMS_PAYS.get(ctx.langue, NOMS_PAYS["en"])
+    dall = Donnees(tous, None, hist=ctx.d.hist)
+    dernier = dall.dernier_jour_leads()
+    if not dernier:
+        return None
+    fin_ytd = min(per.fin, _d.fromisoformat(dernier))
+    class _Ytd:
+        debut, fin = _d(per.annee, 1, 1), fin_ytd
+    n1 = per.n1()
+    from .donnees import PROJET_BO, _lignes, slug
+    par_pays = {}
+    for nom, marque, pays in dall.sites:
+        k = noms.get(pays, pays)
+        a = par_pays.setdefault(k, {"cur": 0, "n1": 0, "ytd": 0})
+        for r in _lignes(dall.hist / "leads" / f"{slug(nom)}.csv.gz"):
+            if r["statut"] != "valide" or PROJET_BO.get(r["projet_achat"], "SANS") != "VN":
+                continue
+            j, n = r["date"], int(r["n"])
+            if per.debut.isoformat() <= j <= per.fin.isoformat():
+                a["cur"] += n
+            if n1.debut.isoformat() <= j <= n1.fin.isoformat():
+                a["n1"] += n
+            if _Ytd.debut.isoformat() <= j <= _Ytd.fin.isoformat():
+                a["ytd"] += n
+    total = sum(a["cur"] for a in par_pays.values())
+    total_ytd = sum(a["ytd"] for a in par_pays.values())
+    if total < 100:
+        return None
+    classe = sorted(par_pays.items(), key=lambda kv: -kv[1]["cur"])
+    mon = noms.get(ctx.brief["perimetre"]["pays"][0].upper(), ctx.perimetre)
+    s = nouvelle(ctx, ("Classement des marchés — leads New cars" if fr else "Market ranking — New cars leads"), ctx.perimetre, source_bo(ctx),
+                 notes=note_definitions(ctx, "Leads New cars (projet VN, leads valides) de tous les marchés autobiz ; Belgique et Luxembourg regroupés. Cumul = du 1er janvier à la fin de la période (ou au dernier jour connu)."))
+    ent = [("Rang" if fr else "Rank"), ("Marché" if fr else "Market"), f"{t['leads_nc']} {ctx.et(per)}", t["part_total"], libelle_ref(ctx, "n1"),
+           (f"Cumul {per.annee}" if fr else f"YTD {per.annee}"), (f"Part du cumul" if fr else "YTD share")]
+    lignes = [ent]
+    for i, (k, a) in enumerate(classe, 1):
+        lignes.append([str(i), k, t.nb(a["cur"]), t.pct(a["cur"] / total * 100, 0), t.evol(a["cur"], a["n1"])[0], t.nb(a["ytd"]),
+                       t.pct(a["ytd"] / total_ytd * 100, 0) if total_ytd else "–"])
+    lignes.append(["", t["total"], t.nb(total), "100 %", t.evol(total, sum(a["n1"] for a in par_pays.values()))[0], t.nb(total_ytd), "100 %"])
+    g.tableau(s, X0, Y0 + 0.1, 8.2, lignes, largeurs=[0.7, 1.9, 1.5, 1.1, 1.0, 1.2, 0.8], taille=10, hauteur_ligne=0.36, gras_derniere=True,
+              alignements=[PP_ALIGN.CENTER, PP_ALIGN.LEFT] + [PP_ALIGN.RIGHT] * 5)
+    rang = next((i for i, (k, _) in enumerate(classe, 1) if k == mon), None)
+    if rang:
+        a = par_pays[mon]
+        txt = [(f"{mon} se classe n°{rang} sur {len(classe)} marchés, avec {t.pct(a['cur'] / total * 100, 0)} des leads New cars autobiz sur la période ({t.nb(a['cur'])} leads)."
+                if fr else f"{mon} ranks #{rang} of {len(classe)} markets, with {t.pct(a['cur'] / total * 100, 0)} of autobiz New cars leads over the period ({t.nb(a['cur'])} leads)."),
+               (f"Évolution : {t.evol(a['cur'], a['n1'])[0]} {libelle_ref(ctx, 'n1')}." if fr else f"Change: {t.evol(a['cur'], a['n1'])[0]} {libelle_ref(ctx, 'n1')}.")]
+        g.encadre(s, 9.0, Y0 + 0.1, 3.9, 3.2, ("Lecture" if fr else "Reading"), txt, taille=11, couleur=g.BLEU)
+    return s
+
+
 def projection_mois(ctx):
     """Projection de fin de mois des leads New cars par marque, pour une édition mensuelle dont le mois n'est pas terminé :
     leads du 1er au dernier jour connu, ramenés à la durée du mois au rythme moyen constant (indicatif), comparés au même mois de l'an dernier et au mois précédent."""
@@ -790,6 +856,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         leads_mensuels(ctx)
         leads_mensuels(ctx, "VN")
         projection_mois(ctx)
+        classement_marches(ctx)
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:
