@@ -417,3 +417,8 @@ tunnel GA4 : Sessions → In Journey → Leads GA ; masquée si un site choisi n
 Portugal : `pipeline/market_pt.py` lit les fichiers publiés par l'ACAP (xlsx « par Marca » : 74 marques, mois + cumul + part ; pdf « par tipo de energia » : mix du mois et du cumul)
 sans agent ni modèle (étape « Collecte directe Portugal » de `market.yml`, `PT` exclu de la consigne de l'agent via `market.DETERMINISTES`). Pologne : agent, sur le texte de Samar / PZPM ;
 les classements complets de Samar sont des images, donc seuls le top 5 des marques du cumul, les premiers modèles et le total/BEV/part particuliers-entreprises sont publiés.
+
+## Historique leads — modèles (conquête / fidélité, 2026-10-15)
+`data/history/leads_modeles/<site>.csv.gz` (`pipeline/history.py: collecte_leads`) : par mois, leads valides ventilés par marque et modèle repris
+(`TRADE-IN BRAND` / `TRADE-IN MODEL`), marque et modèle d'achat (`PURCHASE BRAND` / `PURCHASE MODEL`) et projet. Comptages seulement, aucune donnée personnelle.
+Alimente les diapos « Conquest vs loyalty » des présentations (fidèles = marque reprise = marque d'achat, autres Stellantis, concurrents).
