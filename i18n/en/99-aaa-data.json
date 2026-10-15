@@ -108,5 +108,7 @@
  "Habituel": "Usual",
  "vs moyenne de la période": "vs period average",
  "Leads / jour (moyenne)": "Leads / day (average)",
- "aucun": "none"
+ "aucun": "none",
+ "En cours de construction": "Under construction",
+ "Cet onglet accueillera les campagnes Google Ads (dépenses, clics, conversions, coût par lead) rapprochées des leads. Les accès au compte sont en cours de récupération : les données apparaîtront ici dès qu'ils seront disponibles.": "This tab will host the Google Ads campaigns (spend, clicks, conversions, cost per lead) matched with leads. Access to the account is being obtained: the data will appear here as soon as it is available."
 }

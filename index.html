@@ -242,6 +242,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">Search Console</span>
     </div>
+    <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
+    <div onClick="{{ pickADS }}" title="Google Ads" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
+    <div style="{{ srcADS }}" style-hover="background:#f4f4f6">
+      <img src="https://img.icons8.com/color/512/google-ads.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
+    </div>
+    <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">Google Ads</span>
+    </div>
+    </sc-if>
     <div onClick="{{ pickPS }}" title="PageSpeed Insights" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcPS }}" style-hover="background:#f4f4f6">
       <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
@@ -2688,6 +2696,16 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
       </div>
       </sc-if>
+      <sc-if value="{{ isADS }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease;max-width:720px;margin:24px auto 0">
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:40px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+          <img src="https://img.icons8.com/color/512/google-ads.png" data-keep alt="" width="64" height="64" style="display:block;object-fit:contain">
+          <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214">Google Ads</div>
+          <span style="font-size:12.5px;font-weight:600;border-radius:999px;padding:4px 12px;color:#9a6b00;background:#fdf3d6">En cours de construction</span>
+          <div style="font-size:14px;line-height:1.6;color:#6d727a;max-width:480px">Cet onglet accueillera les campagnes Google Ads (dépenses, clics, conversions, coût par lead) rapprochées des leads. Les accès au compte sont en cours de récupération : les données apparaîtront ici dès qu'ils seront disponibles.</div>
+        </div>
+      </div>
+      </sc-if>
       <sc-if value="{{ isPR }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -3273,7 +3291,7 @@ class Component extends DCLogic {
             if (Array.isArray(sv.sites)) { const ok = sv.sites.filter(n => this._allSites.includes(n)); initial.sites = ok.length ? ok : this._allSites.slice(); }
             ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
             // un onglet réservé (Pilotage des leads, Présentations) n'est repris que si le profil y a toujours droit
-            if (!['ga','sc','ps','tb','pr','aaa'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
+            if (!['ga','sc','ps','tb','pr','aaa','ads'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
           }
         } catch (e) {}
       }
@@ -3723,7 +3741,7 @@ class Component extends DCLogic {
       backdrop:`position:fixed;inset:0;z-index:70;background:rgba(18,14,34,.45);display:flex;align-items:center;justify-content:center;padding:40px;animation:${ctl.isClosing?'modalBackdropOut .18s ease forwards':'modalBackdropIn .18s ease'}`,
       panel:`${panelBase};animation:${ctl.isClosing?'modalPanelOut .18s ease forwards':'modalPanelIn .2s cubic-bezier(.16,1,.3,1)'}`
     });
-    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Pilotage des leads',gcp:'Google Cloud',pr:'Présentations',aaa:'AAA Data'};
+    const srcNames={ga:'Google Analytics 4',sc:'Search Console',ps:'PageSpeed Insights',tb:'Pilotage des leads',gcp:'Google Cloud',pr:'Présentations',aaa:'AAA Data',ads:'Google Ads'};
     const srcStyle=a=>`width:38px;height:38px;flex:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s,box-shadow .15s;${a?'background:#f7f6fe;box-shadow:inset 0 0 0 1.5px #b6a5f8':'background:transparent'}`;
 
     const badge=(t,up)=>`font-size:13px;font-weight:600;border-radius:9px;padding:3px 9px;white-space:nowrap;${up?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
@@ -6507,7 +6525,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
@@ -6607,12 +6625,12 @@ class Component extends DCLogic {
       cmpReady:st.apiState==='done', cmpRows,
       rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`,
       sourceName:srcNames[st.source],
-      pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché'}[st.source],
+      pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché',ads:'Google Ads'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickADS:()=>{ if (!this.estLimite()) set({source:'ads'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
-      srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
+      srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
       convDefLabel: convSessMode ? 'estimations ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'estimations ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'estimations ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
