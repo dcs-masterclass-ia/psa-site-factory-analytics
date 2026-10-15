@@ -1374,6 +1374,9 @@ def objectifs_vue(ctx):
 
 # ------------------------------------------------------------------ assemblage
 def construit(brief, donnees, sortie, gabarit=GABARIT):
+    if brief.get("format") == "revue_fr":          # format « revue mensuelle France » : reproduit le deck de référence (revue_fr.py)
+        from .revue_fr import construit_revue
+        return construit_revue(brief, donnees, sortie, gabarit)
     ctx = Ctx(brief, donnees, gabarit)
     m = ctx.modules
     avoir_global = "global" in m

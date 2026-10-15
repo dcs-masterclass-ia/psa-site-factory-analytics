@@ -157,3 +157,16 @@ test("commentaires et actions par marque : clés connues seulement, texte borné
   assert.equal(r.body.brief.actionsMarques.CITROEN[0].length, 160);
   assert.equal(Object.keys(r.body.brief.actionsMarques).length, 2);
 });
+
+test("format revue_fr : exige une période mensuelle ; actions en cours nettoyées (sujet obligatoire, statut en lignes)", async () => {
+  const refus = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_fr" } });          // période trimestrielle
+  assert.equal(refus.code, 400);
+  const r = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_fr", periode: { type: "mois", annee: 2026, indice: 9 },
+    actionsEnCours: [{ sujet: " New UX ", details: "Déploiement", date: "16/07", pilote: "autobiz", statut: "Lancement fait\n\n  Prochain : AC & FT " }, { sujet: "", details: "x" }, { sujet: "Mondial", statut: ["a", "b"] }] } });
+  assert.equal(r.code, 200);
+  assert.equal(r.body.brief.format, "revue_fr");
+  assert.equal(r.body.brief.actionsEnCours.length, 2);
+  assert.deepEqual(r.body.brief.actionsEnCours[0].statut, ["Lancement fait", "Prochain : AC & FT"]);
+  const std = await appelle("POST", { action: "save", brief: { ...brief, format: "inconnu" } });
+  assert.equal(std.body.brief.format, "standard");
+});

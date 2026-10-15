@@ -180,12 +180,14 @@ class Donnees:
                 out[norme_marque(r["marque_reprise"])] += int(r["n"])
         return dict(out)
 
-    def modeles(self, periode, marque):
-        """[(marque_reprise, modele_reprise, marque_achat, modele_achat, n)] sur la période, ou None si l'historique des modèles n'est pas encore collecté."""
+    def modeles(self, periode, marque, projet=None):
+        """[(marque_reprise, modele_reprise, marque_achat, modele_achat, n)] sur la période, ou None si l'historique des modèles n'est pas encore collecté. `projet` (« VN », « VO », « SANS ») : ne garde que ce projet d'achat."""
         if not any((self.hist / "leads_modeles" / f"{slug(nom)}.csv.gz").exists() for nom, m, _ in self.sites if m == marque):
             return None
         agg = defaultdict(int)
         for r in self._periode_lignes("leads_modeles", marque, periode, "mois"):
+            if projet and PROJET_BO.get(r.get("projet_achat"), "SANS") != projet:
+                continue
             agg[(norme_marque(r["marque_reprise"]), r["modele_reprise"].strip(), norme_marque(r["marque_achat"]), r["modele_achat"].strip())] += int(r["valides"])
         return [(*k, n) for k, n in agg.items()]
 

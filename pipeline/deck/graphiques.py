@@ -241,7 +241,7 @@ FOND_BOITE = "F3F8FF"         # fond de l'encadré de commentaires à droite
 BORD_BOITE = "1F3F7A"         # trait pointillé de l'encadré
 
 
-def boite_pointillee(slide, x, y, w, h, lignes, taille=12):
+def boite_pointillee(slide, x, y, w, h, lignes, taille=12, fond=None, bord=None, espace_apres=12, largeur_trait=1.25):
     """Encadré de commentaires à droite des decks de référence : fond bleu très clair, trait pointillé, puces • (retrait suspendu), texte centré
     verticalement, 12 pt, 12 pt d'espace après chaque paragraphe (valeurs relevées sur la diapositive 3 du deck « Reporting PT T3 2026 »)."""
     from pptx.oxml.ns import qn
@@ -249,9 +249,9 @@ def boite_pointillee(slide, x, y, w, h, lignes, taille=12):
     from pptx.enum.dml import MSO_LINE
     forme = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     forme.shadow.inherit = False
-    forme.fill.solid(); forme.fill.fore_color.rgb = rgb(FOND_BOITE)
-    forme.line.color.rgb = rgb(BORD_BOITE)
-    forme.line.width = Pt(1.25)
+    forme.fill.solid(); forme.fill.fore_color.rgb = rgb(fond or FOND_BOITE)
+    forme.line.color.rgb = rgb(bord or BORD_BOITE)
+    forme.line.width = Pt(largeur_trait)
     forme.line.dash_style = MSO_LINE.DASH
     tf = forme.text_frame
     tf.word_wrap = True
@@ -260,7 +260,7 @@ def boite_pointillee(slide, x, y, w, h, lignes, taille=12):
     for i, l in enumerate(lignes):
         para = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
         para.alignment = PP_ALIGN.LEFT
-        para.space_after = Pt(12)
+        para.space_after = Pt(espace_apres)
         run = para.add_run()
         run.text = l if isinstance(l, str) else l[0]
         run.font.size = Pt(taille); run.font.name = "Calibri"; run.font.bold = False if isinstance(l, str) else bool(l[1])

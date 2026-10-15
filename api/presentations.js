@@ -43,6 +43,7 @@ const MAX_FILE_BYTES = 900 * 1024;
 const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "conquete", "ytd", "seo", "marche", "objectifs", "crm", "analyse", "points_ouverts", "prochaines_etapes", "nps", "utm"];
 const LANGUES = ["fr", "en", "it", "es", "de"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
+const FORMATS = ["standard", "revue_fr"];      // revue_fr : reproduit le deck « Trade in review » (période mensuelle, contenu fixe)
 
 const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion", "c1st_ventes_additionnelles", "ytd", "seo", "seo_vue", "marche", "objectifs"];
 const RE_MARQUE = /^[A-Z0-9 &'.-]{1,40}$/;
@@ -78,7 +79,17 @@ function nettoieCommun(b) {
     modules: liste(b.modules, MODULES.length, m => (MODULES.includes(m) ? m : null)).filter((m, i, a) => a.indexOf(m) === i),
     contact: { nom: txt(b.contact && b.contact.nom, 80), fonction: txt(b.contact && b.contact.fonction, 80), email: txt(b.contact && b.contact.email, 120) },
     commentaire: txt(b.commentaire, 2000),
+    format: FORMATS.includes(b.format) ? b.format : "standard",
   };
+}
+
+/** Actions en cours (diapositive « Ongoing actions » du format revue_fr) : sujet, détails, date, pilote et statut = lignes de texte. */
+function nettoieActionsEnCours(v) {
+  return liste(v, 15, a => {
+    if (!a || typeof a !== "object" || !txt(a.sujet, 80)) return null;
+    const brut = Array.isArray(a.statut) ? a.statut : String(a.statut == null ? "" : a.statut).split("\n");
+    return { sujet: txt(a.sujet, 80), details: txt(a.details, 200), date: txt(a.date, 30), pilote: txt(a.pilote, 100), statut: liste(brut, 6, x => txt(x, 220) || null) };
+  });
 }
 
 /** Commentaires du DKAM par diapositive : clé fixe ou « marque:NOM », 240 caractères maximum. */
@@ -112,6 +123,7 @@ function nettoie(b) {
     periode: nettoiePeriode(b.periode),
     commentaires: nettoieCommentaires(b.commentaires),
     actionsMarques: nettoieActionsMarques(b.actionsMarques),
+    actionsEnCours: nettoieActionsEnCours(b.actionsEnCours),
     pointsOuverts: liste(b.pointsOuverts, 8, p => (p && (txt(p.titre, 100) || txt(p.texte, 600)) ? { titre: txt(p.titre, 100), texte: txt(p.texte, 600) } : null)),
     prochainesEtapes: liste(b.prochainesEtapes, 15, e => (e && txt(e.item, 160)
       ? { item: txt(e.item, 160), responsable: txt(e.responsable, 60), statut: STATUTS_ACTION.includes(e.statut) ? e.statut : "a_faire", echeance: txt(e.echeance, 30) } : null)),
@@ -133,6 +145,7 @@ function valide(n) {
   if (!n.client) return "Indique le client.";
   if (!n.perimetre.pays.length) return "Choisis au moins un pays.";
   if (!n.periode.type || !n.periode.annee || (n.periode.type !== "annee" && !n.periode.indice)) return "Choisis la période.";
+  if (n.format === "revue_fr" && n.periode.type !== "mois") return "Ce format reproduit la revue mensuelle : choisis une période mensuelle.";
   if (!n.modules.length) return "Choisis au moins un module.";
   return null;
 }
