@@ -47,9 +47,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install python-pptx google-analytics-data
+      - run: pip install python-pptx google-analytics-data PyJWT cryptography httpx
         working-directory: .
-      - run: python -m unittest tests.py.test_deck tests.py.test_alertes tests.py.test_tickets_auto tests.py.test_tickets_agent tests.py.test_market tests.py.test_market_pt tests.py.test_entree_directe tests.py.test_in_journey
+      - run: python -m unittest tests.py.test_deck tests.py.test_alertes tests.py.test_tickets_auto tests.py.test_tickets_agent tests.py.test_market tests.py.test_market_pt tests.py.test_entree_directe tests.py.test_in_journey tests.py.test_c1st_collecte
         working-directory: .
       - run: npm test
 

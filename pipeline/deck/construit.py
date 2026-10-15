@@ -1129,9 +1129,9 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         projection_mois(ctx)
         classement_marches(ctx)
         entree_vehicule(ctx)
-        c1st_lead_management(ctx)
-        c1st_conversion(ctx)
-        c1st_ventes_additionnelles(ctx)
+        c1st = [c1st_lead_management(ctx), c1st_conversion(ctx), c1st_ventes_additionnelles(ctx)]
+        if all(x is None for x in c1st) and ctx.d._c1st() and {ctx.d.PAYS_C1ST.get(p, p) for p in ctx.d.pays} & {"FR", "BE", "ES", "PT", "IT"}:
+            ctx.avertissements.append("Données C1ST absentes pour cette période (collecte mensuelle c1st.yml à vérifier) : diapositives C1ST non générées.")
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:
