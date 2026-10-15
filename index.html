@@ -2678,7 +2678,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
 
         <sc-if value="{{ aaaHasOthers }}" hint-placeholder-val="{{ false }}">
-        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px"><span style="font-size:17px;font-weight:600;color:#121214">Autres marchés</span><span style="font-size:13px;color:#9a9fa6">Allemagne, Italie, Espagne, Royaume-Uni · sources officielles nationales</span></div>
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px"><span style="font-size:17px;font-weight:600;color:#121214">Autres marchés</span><span style="font-size:13px;color:#9a9fa6">Allemagne, Italie, Espagne, Pologne, Portugal, Royaume-Uni · sources officielles nationales</span></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:15px">
           <sc-for list="{{ aaaOthers }}" as="o" hint-placeholder-count="4">
             <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
@@ -2689,9 +2689,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="font-size:13px;color:#6d727a;padding-bottom:3px">{{ o.ev }}</span>
               </div>
               <div style="font-size:12.5px;color:#6d727a;margin-top:6px">{{ o.ytd }}</div>
+              <div style="font-size:12.5px;color:#6d727a;margin-top:2px">{{ o.mix }}</div>
+              <div style="font-size:12.5px;color:#6d727a;margin-top:2px">{{ o.segs }}</div>
               <div style="margin-top:12px">
                 <sc-for list="{{ o.marques }}" as="mq" hint-placeholder-count="3">
-                  <div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid #f1f1f3;font-size:13px"><span style="flex:1;color:#121214">{{ mq.name }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ mq.units }}</span><span style="width:64px;text-align:right;color:#6d727a">{{ mq.yoy }}</span></div>
+                  <div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid #f1f1f3;font-size:13px"><span style="flex:1;color:#121214">{{ mq.name }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ mq.units }}</span><span style="width:52px;text-align:right;color:#6d727a">{{ mq.share }}</span><span style="width:60px;text-align:right;color:#6d727a">{{ mq.yoy }}</span></div>
+                </sc-for>
+                <sc-for list="{{ o.models }}" as="md" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid #f1f1f3;font-size:13px"><span style="width:20px;color:#9a9fa6">{{ md.rang }}</span><span style="flex:1;color:#121214">{{ md.name }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ md.units }}</span></div>
                 </sc-for>
                 <sc-for list="{{ o.months }}" as="r" hint-placeholder-count="6">
                   <div style="display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid #f1f1f3;font-size:13px">
@@ -5574,12 +5579,15 @@ class Component extends DCLogic {
     const aaaEuHas=!!(aaaEuL&&(aaaEuMix.length||aaaEuCountries.length||aaaN(aaaEuL.stellantis_share_pct)));
     const aaaEuTitle=aaaEuL?'Europe — '+aaaEuL.label.replace(' (cumul annuel)',', cumul depuis janvier'):'';
     const aaaEuHead=aaaEuL?[aaaN(aaaEuL.total)?aaaNf(aaaEuL.total)+' immatriculations':'',aaaN(aaaEuL.yoy_pct)?aaaSg(aaaEuL.yoy_pct)+' vs même période N-1':'',aaaN(aaaEuL.stellantis_share_pct)?'Part Stellantis '+aaaP(aaaEuL.stellantis_share_pct):''].filter(Boolean).join(' · '):'';
-    const aaaOthers=['DE','IT','ES','GB'].map(id=>{ const b=(aaaMk&&aaaMk.markets&&aaaMk.markets[id])||null; const ms=b&&b.monthly?b.monthly.filter(x=>typeof x.total==='number'):[]; if(!ms.length) return null;
+    const aaaOthers=['DE','IT','ES','PL','PT','GB'].map(id=>{ const b=(aaaMk&&aaaMk.markets&&aaaMk.markets[id])||null; const ms=b&&b.monthly?b.monthly.filter(x=>typeof x.total==='number'):[]; if(!ms.length) return null;
       const l=ms[ms.length-1];
       return {name:b.name||id,last:aaaML(l.month),total:aaaNf(l.total),yoy:typeof l.yoy_pct==='number'?aaaSg(l.yoy_pct):'—',yoyStyle:aaaPill(l.yoy_pct||0),
         ev:typeof l.electric_pct==='number'?'électrique '+aaaP(l.electric_pct):'',src:l.source_url||'',
         ytd:aaaN(l.ytd_total)?'Cumul : '+aaaNf(l.ytd_total)+(aaaN(l.ytd_yoy_pct)?' ('+aaaSg(l.ytd_yoy_pct)+')':''):'',
-        marques:(l.marques||[]).slice(0,5).map(m=>({name:m.name,units:aaaN(m.units)?aaaNf(m.units):'—',yoy:aaaN(m.yoy_pct)?aaaSg(m.yoy_pct):'—'})),
+        marques:(l.marques||[]).slice(0,8).map(m=>({name:m.name,units:aaaN(m.units)?aaaNf(m.units):'—',share:aaaN(m.share_pct)?aaaP(m.share_pct):'—',yoy:aaaN(m.yoy_pct)?aaaSg(m.yoy_pct):'—'})),
+        models:(l.top_models||[]).slice(0,5).map((m,i)=>({rang:String(i+1),name:m.model,units:aaaNf(m.units)})),
+        mix:[['hybrid_pct','Hybride'],['phev_pct','Hybride rechargeable'],['petrol_pct','Essence'],['diesel_pct','Diesel']].filter(x=>aaaN(l[x[0]])).map(x=>x[1]+' '+aaaP(l[x[0]])).join(' · '),
+        segs:[aaaN(l.particuliers_yoy_pct)?'Particuliers '+aaaSg(l.particuliers_yoy_pct):'',aaaN(l.flottes_yoy_pct)?'flottes '+aaaSg(l.flottes_yoy_pct):''].filter(Boolean).join(' · '),
         months:ms.slice(-6).reverse().map(x=>({label:aaaML(x.month),total:aaaNf(x.total),yoy:typeof x.yoy_pct==='number'?aaaSg(x.yoy_pct):'—'}))}; }).filter(Boolean);
     // Leads BO publiés jusqu'à hier : au-delà, la période affichée n'est pas encore chargée (pas un zéro réel).
     const tbHier = (()=>{ const d=new Date(); d.setDate(d.getDate()-1); return d.toLocaleDateString('sv-SE',{timeZone:'Europe/Paris'}); })();

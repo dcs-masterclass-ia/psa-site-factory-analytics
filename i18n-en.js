@@ -53,6 +53,7 @@ window.I18N_EN = {
 "Ajouter un commentaire…": "Add a comment…",
 "Alertes": "Alerts",
 "Alertes proactives": "Proactive alerts",
+"Allemagne, Italie, Espagne, Pologne, Portugal, Royaume-Uni · sources officielles nationales": "Germany, Italy, Spain, Poland, Portugal, United Kingdom · official national sources",
 "Allemagne, Italie, Espagne, Royaume-Uni · sources officielles nationales": "Germany, Italy, Spain, United Kingdom · official national sources",
 "Analyse IA · il y a 4 min": "AI analysis · 4 min ago",
 "Analyse du portefeuille": "Portfolio analysis",

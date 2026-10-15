@@ -61,6 +61,14 @@ SOURCES = {
     "ES": ("Espagne", ["anfac.com"],
            "le dernier communiqué mensuel de l'ANFAC sur les matriculaciones de turismos en Espagne "
            "(https://anfac.com/, communiqués de presse « Las ventas de turismos … en septiembre » : cherche le total du mois ET son évolution)"),
+    "PL": ("Pologne", ["pzpm.org.pl", "samar.pl"],
+           "le dernier communiqué mensuel sur les immatriculations de voitures particulières neuves en Pologne (rejestracje nowych samochodów osobowych) : "
+           "PZPM (https://www.pzpm.org.pl/, rubrique actualités / rynek) et Samar (https://www.samar.pl/, « rejestracje nowych samochodów osobowych »), "
+           "titre du type « Rynek samochodów osobowych — wrzesień 2026 »"),
+    "PT": ("Portugal", ["acap.pt"],
+           "le dernier communiqué mensuel de l'ACAP (Associação Automóvel de Portugal) sur le mercado automóvel : "
+           "https://www.acap.pt/pt/noticias (titre du type « Mercado Automóvel em Portugal com crescimento de 13,4 por cento em setembro de 2026 », "
+           "page « /pt/noticia/1400/… ») ; les statistiques détaillées (marques, modèles) sont sous https://www.acap.pt/pt/estatisticas"),
     "GB": ("Royaume-Uni", ["smmt.co.uk"],
            "le dernier communiqué mensuel de la SMMT sur les new car registrations au Royaume-Uni "
            "(https://www.smmt.co.uk/category/news/, titre du type « Record electric car market powers bumper September »)"),
@@ -121,6 +129,14 @@ EXTRA = {
     "IT": "Pour IT : total = immatricolazioni autovetture du mois ; electric_pct = quota BEV ; « marques » : le classement par marque du communiqué si cité "
           "(Fiat, Jeep, Peugeot, Citroën, Alfa Romeo, Lancia, Opel, DS…), avec units, share_pct, yoy_pct.",
     "ES": "Pour ES : total = matriculaciones de turismos du mois ; electric_pct = cuota de eléctricos ; « marques » si le communiqué en cite.",
+    "PL": "Pour PL (marché demandé en détail pour le positionnement des marques Stellantis) : total = rejestracje nowych samochodów osobowych du mois ; "
+          "ytd_total + ytd_yoy_pct = cumul annuel ; electric_pct (BEV) ; hybrid_pct, phev_pct, petrol_pct, diesel_pct si donnés ; "
+          "« marques » : TOUTES les marques du classement publié (Opel, Peugeot, Citroën, DS, Fiat, Jeep, Alfa Romeo, Lancia, Leapmotor + concurrents), "
+          "avec units, share_pct et yoy_pct ; top_models : les 10 premiers modèles avec units.",
+    "PT": "Pour PT (marché demandé en détail) : « total » = automóveis ligeiros de passageiros matriculados dans le mois (PAS le total tous véhicules) ; "
+          "ytd_total + ytd_yoy_pct = cumul janvier→mois ; electric_pct (« elétricos (BEV) » du mois) et ytd_electric_pct ; hybrid_pct, phev_pct, petrol_pct, diesel_pct si donnés ; "
+          "« marques » : le classement par marque (Opel, Peugeot, Citroën, DS, Fiat, Jeep, Alfa Romeo, Lancia, Leapmotor + concurrents) avec units, share_pct, yoy_pct ; "
+          "top_models : les 10 premiers modèles ; si ACAP publie les ligeiros de mercadorias (utilitaires), ignore-les.",
     "GB": "Pour GB : total = new car registrations du mois ; electric_pct = BEV market share ; « marques » : classement par marque cité (Vauxhall, Peugeot, Citroën, Fiat, Jeep… si cité).",
 }
 

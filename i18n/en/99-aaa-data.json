@@ -163,5 +163,6 @@
  "Arrivées directes sur la reprise": "Direct arrivals on the trade-in site",
  "Sessions dont la 1ʳᵉ page est l'accueil de la reprise, hors venues du site marque · comme « Traffic landing on Trade In » de Looker · {0}": "Sessions whose first page is the trade-in home page, excluding visits coming from the brand site · like Looker's « Traffic landing on Trade In » · {0}",
  "Arrivées directes": "Direct arrivals",
- "Les arrivées directes sont calculées au prochain rafraîchissement des données.": "Direct arrivals are computed at the next data refresh."
+ "Les arrivées directes sont calculées au prochain rafraîchissement des données.": "Direct arrivals are computed at the next data refresh.",
+ "Allemagne, Italie, Espagne, Pologne, Portugal, Royaume-Uni · sources officielles nationales": "Germany, Italy, Spain, Poland, Portugal, United Kingdom · official national sources"
 }
