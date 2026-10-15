@@ -305,6 +305,39 @@ def leads_mensuels(ctx, projet=None):
     return s
 
 
+def apercu_marques(ctx):
+    """Vue « Leads overview » : une ligne par marque (tendance et part New cars, moteurs de hausse ou de baisse, actions recommandées),
+    xP puis xF, 6 marques par diapositive. Les actions sont des suggestions calculées ; `actionsMarques` du brief les remplace."""
+    t, d, fr = ctx.t, ctx.d, ctx.langue == "fr"
+    grp = groupes_de_marques(ctx)
+    lots = [("XP", [m for k in ("XP", "Spoticar") for m in grp.get(k, [])] + [m for k in grp if k not in ("XP", "XF", "Spoticar") for m in grp[k]]), ("XF", grp.get("XF", []))]
+    perso = ctx.brief.get("actionsMarques") or {}
+    for nom_lot, marques in lots:
+        marques = [m for m in marques if d.leads_total(ctx.per, m) + sum(d.leads_total(p, m) for _, p in ctx.refs) > 0]
+        nb_diapos = -(-len(marques) // 6)
+        taille_lot = -(-len(marques) // nb_diapos) if nb_diapos else 6      # lots équilibrés : 7 marques -> 4 + 3, jamais 6 + 1
+        for i in range(0, len(marques), taille_lot or 6):
+            morceau = marques[i:i + taille_lot]
+            suite = "" if nb_diapos <= 1 else f" ({i // taille_lot + 1}/{nb_diapos})"
+            s = nouvelle(ctx, f"{t['leads']} overview — {ctx.et(ctx.per)}{suite}" if not fr else f"Vue d'ensemble des leads — {ctx.et(ctx.per)}{suite}",
+                         f"{ctx.perimetre} · {nom_lot}", source_bo(ctx),
+                         notes=note_definitions(ctx, "Moteurs : écarts de leads par canal d'acquisition (back-office), part New cars et trafic GA4, vs la première période de comparaison. "
+                                                     "Actions : suggestions calculées, à relire ; le champ « actionsMarques » du brief les remplace."))
+            ent = [t["marque"], ("Tendance & part New cars" if fr else "Lead trend & NC share"), ("Moteurs de la variation" if fr else "Drivers of increase / decrease"),
+                   ("Actions recommandées" if fr else "Recommended actions")]
+            lignes = [ent]
+            for m in morceau:
+                a = an.apercu_marque(ctx, m)
+                tend = " | ".join(f"{e} {libelle_ref(ctx, c)}" for c, e in a["evols"]) or "–"
+                if a["nc"]:
+                    tend += f"\n{a['nc'][0]}"
+                acts = perso.get(m) or a["actions"]
+                lignes.append([ctx.nom(m), tend, "\n".join("• " + x for x in a["moteurs"]), "\n".join("• " + x for x in acts)])
+            g.tableau(s, X0, Y0 + 0.05, 12.4, lignes, largeurs=[1.5, 2.6, 4.1, 4.2], taille=9, hauteur_ligne=0.68,
+                      alignements=[PP_ALIGN.LEFT] * 4, colonnes_gras=(0,))
+            g.texte(s, X0, 6.75, 12.4, 0.3, t["base_faible"], taille=8.5, couleur=g.GRIS, italique=True)
+
+
 def vue_ensemble_table(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
     s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx))
@@ -633,6 +666,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         leads_mensuels(ctx)
         leads_mensuels(ctx, "VN")
         vue_ensemble_table(ctx)
+        apercu_marques(ctx)
     if avoir_projets:
         for nom_g, ms in (("xp", GROUPES_MARQUES["XP"]), ("xf", GROUPES_MARQUES["XF"])):
             projets_groupe(ctx, nom_g, ms)

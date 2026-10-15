@@ -13,7 +13,7 @@ Règle d'or : aucun pourcentage sous 100 de base (« n.s. »), aucune cause affi
 
 import math
 
-from .donnees import PROJETS
+from .donnees import ORDRE_SOURCES, PROJETS
 
 SEUIL_BASE = 100
 SEUIL_ECART = 10          # % : variation significative
@@ -817,3 +817,83 @@ def s_groupes(ctx, grp):
     if not r:
         r.append(F("Suivre la répartition entre groupes : une dépendance forte à un seul groupe fragilise le volume global.", "Track the split between groups: heavy dependence on a single group makes total volume fragile."))
     return _fin((a, r))
+
+
+# ------------------------------------------------------------------ vue « une ligne par marque » (tendance, moteurs, actions)
+ACTIONS_GROUPE = {
+    "Display": ("Renforcer le display", "Strengthen display"),
+    "Search": ("Renforcer le search (SEA)", "Strengthen search (SEA)"),
+    "Emailing": ("Relancer une campagne emailing", "Relaunch an emailing campaign"),
+    "Main-Website": ("Revoir les CTA du site de la marque (pop-in, showroom, accueil) et leur balisage UTM",
+                     "Review the brand-website CTAs (pop-in, showroom, homepage) and their UTM tagging"),
+}
+
+
+def apercu_marque(ctx, m):
+    """Une ligne de la vue « leads par marque » : {"evols": [(clé, texte)], "nc": texte|None, "moteurs": [...], "actions": [...]}.
+    Moteurs = ce qui a bougé entre la période et la première référence (canaux d'acquisition du back-office, part New cars, trafic GA4).
+    Actions = suggestions calculées par règles ; le DKAM les relit, et `actionsMarques` du brief les remplace marque par marque."""
+    x = _Marque(ctx, m)
+    t, d, F = ctx.t, ctx.d, x.fr
+    Lc = x.L(ctx.per)
+    out = {"evols": [(cle, t.evol(Lc, x.L(p))[0]) for cle, p in ctx.refs], "nc": None, "moteurs": [], "actions": []}
+    pc = x.proj(ctx.per)
+    nc_c = t.taux(pc["VN"], Lc) if Lc else None
+    if nc_c is not None:
+        txt = f"{t['taux_nc']} {t.pct(nc_c, 0)}"
+        out["nc"] = (txt, nc_c)
+    if Lc < SEUIL_BASE:
+        out["moteurs"].append(F("Volume de leads faible : pas de lecture fiable.", "Low lead volume: no reliable reading."))
+        out["actions"].append(F("Renforcer la visibilité (display / search).", "Increase visibility (display / search)."))
+        return out
+    pa = ctx.refs[0][1] if ctx.refs else None
+    cle_a = ctx.refs[0][0] if ctx.refs else None
+    lab = {"prec": ("vs période précédente", "vs previous period"), "n1": ("vs N-1", "vs last year")}.get(cle_a, ("", ""))
+    pts_txt = None
+    if pa is not None:
+        Lr = x.L(pa)
+        pr = x.proj(pa)
+        if Lr >= SEUIL_BASE and nc_c is not None:
+            dpt = nc_c - pr["VN"] / Lr * 100
+            if abs(dpt) >= SEUIL_PTS:
+                pts_txt = F(f"Part New cars {t.pts(dpt)} {lab[0]}", f"New cars share {t.pts(dpt)} {lab[1]}")
+                out["moteurs"].append(pts_txt)
+        # trafic GA4
+        Sc, Sr = x.S(ctx.per), x.S(pa)
+        vs = _var(Sc, Sr)
+        if vs is not None and abs(vs) >= SEUIL_ECART:
+            out["moteurs"].append(F(f"Trafic {t.pct(vs, 0, signe=True)} {lab[0]}", f"Traffic {t.pct(vs, 0, signe=True)} {lab[1]}"))
+        # canaux d'acquisition (back-office)
+        if d.acquisition_disponible(ctx.refs[-1][1] if ctx.refs else ctx.per):
+            sc, sr = d.sources(ctx.per, m), d.sources(pa, m)
+            tot = lambda s_, g_: sum(s_[g_].values())
+            delta = {g_: tot(sc, g_) - tot(sr, g_) for g_ in ORDRE_SOURCES if g_ != "Autre"}
+            baisses = sorted([(v, g_) for g_, v in delta.items() if v <= -30 and tot(sr, g_) >= 50 and -v >= 0.1 * tot(sr, g_)])[:2]
+            hausses = sorted([(v, g_) for g_, v in delta.items() if v >= 30 and tot(sc, g_) >= 50 and v >= 0.1 * max(tot(sr, g_), 1)], reverse=True)[:2]
+            if baisses:
+                out["moteurs"].append(F("Baisse : ", "Decrease: ") + ", ".join(f"{g_} ({_sg(t, v)})" for v, g_ in baisses))
+            if hausses:
+                out["moteurs"].append(F("Hausse : ", "Increase: ") + ", ".join(f"{g_} ({_sg(t, v)})" for v, g_ in hausses))
+            for v, g_ in baisses:
+                a = ACTIONS_GROUPE.get(g_)
+                if a:
+                    out["actions"].append(F(*a))
+            autre = tot(sc, "Autre")
+            if Lc and autre / Lc >= 0.15 and m not in SANS_BALISAGE:
+                out["actions"].append(F(f"Compléter le balisage UTM ({t.pct(autre / Lc * 100, 0)} des leads sans source identifiée)",
+                                        f"Complete UTM tagging ({t.pct(autre / Lc * 100, 0)} of leads without an identified source)"))
+    # part New cars très en dessous du périmètre
+    tout = {k: sum(d.leads(ctx.per, mm)[k] for mm in d.marques) for k in PROJETS_BASE}
+    tt = sum(tout.values())
+    if m not in SANS_BALISAGE and tt >= SEUIL_BASE and nc_c is not None and nc_c < tout["VN"] / tt * 100 - 10:
+        out["actions"].append(F("Cibler davantage les New cars (campagnes display dédiées)", "Target New cars more (dedicated display campaigns)"))
+    if not out["moteurs"]:
+        out["moteurs"].append(F("Pas d'évolution marquante des canaux ni de la part New cars.", "No notable change in channels or New cars share."))
+    if not out["actions"]:
+        out["actions"].append(F("Maintenir les efforts d'acquisition.", "Maintain acquisition efforts."))
+    return out
+
+
+# marques sans site de reprise propre ni campagnes balisées : ni action UTM ni ciblage New cars
+SANS_BALISAGE = ("SPOTICAR", "STELLANTIS &YOU")
+PROJETS_BASE = ("VN", "SANS", "VO")

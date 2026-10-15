@@ -88,3 +88,57 @@ class Construction(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApercuMarques(unittest.TestCase):
+    """Vue « une ligne par marque » : tendance, moteurs et actions calculés sur des données fictives."""
+
+    def _ctx(self, **extra):
+        from pipeline.deck.construit import Ctx
+        brief = {"client": "x", "langue": "fr", "periode": {"type": "trimestre", "annee": 2026, "indice": 3}, "perimetre": {"pays": ["BE"], "marques": []},
+                 "comparaisons": {"precedente": True, "n1": True}, "modules": ["global"], **extra}
+
+        class D:
+            marques = ["PEUGEOT", "FIAT"]
+            sites = []
+            def leads(self, p, m=None):
+                actuel = p.indice == 3 and p.annee == 2026
+                base = 1000 if m == "PEUGEOT" else 50
+                n = base if actuel else int(base * 1.2)
+                return {"VN": n // 2, "SANS": n // 4, "VO": n - n // 2 - n // 4}
+            def leads_total(self, p, m=None):
+                return sum(self.leads(p, m).values())
+            def acquisition_disponible(self, p):
+                return True
+            def sources(self, p, m):
+                actuel = p.indice == 3 and p.annee == 2026
+                z = {g: {"VN": 0, "SANS": 0, "VO": 0} for g in ("Display", "Emailing", "LLM", "Main-Website", "Search", "Social", "Autre")}
+                z["Display"]["VN"] = 100 if actuel else 300
+                z["Search"]["VN"] = 400
+                z["Autre"]["VN"] = 300 if actuel else 0
+                return z
+            def canaux(self, p, m):
+                return {"Display": 1000 if p.indice == 3 and p.annee == 2026 else 1500}
+            def utilisateurs(self, p, m):
+                return None
+        return Ctx(brief, D())
+
+    def test_moteurs_et_actions(self):
+        from pipeline.deck import analyse
+        a = analyse.apercu_marque(self._ctx(), "PEUGEOT")
+        self.assertTrue(any("Display" in x and "−200" in x for x in a["moteurs"]))
+        self.assertTrue(any("Renforcer le display" in x for x in a["actions"]))
+        self.assertTrue(any("balisage UTM" in x for x in a["actions"]))      # « Autre » = 30 % des leads
+        self.assertTrue(a["evols"][0][1].startswith("−"))
+
+    def test_petit_volume_sans_pourcentage(self):
+        from pipeline.deck import analyse
+        a = analyse.apercu_marque(self._ctx(), "FIAT")
+        self.assertIn("faible", a["moteurs"][0])
+
+    def test_diapositive_generee(self):
+        from pipeline.deck.construit import apercu_marques
+        ctx = self._ctx(actionsMarques={"PEUGEOT": ["Action saisie par le DKAM"]})
+        apercu_marques(ctx)
+        textes = " ".join(c.text for sl in ctx.prs.slides for sh in sl.shapes if sh.has_table for r in sh.table.rows for c in r.cells)
+        self.assertIn("Action saisie par le DKAM", textes)
