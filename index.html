@@ -6487,7 +6487,7 @@ class Component extends DCLogic {
     const prLabelPeriode = p0 => { const p=prNormPeriode(p0); return p.type==='mois'?PR_MOIS[(p.indice||1)-1]+' '+p.annee : p.type==='trimestre'?'T'+p.indice+'-'+p.annee : p.type==='semestre'?'S'+p.indice+'-'+p.annee : String(p.annee); };
     const PR_MODULES = [
       {id:'global',      titre:'Vue globale',                  desc:'Synthèse, leads par groupe de marques (hors Spoticar), leads par marque (vs période précédente et N-1), tendance dans la période, leads New cars, vue d\'ensemble par marque, classement des marchés, projection du mois (édition mensuelle en cours)', dispo:'ok', base:10},
-      {id:'projets',     titre:'Projets d\'achat',             desc:'New cars / Trade-in only / Used cars, par groupe de marques (XP, XF)', dispo:'ok', base:2},
+      {id:'projets',     titre:'Projets d\'achat',             desc:'New cars / Trade-in only / Used cars, par groupe de marques (XP, XF, autres)', dispo:'ok', base:3},
       {id:'trafic_marque',titre:'Trafic et leads par marque',  desc:'Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads', dispo:'ok', parMarque:2},
       {id:'sources',     titre:'Sources d\'acquisition',       desc:'Display, Search, Emailing, Main-Website… par projet d\'achat, par marque, avec le détail du regroupement des sources', dispo:'ok', note:'', parMarque:1},
       {id:'cta',         titre:'CTA du site (menu, footer, page offre)', desc:'Leads issus des CTA du site de la marque, par emplacement et par projet d\'achat', dispo:'ok', note:'', parMarque:1},
@@ -6539,7 +6539,11 @@ class Component extends DCLogic {
     const prPerimetreLabel = pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU') ? 'BELUX (Belgique + Luxembourg)' : (pr.pays.join(' + ')||'—');
     const prTitreAuto = 'Stellantis — '+(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')?'BELUX':(pr.pays.join('+')||'?'))+' — Reporting '+prPeriodeLabel;
     const prNb = pr.pointsOuverts.length;
-    const prSlidesOf = m => (m.base||0) + (m.parMarque?m.parMarque*prMarquesSel.length:0) + (m.pointsOuverts?Math.max(1,prNb):0);
+    // estimation du nombre de diapositives, alignée sur le générateur (pipeline/deck/construit.py) : la vue globale dépend des comparaisons choisies et des marchés suivis dans C1ST
+    const prNbRefs = (per.type!=='annee'&&pr.precedente?1:0)+(pr.n1?1:0);
+    const prMarcheC1st = pr.pays.some(p=>['FR','BE','LU','ES','PT','IT'].includes(String(p).toUpperCase()));
+    const prBaseOf = m => m.id==='global' ? 10+prNbRefs+(prMarcheC1st?3:0) : m.id==='prochaines_etapes' ? (pr.prochainesEtapes.length>0?1:0) : (m.base||0);
+    const prSlidesOf = m => prBaseOf(m) + (m.parMarque?m.parMarque*prMarquesSel.length:0) + (m.pointsOuverts?prNb:0);
     const prModulesRows = PR_MODULES.map(m=>{
       const on = pr.modules.includes(m.id), off = m.dispo==='non';
       return { titre:m.titre, desc:m.desc, note:m.note||'', hasNote:!!m.note,
@@ -6552,7 +6556,9 @@ class Component extends DCLogic {
     });
     const prPlan = (()=>{
       const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
-      add('Couverture, agenda, contacts, Q/A','4 diapositives fixes',4);
+      const prSecMarques = pr.modules.some(id=>['trafic_marque','sources','cta','conquete'].includes(id));
+      const prNSommaires = 1+(prSecMarques?1:0)+((pr.modules.includes('points_ouverts')&&prNb>0)?1:0)+((pr.modules.includes('prochaines_etapes')&&pr.prochainesEtapes.length>0)?1:0)+((pr.modules.includes('nps')||pr.modules.includes('utm'))?1:0)+1;
+      add('Couverture, sommaires, Q/A, contacts',(3+prNSommaires)+' diapositives fixes',3+prNSommaires);
       PR_MODULES.forEach(m=>{ if (pr.modules.includes(m.id) && m.dispo!=='non') add(m.titre, m.parMarque?prMarquesSel.length+' marque'+(prMarquesSel.length>1?'s':'')+' × '+m.parMarque:(m.pointsOuverts?prNb+' point'+(prNb>1?'s':''):m.desc.split(',')[0]), prSlidesOf(m)); });
       return { rows, total:n };
     })();
