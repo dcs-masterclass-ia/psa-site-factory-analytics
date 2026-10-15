@@ -410,3 +410,8 @@ Ne pas y ajouter de proxy : toute évolution se valide contre un tableau Looker.
 (`ga4.in_journey_par_jour/par_mois`, stocké dans `inJourney` : `daily` + `month`, rattrapage `pipeline/backfill_entree.py`). Vérifié contre Looker :
 OPEL FR sept. 2026 = 7 025, CITROEN FR = 38 702 (l'évènement `form_step_view` seul donne 6 922 : ne pas l'utiliser). Carte « Parcours comme Looker » du
 tunnel GA4 : Sessions → In Journey → Leads GA ; masquée si un site choisi n'a pas la série (jamais de valeur approchée).
+
+## AAA Data — Portugal (lecture directe) et Pologne (2026-10-15)
+Portugal : `pipeline/market_pt.py` lit les fichiers publiés par l'ACAP (xlsx « par Marca » : 74 marques, mois + cumul + part ; pdf « par tipo de energia » : mix du mois et du cumul)
+sans agent ni modèle (étape « Collecte directe Portugal » de `market.yml`, `PT` exclu de la consigne de l'agent via `market.DETERMINISTES`). Pologne : agent, sur le texte de Samar / PZPM ;
+les classements complets de Samar sont des images, donc seuls le top 5 des marques du cumul, les premiers modèles et le total/BEV/part particuliers-entreprises sont publiés.
