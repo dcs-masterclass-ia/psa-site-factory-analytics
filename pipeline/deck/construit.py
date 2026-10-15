@@ -423,6 +423,45 @@ def conquete_marque(ctx, m):
     return s
 
 
+def projection_mois(ctx):
+    """Projection de fin de mois des leads New cars par marque, pour une édition mensuelle dont le mois n'est pas terminé :
+    leads du 1er au dernier jour connu, ramenés à la durée du mois au rythme moyen constant (indicatif), comparés au même mois de l'an dernier et au mois précédent."""
+    import calendar
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    dernier = d.dernier_jour_leads()
+    if per.type != "mois" or not dernier or dernier >= per.fin.isoformat() or dernier < per.debut.isoformat():
+        return None
+    jours_ecoules = int(dernier[8:10])
+    jours_mois = calendar.monthrange(per.annee, per.mois_debut)[1]
+    from datetime import date as _d
+    class _P:                                        # période « du 1er au dernier jour connu »
+        debut, fin = per.debut, _d.fromisoformat(dernier)
+    n1, prec = per.n1(), per.precedente()
+    lignes = [[t["marque"], f"{t['leads_nc']} 1–{jours_ecoules}", ("Projection fin de mois" if fr else "End-of-month projection"),
+               f"{t['leads_nc']} {ctx.et(n1)}", libelle_ref(ctx, "n1"), f"{t['leads_nc']} {ctx.et(prec)}", libelle_ref(ctx, "prec")]]
+    tot = [0, 0.0, 0, 0]
+    for m in d.marques:
+        cur = d.leads(_P, m)["VN"]
+        r1, rp = d.leads(n1, m)["VN"], d.leads(prec, m)["VN"]
+        if cur + r1 + rp == 0:
+            continue
+        proj = cur / jours_ecoules * jours_mois
+        lignes.append([ctx.nom(m), t.nb(cur), t.nb(proj), t.nb(r1), t.evol(proj, r1)[0], t.nb(rp), t.evol(proj, rp)[0]])
+        tot[0] += cur; tot[1] += proj; tot[2] += r1; tot[3] += rp
+    if len(lignes) < 2:
+        return None
+    lignes.append([t["total"], t.nb(tot[0]), t.nb(tot[1]), t.nb(tot[2]), t.evol(tot[1], tot[2])[0], t.nb(tot[3]), t.evol(tot[1], tot[3])[0]])
+    s = nouvelle(ctx, (f"Projection {ctx.et(per)} — leads New cars" if fr else f"{ctx.et(per)} projection — New cars leads"), ctx.perimetre, source_bo(ctx),
+                 notes=note_definitions(ctx, f"Projection = leads New cars du 1er au {jours_ecoules} ÷ {jours_ecoules} jours × {jours_mois} jours : rythme moyen constant, indicatif (ne tient pas compte de la saisonnalité intra-mois)."))
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.1, 1.7, 1.9, 1.7, 1.7, 1.7, 1.6], taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    g.texte(s, X0, 6.55, 12.4, 0.5,
+            (f"Données du 1er au {jours_ecoules} {MOIS_COURTS[ctx.langue][per.mois_debut - 1]} : la projection prolonge le rythme moyen quotidien sur les {jours_mois} jours du mois (indicatif)."
+             if fr else f"Data from {MOIS_COURTS[ctx.langue][per.mois_debut - 1]} 1 to {jours_ecoules}: the projection extends the average daily rate over the {jours_mois} days of the month (indicative)."),
+            taille=9, couleur=g.GRIS, italique=True)
+    return s
+
+
 def vue_ensemble_table(ctx):
     t, d, per = ctx.t, ctx.d, ctx.per
     s = nouvelle(ctx, f"{t['trafic']} & {t['leads'].lower()} — {ctx.et(per)}", ctx.perimetre, source_les_deux(ctx), notes=note_definitions(ctx))
@@ -750,6 +789,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
             leads_par_marque(ctx, cle, ref)
         leads_mensuels(ctx)
         leads_mensuels(ctx, "VN")
+        projection_mois(ctx)
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:

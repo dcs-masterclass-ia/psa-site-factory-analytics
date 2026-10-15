@@ -177,3 +177,38 @@ class CtaEtConquete(unittest.TestCase):
             self.assertEqual(d.cta(p, "PEUGEOT"), {"footer": {"VN": 5, "SANS": 0, "VO": 2}})
             self.assertEqual(d.reprises(p, "PEUGEOT"), {"PEUGEOT": 6, "CITROEN": 3, "RENAULT": 4})
             self.assertIsNone(d.modeles(p, "PEUGEOT"))        # historique des modèles pas encore collecté
+
+
+class ProjectionMois(unittest.TestCase):
+    """Projection de fin de mois : leads New cars du 1er au dernier jour connu, ramenés à la durée du mois."""
+
+    def _ctx(self, dernier):
+        from pipeline.deck.construit import Ctx
+        brief = {"client": "x", "langue": "fr", "periode": {"type": "mois", "annee": 2026, "indice": 10}, "perimetre": {"pays": ["FR"], "marques": []},
+                 "comparaisons": {"precedente": True, "n1": True}, "modules": ["global"]}
+
+        class D:
+            marques = ["PEUGEOT"]
+            sites = []
+            def leads(self, p, m=None):
+                n = ((p.fin - p.debut).days + 1) * 10          # 10 leads New cars par jour
+                return {"VN": n, "SANS": 0, "VO": 0}
+            def leads_total(self, p, m=None):
+                return sum(self.leads(p, m).values())
+            def dernier_jour_leads(self):
+                return dernier
+        return Ctx(brief, D())
+
+    def test_projection(self):
+        from pipeline.deck.construit import projection_mois
+        ctx = self._ctx("2026-10-10")
+        s = projection_mois(ctx)
+        self.assertIsNotNone(s)
+        cellules = [c.text for sh in s.shapes if sh.has_table for r in sh.table.rows for c in r.cells]
+        self.assertIn("100", cellules)      # 1er au 10 : 10 jours x 10
+        self.assertIn("310", cellules)      # projection : 100 / 10 x 31
+        self.assertIn("+3 %", [c.replace(" ", " ") for c in cellules])    # vs septembre (30 jours = 300)
+
+    def test_mois_termine_pas_de_projection(self):
+        from pipeline.deck.construit import projection_mois
+        self.assertIsNone(projection_mois(self._ctx("2026-10-31")))

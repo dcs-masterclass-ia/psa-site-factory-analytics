@@ -325,6 +325,8 @@ de données. Tests : `node --test tests/api/tickets.test.js` (API, sans réseau)
 
 ## Onglet Présentations (2026-10-11)
 
+Projection du mois (`construit.projection_mois`) : générée dans la vue d'ensemble d'une édition **mensuelle** dont le mois n'est pas terminé ; leads New cars du 1er au dernier jour connu des leads BO, ramenés à la durée du mois au rythme moyen constant (indicatif), comparés au même mois N-1 et au mois précédent. Aucune slide si le mois est terminé.
+
 Vue « Leads overview » (équivalent des diapos 14-15 du deck BELUX T3) : `construit.apercu_marques`, générée dans toute présentation à vue d'ensemble, une ligne par marque (tendance vs périodes de comparaison, part New cars, moteurs par canal / trafic, actions suggérées par règles `analyse.apercu_marque`) ; le champ `actionsMarques` du brief ({MARQUE: [texte]}) remplace les actions calculées.
 
 Icône sous Tableau (profil complet seulement). Questionnaire → **brief** (client,
