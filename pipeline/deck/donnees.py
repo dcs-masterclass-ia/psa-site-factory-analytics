@@ -189,6 +189,52 @@ class Donnees:
             agg[(norme_marque(r["marque_reprise"]), r["modele_reprise"].strip(), norme_marque(r["marque_achat"]), r["modele_achat"].strip())] += int(r["valides"])
         return [(*k, n) for k, n in agg.items()]
 
+    # ------------------------------------------------------- fichiers de site (data/<site>.json) : mode de saisie, avant / après V2
+    def _site_json(self, nom):
+        try:
+            return json.loads((self.hist.parent / f"{slug(nom)}.json").read_text(encoding="utf-8"))
+        except Exception:
+            return None
+
+    def entree_leads(self, periode, marque):
+        """{plaque, marque_modele} : leads par mode de saisie du véhicule (avec immatriculation / marque et modèle) sur les mois de la période, ou None si non disponible."""
+        plaque = mm = 0
+        vu = False
+        for nom, m, _ in self.sites:
+            if m != marque:
+                continue
+            d = self._site_json(nom)
+            for a, mo in periode.mois():
+                e = ((d or {}).get("leads", {}).get(f"{a}-{mo:02d}") or {}).get("entry")
+                if e:
+                    vu = True
+                    plaque += e.get("Avec immatriculation", 0)
+                    mm += e.get("Marque / modele", 0)
+        return {"plaque": plaque, "marque_modele": mm} if vu else None
+
+    def v2(self, marque):
+        """Avant / après la bascule en V2 pour les sites de la marque du périmètre : utilisateurs par étape du tunnel (avant, après) et fenêtres, ou None si aucun site V2."""
+        etapes, fenetres, n = {}, [], 0
+        ordre = []
+        for nom, m, pays in self.sites:
+            if m != marque:
+                continue
+            d = self._site_json(nom) or {}
+            v, st = d.get("v2") or {}, d.get("v2steps") or []
+            if not v.get("is_v2_split") or not st:
+                continue
+            n += 1
+            fenetres.append((nom, v.get("pre_label"), v.get("post_label")))
+            for x in st:
+                if x["step"] not in etapes:
+                    etapes[x["step"]] = [0, 0]
+                    ordre.append(x["step"])
+                etapes[x["step"]][0] += x.get("a") or 0
+                etapes[x["step"]][1] += x.get("b") or 0
+        if not n:
+            return None
+        return {"etapes": [(k, *etapes[k]) for k in ordre], "sites": n, "fenetres": fenetres}
+
     # ------------------------------------------------------- acquisition (sources)
     def _charge_acq(self):
         """(marque, jour) -> {(groupe_source, projet): n}"""

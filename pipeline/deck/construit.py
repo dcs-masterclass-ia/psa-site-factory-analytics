@@ -502,6 +502,80 @@ def classement_marches(ctx):
     return s
 
 
+def entree_vehicule(ctx):
+    """Mode de saisie du véhicule dans les leads : avec immatriculation (plaque) ou marque / modèle, par marque, vs période précédente et N-1 (en points)."""
+    t, d, per = ctx.t, ctx.d, ctx.per
+    fr = ctx.langue == "fr"
+    lignes_marque = []
+    for m in d.marques:
+        e = d.entree_leads(per, m)
+        if not e or e["plaque"] + e["marque_modele"] < 100:
+            continue
+        lignes_marque.append((m, e))
+    if not lignes_marque:
+        return None
+    part = lambda e: e["plaque"] / (e["plaque"] + e["marque_modele"]) * 100
+    def delta(m, e, p):
+        r = d.entree_leads(p, m)
+        return t.pts(part(e) - part(r)) if r and r["plaque"] + r["marque_modele"] >= 100 else t["n_s"]
+    ent = [t["marque"], ("Avec plaque" if fr else "With plate"), ("Marque / modèle" if fr else "Make / model"), ("Part avec plaque" if fr else "Plate share")] + \
+          [libelle_ref(ctx, c) for c, _ in ctx.refs]
+    lignes = [ent]
+    tp = tm = 0
+    for m, e in lignes_marque:
+        lignes.append([ctx.nom(m), t.nb(e["plaque"]), t.nb(e["marque_modele"]), t.pct(part(e), 0)] + [delta(m, e, p) for _, p in ctx.refs])
+        tp += e["plaque"]; tm += e["marque_modele"]
+    tot = {"plaque": tp, "marque_modele": tm}
+    row = [t["total"], t.nb(tp), t.nb(tm), t.pct(part(tot), 0)]
+    for _, p in ctx.refs:
+        rp = rm = 0
+        for m, _e in lignes_marque:
+            r = d.entree_leads(p, m)
+            if r:
+                rp += r["plaque"]; rm += r["marque_modele"]
+        row.append(t.pts(part(tot) - part({"plaque": rp, "marque_modele": rm})) if rp + rm >= 100 else t["n_s"])
+    lignes.append(row)
+    s = nouvelle(ctx, ("Mode de saisie du véhicule : plaque ou marque / modèle" if fr else "Vehicle entry: licence plate or make / model"), ctx.perimetre, source_bo(ctx),
+                 notes=note_definitions(ctx, "Part des leads dont le client a saisi son immatriculation (colonne REGISTRATION-PLATE du back-office) plutôt que la marque et le modèle de son véhicule ; évolution en points de pourcentage."),
+                 cle="entree_vehicule")
+    nc = len(ent)
+    g.tableau(s, X0, Y0 + 0.1, 12.4, lignes, largeurs=[2.4] + [(12.4 - 2.4) / (nc - 1)] * (nc - 1), taille=10.5, hauteur_ligne=0.38, gras_derniere=True)
+    g.texte(s, X0, 6.55, 12.4, 0.5,
+            (f"{t.pct(part(tot), 0)} des leads de la période sont saisis avec la plaque d'immatriculation ; le taux de complétion par mode de saisie n'est pas mesuré dans les données du back-office."
+             if fr else f"{t.pct(part(tot), 0)} of the period's leads are entered with the licence plate; the completion rate by entry mode is not measured in the back-office data."),
+            taille=9, couleur=g.GRIS, italique=True)
+    return s
+
+
+def v2_marque(ctx, m):
+    """Parcours avant / après la bascule en V2 : utilisateurs par étape du tunnel (part de l'accueil) et complétion de bout en bout, pour les sites V2 de la marque."""
+    t, d = ctx.t, ctx.d
+    fr = ctx.langue == "fr"
+    v = d.v2(m)
+    if not v or len(v["etapes"]) < 2 or v["etapes"][0][1] < 100 or v["etapes"][0][2] < 100:
+        return None
+    et = v["etapes"]
+    a0, b0 = et[0][1], et[0][2]
+    s = nouvelle(ctx, f"{ctx.nom(m)} — {'Parcours avant / après la V2' if fr else 'Journey before / after V2'}", ctx.perimetre, source_ga4(ctx),
+                 notes=note_definitions(ctx, "Utilisateurs distincts par étape du tunnel (GA4), part de la page d'accueil ; avant = 28 jours précédant la bascule, après = depuis la bascule (fenêtres propres à chaque site). "
+                                             + " ; ".join(f"{n} : {pre} → {post}" for n, pre, post in v["fenetres"])),
+                 cle=f"marque:{m}")
+    ent = [("Étape" if fr else "Step"), ("Avant" if fr else "Before"), ("% accueil" if fr else "% of homepage"), ("Après" if fr else "After"), ("% accueil" if fr else "% of homepage"), ("Écart" if fr else "Change")]
+    lignes = [ent]
+    for nom, a, b in et:
+        pa, pb = a / a0 * 100, b / b0 * 100
+        lignes.append([nom, t.nb(a), t.pct(pa, 1), t.nb(b), t.pct(pb, 1), t.pts(pb - pa) if abs(pb - pa) >= 0.5 else (t["n_s"] if False else "=")])
+    g.tableau(s, X0, Y0 + 0.1, 8.0, lignes, largeurs=[2.6, 1.1, 1.1, 1.1, 1.1, 1.0], taille=10.5, hauteur_ligne=0.4)
+    ca, cb = et[-1][1] / a0 * 100, et[-1][2] / b0 * 100
+    g.tuile(s, 8.9, Y0 + 0.1, 4.0, 1.4, ("Complétion de bout en bout" if fr else "End-to-end completion"), f"{t.pct(ca, 1)} → {t.pct(cb, 1)}", t.pts(cb - ca) if abs(cb - ca) >= 0.5 else "=", taille_valeur=24)
+    g.encadre(s, 8.9, Y0 + 1.75, 4.0, 2.0, ("Lecture" if fr else "Reading"), [
+        (f"{v['sites']} site{'s' if v['sites'] > 1 else ''} V2 dans le périmètre. Avant : les 28 jours précédant la bascule ; après : depuis la bascule." if fr else
+         f"{v['sites']} V2 site{'s' if v['sites'] > 1 else ''} in scope. Before: the 28 days before the switch; after: since the switch."),
+        (f"Utilisateurs atteignant l'estimation : {t.nb(et[-1][1])} → {t.nb(et[-1][2])} (période d'observation différente)." if fr else
+         f"Users reaching the estimate: {t.nb(et[-1][1])} → {t.nb(et[-1][2])} (different observation windows).")], taille=10.5, couleur=g.BLEU)
+    return s
+
+
 def projection_mois(ctx):
     """Projection de fin de mois des leads New cars par marque, pour une édition mensuelle dont le mois n'est pas terminé :
     leads du 1er au dernier jour connu, ramenés à la durée du mois au rythme moyen constant (indicatif), comparés au même mois de l'an dernier et au mois précédent."""
@@ -870,6 +944,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         leads_mensuels(ctx, "VN")
         projection_mois(ctx)
         classement_marches(ctx)
+        entree_vehicule(ctx)
         vue_ensemble_table(ctx)
         apercu_marques(ctx)
     if avoir_projets:
@@ -888,6 +963,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
             if "trafic_marque" in m:
                 trafic_marque(ctx, marque)
                 leads_marque(ctx, marque)
+                v2_marque(ctx, marque)
             if "sources" in m:
                 sources_marque(ctx, marque)
             if "cta" in m:

@@ -325,6 +325,8 @@ de données. Tests : `node --test tests/api/tickets.test.js` (API, sans réseau)
 
 ## Onglet Présentations (2026-10-11)
 
+Mode de saisie du véhicule (`construit.entree_vehicule`, global) : part des leads avec plaque (`leads[mois].entry` des fichiers de site) par marque, en points vs période précédente / N-1 ; le taux de complétion par mode de saisie n'existe pas dans nos données (non affiché). Avant / après V2 par marque (`construit.v2_marque`, module trafic_marque) : utilisateurs par étape (`v2steps`), part de l'accueil, complétion de bout en bout ; seulement pour les marques ayant un site V2 dans le périmètre.
+
 Commentaires et actions (étape 7 du questionnaire) : champs `commentaires` ({clé: texte ≤ 240}, clés fixes de `CLES_COMMENTAIRE` dans `api/presentations.js` + `marque:NOM`) et `actionsMarques` ({MARQUE: [≤ 5 lignes]}). Générateur : `construit.commentaire_diapo` affiche le commentaire sous le titre à droite, une seule fois par clé ; les actions saisies remplacent celles de `analyse.apercu_marque` pour la marque.
 
 Classement des marchés (`construit.classement_marches`) : leads New cars (VN, valides) de tous les marchés autobiz sur la période, rang, part, évolution vs N-1, cumul de l'année ; BE + LU regroupés (BELUX), GB + UK regroupés. Générée dans la vue d'ensemble de toute édition.

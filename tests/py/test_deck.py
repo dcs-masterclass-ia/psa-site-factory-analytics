@@ -240,3 +240,27 @@ class Commentaires(unittest.TestCase):
         self.assertIn("Insister sur le display.", texte(s1))
         self.assertNotIn("Insister sur le display.", texte(s2))
         self.assertNotIn("Insister", texte(s3))
+
+
+class EntreeEtV2(unittest.TestCase):
+    """Mode de saisie du véhicule et avant / après V2, lus dans les fichiers de site (data/<site>.json)."""
+
+    def test_lecture_fichiers_de_site(self):
+        import json
+        from pathlib import Path
+        from pipeline.deck.donnees import Donnees
+        with tempfile.TemporaryDirectory() as tmp:
+            racine = Path(tmp)
+            (racine / "history").mkdir()
+            (racine / "peugeot-fr.json").write_text(json.dumps({
+                "leads": {"2026-07": {"entry": {"Avec immatriculation": 90, "Marque / modele": 10}}, "2026-08": {"entry": {"Avec immatriculation": 80, "Marque / modele": 20}}},
+                "v2": {"is_v2_split": True, "pre_label": "a", "post_label": "b"},
+                "v2steps": [{"step": "Accueil", "a": 1000, "b": 2000}, {"step": "Estimation", "a": 100, "b": 400}]}), encoding="utf-8")
+            d = Donnees(["FR"], ["PEUGEOT"], hist=racine / "history")
+            d.sites = [("PEUGEOT FR", "PEUGEOT", "FR")]
+            from pipeline.deck.periodes import Periode
+            self.assertEqual(d.entree_leads(Periode("trimestre", 2026, 3), "PEUGEOT"), {"plaque": 170, "marque_modele": 30})
+            self.assertIsNone(d.entree_leads(Periode("trimestre", 2025, 3), "PEUGEOT"))      # aucune donnée : jamais de zéro inventé
+            v = d.v2("PEUGEOT")
+            self.assertEqual(v["etapes"], [("Accueil", 1000, 2000), ("Estimation", 100, 400)])
+            self.assertIsNone(d.v2("CITROEN"))
