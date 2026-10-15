@@ -2520,17 +2520,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ !c1Ok }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données C1ST indisponibles pour le moment.</div></sc-if>
         <sc-if value="{{ c1Ok }}" hint-placeholder-val="{{ true }}">
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:12px">
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <div style="display:flex;align-items:center;gap:6px">
-              <div onClick="{{ c1Prec }}" title="Mois précédent" style="width:30px;height:30px;border-radius:9px;border:1px solid #ececee;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6d727a;font-size:16px">‹</div>
-              <span style="font-size:16px;font-weight:600;color:#121214;min-width:150px;text-align:center;font-variant-numeric:tabular-nums">{{ c1PeriodeLabel }}</span>
-              <div onClick="{{ c1Suiv }}" title="Mois suivant" style="width:30px;height:30px;border-radius:9px;border:1px solid #ececee;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6d727a;font-size:16px">›</div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1ChipsDuree }}" as="c" hint-placeholder-count="3"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1ChipsCmp }}" as="c" hint-placeholder-count="3"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
-          </div>
-          <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">Périmètre : {{ c1Perim }}. Le marché et les marques suivent les sites sélectionnés en haut de page ; la période est propre à cet onglet (C1ST est mensuel).</div>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">Période, comparaison et sites : ceux choisis en haut de page. C1ST étant mensuel, la période est arrondie aux mois entiers terminés. Périmètre : {{ c1Perim }}.</div>
           <sc-if value="{{ c1HasHors }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#9a6b00">{{ c1Hors }}</div></sc-if>
         </div>
 
@@ -2575,10 +2566,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">Évolution mensuelle</div>
-          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 0">Leads VN vus par C1ST, 15 mois. Au-dessus de chaque barre : taux de commande, seulement quand les commandes sont complètes (plus de 90 jours). Clique sur un mois pour le sélectionner.</div>
+          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 0">Leads VN vus par C1ST, 15 mois. Au-dessus de chaque barre : taux de commande, seulement quand les commandes sont complètes (plus de 90 jours).</div>
           <div style="display:flex;align-items:flex-end;gap:6px;height:230px;margin-top:16px;overflow-x:auto">
             <sc-for list="{{ c1Mois }}" as="m" hint-placeholder-count="15">
-              <div title="{{ m.tip }}" onClick="{{ m.pick }}" style="{{ m.col }}">
+              <div title="{{ m.tip }}" style="{{ m.col }}">
                 <span style="font-size:11.5px;font-weight:600;color:#1f9254">{{ m.taux }}</span>
                 <div style="width:100%;flex:1;display:flex;align-items:flex-end;min-height:0"><div style="{{ m.bar }}"></div></div>
                 <span style="font-size:11.5px;color:#6d727a;white-space:nowrap">{{ m.label }}</span>
@@ -3341,7 +3332,7 @@ class Component extends DCLogic {
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
   static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','sites','sort','brandSort','hidden',
-    'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr','c1Mois','c1Duree','c1Cmp','c1Vue'];
+    'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr','c1Vue'];
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
   prChipLite(on){ return 'font-size:13px;font-weight:500;border-radius:10px;padding:5px 12px;cursor:pointer;white-space:nowrap;border:1px solid '+(on?'#7c63ee':'#ececee')+';'+(on?'background:#f1eefe;color:#5b43d6':'background:#fff;color:#6d727a'); }
@@ -5687,8 +5678,13 @@ class Component extends DCLogic {
     const c1AllMonths=c1Ok?[...new Set(Object.values(c1Raw.donnees).flatMap(o=>Object.keys(o)))].sort():[];
     const c1Partiel=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(0,7):'';      // le mois de la collecte est partiel
     const c1Entiers=c1AllMonths.filter(m=>m!==c1Partiel);
-    const c1Sel=c1AllMonths.includes(st.c1Mois)?st.c1Mois:(c1Entiers[c1Entiers.length-1]||c1AllMonths[c1AllMonths.length-1]||'');
-    const c1Duree=[1,3,12].includes(st.c1Duree)?st.c1Duree:1, c1CmpMode=['prev','yoy','none'].includes(st.c1Cmp)?st.c1Cmp:'prev', c1Vue=st.c1Vue==='marche'?'marche':'marque';
+    const c1Vue=st.c1Vue==='marche'?'marche':'marque';
+    // période et comparaison = celles du calendrier général, arrondies aux mois entiers TERMINÉS disponibles (C1ST est mensuel ; le mois de la collecte est partiel : exclu)
+    const c1Couvre=(d1,d2)=>{ const out=[]; let m=d1.slice(0,7); const f=d2.slice(0,7); for(let g=0;m<=f&&g<60;g++){ out.push(m); m=c1Shift(m,1); } return out; };
+    const c1Touches=c1Couvre(debut,fin);
+    const c1Cur=c1Touches.filter(m=>c1AllMonths.includes(m)&&m!==c1Partiel);
+    const c1Sel=c1Cur[c1Cur.length-1]||'';
+    const c1CmpMois=!c1Cur.length||cmpMode==='none'?null:cmpMode==='year'?c1Cur.map(m=>c1Shift(m,-12)):(cmpMode==='custom'?(cmpRange?c1Couvre(cmpRange.debut,cmpRange.fin):null):c1Span(c1Shift(c1Cur[0],-c1Cur.length),c1Cur.length));
     const c1Zero=()=>({leads:0,envoyes:0,clients_envoyes:0,contactes:0,contactes_delai:0,premier_appel_delai:0,traites:0,traites_delai:0,avec_opp:0,clients_uniques:0,avec_devis:0,nsc:0});
     const c1Add=(t,mo,code)=>{ for(const r of (mo.leads||[])) if(r.marque===code) for(const k of ['leads','envoyes','clients_envoyes','contactes','contactes_delai','premier_appel_delai','traites','traites_delai','avec_opp']) t[k]+=r[k]||0;
       for(const r of (mo.commandes||[])) if(r.marque===code){ t.clients_uniques+=r.clients_uniques||0; t.avec_devis+=r.avec_devis||0; }
@@ -5697,15 +5693,13 @@ class Component extends DCLogic {
     const c1Agg=(months,filtre)=>{ const t=c1Zero(); let manque=false; const pr=c1Mapped.pairs.filter(filtre||(()=>true)); if(!pr.length) return {t,manque:true};
       for(const p of pr) for(const m of months){ const mo=(c1Raw.donnees[p.pays]||{})[m]; if(!mo){ manque=true; continue; } c1Add(t,mo,p.code); } return {t,manque}; };
     const c1HorsSP=p=>p.code!=='SP';
-    const c1Cur=c1Span(c1Sel,c1Duree);
-    const c1CmpMois=c1CmpMode==='none'?null:c1Span(c1CmpMode==='yoy'?c1Shift(c1Sel,-12):c1Shift(c1Sel,-c1Duree),c1Duree);
-    const c1Mature=months=>c1Finmois(months[months.length-1])<=this.decale(todayIso,-90);      // commandes rattachées jusqu'à 90 jours après le lead
-    const c1CurPartiel=c1Cur.includes(c1Partiel), c1CurMature=c1Ok&&c1Mature(c1Cur);
+    const c1Mature=months=>months.length>0&&c1Finmois(months[months.length-1])<=this.decale(todayIso,-90);      // commandes rattachées jusqu'à 90 jours après le lead
+    const c1CurPartiel=false, c1CurMature=c1Ok&&c1Mature(c1Cur);
     const c1A=c1Ok?c1Agg(c1Cur,c1HorsSP):{t:c1Zero(),manque:true}, c1B=c1Ok&&c1CmpMois?c1Agg(c1CmpMois,c1HorsSP):null;
-    const c1CmpOk=!!(c1B&&!c1B.manque&&!c1A.manque&&c1B.t.leads>0&&!c1CurPartiel);
+    const c1CmpOk=!!(c1B&&!c1B.manque&&!c1A.manque&&c1B.t.leads>0&&c1CmpMois.length===c1Cur.length);
     const c1CmpMature=!!(c1CmpOk&&c1Mature(c1CmpMois));
-    const c1PeriodeLabel=c1Ok&&c1Sel?(c1Duree===1?c1ML(c1Sel):c1ML(c1Cur[0])+' → '+c1ML(c1Sel)):'';
-    const c1CmpLabel=c1CmpMois?(c1Duree===1?c1ML(c1CmpMois[0]):c1ML(c1CmpMois[0])+' → '+c1ML(c1CmpMois[c1CmpMois.length-1])):'';
+    const c1PeriodeLabel=c1Ok&&c1Sel?(c1Cur.length===1?c1ML(c1Sel):c1ML(c1Cur[0])+' → '+c1ML(c1Sel)):'';
+    const c1CmpLabel=c1CmpMois&&c1CmpMois.length?(c1CmpMois.length===1?c1ML(c1CmpMois[0]):c1ML(c1CmpMois[0])+' → '+c1ML(c1CmpMois[c1CmpMois.length-1])):'';
     const c1PctVar=(a,b)=>b>0?(a-b)/b*100:null;
     const c1Pts=(a,b)=>a-b;
     // cartes
@@ -5733,8 +5727,7 @@ class Component extends DCLogic {
     const c1Mois=c1Hist.map(x=>{ const dans=c1Cur.includes(x.m), mat=c1Mature([x.m]), part=x.m===c1Partiel; const tx=x.t.clients_uniques?x.t.nsc/x.t.clients_uniques*100:null;
       return {label:C1_MOIS[parseInt(x.m.slice(5,7),10)-1]+' '+x.m.slice(2,4),vol:c1Nf(x.t.leads),taux:mat&&tx!==null?tx.toFixed(1).replace('.',',')+' %':'—',
         tip:c1ML(x.m)+' · '+c1Nf(x.t.leads)+' leads'+(part?' ('+T('mois partiel')+')':'')+(mat?'':' · '+T('commandes provisoires')),
-        pick:()=>set({c1Mois:x.m}),
-        col:'flex:1 1 0;min-width:40px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:pointer',
+        col:'flex:1 1 0;min-width:40px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;cursor:default',
         bar:'width:100%;border-radius:6px 6px 0 0;height:'+Math.max(3,x.t.leads/c1MaxH*100)+'%;background:'+(dans?'#7c63ee':'#d9d1fb')+(part?';opacity:.55':'')}; });
     // tableaux (par marque ou par marché)
     const c1Ligne=(nom,t,tb,sansSuivi,lettre)=>{ const ok=!sansSuivi; let ev='',es='';
@@ -5754,7 +5747,7 @@ class Component extends DCLogic {
     // lecture automatique (règles simples, jamais de texte généré)
     const c1Lectures=[]; if(c1Ok&&A.leads>0){
       c1Lectures.push(T('Sur la période')+' '+c1PeriodeLabel+' : '+c1Nf(A.leads)+' '+T('leads VN vus par C1ST')+(c1CmpOk&&B.leads>0?', '+c1Sg(c1PctVar(A.leads,B.leads),' %')+' '+T('vs')+' '+c1CmpLabel:'')+'.');
-      if(c1CurPartiel) c1Lectures.push(T('Le mois en cours est partiel : aucune comparaison n\'est calculée tant qu\'il n\'est pas terminé.'));
+      if(c1Touches.includes(c1Partiel)) c1Lectures.push(T('Le mois en cours est partiel : il n\'est pas inclus, la période est arrondie aux mois entiers terminés.'));
       const brs=c1Groupes('code').filter(x=>x.k!=='SP'&&x.a.clients_envoyes>=200);
       if(brs.length>=2){ const tr=brs.map(x=>({n:C1_NOMS[x.k],v:x.a.traites/x.a.clients_envoyes*100})).sort((x,y)=>y.v-x.v); c1Lectures.push(T('Suivi concessionnaires')+' : '+T('meilleur taux de leads traités')+' '+tr[0].n+' ('+tr[0].v.toFixed(0)+' %), '+T('plus faible')+' '+tr[tr.length-1].n+' ('+tr[tr.length-1].v.toFixed(0)+' %). '+T('À comparer entre marques seulement : les statuts sont saisis par les concessionnaires.')); }
       if(c1CurMature&&brs.length>=2){ const cm=brs.filter(x=>x.a.clients_uniques>=200).map(x=>({n:C1_NOMS[x.k],v:x.a.nsc/x.a.clients_uniques*100})).sort((x,y)=>y.v-x.v); if(cm.length>=2) c1Lectures.push(T('Taux de commande')+' : '+cm[0].n+' '+cm[0].v.toFixed(1).replace('.',',')+' %, '+T('plus faible')+' '+cm[cm.length-1].n+' '+cm[cm.length-1].v.toFixed(1).replace('.',',')+' %.'); }
@@ -5764,16 +5757,12 @@ class Component extends DCLogic {
     }
     const c1Hors=c1Mapped.hors.length?c1Mapped.hors.length+' '+T('site(s) sélectionné(s) non inclus')+' : '+[ [...new Set(c1Mapped.hors.map(x=>x.pays).filter(Boolean))].sort().join(', ')&&T('marchés hors C1ST')+' ('+[...new Set(c1Mapped.hors.map(x=>x.pays).filter(Boolean))].sort().join(', ')+')', [...new Set(c1Mapped.hors.map(x=>x.marque).filter(Boolean))].sort().join(', ')&&T('marques non suivies')+' ('+[...new Set(c1Mapped.hors.map(x=>x.marque).filter(Boolean))].sort().join(', ')+')' ].filter(Boolean).join(' · ')+'.':'';
     const c1Chip=(on,fn,l)=>({label:l,pick:fn,style:this.prChipLite(on)});
-    const c1ChipsDuree=[[1,T('Mois')],[3,T('Trimestre')],[12,T('12 mois')]].map(([v,l])=>c1Chip(c1Duree===v,()=>set({c1Duree:v}),l));
-    const c1ChipsCmp=[['prev',T('vs période précédente')],['yoy',T('vs même période N-1')],['none',T('Sans comparaison')]].map(([v,l])=>c1Chip(c1CmpMode===v,()=>set({c1Cmp:v}),l));
     const c1ChipsVue=[['marque',T('Par marque')],['marche',T('Par marché')]].map(([v,l])=>c1Chip(c1Vue===v,()=>set({c1Vue:v}),l));
-    const c1Idx=c1AllMonths.indexOf(c1Sel);
-    const c1Prec=()=>{ if(c1Idx>0) set({c1Mois:c1AllMonths[c1Idx-1]}); }, c1Suiv=()=>{ if(c1Idx>=0&&c1Idx<c1AllMonths.length-1) set({c1Mois:c1AllMonths[c1Idx+1]}); };
     const c1Date=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(8,10)+'/'+String(c1Raw.collecte.date).slice(5,7)+'/'+String(c1Raw.collecte.date).slice(0,4):'—';
     const c1Perim=c1Mapped.pairs.length?[...new Set(c1Mapped.pairs.map(p=>C1_PAYS_NOM[p.pays]))].join(', ')+' · '+[...new Set(c1Mapped.pairs.map(p=>C1_NOMS[p.code]))].join(', '):'';
-    const c1Vide=c1Ok&&(!c1Mapped.pairs.length||c1A.manque||!A.leads);
-    const c1Pend=c1Ok&&!c1Mapped.pairs.length?T('Aucun site sélectionné n\'est suivi par C1ST : choisis des sites de France, Belgique, Espagne, Portugal ou Italie.'):(c1Ok&&(c1A.manque||!A.leads)?T('Pas de données C1ST pour tout ou partie de cette période.'):'');
-    const c1SubPer=c1PeriodeLabel+(c1CmpLabel&&c1CmpOk?' · '+T('comparée à')+' '+c1CmpLabel:'')+(c1CurPartiel?' · '+T('mois partiel'):'');
+    const c1Vide=c1Ok&&(!c1Cur.length||!c1Mapped.pairs.length||c1A.manque||!A.leads);
+    const c1Pend=c1Ok&&!c1Cur.length?T('La période choisie ne couvre aucun mois entier terminé disponible dans C1ST : élargis-la dans le calendrier du haut de page.'):c1Ok&&!c1Mapped.pairs.length?T('Aucun site sélectionné n\'est suivi par C1ST : choisis des sites de France, Belgique, Espagne, Portugal ou Italie.'):(c1Ok&&(c1A.manque||!A.leads)?T('Pas de données C1ST pour tout ou partie de cette période.'):'');
+    const c1SubPer=c1PeriodeLabel+(c1CmpLabel&&c1CmpOk?' · '+T('comparée à')+' '+c1CmpLabel:'')+(c1Cur.length&&(c1Touches.length>c1Cur.length||debut.slice(8)!=='01'||fin!==c1Finmois(fin.slice(0,7)))?' · '+T('période arrondie aux mois entiers'):'');
     // ---------- AAA Data (marché automobile, data/market.json) : mêmes blocs que la page « AAA Data » de la newsletter
     const aaaMk=this._market||null, aaaMkOk=!!(aaaMk&&aaaMk.france&&aaaMk.europe);
     const aaaNf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
@@ -7054,7 +7043,7 @@ class Component extends DCLogic {
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
       toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite(), c1Ok, c1Logo, c1LogoMini, c1Date, c1Prec, c1Suiv, c1PeriodeLabel, c1ChipsDuree, c1ChipsCmp, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFrAnnual, aaaFrSrc, aaaMonths, aaaMonthsSub, aaaMonthsRows, aaaPodiums, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaOthers, aaaHasOthers:aaaOthers.length>0, aaaFrKpis, aaaHasFrKpis:aaaFrKpis.length>0, aaaFrModels, aaaHasModels:aaaFrModels.length>0, aaaFrMarques, aaaHasMarques:aaaFrMarques.length>0, aaaFrLastLabel:aaaLast?aaaML(aaaLast.month):'', aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel d\'AAA DATA ('+aaaMon.length+' mois disponibles, pas la série complète), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
