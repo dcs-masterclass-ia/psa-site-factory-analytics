@@ -11,6 +11,7 @@ window.I18N_EN = {
 "+ Ajouter un point ouvert": "+ Add an open point",
 "+ Ajouter un événement": "+ Add an event",
 "+ Ajouter une action": "+ Add an action",
+"+ {0} autres canaux": "+ {0} other channels",
 ". Que veux-tu analyser ?": ". What would you like to analyse?",
 "/ 3 étapes obligatoires": "/ 3 required steps",
 "/ jour": "/ day",
@@ -447,6 +448,7 @@ window.I18N_EN = {
 "Leads / jour (moyenne)": "Leads / day (average)",
 "Leads 30 j": "Leads 30 d",
 "Leads GA": "Valuations",
+"Leads GA (demandes d'estimation) sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.": "Valuation requests over the period: GA4 tradein_request events (Looker's “Hot leads”), sum of the exact days. The funnel counts distinct users instead, hence a slightly lower figure. GA4 data, distinct from back-office leads.",
 "Leads GA / accueil": "Valuations / home",
 "Leads GA / jour": "Valuations / day",
 "Leads GA / sessions": "Valuations / sessions",
@@ -687,6 +689,7 @@ window.I18N_EN = {
 "Pour chaque appareil ou canal d'acquisition (Paid, Organic…) : part des visiteurs (sous chaque pourcentage : nombre d'utilisateurs ayant atteint l'étape) qui passent d'une étape à la suivante (utilisateurs actifs, mois touchés par la période). Vert / rouge : au-dessus / au-dessous de la moyenne du site d'au moins 2 points sur l'étape. « ≥ 100 % » : GA4 compte chaque étape séparément ; des visiteurs atteignent l'étape sans être passés par la précédente (saut d'étape, retour en arrière), donc la part dépasse 100 %. Dernière colonne : conversion de bout en bout ; la ligne « Moyenne du site » est calculée sur le total des visiteurs, pas comme une moyenne de pourcentages.": "For each device or acquisition channel (Paid, Organic…): share of visitors (under each percentage: number of users who reached the step) who move from one step to the next (active users, months touched by the period). Green / red: at least 2 points above / below the site average on that step. « ≥ 100 % »: GA4 counts each step separately; some visitors reach a step without going through the previous one (skipped step, going back), so the share exceeds 100 %. Last column: end-to-end conversion; the « Site average » row is computed on total visitors, not as an average of percentages.",
 "Pour chaque jour : demandes d'estimation ÷ sessions du site de reprise (comme Looker). Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des sessions sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuation requests ÷ trade-in site sessions (like Looker). Thick line = 7-day rolling average (sum of valuations ÷ sum of sessions over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
 "Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuations ÷ funnel home page visitors. Thick line = 7-day rolling average (sum of valuations ÷ sum of visitors over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
+"Pour chaque jour : leads GA (demandes d'estimation) ÷ sessions du site de reprise, toutes sessions confondues (comme Looker). Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des sessions sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuation requests ÷ trade-in site sessions (like Looker). Thick line = 7-day rolling average (sum of valuations ÷ sum of sessions over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
 "Pour chaque marque : trafic trade-in, chaîne utilisateurs → In Journey → Hot leads, canaux, leads": "For each brand: trade-in traffic, users chain → In Journey → Hot leads, channels, leads",
 "Pour enregistrer un modèle : un nom (3 caractères minimum), au moins un pays et un module.": "To save a template: a name (3 characters minimum), at least one country and one module.",
 "Pour les pages principales : clics Search Console, sessions GA4 qui ont commencé sur la page (canal Organic Search) et estimations déclenchées. Le rapprochement se fait par URL ; « / » est exclu (page d'accueil commune au site parent et à l'outil de reprise).": "For the main pages: Search Console clicks, GA4 sessions that started on the page (Organic Search channel) and valuations triggered. The match is made by URL; “/” is excluded (home page shared by the parent site and the trade-in tool).",
@@ -853,6 +856,7 @@ window.I18N_EN = {
 "Sélectionnez un site précis (pas « Marché entier ») pour lancer une comparaison Search Console en direct.": "Select a specific site (not “Whole market”) to launch a live Search Console comparison.",
 "Sélectionnez un site unique pour voir son détail.": "Select a single site to see its detail.",
 "TBT (blocage du thread)": "TBT (thread blocking)",
+"TOUTES les sessions GA4 du site de reprise (son nom d'hôte) sur la période, sans filtre sur la provenance : y compris celles qui arrivent depuis le site de la marque. Pour le seul trafic qui arrive directement sur la reprise, voir Acquisition > Arrivées directes.": "ALL GA4 sessions of the trade-in site (its host name) over the period, with no filter on the origin: including those that come from the brand site. For the traffic that arrives directly on the trade-in site only, see Acquisition > Direct arrivals.",
 "Tableau d'actions : item, responsable, statut, échéance (saisi ci-dessous)": "Action table: item, owner, status, deadline (entered below)",
 "Tablette": "Tablet",
 "Taux d'engagement": "Engagement rate",
@@ -1163,6 +1167,7 @@ window.I18N_EN = {
 "· données Search Console jusqu'au {0}": "· Search Console data up to {0}",
 "· effet": "· effect",
 "· historique indisponible": "· history unavailable",
+"· leads GA ÷ sessions du site de reprise": "· GA leads ÷ trade-in site sessions",
 "· modèle de": "· template of",
 "· période précédente {0} % ({1}{2} pt)": "· previous period {0}% ({1}{2} pt)",
 "· relevés du": "· readings of",
@@ -1208,7 +1213,8 @@ window.I18N_EN = {
 "→ Estim.": "→ Valuation",
 "→ Leads GA": "→ GA leads",
 "→ PDV": "→ Dealer",
-"→ Version": "→ Version"
+"→ Version": "→ Version",
+"− Canaux secondaires": "− Secondary channels"
 };
 window.I18N_WORDS = {
 "Activée": "On",

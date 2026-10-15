@@ -100,11 +100,11 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
 
 test("info-bulle d'une tuile : jamais rognée par la carte, reste dans l'écran", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  const icone = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "Sessions GA4 de l'outil de reprise" }) }).first();
+  const icone = page.locator(".dc-info").filter({ has: page.locator(".dc-tip", { hasText: "TOUTES les sessions GA4 du site de reprise" }) }).first();
   await icone.hover();
   const bulle = page.locator("#dc-tipbox");
   await expect(bulle).toBeVisible();
-  await expect(bulle).toContainText("Sessions GA4 de l'outil de reprise");
+  await expect(bulle).toContainText("TOUTES les sessions GA4 du site de reprise");
   const b = await bulle.boundingBox();
   const vp = page.viewportSize();
   expect(b.x).toBeGreaterThanOrEqual(0);
