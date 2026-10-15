@@ -397,3 +397,10 @@ Un agent Claude Code (abonnement via `CLAUDE_CODE_OAUTH_TOKEN`, pas de clé API 
 KBA (DE), UNRAE (IT), ANFAC (ES), SMMT (GB) ; chaque relevé est validé (période, plages, domaine de la source, citation, cohérence avec la série)
 avant d'être fusionné ; un relevé refusé laisse la série existante intacte. Les visuels des podiums viennent de domaines listés dans la CSP de `vercel.json`.
 Tests : `python -m unittest tests.py.test_market`, `tests/e2e/aaa-data.spec.js`.
+
+## Entrée directe sur la reprise — alignement Looker (2026-10-15)
+Vue GA4 > Acquisition > « Arrivées directes » (`entreeMonth`, `ga4.entree_directe_par_canal`, rattrapage `pipeline/backfill_entree.py`).
+Règle = champ calculé Looker « Site Marque vs Entrée directe » (`ga4.classe_entree`) sur les sessions dont l'hôte est la reprise et
+`page_category` = « home page ». Appliquée telle quelle elle donne +5 % : Looker ne compte pas les lignes dont la page de provenance est le site de
+reprise lui-même (sauf source non renseignée). Vérifié sur OPEL FR septembre 2026 : 13 243 sessions des deux côtés, canaux à ±1.
+Ne pas y ajouter de proxy : toute évolution se valide contre un tableau Looker.

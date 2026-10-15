@@ -7,6 +7,7 @@ structures Python. L'assemblage et les controles sont ailleurs.
 import argparse
 import calendar
 import os
+import re
 import sys
 from collections import defaultdict
 
@@ -181,31 +182,61 @@ def dim_canal(pid):
     return dim
 
 
-def domaine_marque(hote_parent):
-    """Domaine du site marque à partir de son hôte (« www.opel.fr » -> « opel.fr »), pour repérer le parcours « depuis le site marque »."""
-    h = (hote_parent or "").split("|")[0].strip().lower()
-    return h[4:] if h.startswith("www.") else h
+# Règle « Site Marque vs Entrée directe » de Looker (champ calculé de la source « <Marque> Roll Up - GA4 », relevée le 15/10/2026) :
+#   source de session = « Main-Website »                                   -> Brand Websites
+#   page de provenance contient un mot « reprise » (odkup, overname, recovery, wir-kaufen, kauft-ihr-auto, kauft-dein-auto,
+#     autoankauf, reprise, retoma, tasacion, tradein, valutazioneusato, valutiamoiltuousato)  -> Trade In Entry
+#   page de provenance = site d'une marque (peugeot, spoticar, citroen, dsautomobiles, opel, fiat, alfaromeo, jeep, abarth, lancia) -> Brand Websites
+#   sinon                                                                  -> Trade In Entry
+# Le tableau Looker « Traffic landing on Trade In » = sessions « Trade In Entry » avec nom d'hôte = reprise et page_category = « home page ».
+_RE_REPRISE = re.compile(r"(odkup|overname|recovery|wir\-kaufen|kauft\-ihr\-auto|kauft\-dein\-auto|autoankauf|reprise|retoma|tasacion|tradein|valutazioneusato|valutiamoiltuousato)", re.I)
+_RE_MARQUE = re.compile(r"(www\.)?(peugeot|spoticar|citroen|dsautomobiles|opel|fiat|alfaromeo|jeep|jeep-official|abarth|lancia)\.", re.I)
+
+
+def classe_entree(source_session, page_provenance):
+    """« Brand Websites » ou « Trade In Entry » : la formule du champ Looker, à l'identique."""
+    if re.fullmatch(r"Main-Website", source_session or ""):
+        return "Brand Websites"
+    if _RE_REPRISE.search(page_provenance or ""):
+        return "Trade In Entry"
+    if _RE_MARQUE.search(page_provenance or ""):
+        return "Brand Websites"
+    return "Trade In Entry"
 
 
 def entree_directe_par_canal(cli, pid, hote_reprise, hote_parent, debut, fin):
-    """Sessions du site de reprise qui ARRIVENT DIRECTEMENT sur la reprise, par canal : c'est le tableau « Traffic landing on Trade In »
-    de Looker (filtres : nom d'hôte = reprise, page_category = « home page », et le champ « Site marque vs Entrée directe » =
-    entrée directe, soit un référent qui n'est PAS le site marque). Les sessions venues du site marque sont comptées à part
-    (« Brand Websites » dans le graphique en anneau de Looker).
-    Retourne {"canaux": {canal: sessions}, "total": entrée directe, "marque": depuis le site marque, "domaine": domaine marque}."""
-    dom = domaine_marque(hote_parent)
-    if not dom or not hote_reprise:
+    """Sessions de la reprise qui ARRIVENT DIRECTEMENT (« Trade In Entry »), par canal : tableau « Traffic landing on Trade In » de Looker.
+    Filtres : nom d'hôte = reprise ; page_category = « home page » ; classement par la formule Looker (classe_entree).
+    Constat du 15/10/2026 sur OPEL FR (septembre) : appliquée telle quelle la formule donne 13 926 sessions contre 13 243 dans Looker ;
+    l'écart vient entièrement des lignes dont la page de provenance est le site de reprise lui-même (retour vers l'accueil au sein de la
+    session), que Looker ne compte pas : une fois ces lignes écartées, l'écart tombe à 1 session (hors un libellé de canal : « AI Agent Search » ici, « CRM Email » dans Looker). Elles sont donc écartées ici,
+    sauf quand la source de la session n'est pas renseignée (« (not set) », « (data not available) »), que Looker conserve.
+    Retourne {"canaux": {canal: sessions}, "total": entrée directe, "marque": Brand Websites, "domaine": domaine marque}."""
+    if not hote_reprise:
         return None
     dim = dim_canal(pid)
-    base = [_egal("hostName", hote_reprise),
-            FilterExpression(filter=Filter(field_name="customEvent:page_category",
-                                           string_filter=Filter.StringFilter(value="home page", match_type=Filter.StringFilter.MatchType.EXACT)))]
-    ref = FilterExpression(filter=Filter(field_name="pageReferrer",
-                                         string_filter=Filter.StringFilter(value=dom, match_type=Filter.StringFilter.MatchType.CONTAINS)))
-    directe = _rapport(cli, pid, debut, fin, [dim], ["sessions"], _et(*base, FilterExpression(not_expression=ref)))
-    marque = _rapport(cli, pid, debut, fin, [dim], ["sessions"], _et(*base, ref))
-    canaux = {c: int(float(n)) for c, n in directe if int(float(n)) > 0}
-    return {"canaux": canaux, "total": sum(canaux.values()), "marque": sum(int(float(n)) for _, n in marque), "domaine": dom}
+    filtre = _et(_egal("hostName", hote_reprise),
+                 FilterExpression(filter=Filter(field_name="customEvent:page_category",
+                                                string_filter=Filter.StringFilter(value="home page", match_type=Filter.StringFilter.MatchType.EXACT))))
+    lignes = _rapport(cli, pid, debut, fin, [dim, "sessionSource", "pageReferrer"], ["sessions"], filtre)
+    hotes_reprise = [h.lower() for h in hote_reprise.split("|") if h]
+    canaux, marque = {}, 0
+    for canal, source, provenance, n in lignes:
+        n = int(float(n))
+        if any(h in (provenance or "").lower() for h in hotes_reprise) and source not in ("(not set)", "(data not available)"):
+            continue   # retour sur la reprise depuis la reprise : pas une arrivée (voir ci-dessus) ; Looker garde ces lignes quand la source n'est pas renseignée
+        if classe_entree(source, provenance) == "Trade In Entry":
+            canaux[canal] = canaux.get(canal, 0) + n
+        else:
+            marque += n
+    return {"canaux": {c: v for c, v in canaux.items() if v > 0}, "total": sum(canaux.values()), "marque": marque,
+            "domaine": domaine_marque(hote_parent)}
+
+
+def domaine_marque(hote_parent):
+    """Domaine du site marque à partir de son hôte (« www.opel.fr » -> « opel.fr »)."""
+    h = (hote_parent or "").split("|")[0].strip().lower()
+    return h[4:] if h.startswith("www.") else h
 
 
 def sessions_propriete_par_jour(cli, pid, debut, fin):
