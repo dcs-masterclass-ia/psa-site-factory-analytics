@@ -373,7 +373,7 @@ def trafic_marque(ctx, m):
         ctx.avertissements.append(f"{ctx.nom(m)} : aucune donnée de trafic sur la période, diapositive non générée.")
         return None
     s = nouvelle(ctx, f"{ctx.nom(m)} — {t['trafic']} {ctx.et(per)}", ctx.perimetre, source_ga4(ctx),
-                 notes=note_definitions(ctx, "Chaîne GA4 comme Looker, calculée sur la période entière : sessions (total GA4) ; In Journey = sessions ayant déclenché form_step_view ; hot leads = évènements tradein_request. CVR = hot leads ÷ sessions. Canaux = Stellantis Custom Channel Group. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
+                 notes=note_definitions(ctx, "Chaîne GA4 comme Looker, calculée sur la période entière : sessions (total GA4) ; In Journey = sessions sur une page formulaire ou lead (page_category « form page » / « lead page ») ; hot leads = évènements tradein_request. CVR = hot leads ÷ sessions. Canaux = Stellantis Custom Channel Group. « Via site marque » = sessions de source UTM Main-Website ou referral depuis l'URL de la marque, ÷ sessions totales."))
     ga = d.utilisateurs(per, m)
     y, h, w = 1.55, 1.25, 2.55
     if ga is None:

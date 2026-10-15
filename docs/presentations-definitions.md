@@ -30,7 +30,7 @@ incohérences. Les écarts avec lui sont attendus et listés plus bas.
 | CTA du site | Back-office | `SUPPORT` (menu, HP-B, footer, page offre) × `CAMPAGNE` = « CTA », pour la source Main-Website. |
 | Sessions trade-in | GA4 | Sessions des sites de reprise (Belgique : nl + fr ; Luxembourg), **total GA4 de la période** (même chiffre que Looker). |
 | Canaux du trafic | GA4 | « Stellantis Custom Channel Group » (Display, Paid Search, Organic Search…), lu directement sur la période. |
-| In Journey | GA4 | **Sessions** ayant déclenché `form_step_view` sur les sites de reprise. |
+| In Journey | GA4 | **Sessions** du site de reprise dont la catégorie de page (`page_category`) est « form page » ou « lead page » (définition de Looker et de Converge ; `form_step_view` seul sous-compte). |
 | Hot leads | GA4 | **Évènements** `tradein_request` sur les sites de reprise. |
 | Taux In Journey | GA4 | In Journey ÷ sessions trade-in. |
 | CVR (flèche In Journey → Hot leads) | GA4 | Hot leads ÷ In Journey (comme Looker). |
@@ -93,6 +93,6 @@ Demande de M.A (ticket T-20261012-da4d) : « sur la performance globale du site 
 
 ## Chaîne GA4 des présentations alignée sur Looker (13/10/2026)
 Remplace la règle du 10/10 « utilisateurs distincts partout » : la chaîne devient celle de Looker — sessions (total GA4 de la période) →
-In Journey (sessions avec `form_step_view`) → Hot leads (évènements `tradein_request`), canaux = « Stellantis Custom Channel Group ».
+In Journey (sessions sur « form page » / « lead page ») → Hot leads (évènements `tradein_request`), canaux = « Stellantis Custom Channel Group ».
 Les utilisateurs distincts restent disponibles dans les données (`utilisateurs`) mais ne sont plus affichés. Le cache GA4 des
 présentations est versionné (`v2|…`) : les anciennes valeurs en utilisateurs ne sont pas réutilisées.

@@ -4,7 +4,7 @@ Sources et règles : docs/presentations-definitions.md.
   - leads : data/history/leads et leads_acq (back-office, leads valides) ;
   - trafic : data/history/ga4_sources (sessions des sites de reprise) ;
   - chaîne GA4 alignée sur Looker (requête directe sur la période, jamais une somme de valeurs quotidiennes, mise en cache) :
-    sessions (total GA4 de la période) -> In Journey (sessions ayant déclenché form_step_view) -> Hot leads (évènements tradein_request) ;
+    sessions (total GA4 de la période) -> In Journey (sessions dont la catégorie de page est « form page » ou « lead page », comme Looker et Converge) -> Hot leads (évènements tradein_request) ;
     canaux = « Stellantis Custom Channel Group » ; les utilisateurs distincts restent disponibles (clé « utilisateurs »).
 Un seul périmètre (pays) pour toutes les mesures d'une présentation.
 """
@@ -292,7 +292,7 @@ class Donnees:
         for nom, m, _ in self.sites:
             if m != marque:
                 continue
-            cle = f"v2|{nom}|{periode.debut}|{periode.fin}"
+            cle = f"v3|{nom}|{periode.debut}|{periode.fin}"
             v = self._cache_ga4().get(cle)
             if v is None:
                 v = self._requete_ga4(nom, periode)
@@ -322,7 +322,7 @@ class Donnees:
             pass
 
     def _requete_ga4(self, nom, periode):
-        """Chaîne de Looker sur les sites de reprise : sessions (total de la période), In Journey (sessions avec form_step_view),
+        """Chaîne de Looker sur les sites de reprise : sessions (total de la période), In Journey (sessions sur « form page » / « lead page », comme Looker et Converge),
         Hot leads (évènements tradein_request), canaux (Stellantis Custom Channel Group) ; utilisateurs distincts en complément."""
         try:
             from pipeline import ga4, sites as sites_mod
@@ -337,9 +337,10 @@ class Donnees:
             tot = ga4._rapport(cli, s.propriete, d0, d1, [], ["sessions", "totalUsers"], filtre)
             ev = ga4._rapport(cli, s.propriete, d0, d1, ["eventName"], ["sessions", "eventCount"], filtre)
             par_evt = {e: (int(float(se)), int(float(c))) for e, se, c in ev}
+            ij = ga4._rapport(cli, s.propriete, d0, d1, [], ["sessions"], ga4._filtre_in_journey(hote))
             can = ga4._rapport(cli, s.propriete, d0, d1, [ga4.dim_canal(s.propriete)], ["sessions"], filtre)
             return {"sessions": int(float(tot[0][0])) if tot else 0, "utilisateurs": int(float(tot[0][1])) if tot else 0,
-                    "in_journey": par_evt.get("form_step_view", (0, 0))[0],
+                    "in_journey": int(float(ij[0][0])) if ij else 0,
                     "hot_leads": par_evt.get("tradein_request", (0, 0))[1],
                     "canaux": {(c.strip() or "(non défini)"): int(float(n)) for c, n in can}}
         except (Exception, SystemExit) as e:  # GA4 indisponible (accès absent compris) : la présentation l'indique, elle ne s'arrête pas
