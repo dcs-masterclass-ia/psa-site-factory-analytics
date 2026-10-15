@@ -195,6 +195,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("landingMonth", {})
     d.setdefault("convCanalDevice", {})
     d.setdefault("utmMonth", {})
+    d.setdefault("inJourney", {})
     d.setdefault("entreeMonth", {})   # entrée directe sur la reprise par canal (tableau « Traffic landing on Trade In » de Looker)
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
@@ -612,6 +613,16 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         }
     except Exception as e:
         journal.append(f"sessions de la propriete en erreur ({type(e).__name__}: {e})")
+
+    # « In Journey » (sessions du site de reprise qui atteignent le formulaire ou la confirmation) par jour et par mois : alignement Looker.
+    # Un site dont la propriété n'a pas le paramètre page_category n'a simplement pas cette série (jamais une valeur approchée).
+    try:
+        ij_jour = ga4.in_journey_par_jour(cli, s.propriete, hote_reprise, debut, fin)
+        ij_mois = ga4.in_journey_par_mois(cli, s.propriete, hote_reprise, debut, fin)
+        if ij_jour:
+            d["inJourney"] = {"daily": ij_jour, "month": ij_mois}
+    except Exception as e:
+        journal.append(f"In Journey en erreur ({type(e).__name__})")
 
     # evenements d'estimation par jour (evDaily) : numerateur du taux de conversion « en sessions » (= Looker). 1 requete par site.
     try:

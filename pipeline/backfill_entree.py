@@ -1,4 +1,4 @@
-"""Rattrapage de l'« entrée directe sur la reprise » par canal (entreeMonth) sur l'historique complet.
+"""Rattrapage de l'« entrée directe sur la reprise » par canal (entreeMonth) et de « In Journey » (inJourney, par jour et par mois) sur l'historique complet.
 
 Alignement Looker (tableau « Traffic landing on Trade In » et anneau « Trade In Entry / Brand Websites »), voir
 ga4.entree_directe_par_canal. build.py le calcule pour les mois récents et rattrape 3 mois anciens par passage ; ce module
@@ -50,8 +50,24 @@ def rattrape_site(cli, s, dry_run=False):
         d["entreeMonth"][m] = ed
         ecrit += 1
         print(f"  {s.nom} {m} : entrée directe {ed['total']} (depuis le site marque {ed['marque']})")
-    if not ecrit:
+    # In Journey (alignement Looker) : une série par jour et par mois sur toute la fenêtre du site, si elle manque
+    ij_ecrit = 0
+    if not d.get("inJourney") and d.get("months"):
+        deb = f"{d['months'][0]}-01"
+        f_num = limite
+        f_iso = f"{f_num[:4]}-{f_num[4:6]}-{f_num[6:]}"
+        try:
+            jour = ga4.in_journey_par_jour(cli, s.propriete, reprise, deb, f_iso)
+            mois = ga4.in_journey_par_mois(cli, s.propriete, reprise, deb, f_iso)
+            if jour:
+                d["inJourney"] = {"daily": jour, "month": mois}
+                ij_ecrit = 1
+                print(f"  {s.nom} : In Journey {len(jour)} jours")
+        except Exception as e:
+            print(f"  {s.nom} : In Journey indisponible ({type(e).__name__})")
+    if not ecrit and not ij_ecrit:
         return None
+    ecrit = ecrit or ij_ecrit
     if dry_run:
         return ecrit
     chemin.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

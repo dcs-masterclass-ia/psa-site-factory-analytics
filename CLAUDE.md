@@ -404,3 +404,9 @@ Règle = champ calculé Looker « Site Marque vs Entrée directe » (`ga4.classe
 `page_category` = « home page ». Appliquée telle quelle elle donne +5 % : Looker ne compte pas les lignes dont la page de provenance est le site de
 reprise lui-même (sauf source non renseignée). Vérifié sur OPEL FR septembre 2026 : 13 243 sessions des deux côtés, canaux à ±1.
 Ne pas y ajouter de proxy : toute évolution se valide contre un tableau Looker.
+
+## In Journey — alignement Looker (2026-10-15)
+`In Journey` = sessions du site de reprise (nom d'hôte) dont la catégorie de page (`customEvent:page_category`) est « form page » ou « lead page »
+(`ga4.in_journey_par_jour/par_mois`, stocké dans `inJourney` : `daily` + `month`, rattrapage `pipeline/backfill_entree.py`). Vérifié contre Looker :
+OPEL FR sept. 2026 = 7 025, CITROEN FR = 38 702 (l'évènement `form_step_view` seul donne 6 922 : ne pas l'utiliser). Carte « Parcours comme Looker » du
+tunnel GA4 : Sessions → In Journey → Leads GA ; masquée si un site choisi n'a pas la série (jamais de valeur approchée).

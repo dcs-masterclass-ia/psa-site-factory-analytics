@@ -239,6 +239,31 @@ def domaine_marque(hote_parent):
     return h[4:] if h.startswith("www.") else h
 
 
+# « In Journey » de Looker = sessions du site de reprise qui ont atteint le formulaire ou la page de confirmation :
+# nom d'hôte = reprise ET page_category (paramètre d'événement) = « form page » ou « lead page ».
+# Vérifié le 15/10/2026 sur OPEL FR, septembre 2026 : 7 025 des deux côtés (GA4 : 6 945 « form page » + « lead page » = 7 025 ;
+# l'événement form_step_view seul donne 6 922, d'où la définition par catégorie de page).
+PAGES_IN_JOURNEY = ("form page", "lead page")
+
+
+def _filtre_in_journey(hote_reprise):
+    cats = FilterExpression(filter=Filter(field_name="customEvent:page_category",
+                                          in_list_filter=Filter.InListFilter(values=list(PAGES_IN_JOURNEY))))
+    return _et(_egal("hostName", hote_reprise), cats)
+
+
+def in_journey_par_jour(cli, pid, hote_reprise, debut, fin):
+    """Sessions « In Journey » par jour : {« AAAA-MM-JJ »: n}."""
+    l = _rapport(cli, pid, debut, fin, ["date"], ["sessions"], _filtre_in_journey(hote_reprise))
+    return {f"{d[:4]}-{d[4:6]}-{d[6:8]}": int(float(n)) for d, n in l}
+
+
+def in_journey_par_mois(cli, pid, hote_reprise, debut, fin):
+    """Idem par mois : {« AAAA-MM »: n}. Le total d'un mois n'est pas la somme de ses jours (GA4 dédoublonne)."""
+    l = _rapport(cli, pid, debut, fin, ["yearMonth"], ["sessions"], _filtre_in_journey(hote_reprise))
+    return {f"{m[:4]}-{m[4:6]}": int(float(n)) for m, n in l}
+
+
 def sessions_propriete_par_jour(cli, pid, debut, fin):
     """Sessions de TOUTE la propriété (tous les domaines, une session comptée une fois) par jour : {« AAAA-MM-JJ »: n}.
     C'est le périmètre de la carte « Visites site marque » de Looker."""

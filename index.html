@@ -510,6 +510,18 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </sc-for>
 
+            <sc-if value="{{ ijShow }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #f2f2f4">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:14.5px;font-weight:600;color:#121214">Parcours comme Looker<span class="dc-info" tabindex="0">i<span class="dc-tip">Sessions du site de reprise → In Journey → Leads GA. In Journey = sessions qui atteignent le formulaire ou la page de confirmation (nom d'hôte = reprise et catégorie de page « form page » ou « lead page »). Leads GA = évènements tradein_request. Mêmes définitions et mêmes chiffres que le Looker « Monthly Quick Look » (mois entiers : totaux mensuels GA4). Écart affiché vs la période de comparaison.</span></span></span><span style="font-size:12.5px;color:#9a9fa6">{{ ijNote }}</span></div>
+              <div style="display:flex;align-items:stretch;gap:6px;flex-wrap:wrap">
+                <div style="flex:1 1 0;min-width:0;border:1px solid #efeff1;border-radius:14px;padding:11px 14px;background:#fff"><div style="font-size:12.5px;color:#9a9fa6">{{ ij1.label }}</div><div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px"><span style="font-size:22px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ ij1.value }}</span><span style="{{ ij1.deltaStyle }}">{{ ij1.delta }}</span></div></div>
+                <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px"><span style="font-size:13px;font-weight:600;color:#5b43d6">{{ ijRate1 }}</span><span style="font-size:16px;color:#c3c6cc;line-height:1">→</span></div>
+                <div style="flex:1 1 0;min-width:0;border:1px solid #efeff1;border-radius:14px;padding:11px 14px;background:#fff"><div style="font-size:12.5px;color:#9a9fa6">{{ ij2.label }}</div><div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px"><span style="font-size:22px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ ij2.value }}</span><span style="{{ ij2.deltaStyle }}">{{ ij2.delta }}</span></div></div>
+                <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px"><span style="font-size:13px;font-weight:600;color:#5b43d6">{{ ijRate2 }}</span><span style="font-size:16px;color:#c3c6cc;line-height:1">→</span></div>
+                <div style="flex:1 1 0;min-width:0;border:1px solid #efeff1;border-radius:14px;padding:11px 14px;background:#fff"><div style="font-size:12.5px;color:#9a9fa6">{{ ij3.label }}</div><div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px"><span style="font-size:22px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ ij3.value }}</span><span style="{{ ij3.deltaStyle }}">{{ ij3.delta }}</span></div></div>
+              </div>
+            </div>
+            </sc-if>
             <div style="display:flex;align-items:stretch;gap:18px;margin-top:16px;padding-top:16px;border-top:1px solid #f2f2f4;flex-wrap:wrap">
               <div style="flex:1 1 300px;min-width:0;display:flex;align-items:center;gap:15px">
                 <div style="width:100px;flex:none;position:relative">
@@ -3454,7 +3466,7 @@ class Component extends DCLogic {
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
                   convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false,
-                  entree:{canaux:new Map(), total:0, marque:0, mois:[]} };
+                  entree:{canaux:new Map(), total:0, marque:0, mois:[]}, ij:0, ijHas:false, ijManque:false, ijApprox:false };
     // période = mois civils entiers : Looker prend le total GA4 du mois (jamais la somme des jours, qui diffère d'environ 1 %)
     const moisEntiers = (() => {
       if (debutIso.slice(8,10) !== '01') return null;
@@ -3488,6 +3500,14 @@ class Component extends DCLogic {
       const exT = moisEntiers && moisEntiers.every(([m, nj]) => tmo[m] && (tmo[m].tdays || 0) >= nj) ? moisEntiers.reduce((a, [m]) => a + tmo[m].sessions, 0) : null;
       if (exR != null) out.reprise += exR - siteRepJours;
       if (exT != null) out.traffic += exT - siteTrafJours;
+      // « In Journey » (sessions du site de reprise arrivées au formulaire ou à la confirmation, comme Looker) : total mensuel GA4 si la période
+      // est faite de mois entiers, sinon somme des jours (légèrement supérieure : GA4 dédoublonne sur le mois)
+      if (d.inJourney && d.inJourney.daily) {
+        const ijm = d.inJourney.month || {};
+        const exI = moisEntiers && moisEntiers.every(([m]) => ijm[m] != null) ? moisEntiers.reduce((a, [m]) => a + ijm[m], 0) : null;
+        out.ij += exI != null ? exI : Object.entries(d.inJourney.daily).reduce((a, [j, n]) => a + (j >= debutIso && j <= finIso ? n : 0), 0);
+        out.ijHas = true; if (exI == null) out.ijApprox = true;
+      } else out.ijManque = true;
       if (d.propSessions && d.propSessions.daily) {
         const exP = moisEntiers && moisEntiers.every(([m]) => pmo[m] != null) ? moisEntiers.reduce((a, [m]) => a + pmo[m], 0) : null;
         out.propTotal += exP != null ? exP : Object.entries(d.propSessions.daily).reduce((a, [j, n]) => a + (j >= debutIso && j <= finIso ? n : 0), 0);
@@ -4065,6 +4085,18 @@ class Component extends DCLogic {
     const compPct = funnelFirst ? funnelLast/funnelFirst*100 : 0;
     const compPctLabel = dec(compPct,1)+' %';
     const abandonLabel = dec(100-compPct,1)+' %';
+    // « Parcours comme Looker » : Sessions de la reprise -> In Journey -> Leads GA (affiché seulement quand In Journey est mesuré pour tous les sites choisis)
+    const ijSess = agg.convSessTot>0 ? agg.convSessTot : agg.reprise, ijLeads = agg.convEv, ijN = agg.ij;
+    const ijCmpSess = cmp ? (cmp.convSessTot>0 ? cmp.convSessTot : cmp.reprise) : null, ijCmpN = cmp&&cmp.ijHas&&!cmp.ijManque ? cmp.ij : null, ijCmpLeads = cmp ? cmp.convEv : null;
+    const ijShow = agg.ijHas && !agg.ijManque && ijSess>0;
+    const ijDelta = (now, prev) => { if (prev==null || !(prev>0)) return {text:'',style:'display:none'}; const d=(now/prev-1)*100; return {text:(d>=0?'+':'−')+dec(Math.abs(d),1)+' %',style:`font-size:12.5px;font-weight:600;color:${d>1?'#1f9254':d<-1?'#a33c39':'#9a9fa6'}`}; };
+    const ijT = (label, now, prev) => { const dl=ijDelta(now,prev); return {label, value:this.fmt(now), delta:dl.text, deltaStyle:dl.style}; };
+    const ij1 = ijShow ? ijT('Sessions site de reprise', ijSess, ijCmpSess) : {label:'',value:'',delta:'',deltaStyle:''};
+    const ij2 = ijShow ? ijT('In Journey', ijN, ijCmpN) : {label:'',value:'',delta:'',deltaStyle:''};
+    const ij3 = ijShow ? ijT('Leads GA', ijLeads, ijCmpLeads) : {label:'',value:'',delta:'',deltaStyle:''};
+    const ijRate1 = ijShow ? dec(ijN/ijSess*100,1)+' %' : '', ijRate2 = ijShow && ijN>0 ? dec(ijLeads/ijN*100,1)+' %' : '';
+    const ijNote = ijShow ? (agg.ijApprox ? 'Période en jours : somme des jours (jusqu\'à ~1 % de plus que les totaux mensuels de Looker)' : 'Mois entiers : totaux mensuels GA4') : '';
+
     const cmpCompPct = cmpFirst ? cmpFunnelLast/cmpFirst*100 : null;
     const funnelDelta = cmpCompPct==null ? {text:'',style:'display:none'} : ptDeltaBadge(compPct, cmpCompPct);
     const globalRateLabel = rateGlobal==null ? '—' : dec(rateGlobal,1)+' %';
@@ -6836,7 +6868,7 @@ class Component extends DCLogic {
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
       convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
-      compPctLabel, compMedianLabel, abandonLabel, funnelDelta, globalRateLabel, globalRateSub,
+      compPctLabel, compMedianLabel, abandonLabel, ijShow, ij1, ij2, ij3, ijRate1, ijRate2, ijNote, funnelDelta, globalRateLabel, globalRateSub,
       steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
