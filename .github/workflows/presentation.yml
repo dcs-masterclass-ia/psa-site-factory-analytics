@@ -71,5 +71,29 @@ jobs:
           git add presentations
           git diff --cached --quiet && exit 0
           git commit -qm "chore(presentations): génération $BRIEF_ID"
-          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          # Plusieurs générations peuvent finir en même temps et toucher toutes briefs.json : en cas de conflit,
+          # on repart de la version distante et on y réapplique uniquement l'entrée de CE brief.
+          cp presentations/briefs.json /tmp/briefs_mien.json
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase && git push -q && exit 0
+            git rebase --abort 2>/dev/null || true
+            git fetch -q origin
+            git reset -q --soft origin/HEAD 2>/dev/null || git reset -q --soft "origin/$(git rev-parse --abbrev-ref HEAD)"
+            git checkout -q "origin/$(git rev-parse --abbrev-ref HEAD)" -- presentations/briefs.json
+            python3 - <<'PY'
+          import json, os
+          bid = os.environ["BRIEF_ID"]
+          mien = json.load(open("/tmp/briefs_mien.json"))
+          dist = json.load(open("presentations/briefs.json"))
+          cle = "briefs" if isinstance(dist, dict) and "briefs" in dist else None
+          lm = mien[cle] if cle else mien
+          ld = dist[cle] if cle else dist
+          e = next(b for b in lm if b.get("id") == bid)
+          ld[:] = [e if b.get("id") == bid else b for b in ld]
+          json.dump(dist, open("presentations/briefs.json", "w"), ensure_ascii=False, indent=2)
+          PY
+            git add presentations
+            git commit -qm "chore(presentations): génération $BRIEF_ID" || true
+            sleep $((i * 3))
+          done
           exit 1
