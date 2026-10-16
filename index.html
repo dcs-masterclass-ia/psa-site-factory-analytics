@@ -5766,7 +5766,7 @@ class Component extends DCLogic {
     const c1Raw=this._c1st||null, c1Ok=!!(c1Raw&&c1Raw.donnees);
     const C1_CODES={'PEUGEOT':'AP','CITROEN':'AC','DS':'DS','OPEL':'OP','FIAT':'FT','FIAT PRO':'FO','JEEP':'JE','ALFA ROMEO':'AR','LANCIA':'LA','ABARTH':'AH','SPOTICAR':'SP'};
     const C1_NOMS=Object.fromEntries(Object.entries(C1_CODES).map(([n,c])=>[c,n]));
-    const C1_PAYS=['FR','BE','ES','PT','IT'], C1_PAYS_NOM={FR:'France',BE:'Belgique + Luxembourg',ES:'Espagne',PT:'Portugal',IT:'Italie'};
+    const C1_PAYS=['FR','BE','ES','PT','IT','DE','PL','AT','GB'], C1_PAYS_NOM={FR:'France',BE:'Belgique + Luxembourg',ES:'Espagne',PT:'Portugal',IT:'Italie',DE:'Allemagne',PL:'Pologne',AT:'Autriche',GB:'Royaume-Uni'};
     const C1_MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
     const c1ML=m=>C1_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(0,4);
     const c1Nf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
@@ -5777,7 +5777,7 @@ class Component extends DCLogic {
     const c1Shift=(ym,k)=>{ let y=+ym.slice(0,4), m=+ym.slice(5,7)-1+k; y+=Math.floor(m/12); m=((m%12)+12)%12; return y+'-'+String(m+1).padStart(2,'0'); };
     const c1Span=(fin,n)=>Array.from({length:n},(_,i)=>c1Shift(fin,i-n+1));
     const c1Finmois=ym=>new Date(Date.UTC(+ym.slice(0,4),+ym.slice(5,7),0)).toISOString().slice(0,10);
-    const c1Mapped=(()=>{ const pairs=new Map(), hors=[]; for(const n of (st.sites||[])){ const pt=n.split(' '); let p=pt[pt.length-1]; const mq=pt.slice(0,-1).join(' '); if(p==='LU') p='BE'; const code=C1_CODES[mq];
+    const c1Mapped=(()=>{ const pairs=new Map(), hors=[]; for(const n of (st.sites||[])){ const pt=n.split(' '); let p=pt[pt.length-1]; const mq=pt.slice(0,-1).join(' '); if(p==='LU') p='BE'; if(p==='UK') p='GB'; const code=C1_CODES[mq];
       if(!code||!C1_PAYS.includes(p)){ hors.push({n,pays:C1_PAYS.includes(p)?null:pt[pt.length-1],marque:code?null:mq}); continue; } pairs.set(p+'|'+code,{pays:p,code}); } return {pairs:[...pairs.values()],hors}; })();
     const c1AllMonths=c1Ok?[...new Set(Object.values(c1Raw.donnees).flatMap(o=>Object.keys(o)))].sort():[];
     const c1Partiel=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(0,7):'';      // le mois de la collecte est partiel
@@ -5845,13 +5845,14 @@ class Component extends DCLogic {
     const c1Tot=c1Ligne(T('Total (hors Spoticar)'),A,B,false,true);
     // rapprochement back-office ↔ C1ST (leads VN) : contrôle de la chaîne BO → C1ST, hors Spoticar
     let c1RappRepli=false;      // vrai si un mois n'a pas encore le décompte des leads envoyés : repli sur tous les leads au projet VN
-    const c1Rapp=(()=>{ const bo={}; for(const n of (st.sites||[])){ const pt=n.split(' '); const mq=pt.slice(0,-1).join(' '), code=C1_CODES[mq]; let p=pt[pt.length-1]; if(p==='LU') p='BE'; if(!code||code==='SP'||!C1_PAYS.includes(p)) continue; const d=this.data&&this.data[n]; if(!d||!d.leads) continue;
+    const c1Rapp=(()=>{ const bo={}; for(const n of (st.sites||[])){ const pt=n.split(' '); const mq=pt.slice(0,-1).join(' '), code=C1_CODES[mq]; let p=pt[pt.length-1]; if(p==='LU') p='BE'; if(p==='UK') p='GB'; if(!code||code==='SP'||!C1_PAYS.includes(p)) continue; const d=this.data&&this.data[n]; if(!d||!d.leads) continue;
         let tot=0, ok=true; for(const m of c1Cur){ const lm=d.leads[m]; if(!lm){ ok=false; break; } if (typeof lm.envoyesVN==='number') tot+=lm.envoyesVN; else { c1RappRepli=true; const pv=(lm.project||[]).find(x=>x[0]==='VN'); tot+=pv?pv[1]:0; } } if(!ok) continue; bo[code]=(bo[code]||0)+tot; }
       return Object.keys(bo).map(code=>{ const a=c1Agg(c1Cur,p=>p.code===code); if(a.manque) return null; const c=a.t.leads, b=bo[code]; if(!b) return null; const ec=(c-b)/b*100, fort=Math.abs(ec)>5;
         return {nom:C1_NOMS[code],bo:c1Nf(b),c1:c1Nf(c),ecart:c1Sg(ec,' %'),style:'padding:7px 0;border-top:1px solid #f1f1f3;font-weight:600;font-variant-numeric:tabular-nums;color:'+(fort?'#a33c39':'#1f9254')+';',fort,nb:b}; }).filter(Boolean).sort((x,y)=>y.nb-x.nb); })();
     // lecture automatique (règles simples, jamais de texte généré)
     const c1Lectures=[]; if(c1Ok&&A.leads>0){
       c1Lectures.push(T('Sur la période')+' '+c1PeriodeLabel+' : '+c1Nf(A.leads)+' '+T('leads VN vus par C1ST')+(c1CmpOk&&B.leads>0?', '+c1Sg(c1PctVar(A.leads,B.leads),' %')+' '+T('vs')+' '+c1CmpLabel:'')+'.');
+      if(c1Mapped.pairs.some(x=>['DE','PL','AT','GB'].includes(x.pays))) c1Lectures.push(T("Suivi des concessionnaires quasi inexistant dans C1ST en Allemagne, Pologne, Autriche et Royaume-Uni : les taux de contact et de traitement n'y sont pas fiables."));
       if(c1Touches.includes(c1Partiel)) c1Lectures.push(T('Le mois en cours est partiel : il n\'est pas inclus, la période est arrondie aux mois entiers terminés.'));
       const brs=c1Groupes('code').filter(x=>x.k!=='SP'&&x.a.clients_envoyes>=200);
       if(brs.length>=2){ const tr=brs.map(x=>({n:C1_NOMS[x.k],v:x.a.traites/x.a.clients_envoyes*100})).sort((x,y)=>y.v-x.v); c1Lectures.push(T('Suivi concessionnaires')+' : '+T('meilleur taux de leads traités')+' '+tr[0].n+' ('+tr[0].v.toFixed(0)+' %), '+T('plus faible')+' '+tr[tr.length-1].n+' ('+tr[tr.length-1].v.toFixed(0)+' %). '+T('À comparer entre marques seulement : les statuts sont saisis par les concessionnaires.')); }

@@ -52,3 +52,13 @@ test("C1ST : sans l'accès des Présentations (même liste d'adresses), pas d'on
   await expect(page.locator('div[title="C1ST"]')).toHaveCount(0);
   await expect(page.locator('div[title="AAA Data"]')).toHaveCount(1);
 });
+
+test("C1ST : Allemagne, Pologne, Autriche et Royaume-Uni sont suivis (mise en garde sur le suivi des concessionnaires)", async ({ context, page }) => {
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT DE", "CITROEN PL", "PEUGEOT AT"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText(/Suivi des concessionnaires quasi inexistant dans C1ST/)).toBeVisible();
+  await expect(page.getByText(/site\(s\) sélectionné\(s\) non inclus/)).toHaveCount(0);       // plus de marché « hors C1ST » pour ces pays
+});

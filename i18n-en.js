@@ -994,6 +994,7 @@ window.I18N_EN = {
 "Structuré pour garantir une présentation cohérente.": "Structured to guarantee a consistent presentation.",
 "Suivi": "Follow-up",
 "Suivi concessionnaires": "Dealer follow-up",
+"Suivi des concessionnaires quasi inexistant dans C1ST en Allemagne, Pologne, Autriche et Royaume-Uni : les taux de contact et de traitement n'y sont pas fiables.": "Dealer follow-up is almost non-existent in C1ST in Germany, Poland, Austria and the United Kingdom: contact and treatment rates are not reliable there.",
 "Suivi des leads par les concessionnaires (C1ST)": "Lead follow-up by dealers (C1ST)",
 "Suivi par les concessionnaires": "Follow-up by dealers",
 "Sujet": "Subject",
