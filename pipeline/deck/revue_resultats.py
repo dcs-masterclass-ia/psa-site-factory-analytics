@@ -34,7 +34,7 @@ def _nom(m):
 def _sessions(d, per, m):
     """Sessions du site de reprise sur la période : GA4 direct, repli sur l'historique ; None si aucune donnée."""
     try:
-        u = d.utilisateurs(per, m)
+        u = d.utilisateurs(per, m, [p for p in d.pays if p != "LU"] or d.pays)      # tableau « Traffic (Sessions) » des decks de référence : Belgique sans le Luxembourg (leads BELUX)
     except Exception:
         u = None
     if u and u.get("sessions"):

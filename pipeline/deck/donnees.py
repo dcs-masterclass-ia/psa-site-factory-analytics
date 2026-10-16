@@ -542,11 +542,11 @@ class Donnees:
         return dict(out)
 
     # ------------------------------------------- utilisateurs distincts (GA4, direct)
-    def utilisateurs(self, periode, marque):
+    def utilisateurs(self, periode, marque, pays=None):
         """{sessions, in_journey, hot_leads, utilisateurs, canaux} sur la période (définitions de Looker), ou None si GA4 indisponible."""
         total = {"sessions": 0, "in_journey": 0, "hot_leads": 0, "utilisateurs": 0, "canaux": {}}
-        for nom, m, _ in self.sites:
-            if m != marque:
+        for nom, m, p_ in self.sites:
+            if m != marque or (pays is not None and p_ not in pays):
                 continue
             cle = f"v3|{nom}|{periode.debut}|{periode.fin}"
             v = self._cache_ga4().get(cle)
