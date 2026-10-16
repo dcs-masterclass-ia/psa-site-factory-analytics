@@ -17,6 +17,7 @@ test("C1ST : onglet, cartes, entonnoirs, évolution et chiffres du fichier", asy
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   // périmètre : un seul site (PEUGEOT FR), source C1ST
   await page.goto("/", { waitUntil: "networkidle" });
@@ -35,14 +36,15 @@ test("C1ST : onglet, cartes, entonnoirs, évolution et chiffres du fichier", asy
   expect(erreurs).toEqual([]);
 });
 
-test("C1ST : Spoticar affiché n.d. et exclu du total ; sites hors C1ST signalés", async ({ context, page }) => {
+test("C1ST : Spoticar affiché n.d. et exclu du total ; marques non suivies signalées", async ({ context, page }) => {
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR", "SPOTICAR FR", "PEUGEOT DE"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR", "SPOTICAR FR", "LEAPMOTOR BE"], from: DEBUT, to: FIN, cmpMode: "none" });
   await page.reload({ waitUntil: "networkidle" });
   await expect(page.getByText("n.d.").first()).toBeVisible();
-  await expect(page.getByText("marchés hors C1ST").first()).toBeVisible();
+  await expect(page.getByText("marques non suivies").first()).toBeVisible();      // Leapmotor : pas de suivi C1ST (les marchés DE / PL / AT / GB, eux, sont suivis)
 });
 
 test("C1ST : sans l'accès des Présentations (même liste d'adresses), pas d'onglet C1ST", async ({ context, page }) => {
@@ -55,6 +57,7 @@ test("C1ST : sans l'accès des Présentations (même liste d'adresses), pas d'on
 
 test("C1ST : Allemagne, Pologne, Autriche et Royaume-Uni sont suivis (mise en garde sur le suivi des concessionnaires)", async ({ context, page }) => {
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT DE", "CITROEN PL", "PEUGEOT AT"], from: DEBUT, to: FIN, cmpMode: "none" });

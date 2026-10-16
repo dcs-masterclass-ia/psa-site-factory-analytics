@@ -3238,6 +3238,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span class="pr-btn" onClick="{{ prCtaGenFn }}" style="{{ prCtaGenStyle }}">{{ prCtaGenLabel }}</span>
                 <sc-if value="{{ prHasMissing }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#a15c07;line-height:1.5;text-align:center">{{ prMissingTxt }}</div></sc-if>
                 <sc-if value="{{ prGenInfo }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;line-height:1.5;text-align:center">{{ prGenInfo }}</div></sc-if>
+                <sc-if value="{{ prQaOn }}" hint-placeholder-val="{{ false }}"><div style="{{ prQaStyle }}">{{ prQaTxt }}</div></sc-if>
                 <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;text-align:center">La génération enregistre automatiquement ta présentation, puis la prépare en 2 à 4 minutes.</div>
               </div>
               <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px;display:flex;flex-direction:column;gap:12px">
@@ -7047,6 +7048,7 @@ class Component extends DCLogic {
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
     const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
+    const prQa = prCur&&prCur.statut==='generee'&&prCur.qa&&typeof prCur.qa==='object' ? prCur.qa : null;   // contrôle qualité des chiffres (pipeline/deck/qa.py)
     const prContenuOpen = !!st.prContenuOpen;   // module « Contenu » replié par défaut
     const prEnCours = !!(prCur&&prCur.statut==='demandee');
     // progression estimée (la durée réelle n'est pas connue d'avance) : monte vite puis ralentit, plafonne à 95 % tant que le fichier n'est pas prêt
@@ -7337,6 +7339,7 @@ class Component extends DCLogic {
       prGenFn:prGenere, prGenLabel:prEnCours?'Génération en cours… '+prPct+' %':'Générer le PowerPoint',
       prGenStyle:'display:flex;align-items:center;justify-content:center;height:42px;border-radius:12px;font-size:14.5px;font-weight:600;'+(prEnCours?'background:linear-gradient(90deg,#b9aef7 '+prPct+'%,#efecfd '+prPct+'%);color:#2d2470;cursor:progress;transition:background .8s linear':prValide?'background:#7c63ee;color:#fff;cursor:pointer':'background:#eaeaee;color:#9a9fa6;cursor:not-allowed'),
       prGenPret:!!(prCur&&prCur.statut==='generee'&&prCur.fichier), prDlFn:()=>prCur&&prTelecharge(prCur.id), prDlLabel:'Télécharger le PowerPoint'+(prCur&&prCur.diapositives?' ('+prCur.diapositives+' diapos)':''),
+      prQaOn:!!prQa, prQaTxt:prQa?(prQa.erreurs>0?'Contrôle des chiffres : '+prQa.erreurs+' incohérence(s), '+prQa.alertes+' alerte(s) : à vérifier avant d\'envoyer':(prQa.alertes>0?'Contrôle des chiffres : aucune incohérence, '+prQa.alertes+' alerte(s) à regarder':'Contrôle des chiffres : aucune incohérence ('+prQa.faits+' chiffres vérifiés)')):'', prQaStyle:'font-size:12px;line-height:1.5;text-align:center;font-weight:500;color:'+(prQa&&prQa.erreurs>0?'#b3261e':(prQa&&prQa.alertes>0?'#a15c07':'#1f9254')),
       prGenInfo:prCur&&prCur.statut==='echec'?'La dernière génération a échoué : relance, et préviens-moi si ça se répète.':(prCur&&prCur.avertissements&&prCur.avertissements.length&&prCur.statut==='generee'?prCur.avertissements.join(' · '):''),
       ...prUi,
       prContenuToggle:()=>set({prContenuOpen:!prContenuOpen}),

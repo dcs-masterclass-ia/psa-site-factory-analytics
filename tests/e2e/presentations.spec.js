@@ -5,6 +5,7 @@ const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ context }) => {
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
 });
 
 test("verrouillé : sans l'autorisation, l'onglet Présentations n'apparaît pas", async ({ browser }) => {
@@ -193,6 +194,28 @@ test("génération : le bouton se remplit avec le temps, puis propose le téléc
   const p1 = await pct();
   expect(p1).toBeGreaterThan(5);
   await expect.poll(pct, { timeout: 8000 }).toBeGreaterThan(p1);          // progresse sans rechargement
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("contrôle qualité : le résultat du contrôle des chiffres s'affiche sur une présentation générée", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  let qa = { erreurs: 0, alertes: 0, infos: 18, faits: 1051 };
+  const brief = () => ({ id: "B-qa1", titre: "Brief QA", client: "Stellantis", langue: "en", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { type: "trimestre", annee: 2026, indice: 3 },
+    comparaisons: { precedente: true, n1: true }, modules: ["global"], contact: {}, pointsOuverts: [], prochainesEtapes: [], statut: "generee", fichier: "presentations/out/B-qa1.pptx", diapositives: 63, qa,
+    auteur: "e2e@autobiz.com", updatedAt: Date.now() });
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText(/^Mes présentations/).click();
+  await page.getByText("Ouvrir", { exact: true }).click();
+  await expect(page.getByText("Contrôle des chiffres : aucune incohérence (1051 chiffres vérifiés)")).toBeVisible();
+  qa = { erreurs: 2, alertes: 1, infos: 0, faits: 900 };
+  await page.reload({ waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText(/^Mes présentations/).click();
+  await page.getByText("Ouvrir", { exact: true }).click();
+  await expect(page.getByText("Contrôle des chiffres : 2 incohérence(s), 1 alerte(s) : à vérifier avant d'envoyer")).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
 

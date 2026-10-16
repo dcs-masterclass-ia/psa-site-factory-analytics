@@ -1,0 +1,5 @@
+{
+ "Contrôle des chiffres : {0} incohérence(s), {1} alerte(s) : à vérifier avant d'envoyer": "Figures check: {0} inconsistency(ies), {1} alert(s): check before sending",
+ "Contrôle des chiffres : aucune incohérence, {0} alerte(s) à regarder": "Figures check: no inconsistency, {0} alert(s) to review",
+ "Contrôle des chiffres : aucune incohérence ({0} chiffres vérifiés)": "Figures check: no inconsistency ({0} figures checked)"
+}
