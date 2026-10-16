@@ -245,3 +245,24 @@ test("commentaires et actions : étape dédiée, saisie envoyée dans le brief",
   expect(Object.values(posts[0].brief.commentaires)).toContain("Bon trimestre malgré l'été");
   expect(Object.values(posts[0].brief.actionsMarques)[0]).toContain("Renforcer le display");
 });
+
+test("modèle « Revue mensuelle France » : contenu fixe (carte d'information), éditeur d'actions en cours", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await ouvre(page);
+  await choisitModele(page, "Revue mensuelle France");
+  await page.getByPlaceholder("Titre de la présentation").fill("Revue mensuelle France — Septembre 2026");
+  await continuer(page);
+  await expect(page.getByText("Ce modèle reproduit le deck « Trade in review »")).toBeVisible();
+  await expect(page.locator(".pr-box:visible")).toHaveCount(0);                                  // pas de cases à cocher
+  await expect(page.getByText("Estimation : 72 diapositives")).toBeVisible();                    // 1+5+3+2+1+1+48+1+9+1 = 72, sans action saisie
+  await continuer(page);                                                                         // étape 4 (points ouverts)
+  await page.locator("span.pr-btn:visible", { hasText: /^Passer cette étape$/ }).last().click();   // étape 4 (points ouverts) : on passe
+  await expect(page.getByText("+ Ajouter une action en cours")).toBeVisible();
+  await page.getByText("+ Ajouter une action en cours").click();
+  await page.getByPlaceholder("Sujet").fill("Migration V2");
+  await page.getByPlaceholder("Statut (une ligne par puce)").fill("Lancé\nEn recette");
+  await expect(page.getByText("73 diapositives").first()).toBeVisible();                       // +1 : la diapositive « actions en cours » apparaît
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

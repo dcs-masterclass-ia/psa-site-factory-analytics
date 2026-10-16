@@ -3000,6 +3000,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pr-chip" onClick="{{ prBelux.pick }}" style="{{ prBelux.style }}">{{ prBelux.label }}</span><sc-for list="{{ prPaysChips }}" as="c" hint-placeholder-count="6"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Périodicité</div>
+              <sc-if value="{{ prFr }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:8px">Ce format reproduit la revue mensuelle : seule la périodicité Mensuelle est possible.</div></sc-if>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Période : {{ prPeriodeLabel }}</div>
               <div style="display:flex;gap:18px;flex-wrap:wrap">
@@ -3022,7 +3023,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
             <div style="{{ stp3_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
-                <sc-if value="{{ prLocked }}" hint-placeholder-val="{{ true }}">
+                <sc-if value="{{ prFr }}" hint-placeholder-val="{{ false }}"><div style="background:#f1eefe;border-radius:14px;padding:14px 16px"><div style="font-size:14px;font-weight:600;color:#5b43d6;margin-bottom:4px">Ce modèle reproduit le deck « Trade in review » : contenu fixe, toutes les marques du périmètre</div><div style="font-size:13px;color:#2f2f33;line-height:1.55">Estimation : {{ prFrNb }}. Le plan à droite détaille les diapositives.</div></div></sc-if>
+                <sc-if value="{{ prLockedStd }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><span style="{{ prContentTagStyle }}">{{ prContentTag }}</span><span style="font-size:12.5px;color:#9a9fa6">Structuré pour garantir une présentation cohérente.</span></div>
                   <sc-for list="{{ prModLocked }}" as="m" hint-placeholder-count="5">
                     <div style="display:flex;align-items:flex-start;gap:12px;padding:9px 4px;border-top:1px solid #f2f2f4"><span style="flex:none;width:18px;height:18px;border-radius:5px;background:#e8f6ee;display:flex;align-items:center;justify-content:center;margin-top:2px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1f7a4d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500;color:#121214">{{ m.titre }}</div><div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">{{ m.desc }}</div></div><span style="font-size:12.5px;color:#9a9fa6;white-space:nowrap">{{ m.slides }}</span></div>
@@ -3036,7 +3038,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                     </div>
                   </sc-if>
                 </sc-if>
-                <sc-if value="{{ prUnlocked }}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{ prUnlockedStd }}" hint-placeholder-val="{{ false }}">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px"><span style="{{ prContentTagStyle }}">{{ prContentTag }}</span><span style="font-size:12.5px;color:#9a9fa6">Coche les modules à inclure ; le plan se met à jour à droite.</span><span style="flex:1"></span><span onClick="{{ prBackReco }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Revenir au contenu recommandé</span></div>
               <sc-for list="{{ prModulesRows }}" as="m" hint-placeholder-count="8">
                 <div onClick="{{ m.pick }}" style="{{ m.rowStyle }}">
@@ -3083,7 +3085,19 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
             <div style="{{ stp5_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
-                <div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Présentez les actions à engager après la réunion afin de clarifier les responsabilités, les échéances et les prochaines décisions. Elles forment un tableau d'actions en fin de présentation.</div>
+                <sc-if value="{{ prFr }}" hint-placeholder-val="{{ false }}"><div>
+                <div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Renseigne les actions en cours à présenter sur la diapositive « Ongoing actions » (15 maximum). Sans action, la diapositive n'est pas générée.</div>
+                <div style="font-size:12.5px;color:#6d727a;line-height:1.55;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin:10px 0 12px">Dans « Statut », une ligne de texte = une puce.</div>
+              <sc-for list="{{ prActions }}" as="a" hint-placeholder-count="2">
+                <div style="border:1px solid #efeff1;border-radius:12px;padding:12px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;gap:8px"><input type="text" value="{{ a.sujet }}" onInput="{{ a.onSujet }}" placeholder="Sujet" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /><span onClick="{{ a.remove }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer;align-self:center">✕</span></div>
+                  <textarea value="{{ a.details }}" onInput="{{ a.onDetails }}" placeholder="Détails" rows="2" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%;resize:vertical"></textarea>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><input type="text" value="{{ a.date }}" onInput="{{ a.onDate }}" placeholder="Date" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /><input type="text" value="{{ a.pilote }}" onInput="{{ a.onPilote }}" placeholder="Pilote" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%" /></div>
+                  <textarea value="{{ a.statut }}" onInput="{{ a.onStatut }}" placeholder="Statut (une ligne par puce)" rows="3" style="font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;background:#fff;border:1px solid #ececee;border-radius:10px;padding:8px 11px;outline:none;box-sizing:border-box;width:100%;resize:vertical"></textarea>
+                </div>
+              </sc-for>
+              <span onClick="{{ prAddAction }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter une action en cours</span></div></sc-if>
+              <sc-if value="{{ prNotFr }}" hint-placeholder-val="{{ true }}"><div><div style="font-size:13.5px;color:#2f2f33;line-height:1.55">Présentez les actions à engager après la réunion afin de clarifier les responsabilités, les échéances et les prochaines décisions. Elles forment un tableau d'actions en fin de présentation.</div>
                 <div style="font-size:12.5px;color:#6d727a;line-height:1.55;background:#f6f6f8;border-radius:10px;padding:8px 12px;margin:10px 0 12px"><b>Prochaine étape</b> = une action à réaliser (qui, pour quand). Un sujet encore à clarifier avec le client se met plutôt dans « Points ouverts ». Clique sur le statut pour le changer.</div>
                 <sc-if value="{{ prHasEtEx }}" hint-placeholder-val="{{ true }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:6px">Exemples — clique pour en ajouter un :</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"><sc-for list="{{ prEtEx }}" as="x" hint-placeholder-count="4"><span onClick="{{ x.add }}" style="{{ exStyle }}">+ {{ x.label }}</span></sc-for></div></sc-if>
               <sc-for list="{{ prEtapes }}" as="e" hint-placeholder-count="2">
@@ -3095,7 +3109,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   <span onClick="{{ e.remove }}" style="font-size:12.5px;color:#9a9fa6;cursor:pointer">✕</span>
                 </div>
               </sc-for>
-              <span onClick="{{ prAddEtape }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter une action</span>
+              <span onClick="{{ prAddEtape }}" style="display:inline-flex;font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">+ Ajouter une action</span></div></sc-if>
                 <sc-if value="{{ stp5_err }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#c24a44;margin-top:12px"></div></sc-if>
                 <div style="display:flex;justify-content:flex-end;margin-top:16px"><span class="pr-btn" onClick="{{ stp5_next }}" style="{{ stp5_nextStyle }}">{{ stp5_nextLabel }}</span></div>
             </div></div></div>
@@ -6738,11 +6752,12 @@ class Component extends DCLogic {
       {id:'prochaines_etapes',titre:'Prochaines étapes',       desc:'Tableau d\'actions : item, responsable, statut, échéance (saisi ci-dessous)', dispo:'ok', base:1}
     ];
     const prDef = {
-      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null,
+      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null, format:'standard', actionsEnCours:[],
       modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:'', commentaires:{}, actionsMarques:{}, reco:null, tplNom:''
     };
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
     const per = prNormPeriode(pr.periode);
+    const prFr = pr.format==='revue_fr';
     const prSet = patch => set({pr:Object.assign({}, pr, patch)});
     const prTab = st.prTab || 'nouveau';
     const prData = this._pr || {};
@@ -6764,7 +6779,7 @@ class Component extends DCLogic {
     const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:e=>prPick(e,()=>prSet({marques:[]}),true), style:prChip(!pr.marques.length) }]
       .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:e=>prPick(e,()=>prSet({marques:(prMulti(e)?(()=>{ const r=prTog(pr.marques,m); return r.length>=prMarquesDispo.length?[]:r; })():(pr.marques.length===1&&pr.marques[0]===m?[]:[m]))}), !prMulti(e)&&!(pr.marques.length===1&&pr.marques[0]===m)), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
     const prCy = new Date(todayIso+'T00:00:00Z').getUTCFullYear();
-    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:prDernierePeriode(k)}),true), style:prChip(per.type===k) }));
+    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:e=>{ if (prFr&&k!=='mois') return; prPick(e,()=>prSet({periode:prDernierePeriode(k)}),true); }, style:prChip(per.type===k)+(prFr&&k!=='mois'?';opacity:.4;cursor:not-allowed':'') }));
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
       .map(([v,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{indice:v})}),true), style:prChip(per.indice===v) }));
     const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{annee:a})}),true), style:prChip(per.annee===a) }));
@@ -6794,7 +6809,17 @@ class Component extends DCLogic {
         check:on&&!off, rowStyle:'display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-top:1px solid #f2f2f4;'+(off?'opacity:.6;cursor:not-allowed':'cursor:pointer'),
         pick:()=>{ if (!off) prSet({modules:prTog(pr.modules,m.id)}); } };
     });
+    const prNbMarquesFr = pr.marques.length||8;
+    const prNbAct = pr.actionsEnCours.length;
     const prPlan = (()=>{
+      if (prFr) {
+        const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
+        add('Couverture','Page de titre',1); add('Actions en cours',prNbAct+' action'+(prNbAct>1?'s':''),prNbAct>0?1:0); add('Agenda','Sommaire de la revue',5);
+        add('Résumé exécutif','Synthèse du mois',3); add('Trafic et leads','Vues xP / xF',2); add('Projection','Projection du mois',1); add('Conversion NSC','Conversion des leads en ventes neuves',1);
+        add('Marques',prNbMarquesFr+' marque'+(prNbMarquesFr>1?'s':'')+' × 6',6*prNbMarquesFr);
+        add('Annexe','Séparateur + annexe CTA',10); add('Contacts','Page de contacts',1);
+        return { rows, total:n };
+      }
       const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
       const prSecMarques = pr.modules.some(id=>['trafic_marque','sources','cta','conquete','ytd','seo'].includes(id));
       const prNSommaires = 1+(prSecMarques?1:0)+((pr.modules.includes('points_ouverts')&&prNb>0)?1:0)+((pr.modules.includes('prochaines_etapes')&&pr.prochainesEtapes.length>0)?1:0)+((pr.modules.includes('nps')||pr.modules.includes('utm'))?1:0)+1;
@@ -6814,6 +6839,11 @@ class Component extends DCLogic {
       onResp:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{responsable:ev.target.value.slice(0,60)}):x)}),
       onEch:ev=>prSet({prochainesEtapes:pr.prochainesEtapes.map((x,j)=>j===i?Object.assign({},x,{echeance:ev.target.value.slice(0,30)}):x)}),
       remove:()=>prSet({prochainesEtapes:pr.prochainesEtapes.filter((_,j)=>j!==i)}) }));
+    const prActSet = (i,patch) => prSet({actionsEnCours:pr.actionsEnCours.map((x,j)=>j===i?Object.assign({},x,patch):x)});
+    const prActions = pr.actionsEnCours.map((a,i)=>({ sujet:a.sujet||'', details:a.details||'', date:a.date||'', pilote:a.pilote||'', statut:(Array.isArray(a.statut)?a.statut:[a.statut||'']).join('\n'),
+      onSujet:ev=>prActSet(i,{sujet:ev.target.value.slice(0,160)}), onDetails:ev=>prActSet(i,{details:ev.target.value.slice(0,400)}), onDate:ev=>prActSet(i,{date:ev.target.value.slice(0,30)}), onPilote:ev=>prActSet(i,{pilote:ev.target.value.slice(0,60)}),
+      onStatut:ev=>prActSet(i,{statut:ev.target.value.slice(0,600).split('\n')}),
+      remove:()=>prSet({actionsEnCours:pr.actionsEnCours.filter((_,j)=>j!==i)}) }));
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
     const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
@@ -6825,8 +6855,8 @@ class Component extends DCLogic {
     if (!prEnCours && this._prTick) { clearInterval(this._prTick); this._prTick = null; }
     // ---- parcours par étapes : modèle -> cadrage -> contenu (obligatoires), puis points ouverts, prochaines étapes, contact (facultatifs)
     const prValidMods = pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
-    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = prValidMods.length>0;
-    const prS2ok = prTitreOk&&prLangueOk&&prPaysOk;
+    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = prFr ? true : prValidMods.length>0;
+    const prS2ok = prTitreOk&&prLangueOk&&prPaysOk&&(!prFr||per.type==='mois');
     // ---- commentaires du DKAM par diapositive et actions recommandées corrigées par marque (champs `commentaires` et `actionsMarques` du brief)
     const PR_COMM_VUES = [['synthese','Synthèse'],['groupes','Leads par groupe de marques'],['leads_marques','Leads par marque (vs période précédente / N-1)'],['leads_mensuels','Leads par mois'],['leads_nc_mensuels','Leads New cars par mois'],['projection','Projection du mois (édition mensuelle en cours)'],['marches','Classement des marchés'],['apercu','Vue d\'ensemble des leads par marque'],['vue_trafic_leads','Trafic et leads (tableau)'],['projets','Projets d\'achat']];
     const prCommSet = (cle,v) => prSet({commentaires:Object.assign({},pr.commentaires||{},{[cle]:v.slice(0,240)})});
@@ -6838,7 +6868,7 @@ class Component extends DCLogic {
       {n:2,titre:'Cadrage de la présentation',req:true,ok:prS2ok,unl:prTplOk},
       {n:3,titre:'Contenu',req:true,ok:prModsOk,unl:prTplOk&&prS2ok},
       {n:4,titre:'Points ouverts',req:false,ok:pr.pointsOuverts.length>0,unl:prTplOk&&prS2ok&&prModsOk},
-      {n:5,titre:'Prochaines étapes',req:false,ok:pr.prochainesEtapes.length>0,unl:prTplOk&&prS2ok&&prModsOk},
+      {n:5,titre:'Prochaines étapes',req:false,ok:prFr?pr.actionsEnCours.length>0:pr.prochainesEtapes.length>0,unl:prTplOk&&prS2ok&&prModsOk},
       {n:6,titre:'Contact',req:false,ok:!!(pr.contact.nom||pr.contact.email),unl:prTplOk&&prS2ok&&prModsOk},
       {n:7,titre:'Commentaires et actions',req:false,ok:Object.values(pr.commentaires||{}).some(Boolean)||Object.values(pr.actionsMarques||{}).some(Boolean),unl:prTplOk&&prS2ok&&prModsOk}];
     const prReady = prStepsDef.slice(0,3).every(x=>x.ok);
@@ -6851,7 +6881,7 @@ class Component extends DCLogic {
       set({prBusy:true, prMsg:null});
       try {
         const brief = { id:pr.id, titre:pr.titre.trim(), client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
-          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques };
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques, format:pr.format||'standard', actionsEnCours:pr.actionsEnCours||[] };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
         this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
@@ -6881,7 +6911,7 @@ class Component extends DCLogic {
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
-      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
+      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, format:b.format==='revue_fr'?'revue_fr':'standard', actionsEnCours:Array.isArray(b.actionsEnCours)?b.actionsEnCours:[], modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
       pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', commentaires:b.commentaires||{}, actionsMarques:Object.fromEntries(Object.entries(b.actionsMarques||{}).map(([k,v])=>[k,(Array.isArray(v)?v:[v]).join('\n')])), reco:(b.modules||[]).slice(), tplNom:'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
@@ -6907,7 +6937,7 @@ class Component extends DCLogic {
       {id:'base-annee',base:true,nom:'Annuel — pays',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
         config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-fr-mois',base:true,nom:'Revue mensuelle France',description:'Revue mensuelle du marché français : vue globale, suivi C1ST, projets d\'achat, trafic, sources, CTA, conquête, tendance annuelle, SEO, analyse, points ouverts, prochaines étapes',
-        config:{client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
+        config:{format:'revue_fr',client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-bilan-annuel',base:true,nom:'Bilan annuel et plan d\'action',description:'Bilan de l\'année : vue globale, suivi C1ST, projets, trafic, sources, CTA, conquête, tendance annuelle, SEO, objectifs, analyse, points ouverts, prochaines étapes',
         config:{client:'Stellantis',langue:'en',periodicite:'annee',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','objectifs','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-trim-pays',base:true,nom:'Reporting trimestriel pays',description:'Reporting trimestriel d\'un pays : vue globale, suivi C1ST, projets, trafic, sources, conquête, leads vs marché, objectifs, analyse, points ouverts, prochaines étapes',
@@ -6919,7 +6949,7 @@ class Component extends DCLogic {
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
       set({ prTab:'nouveau', pr:Object.assign({}, prDef, { id:null, titre:'', client:c.client||prDef.client, langue:c.langue||'fr', pays:(c.perimetre&&c.perimetre.pays)||prDef.pays, marques:(c.perimetre&&c.perimetre.marques)||[],
         periode:prDernierePeriode(c.periodicite||'trimestre'), precedente:!!(c.comparaisons&&c.comparaisons.precedente), n1:!!(c.comparaisons&&c.comparaisons.n1), modules:(c.modules||[]).filter(m=>dispo.includes(m)),
-        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
+        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], format:c.format==='revue_fr'?'revue_fr':'standard', actionsEnCours:Array.isArray(c.actionsEnCours)?c.actionsEnCours:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
         prStep:2, prUnlock:false, prConfirm:false, prTried:{}, prMsg:null }); };
     const prTplChips = prTplAll.map(t=>({ label:t.nom, pick:()=>prApplyTpl(t), style:prChip(pr.tplId===t.id) }));
     const prTplNom = st.prTplNom||'';
@@ -6928,7 +6958,7 @@ class Component extends DCLogic {
       set({prBusy:true, prMsg:null});
       try {
         const j = await prApi({action:'save_template', template:{ nom:prTplNom.trim(), description:'', config:{ client:(pr.client||'Stellantis').trim(), langue:pr.langue, periodicite:per.type, perimetre:{pays:pr.pays,marques:pr.marques},
-          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire } }});
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire, format:pr.format||'standard' } }});
         const l=(this._pr&&this._pr.templates)||[]; this._pr=Object.assign({},this._pr,{templates:[j.template].concat(l.filter(x=>x.id!==j.template.id))});
         this.setState({prBusy:false, prTplNom:'', prTplForm:false, prMsg:{ok:true,text:'Modèle « '+j.template.nom+' » créé : tu le retrouveras à l\'étape « Choisir un modèle » des prochaines présentations.'}});
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
@@ -6943,9 +6973,9 @@ class Component extends DCLogic {
     const prStepSummary=n=>{ switch(n){
       case 1: return pr.tplNom||(pr.id?'Brief existant':'');
       case 2: return [pr.titre.trim()?'« '+pr.titre.trim()+' »':'', LANGUES_NOM[pr.langue]||'', prPerimetreLabel+' · '+prPeriodeLabel].filter(Boolean).join(' · ');
-      case 3: return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
+      case 3: if (prFr) return 'Contenu fixe · '+prPlan.total+' diapositives'; return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
       case 4: return pr.pointsOuverts.length?pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':'')+' à traiter':'Aucun point ouvert';
-      case 5: return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
+      case 5: if (prFr) return prNbAct?prNbAct+' action'+(prNbAct>1?'s':'')+' en cours':'Aucune action'; return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
       case 7: { const nc=Object.values(pr.commentaires||{}).filter(Boolean).length, na=Object.values(pr.actionsMarques||{}).filter(Boolean).length; return (nc||na)?[nc?nc+' commentaire'+(nc>1?'s':''):'',na?na+' marque'+(na>1?'s':'')+' avec actions corrigées':''].filter(Boolean).join(' · '):'Aucun commentaire'; }
       default: return pr.contact.nom||pr.contact.email||'Non renseigné'; } };
     const PR_STAT_UI={locked:['Verrouillée','#9a9fa6','#f2f2f5'],todo:['À compléter','#a15c07','#fdf3e3'],open:['En cours','#5b43d6','#f1eefe'],done:['Terminée','#1f7a4d','#e8f6ee'],opt:['Facultatif','#6d727a','#f2f2f5']};
@@ -7096,6 +7126,7 @@ class Component extends DCLogic {
       prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
       prCommVues, prCommMarques, prActMarques, prHasCommVues:prCommVues.length>0, prHasCommMarques:prCommMarques.length>0, prHasAct:prActMarques.length>0,
       prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },
+      prFr, prNotFr:!prFr, prLockedStd:!prFr&&!prUnlocked, prUnlockedStd:!prFr&&prUnlocked, prFrNb:prPlan.total+' diapositives', prActions, prAddAction:()=>{ if (pr.actionsEnCours.length<15) prSet({actionsEnCours:pr.actionsEnCours.concat([{sujet:'',details:'',date:'',pilote:'',statut:['']}])}); },
       prEtapes, prAddEtape:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:'',responsable:'',statut:'a_faire',echeance:''}])}); },
       prContactNom:pr.contact.nom||'', onPrContactNom:e=>prSet({contact:Object.assign({},pr.contact,{nom:e.target.value.slice(0,80)})}),
       prContactFonction:pr.contact.fonction||'', onPrContactFonction:e=>prSet({contact:Object.assign({},pr.contact,{fonction:e.target.value.slice(0,80)})}),

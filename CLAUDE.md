@@ -461,3 +461,16 @@ données `donnees.py` (`gsc_mensuel`, `gsc_requetes`, `marche_mensuel`, `objecti
 (avertissement, jamais de sommaire orphelin). 3 modèles de base ajoutés : Revue mensuelle France, Bilan annuel et plan d'action, Reporting trimestriel pays.
 Design des diapositives = deck de référence (`nouvelle_ref`, `boite_pointillee`, `drapeau` dans `graphiques.py`, drapeaux générés par `scripts/make-drapeaux.py` dans `pipeline/deck/drapeaux/`) ; titre Calibri gras 28 pt 043882 sur toutes les slides.
 Définitions : `docs/presentations-definitions.md`. Piège traductions : une entrée générique de `PHRASES` peut avaler une phrase plus longue (placer la plus spécifique d'abord) ; `tests/py/test_deck.py::SlidesReference` le détecte.
+
+## Format « revue mensuelle France » (2026-10-16)
+Brief avec `format: "revue_fr"` (période mensuelle obligatoire, validé par `api/presentations.js`) : `construit()` délègue à `pipeline/deck/revue_fr.py`, qui reproduit le deck de référence
+« Stellantis FR — Trade in review » (73 diapositives) avec les données du mois : couverture, « Ongoing actions » (`actionsEnCours` du brief : sujet, détails, date, pilote, statut en lignes), agenda ×5,
+résumé exécutif, vue globale, tendance des leads, trafic et leads par groupe xP / xF, projection du mois en cours, conversion des ventes NSC, puis 6 diapositives par marque
+(séparateur, trafic, YTD, leads par canal, leads du site principal, conquête et fidélité), annexe CTA (captures reprises du deck d'origine) et contacts.
+Code : `revue_commun.py` (socle : `Revue`, `slide_revue`, encadré de commentaires, `graphique_annuel`), `revue_global.py`, `revue_resultats.py`, `revue_marque.py`, `revue_canaux.py`, `revue_conquete.py`.
+Éléments statiques (logos de marque, drapeau, bloc Stellantis, captures de l'annexe, manifeste de positions) : **repo de données privé** `presentations/assets/revue_fr/` (jamais dans ce repo public),
+produits par `scripts/extract-revue-assets.py "<deck.pptx>" <dossier>` (recadrage du deck d'origine appliqué). Tout est natif (graphiques / tableaux éditables) ; commentaires de droite calculés par règles, en anglais.
+Particularités de données : sessions du « site principal » = `trafficMonth` des fichiers de site (≠ chiffre Looker du deck d'origine, définition GA4 différente) ; groupes de support CTA regroupés par `groupe_support`
+(codes tronqués à la collecte : « er-menu » = header-menu…) ; la marque « DS » s'écrit « DS AUTOMOBILES » dans les données de reprise ; le tableau « NC lead by purchase project / trade-in model » filtre `projet_achat = VN`
+(`Donnees.modeles(..., projet="VN")`). Test local : `python3 -m pipeline.deck --brief <brief.json> --sortie out.pptx --hist <clone du repo de données>/history` (le clone frais donne aussi site JSON, market.json, c1st, assets).
+Génération réelle : brief dans `presentations/briefs.json` du repo de données + workflow `presentation.yml` (GA4 disponible : In Journey / Hot leads).
