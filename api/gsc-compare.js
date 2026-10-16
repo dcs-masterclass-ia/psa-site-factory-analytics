@@ -59,7 +59,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const { site, debut, fin, dimension } = req.body || {};
+  const { site, debut, fin, dimension, prevDebut: pd, prevFin: pf } = req.body || {};
   if (!site || !debut || !fin) {
     res.status(400).json({ error: "site, debut et fin sont requis." });
     return;
@@ -74,8 +74,11 @@ module.exports = async function handler(req, res) {
   }
 
   const jours = joursEntre(debut, fin);
-  const prevFin = decale(debut, -1);
-  const prevDebut = decale(prevFin, -(jours - 1));
+  // période comparée libre (deux plages indépendantes) ; à défaut, la même durée juste avant
+  const ISO = /^\d{4}-\d{2}-\d{2}$/;
+  const libre = ISO.test(pd || "") && ISO.test(pf || "") && pd <= pf && joursEntre(pd, pf) <= 500;
+  const prevFin = libre ? pf : decale(debut, -1);
+  const prevDebut = libre ? pd : decale(prevFin, -(jours - 1));
 
   try {
     const token = await accessToken(SCOPE);

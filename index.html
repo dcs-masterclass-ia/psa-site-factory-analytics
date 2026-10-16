@@ -1586,12 +1586,28 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </div>
               <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de début</div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Période analysée · du</div>
                 <input type="date" value="{{ cmpStart }}" onInput="{{ onCmpStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
               </div>
               <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Date de fin</div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">au</div>
                 <input type="date" value="{{ cmpEnd }}" onInput="{{ onCmpEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
+              </div>
+              <div style="width:8px"></div>
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Comparée à · du</div>
+                <input type="date" value="{{ cmpPrevStart }}" onInput="{{ onCmpPrevStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
+              </div>
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">au</div>
+                <input type="date" value="{{ cmpPrevEnd }}" onInput="{{ onCmpPrevEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
+              </div>
+              <div>
+                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Raccourcis</div>
+                <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:4px">
+                  <span onClick="{{ presetPrev }}" style="font-size:13px;padding:6px 10px;border-radius:9px;cursor:pointer;color:#2f2f33">Période précédente</span>
+                  <span onClick="{{ presetN1 }}" style="font-size:13px;padding:6px 10px;border-radius:9px;cursor:pointer;color:#2f2f33">Même période N-1</span>
+                </div>
               </div>
               <div onClick="{{ runApi }}" style="{{ runStyle }}">{{ runLabel }}</div>
               <span style="font-size:13px;color:#9a9fa6;max-width:260px">{{ apiStatus }}</span>
@@ -3347,7 +3363,7 @@ class Component extends DCLogic {
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
-  static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','sites','sort','brandSort','hidden',
+  static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','cmpPrevStart','cmpPrevEnd','sites','sort','brandSort','hidden',
     'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr','c1Vue'];
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
@@ -3584,7 +3600,7 @@ class Component extends DCLogic {
             const iso = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
             Component.ETAT_PERSISTE.forEach(k => { if (sv[k] !== undefined) initial[k] = sv[k]; });
             if (Array.isArray(sv.sites)) { const ok = sv.sites.filter(n => this._allSites.includes(n)); initial.sites = ok.length ? ok : this._allSites.slice(); }
-            ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
+            ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','cmpPrevStart','cmpPrevEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
             // un onglet réservé (Pilotage des leads, Présentations) n'est repris que si le profil y a toujours droit
             if (!['ga','sc','ps','tb','pr','aaa','ads','c1st','prefs'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads','c1st'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
           }
@@ -5418,7 +5434,7 @@ class Component extends DCLogic {
       const t0=Date.now();
       try {
         const r=await fetch('/api/gsc-compare',{method:'POST',headers:{'content-type':'application/json'},
-          body:JSON.stringify({site:cmpSingleSite,debut:this.state.cmpStart||cmpStart,fin:this.state.cmpEnd||cmpEnd,dimension:this.state.cmpDim==='queries'?'query':'page'})});
+          body:JSON.stringify({site:cmpSingleSite,debut:this.state.cmpStart||cmpStart,fin:this.state.cmpEnd||cmpEnd,prevDebut:this.state.cmpPrevStart||undefined,prevFin:this.state.cmpPrevEnd||undefined,dimension:this.state.cmpDim==='queries'?'query':'page'})});
         const json=await r.json();
         if (!r.ok || json.error) { this._gscCompareError=(json && json.error)||('Erreur HTTP '+r.status); this.setState({apiState:'error'}); return; }
         this._gscCompareResult=json; this._gscCompareMs=Date.now()-t0;
@@ -5429,7 +5445,9 @@ class Component extends DCLogic {
       }
     };
     const dayDiff=(()=>{const a=new Date(cmpStart),b=new Date(cmpEnd);return Math.max(1,Math.round((b-a)/86400000)+1);})();
-    const prevEnd=this.decale(cmpStart,-1), prevStart=this.decale(prevEnd,-(dayDiff-1));
+    // période comparée : libre (deux plages indépendantes) ; par défaut, la même durée juste avant
+    const prevEnd=st.cmpPrevEnd||this.decale(cmpStart,-1), prevStart=st.cmpPrevStart||this.decale(prevEnd,-(dayDiff-1));
+    const prevDays=Math.max(1,Math.round((new Date(prevEnd)-new Date(prevStart))/86400000)+1);
 
     // ---------- PageSpeed (reel : pagespeed = {mobile,desktop,historique,
     // releve}, cf. data/<site>.json -- un score Lighthouse est intrinsequement
@@ -7206,7 +7224,12 @@ class Component extends DCLogic {
       cmpStart, cmpEnd,
       onCmpStart:e=>set({cmpStart:e.target.value,apiState:'idle'}),
       onCmpEnd:e=>set({cmpEnd:e.target.value,apiState:'idle'}),
-      cmpPeriodsLabel:'Période analysée '+cmpStart+' → '+cmpEnd+' ('+dayDiff+' j) · comparée à '+prevStart+' → '+prevEnd,
+      cmpPrevStart:prevStart, cmpPrevEnd:prevEnd,
+      onCmpPrevStart:e=>set({cmpPrevStart:e.target.value,apiState:'idle'}),
+      onCmpPrevEnd:e=>set({cmpPrevEnd:e.target.value,apiState:'idle'}),
+      presetPrev:()=>set({cmpPrevStart:undefined,cmpPrevEnd:undefined,apiState:'idle'}),
+      presetN1:()=>{ const a=new Date(cmpStart+'T00:00:00Z'), b=new Date(cmpEnd+'T00:00:00Z'); a.setUTCFullYear(a.getUTCFullYear()-1); b.setUTCFullYear(b.getUTCFullYear()-1); set({cmpPrevStart:a.toISOString().slice(0,10),cmpPrevEnd:b.toISOString().slice(0,10),apiState:'idle'}); },
+      cmpPeriodsLabel:'Période analysée '+cmpStart+' → '+cmpEnd+' ('+dayDiff+' j) · comparée à '+prevStart+' → '+prevEnd+' ('+prevDays+' j)'+(prevDays!==dayDiff?' · durées différentes : volumes bruts, non ramenés à la journée':''),
       cmpError:st.apiState==='error',
       cmpErrorText:this._gscCompareError||'Erreur inconnue.',
       runApi, runLabel:running?'Appel en cours…':'Comparer',
