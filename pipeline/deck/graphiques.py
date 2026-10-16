@@ -167,7 +167,7 @@ def colonnes(slide, x, y, w, h, categories, series, empile=False, pourcentage=Fa
     return gf
 
 
-def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10):
+def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10, legende_bas=False):
     """Anneau natif avec étiquettes de pourcentage."""
     if not categories or not sum(valeurs):
         return texte(slide, x, y, w, 0.4, "Aucune donnée sur ce périmètre.", taille=11, couleur=GRIS, italique=True)
@@ -179,7 +179,7 @@ def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10):
     ch = gf.chart
     ch.has_title = False
     ch.has_legend = True
-    ch.legend.position = XL_LEGEND_POSITION.RIGHT
+    ch.legend.position = XL_LEGEND_POSITION.BOTTOM if legende_bas else XL_LEGEND_POSITION.RIGHT
     ch.legend.include_in_layout = False
     _police(ch.legend, taille)
     plot = ch.plots[0]
