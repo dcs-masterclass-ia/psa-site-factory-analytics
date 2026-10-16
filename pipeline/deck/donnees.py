@@ -101,6 +101,7 @@ def sites_du_perimetre(pays, marques=None):
 class Donnees:
     def __init__(self, pays, marques=None, hist=HIST):
         self.pays = [p.upper() for p in pays]
+        self.exclus = set()          # marques écartées des totaux (ex. Stellantis &You dans les revues pays, comme les decks de référence)
         self.hist = Path(hist)
         self.sites = sites_du_perimetre(self.pays, marques)
         self.marques = [m for m in ORDRE_MARQUES if any(s[1] == m for s in self.sites)]
@@ -127,6 +128,8 @@ class Donnees:
         out = {p: 0 for p in PROJETS}
         deb, fin = periode.debut.isoformat(), periode.fin.isoformat()
         for (m, jour), v in self._leads.items():
+            if m in self.exclus:
+                continue
             if deb <= jour <= fin and (marque is None or m == marque):
                 for p, n in v.items():
                     out[p] += n
@@ -140,6 +143,8 @@ class Donnees:
         self._charge_leads()
         out = [0] * 12
         for (m, jour), v in self._leads.items():
+            if m in self.exclus:
+                continue
             if jour.startswith(str(annee)) and (marque is None or m == marque):
                 out[int(jour[5:7]) - 1] += (v.get(projet, 0) if projet else sum(v.values()))
         return out
