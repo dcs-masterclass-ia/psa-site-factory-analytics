@@ -31,7 +31,7 @@ def _na(slide, x, y, w, h):
     g.texte(slide, x, y + h / 2 - 0.15, w, 0.3, DECK_NA, taille=12, couleur=g.GRIS, align=PP_ALIGN.CENTER)
 
 
-def _barres_h(slide, x, y, w, h, cats, vals, taille=8):
+def _barres_h(slide, x, y, w, h, cats, vals, taille=8, pct=False):
     cd = CategoryChartData()
     cd.categories = cats
     cd.add_series("n", vals)
@@ -47,7 +47,7 @@ def _barres_h(slide, x, y, w, h, cats, vals, taille=8):
     s = pl.series[0]
     s.invert_if_negative = False
     dl = s.data_labels
-    dl.show_value = True; dl.number_format = "#,##0"; dl.number_format_is_linked = False
+    dl.show_value = True; dl.number_format = "0%" if pct else "#,##0"; dl.number_format_is_linked = False
     dl.font.size = Pt(taille); dl.position = XL_LABEL_POSITION.OUTSIDE_END
     for i in range(len(cats)):
         s.points[i].format.fill.solid(); s.points[i].format.fill.fore_color.rgb = g.rgb(COULEURS[i % len(COULEURS)])
