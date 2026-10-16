@@ -45,9 +45,11 @@ test("croisement FR+BE x Peugeot+Citroën = 4 sites", async ({ page }) => {
   await expect(summary(page)).toContainText("France + Belgique · 2 marques → 4 sites");
 });
 
-test("raccourci BELUX", async ({ page }) => {
+test("Belgique + Luxembourg par les pastilles marché (plus de raccourci BELUX ni France)", async ({ page }) => {
   await ouvre(page);
-  await page.locator('[data-testid="scope-shortcut"]').filter({ hasText: "BELUX" }).click();
+  await expect(page.locator('[data-testid="scope-shortcut"]').filter({ hasText: /^(BELUX|France)$/ })).toHaveCount(0);
+  await market(page, "BE").click();
+  await market(page, "LU").click();
   await expect(summary(page)).toContainText("Belgique + Luxembourg · Toutes les marques");
   await expect(market(page, "BE")).toHaveAttribute("aria-pressed", "true");
   await expect(market(page, "LU")).toHaveAttribute("aria-pressed", "true");

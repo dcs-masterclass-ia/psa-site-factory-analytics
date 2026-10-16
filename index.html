@@ -6613,14 +6613,10 @@ class Component extends DCLogic {
       style:pillStyle(selMarques.includes(b), selMarches.length>0 && croise(selMarches,[b]).length===0),
       pick:()=>setAxes(selMarches,basculer(selMarques,b))
     }));
-    const hasBelux=['BE','LU'].some(c=>sitesParPaysScope[c]);
-    const beluxCodes=['BE','LU'].filter(c=>sitesParPaysScope[c]);
     const memeListe=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
     const raccourci=(label,on,pick)=>({label,style:pillStyle(on,false),pick});
     const scopeShortcuts=[
       raccourci(T('Tout'), selectionExacte && !selMarches.length && !selMarques.length, ()=>setAxes([],[])),
-      ...(hasBelux?[raccourci('BELUX', selectionExacte && memeListe(selMarches,beluxCodes) && !selMarques.length, ()=>setAxes(beluxCodes,[]))]:[]),
-      ...(sitesParPaysScope.FR?[raccourci(T('France'), selectionExacte && memeListe(selMarches,['FR']) && !selMarques.length, ()=>setAxes(['FR'],[]))]:[]),
       raccourci(T('Aucun'), st.sites.length===0, ()=>set({scopeMarkets:[],scopeBrands:[],sites:[]}))
     ];
     // dernières sélections validées (fermeture du panneau) : localStorage, jamais bloquant
