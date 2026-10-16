@@ -264,12 +264,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">Leads</span>
     </div>
+    <sc-if value="{{ canPres }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickC1ST }}" title="C1ST" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcC1ST }}" style-hover="background:#f4f4f6">
       <img src="{{ c1LogoMini }}" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <span style="font-size:10px;line-height:1.2;font-weight:500;color:#6d727a;text-align:center;padding:0 2px;max-width:100%;white-space:nowrap">C1ST</span>
     </div>
+    </sc-if>
     <sc-if value="{{ canPres }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickPR }}" title="Présentations" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer">
     <div style="{{ srcPR }}" style-hover="background:#f4f4f6">
@@ -3641,7 +3643,7 @@ class Component extends DCLogic {
             if (Array.isArray(sv.sites)) { const ok = sv.sites.filter(n => this._allSites.includes(n)); initial.sites = ok.length ? ok : this._allSites.slice(); }
             ['from','to','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','cmpPrevStart','cmpPrevEnd'].forEach(k => { if (initial[k] != null && !iso(initial[k])) delete initial[k]; });
             // un onglet réservé (Pilotage des leads, Présentations) n'est repris que si le profil y a toujours droit
-            if (!['ga','sc','ps','tb','pr','aaa','ads','c1st','prefs'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads','c1st'].includes(initial.source)) || (initial.source === 'pr' && !this.presentationsOuvertes())) initial.source = 'ga';
+            if (!['ga','sc','ps','tb','pr','aaa','ads','c1st','prefs'].includes(initial.source) || (this.estLimite() && ['tb','pr','aaa','ads','c1st'].includes(initial.source)) || ((initial.source === 'pr' || initial.source === 'c1st') && !this.presentationsOuvertes())) initial.source = 'ga';
           }
         } catch (e) {}
       }
@@ -3654,7 +3656,7 @@ class Component extends DCLogic {
         if (pf.lang && window.i18n && window.i18n.lang !== pf.lang) window.i18n.set(pf.lang);
         if (!restaure) {
           const ancre = this._pipelineToday;
-          const onglets = ['ga','sc','ps'].concat(this.estLimite() ? [] : ['ads','tb','c1st','aaa']).concat(!this.estLimite() && this.presentationsOuvertes() ? ['pr'] : []);
+          const onglets = ['ga','sc','ps'].concat(this.estLimite() ? [] : ['ads','tb','aaa'].concat(this.presentationsOuvertes() ? ['c1st'] : [])).concat(!this.estLimite() && this.presentationsOuvertes() ? ['pr'] : []);
           if (pf.accueil && onglets.includes(pf.accueil)) initial.source = pf.accueil;
           if (pf.periode && ancre) { initial.to = ancre; initial.from = pf.periode === 'mois' ? ancre.slice(0, 8) + '01' : this.decale(ancre, -(parseInt(pf.periode, 10) - 1)); }
           if (['previous','year','none'].includes(pf.comparaison)) initial.cmpMode = pf.comparaison;
@@ -6219,7 +6221,7 @@ class Component extends DCLogic {
     const prefTheme = [['system','Automatique'],['light','Clair'],['dark','Sombre']].map(([k,l])=>prefChip(l,prefThemeNow===k,()=>this.setPref('theme',k)));
     const prefLangNow = prefs0.lang || (window.i18n&&window.i18n.lang) || 'fr';
     const prefLang = [['fr','Français'],['en','English']].map(([k,l])=>prefChip(l,prefLangNow===k,()=>this.setPref('lang',k)));
-    const ONGLETS_PREF = [['ga','Google Analytics 4',true],['sc','Search Console',true],['ads','Google Ads',!this.estLimite()],['ps','PageSpeed',true],['tb','Pilotage des leads',!this.estLimite()],['pr','Présentations',!this.estLimite()&&this.presentationsOuvertes()],['c1st','C1ST',!this.estLimite()],['aaa','AAA Data',!this.estLimite()]].filter(x=>x[2]);
+    const ONGLETS_PREF = [['ga','Google Analytics 4',true],['sc','Search Console',true],['ads','Google Ads',!this.estLimite()],['ps','PageSpeed',true],['tb','Pilotage des leads',!this.estLimite()],['pr','Présentations',!this.estLimite()&&this.presentationsOuvertes()],['c1st','C1ST',!this.estLimite()&&this.presentationsOuvertes()],['aaa','AAA Data',!this.estLimite()]].filter(x=>x[2]);
     const prefAccueilNow = prefs0.accueil || 'ga';
     const prefAccueil = ONGLETS_PREF.map(([k,l])=>prefChip(l,prefAccueilNow===k,()=>this.setPref('accueil',k)));
     const prefPeriodeNow = prefs0.periode || '30';
@@ -7253,7 +7255,7 @@ class Component extends DCLogic {
       toggleCal:()=>{ if (st.brandOpen) this.fermeScope(); set({calOpen:!st.calOpen}); },
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
       c1RappDesc:c1RappRepli?"Leads de reprise avec un projet d'achat VN dans le back-office (le décompte des leads envoyés n'est pas encore disponible pour tous les mois), face aux leads VN vus par C1ST, sur la même période.":"Leads VN envoyés au réseau (Lead sent = YES) dans le back-office, face aux leads VN vus par C1ST, sur la même période : c'est le périmètre que C1ST affiche.", c1RappBoLabel:c1RappRepli?'Back-office (VN)':'Back-office (VN envoyés)',
-      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFiches, aaaHasFiches:aaaFiches.length>0, aaaNoData, aaaHasNoData:aaaNoData.length>0, aaaNoSel:!aaaSel.length, aaaShowEu, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel des sources nationales (AAA Data, KBA, UNRAE, ANFAC, SMMT, Samar, ACAP), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite()&&this.presentationsOuvertes(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFiches, aaaHasFiches:aaaFiches.length>0, aaaNoData, aaaHasNoData:aaaNoData.length>0, aaaNoSel:!aaaSel.length, aaaShowEu, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel des sources nationales (AAA Data, KBA, UNRAE, ANFAC, SMMT, Samar, ACAP), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,
@@ -7363,7 +7365,7 @@ class Component extends DCLogic {
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché',ads:'Google Ads',prefs:'Paramètres'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
       pickGA:()=>set({source:'ga'}), pickSC:()=>set({source:'sc'}), pickPS:()=>set({source:'ps'}),
-      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickC1ST:()=>{ if (!this.estLimite()) set({source:'c1st'}); }, pickADS:()=>{ if (!this.estLimite()) set({source:'ads'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
+      pickTB:()=>{ if (!this.estLimite()) { set({source:'tb'}); this.chargeHoraire(); } }, pickAAA:()=>{ if (!this.estLimite()) set({source:'aaa'}); }, pickC1ST:()=>{ if (!this.estLimite() && this.presentationsOuvertes()) set({source:'c1st'}); }, pickADS:()=>{ if (!this.estLimite()) set({source:'ads'}); }, pickPR:()=>{ if (!this.estLimite()&&this.presentationsOuvertes()) { set({source:'pr'}); prCharge(); } }, pickGCP:()=>{ if (!this.estLimite()) set({source:'gcp'}); },
       srcGA:srcStyle(st.source==='ga'), srcSC:srcStyle(st.source==='sc'), srcPS:srcStyle(st.source==='ps'),
       srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcC1ST:srcStyle(st.source==='c1st'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,

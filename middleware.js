@@ -105,6 +105,10 @@ export default async function middleware(request) {
   const session = await verifySession(cookies.psf_session, secret);
   const role = session ? roleFor(session.email) : null;
   if (!role) return json(401, { error: "Non authentifie." });
+  // C1ST (données CRM Salesforce) : réservé aux adresses de PRESENTATIONS_EMAILS, comme l'onglet Présentations.
+  if (/^\/data\/c1st(\/|$)/i.test(new URL(request.url).pathname) && !parseList(process.env.PRESENTATIONS_EMAILS).includes(String(session.email || "").toLowerCase())) {
+    return json(403, { error: "Acces non autorise pour ce profil." });
+  }
   if (role === "limited") {
     const path = new URL(request.url).pathname.replace(/\/+$/, "");
     if (!LIMITED_API.includes(path)) return json(403, { error: "Acces non autorise pour ce profil." });
