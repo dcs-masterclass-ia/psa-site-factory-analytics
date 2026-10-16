@@ -8,7 +8,10 @@ from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches
 
 from . import graphiques as g
-from .donnees import ORDRE_SOURCES
+from .donnees import PROJET_BO, PROJETS, groupe_source
+
+# groupes de sources du deck de référence (Tableau) : SOL et eDealer sont des sources à part (le regroupement standard de Donnees les met dans Display / Autre)
+ORDRE_SOURCES = ["Display", "Edealer", "Emailing", "LLM", "Main-Website", "Search", "Social", "SOL", "Autre"]
 from .periodes import MOIS_COURTS
 from .revue_commun import C_SANS, C_VN, C_VO, evol, mois_label, nb, pct, slide_revue
 
@@ -102,9 +105,21 @@ def _tot(d):
     return sum(d.values())
 
 
+def groupe_revue(brut):
+    b = (brut or "").strip().lower()
+    return "SOL" if b == "sol" else "Edealer" if b == "edealer" else groupe_source(brut)
+
+
 def _sources(ctx, per, marque):
+    """{groupe: {projet: n}} des leads valides de la marque sur le mois, avec SOL et eDealer séparés (comme le deck de référence)."""
     try:
-        return ctx.d.sources(per, marque)
+        out = {g: {p: 0 for p in PROJETS} for g in ORDRE_SOURCES}
+        vu = False
+        for r in ctx.d._periode_lignes("leads_acq", marque, per):
+            if r["statut"] == "valide":
+                out[groupe_revue(r["source_acq"])][PROJET_BO.get(r["projet_achat"], "SANS")] += int(r["n"])
+                vu = True
+        return out if vu else None
     except Exception:
         return None
 
@@ -179,8 +194,9 @@ def _puces_canaux(data, tp, srcs, rv):
 # ------------------------------------------------------------------ 2. Leads from main website
 # codes de support (utm_content) du site de la marque, regroupés comme le « Support (groupe) » du deck de référence : plusieurs codes sont tronqués à la collecte
 # (« er-menu » = header-menu, « hp-b » = hp-block, « hp-er-bar » = hp-header-bar) et les variantes « -vu » (visuel) se rattachent à leur emplacement
-GROUPES_SUPPORT = [("showroom", "Showroom"), ("pop", "Popin"), ("offer", "Offer-page"), ("footer", "Footer"), ("sticky", "Sticky bar"), ("menu", "Header menu"),
-                   ("header-bar", "HP header bar"), ("er-bar", "HP header bar"), ("hp-b", "HP block"), ("slider", "Homepage"), ("homepage", "Homepage")]
+GROUPES_SUPPORT = [("pop", "Popin"), ("room", "showroom"), ("offer", "Offer-page"), ("footer", "Footer"), ("sticky", "Sticky bar"), ("menu", "Header menu"),
+                   ("header-bar", "HP header bar"), ("er-bar", "HP header bar"), ("hp-b", "HP block"), ("slice", "Slice"), ("home", "Homepage"), ("slider", "Homepage"), ("cta", "CTA")]
+ORDRE_SUPPORTS = ["showroom", "Popin", "Offer-page", "Footer", "Header menu", "CTA", "Homepage", "Slice", "Sticky bar", "HP block", "HP header bar"]   # ordre des lignes du deck
 
 
 def groupe_support(brut):
@@ -201,15 +217,25 @@ def _groupe_cta(cta):
     return out
 
 
+def _leads_site_principal(ctx, per, marque):
+    """{support brut: {projet: n}} de TOUS les leads valides venant du site principal de la marque (groupe de sources Main-Website, toutes campagnes)."""
+    out = {}
+    for r in ctx.d._periode_lignes("leads_acq", marque, per):
+        if r["statut"] == "valide" and groupe_source(r["source_acq"]) == "Main-Website":
+            sup = (r["support"] or "").strip() or "(non renseigné)"
+            out.setdefault(sup, {p: 0 for p in PROJETS})[PROJET_BO.get(r["projet_achat"], "SANS")] += int(r["n"])
+    return out
+
+
 def site_principal(ctx, rv, marque):
     """« Leads from main website » : emplacements des CTA du site principal × projet × (M-1, M) de l'année N."""
     try:
-        cur, prec = _groupe_cta(ctx.d.cta(rv.per, marque)), _groupe_cta(ctx.d.cta(rv.prec, marque))
+        cur, prec = _groupe_cta(_leads_site_principal(ctx, rv.per, marque)), _groupe_cta(_leads_site_principal(ctx, rv.prec, marque))
     except Exception:
         return None
     if not cur and not prec:
         return None
-    supports = sorted(set(cur) | set(prec), key=lambda k: -(_tot(cur.get(k, {})) + _tot(prec.get(k, {}))))
+    supports = sorted(set(cur) | set(prec), key=lambda k: (ORDRE_SUPPORTS.index(k) if k in ORDRE_SUPPORTS else 99, -(_tot(cur.get(k, {})) + _tot(prec.get(k, {})))))
     if not supports:
         return None
     z = {p: 0 for p in PROJETS}
