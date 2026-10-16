@@ -47,9 +47,10 @@ def _liste(valeurs):
     return "[" + ", ".join(json.dumps(v, ensure_ascii=False) for v in valeurs) + "]"
 
 
-def _periode(y, m):
+def _periode(y, m, m0=None):
+    """Plage de dates : le mois m, ou (m0 donné) du mois m0 au mois m inclus de la même année."""
     import calendar
-    return f"dateRange([{y},{m},1],[{y},{m},{calendar.monthrange(y, m)[1]}])"
+    return f"dateRange([{y},{m0 or m},1],[{y},{m},{calendar.monthrange(y, m)[1]}])"
 
 
 def _origine(p, y, perim):
@@ -68,7 +69,7 @@ def _nature(p, y, perim):
     return None      # marques standard : aucun filtre de nature (origine Autobiz = campagne / source ; validé à l'unité sur le tableau « NC Sales Conversion » 2025 et 2026)
 
 
-def filtres(v, pays, y, m, perim, prefixe=""):
+def filtres(v, pays, y, m, perim, prefixe="", m0=None):
     """Bloc de filtres commun (comme le dashboard « Leads Funnel »). prefixe = « ACCLead. » pour les jeux dealer et SUB."""
     p = prefixe
     type_client = "CustomerType__c" if p else "CustomerTypeLabelized"
@@ -83,7 +84,7 @@ def filtres(v, pays, y, m, perim, prefixe=""):
         *([f"{v} = filter {v} by {_nature(p, y, perim)};"] if _nature(p, y, perim) else []),
         f"{v} = filter {v} by ('{p}LeadQualificationResult__c' not in [\"Black list filtering\"] || '{p}LeadQualificationResult__c' is null);",
         f"{v} = filter {v} by '{p}Test_JustDealer2' in [\"No\"];",
-        f"{v} = filter {v} by date('{p}CreatedDate_Year', '{p}CreatedDate_Month', '{p}CreatedDate_Day') in [{_periode(y, m)}];",
+        f"{v} = filter {v} by date('{p}CreatedDate_Year', '{p}CreatedDate_Month', '{p}CreatedDate_Day') in [{_periode(y, m, m0)}];",
     ])
 
 
@@ -121,9 +122,10 @@ r = foreach r generate coalesce(dea.'ACCLead.PSABrand__c', quo.'ACCLead.PSABrand
 r = limit r 100;"""
 
 
-def saql_nsc(ds, pays, y, m, perim):
+def saql_nsc(ds, pays, y, m, perim, m0=None):
+    """Commandes NSC uniques par marque ; m0 = 1 : sur toute la période de janvier au mois m (un même numéro de commande n'est compté qu'une fois, contrairement à la somme des mois)."""
     return f"""q = load "{ds}";
-{filtres("q", pays, y, m, perim, "ACCLead.")}
+{filtres("q", pays, y, m, perim, "ACCLead.", m0)}
 ord = filter q by 'LeadConversionTimeMailPhone' >= 1 && 'LeadConversionTimeMailPhone' <= 90;
 r = group ord by 'ACCLead.PSABrand__c';
 r = foreach r generate 'ACCLead.PSABrand__c' as 'marque', unique('OrderIdwMailPhone') as 'commandes_nsc';
@@ -209,7 +211,8 @@ def collecte_mois(client, pays, y, m):
     commandes = client.requete(saql_commandes(client.version("dealer"), pays, y, m, std)) + client.requete(saql_commandes(client.version("dealer"), pays, y, m, sp))
     nsc = client.requete(saql_nsc(client.version("sub"), pays, y, m, std))
     statuts = client.requete(saql_statuts(client.version("leads"), pays, y, m, std))
-    return {"leads": leads, "commandes": commandes, "nsc": nsc, "statuts": statuts}
+    nsc_cumul = client.requete(saql_nsc(client.version("sub"), pays, y, m, std, m0=1))      # commandes uniques de janvier au mois m (tableau « NC Sales Conversion » cumulé)
+    return {"leads": leads, "commandes": commandes, "nsc": nsc, "statuts": statuts, "nsc_cumul": nsc_cumul}
 
 
 def fusionne(existant, pays, cle_mois, nouveau):

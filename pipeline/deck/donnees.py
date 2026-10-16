@@ -327,8 +327,19 @@ class Donnees:
         if not code or not data:
             return None
         total = 0
+        ms = periode.mois()
+        # cumul de janvier au mois : commandes uniques sur toute la période (collectées à part), sinon somme des mois (surestime d'environ 4 % : une commande peut compter dans deux mois)
+        cumul = bool(ms) and ms[0][1] == 1 and all(x[0] == ms[0][0] for x in ms) and [x[1] for x in ms] == list(range(1, len(ms) + 1))
         for pays in cles:
-            for a, mo in periode.mois():
+            if cumul:
+                a, mo = ms[-1]
+                if any(f"{x[0]}-{x[1]:02d}" == getattr(self, "_c1st_partiel", "") for x in ms):
+                    return None
+                m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
+                if m and m.get("nsc_cumul") is not None:
+                    total += sum(r.get("commandes_nsc") or 0 for r in m["nsc_cumul"] if r.get("marque") == code)
+                    continue
+            for a, mo in ms:
                 if f"{a}-{mo:02d}" == getattr(self, "_c1st_partiel", ""):
                     return None
                 m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
