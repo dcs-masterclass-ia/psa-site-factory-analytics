@@ -16,6 +16,7 @@ test("survol des courbes : bulle avec valeurs", async ({ page }) => {
   for (const [theme, nav, id] of [["Évolution", "Trafic reprise par canal", "cbTrend"], ["Évolution", "Comparaison avec les années passées", "cbHist"], ["Conversion", "Taux de conversion par jour", "cbConv"], ["Audience", "Qui sont les visiteurs", "cbSeason"], ["Évolution", "Ce qui fait bouger les leads", "cbContrib"]]) {
     await page.getByText(theme, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
     await page.getByText(nav, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
+    if (id === "cbContrib") await page.getByText("Vue graphique", { exact: true }).first().click({ timeout: 3000 }).catch(() => {});      // la cascade n'est plus la vue par défaut
     const box = page.locator("#" + id);
     if (!(await box.count())) continue;
     await box.scrollIntoViewIfNeeded();

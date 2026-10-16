@@ -624,7 +624,33 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </div>
             <sc-if value="{{ contribHas }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ contribVueSimple }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:0 2px">
+                  <span style="font-size:13px;color:#9a9fa6">Avant</span><span style="font-size:26px;font-weight:700;color:#6d727a;font-variant-numeric:tabular-nums">{{ contribSimple.avant }}</span>
+                  <span style="font-size:20px;color:#9a9fa6">→</span>
+                  <span style="font-size:13px;color:#9a9fa6">Maintenant</span><span style="font-size:26px;font-weight:700;color:#121214;font-variant-numeric:tabular-nums">{{ contribSimple.apres }}</span>
+                  <span style="{{ contribSimple.dStyle }}">{{ contribSimple.delta }}</span>
+                  <span style="flex:1"></span><span onClick="{{ contribSwitch }}" style="font-size:12.5px;color:#3b76e8;cursor:pointer;align-self:center">{{ contribSwitchLabel }}</span>
+                </div>
+                <div style="font-size:12px;font-weight:600;letter-spacing:.05em;color:#9a9fa6">CE QUI EXPLIQUE L'ÉVOLUTION</div>
+                <div style="display:flex;flex-direction:column;gap:2px">
+                  <sc-for list="{{ contribSimple.lignes }}" as="r" hint-placeholder-count="6">
+                    <div style="display:grid;grid-template-columns:16px minmax(180px,1.2fr) minmax(90px,1fr) 70px;align-items:center;gap:12px;padding:5px 0;border-top:1px solid #f1f1f3">
+                      <span style="{{ r.fStyle }}">{{ r.fleche }}</span>
+                      <div><div style="font-size:14px;color:#121214">{{ r.label }}</div><div style="font-size:12px;color:#9a9fa6;margin-top:1px">{{ r.detail }}</div></div>
+                      <div style="height:10px;background:#f4f4f6;border-radius:5px"><div style="{{ r.bar }}"></div></div>
+                      <span style="{{ r.vStyle }}">{{ r.val }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="font-size:13px;color:#2a2d33;line-height:1.55;background:#f7f6fe;border:1px solid #e4defc;border-radius:12px;padding:10px 14px">{{ contribSimple.resume }}</div>
+              </div>
+              </sc-if>
+              <sc-if value="{{ contribVueGraph }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;justify-content:flex-end;margin-bottom:6px"><span onClick="{{ contribSwitch }}" style="font-size:12.5px;color:#3b76e8;cursor:pointer">{{ contribSwitchLabel }}</span></div>
               <div id="cbContrib" data-hov style="flex:1;min-height:240px;position:relative">{{ contribChart }}</div>
+              </sc-if>
             </sc-if>
             <sc-if value="{{ !contribHas }}" hint-placeholder-val="{{ false }}">
               <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:30px 0;font-size:14px;line-height:1.5;color:#9a9fa6;text-align:center">{{ contribEmpty }}</div>
@@ -4551,7 +4577,7 @@ class Component extends DCLogic {
     const fmtJ2=iso=>iso.slice(8,10)+'/'+iso.slice(5,7);
     const contribRange=cmpRange?`${fmtJ2(debut)}→${fmtJ2(fin)} vs ${fmtJ2(cmpRange.debut)}→${fmtJ2(cmpRange.fin)}`:'Aucune comparaison active';
     const contribEmpty=!cmp?"Active une période de comparaison dans le calendrier (période précédente ou année précédente) pour voir ce qui explique l'évolution.":"Le tunnel n'a pas assez de données sur l'une des deux périodes pour décomposer l'évolution.";
-    let contribChart=null, contribInsight='';
+    let contribChart=null, contribInsight='', contribSimple=null;
     if (contribHas) {
       const Ec=cuA[5], Er=cuR[5], Dl=Ec-Er;
       const lg=[Math.log(cuA[0]/cuR[0])];
@@ -4591,6 +4617,20 @@ class Component extends DCLogic {
       const iMax=eff.reduce((m,e,i)=>Math.abs(e)>Math.abs(eff[m])?i:m,0);
       const evo=Er?Dl/Er*100:null;
       contribInsight=`Leads GA ${this.fmt(Er)} → ${this.fmt(Ec)}${evo!=null?' ('+(evo>=0?'+':'−')+dec(Math.abs(evo),1)+' %)':''} : le facteur principal est « ${FACT_NOMS[iMax]} » (${eff[iMax]>=0?'+':'−'}${this.fmt(Math.abs(Math.round(eff[iMax])))}).`;
+      // ---- vue simple : un avant / après, puis les causes en phrases, de la plus forte à la plus faible
+      const sgn=v=>(v>=0?'+':'−')+this.fmt(Math.abs(Math.round(v)));
+      const VERBES=["sur la page d'accueil","qui choisissent leur version","qui renseignent le kilométrage","qui laissent leurs coordonnées","qui choisissent un point de vente","qui valident la demande (lead)"];
+      const mx=Math.max(1,...eff.map(e=>Math.abs(e)));
+      const lignes=eff.map((e,i)=>({e,i,abs:Math.abs(e)})).sort((a,b)=>b.abs-a.abs).map(({e,i})=>{
+        const plus=e>=0, col=plus?'#1f9254':'#c24a44', fond=plus?'#3fae7a':'#e8544a';
+        const detail=i===0?`${T("Visiteurs de l'accueil")} : ${this.fmt(cuR[0])} → ${this.fmt(cuA[0])}`:`${T('Passage')} : ${dec(cuR[i]/cuR[i-1]*100,1)} % → ${dec(cuA[i]/cuA[i-1]*100,1)} %`;
+        return { fleche:plus?'▲':'▼', fStyle:`color:${col};font-size:12px;width:16px;flex:none`,
+          label:(plus?T('Plus de visiteurs'):T('Moins de visiteurs'))+' '+T(VERBES[i]), detail,
+          val:sgn(e), vStyle:`font-size:14.5px;font-weight:700;color:${col};font-variant-numeric:tabular-nums;min-width:62px;text-align:right`,
+          bar:`height:100%;width:${Math.max(2,Math.abs(e)/mx*100)}%;background:${fond};border-radius:5px` }; });
+      const tunnel=eff.slice(1).reduce((a,b)=>a+b,0), aud=eff[0];
+      contribSimple={ avant:this.fmt(Er), apres:this.fmt(Ec), delta:sgn(Dl)+(evo!=null?' ('+(evo>=0?'+':'−')+dec(Math.abs(evo),1).replace('.',',')+' %)':''), dStyle:`font-size:20px;font-weight:700;color:${Dl>=0?'#1f9254':'#c24a44'}`, lignes,
+        resume:`${Dl>=0?T('La hausse'):T('La baisse')} ${T('vient surtout de')} « ${lignes[0].label} » (${lignes[0].val}). ${T('Le tunnel (étapes après l\'accueil)')} ${tunnel>=0?T('ajoute'):T('retire')} ${T('net')} ${this.fmt(Math.abs(Math.round(tunnel)))} : ${tunnel>=0?T('il transforme mieux qu\'avant.'):T('il transforme un peu moins bien qu\'avant.')} ${T('Chiffres en personnes distinctes (la carte « Leads GA » compte des évènements).')}` };
     }
     // ---- bandeaux « À retenir » des vues existantes
     const signedPct=v=>(v>=0?'+':'−')+dec(Math.abs(v),1)+' %';
@@ -7281,7 +7321,7 @@ class Component extends DCLogic {
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
       histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isSources:gaCur==='sources', isEntree:gaCur==='entree', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', v2ModeChips, v2PreChips, v2IsBascule:v2Mode==='bascule', v2Warn, v2WarnOn:!!v2Warn, v2WarnAction, v2WarnPick:()=>set({v2Mode:'bascule'}), gaThemes, gaViews, gaThemeQuestion,
-      contribHas, contribChart, contribRange, contribEmpty, contribInsight, insTrend, insConv, insDevice, insAudience,
+      contribHas, contribChart, contribRange, contribEmpty, contribInsight, contribSimple:contribSimple||{avant:'',apres:'',delta:'',dStyle:'',lignes:[],resume:''}, contribVueSimple:!st.contribGraph, contribVueGraph:!!st.contribGraph, contribSwitch:()=>set({contribGraph:!st.contribGraph}), contribSwitchLabel:st.contribGraph?'Vue simple':'Vue graphique', insTrend, insConv, insDevice, insAudience,
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };
   }
