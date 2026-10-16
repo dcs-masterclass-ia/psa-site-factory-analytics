@@ -37,6 +37,7 @@ class Revue:
 
     def __init__(self, ctx):
         self.per = ctx.per
+        self.pays = list(ctx.d.pays)
         if self.per.type != "mois":
             raise ValueError("Le format « revue mensuelle France » exige une période mensuelle.")
         self.prec = self.per.precedente()
@@ -65,9 +66,25 @@ class Revue:
         """Logo de la marque, en haut au centre (position relevée dans le deck de référence)."""
         return self._image(slide, (self.manifeste.get("logos") or {}).get(marque))
 
+    @property
+    def code_pays(self):
+        """Marché du deck (premier pays du périmètre) : détermine le drapeau ; BE et LU partagent le drapeau belge (BELUX)."""
+        return (self.pays[0] if self.pays else "FR")
+
+    def _drapeau_pays(self, slide, spec):
+        """Pose le drapeau du marché (PNG de pipeline/deck/drapeaux) à la position relevée dans le deck de référence."""
+        from pathlib import Path
+        f = Path(__file__).resolve().parent / "drapeaux" / f"{self.code_pays}.png"
+        if not f.exists() or not spec:
+            return None
+        return slide.shapes.add_picture(str(f), Inches(spec["x"]), Inches(spec["y"]), Inches(spec["w"]), Inches(spec["h"]))
+
     def drapeau(self, slide, grand=False):
-        """Drapeau français à côté du logo autobiz (petit sur les diapositives de données, grand sur les séparateurs)."""
-        return self._image(slide, self.manifeste.get("drapeau"), **({"x": 9.88, "y": 0.09, "w": 1.0, "h": 0.6} if grand else {}))
+        """Drapeau du marché à côté du logo autobiz (petit sur les diapositives de données, grand sur les séparateurs)."""
+        spec = dict(self.manifeste.get("drapeau") or {"x": 11.9, "y": 0.1, "w": 0.9, "h": 0.6})
+        if grand:
+            spec.update({"x": 9.88, "y": 0.09, "w": 1.0, "h": 0.6})
+        return self._drapeau_pays(slide, spec)
 
 
 # ------------------------------------------------------------------ pied de page, titre, encadré

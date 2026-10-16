@@ -52,7 +52,7 @@ def couverture_revue(ctx, rv):
     boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(6.35), Inches(2.34))
     boite.fill.solid(); boite.fill.fore_color.rgb = g.rgb("FFFFFF"); boite.line.fill.background(); boite.shadow.inherit = False
     rv._image(s, rv.manifeste.get("couverture_stellantis"))
-    rv._image(s, rv.manifeste.get("couverture_drapeau"))
+    rv._drapeau_pays(s, rv.manifeste.get("couverture_drapeau"))
     g.texte(s, 4.4, 7.1, 4.5, 0.3, ctx.t["confidentiel"], taille=9, couleur="FFFFFF", align=PP_ALIGN.CENTER)
     g.texte(s, 0.12, 7.21, 1.8, 0.3, rv.date_deck, taille=9, couleur="FFFFFF")
     return s
@@ -228,8 +228,6 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, f(rc, "canaux"), ctx, rv, marque, libelle=f"{marque} — leads by marketing channel")
         _ajoute(ctx, f(rc, "site_principal"), ctx, rv, marque, libelle=f"{marque} — leads from main website")
         _ajoute(ctx, f(rq, "conquete"), ctx, rv, marque, libelle=f"{marque} — conquest & loyalty")
-    separateur(ctx, rv, "APPENDIX")
-    annexe_cta(ctx, rv)
     contacts_revue(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
     ctx.prs.save(str(sortie))

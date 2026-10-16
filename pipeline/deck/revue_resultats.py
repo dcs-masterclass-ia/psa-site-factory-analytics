@@ -326,7 +326,7 @@ def conversion_ventes_nc(ctx, rv):
             corps.append(ligne(nom, groupes[nom], sous=True))
     corps[0][0]["align"] = PP_ALIGN.LEFT
     if tous:
-        corps.append(ligne("Total FR", tous, sous=True, fond_tot=True))
+        corps.append(ligne("Total " + "/".join(rv.pays), tous, sous=True, fond_tot=True))
     largeurs = [1.4, 1.15, 1.15, 1.2, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85]
     hauteurs = [0.62] + [0.255] * (len(corps) - 1)
     s = slide_revue(ctx, rv, "NC Sales Conversion", sous_titre=f"Leads from Jan. to {MOIS_NOMS['en'][fin_m - 1].capitalize()} {jours_fin}th. {str(a)[2:]} incl.", source="Source: autobiz")

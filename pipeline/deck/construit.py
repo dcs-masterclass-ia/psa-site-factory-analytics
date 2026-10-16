@@ -1384,7 +1384,7 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     avoir_marques = bool(m & {"trafic_marque", "sources", "cta", "conquete", "ytd"})
     d, per = ctx.d, ctx.per
     # modules à données optionnelles : la section n'est créée que si les données existent (sinon avertissement, jamais de diapositive vide)
-    avoir_crm = "crm" in m and bool(d._c1st()) and bool({d.PAYS_C1ST.get(p, p) for p in d.pays} & {"FR", "BE", "ES", "PT", "IT"})
+    avoir_crm = "crm" in m and bool(d._c1st()) and bool({d.PAYS_C1ST.get(p, p) for p in d.pays} & {"FR", "BE", "ES", "PT", "IT", "DE", "PL", "AT", "GB"})
     if "crm" in m and not avoir_crm:
         ctx.avertissements.append("Module C1ST sélectionné mais aucun marché du périmètre n'est suivi par C1ST (ou fichier c1st/kpi.json absent) : section non générée.")
     avoir_seo = "seo" in m and any(d.gsc(per, mq) or d.gsc_requetes(per, mq, 1) for mq in d.marques)

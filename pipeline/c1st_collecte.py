@@ -32,7 +32,7 @@ FICHIER = RACINE / "data" / "c1st" / "kpi.json"
 API = "v68.0"
 
 DATASETS = {"leads": "0Fb0O000000XrKuSAK", "dealer": "0Fba2000000JM6TCAW", "sub": "0Fba20000014ZhlCAE"}
-PAYS = ["FR", "BE", "ES", "PT", "IT"]          # seuls marchés présents dans C1ST pour la campagne Autobiz (BE comprend le Luxembourg)
+PAYS = ["FR", "BE", "ES", "PT", "IT", "DE", "PL", "AT", "GB"]          # marchés où C1ST contient des leads Autobiz (BE comprend le Luxembourg) ; suivi des concessionnaires quasi nul en DE / AT
 MARQUES_STD = ["AC", "AH", "AP", "AR", "DS", "FO", "FT", "JE", "LA", "OP"]
 PERIMETRES = {
     "std": {"marques": MARQUES_STD, "natures": ["A68.Trade-In Value", "47.VO - VN Trade-in Operation"], "activite": "VN"},
