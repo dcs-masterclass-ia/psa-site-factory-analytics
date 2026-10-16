@@ -121,6 +121,8 @@ def deduire(liste, pays=None):
 # (fr) 11 683 au T3-2026 ; seul le premier etait mesure, donc le trafic de
 # reprise belge etait sous-compte d'environ la moitie. Apres correction, le T3
 # Peugeot BE fait 23 595 sessions contre 23 620 dans le reporting client.
+# Fiat BE : le reporting client compte aussi la reprise de Fiat Professional (reprisebelgique / overname.fiatprofessional.com), mesuree dans la
+# propriete GA4 de Fiat BE (908 sessions au T3-2026, ecart de 911 constate face au deck BE) ; Fiat Pro n'a pas de propriete avec trafic propre.
 MARCHES_MULTI_HOTES = {"BE"}
 
 
@@ -131,6 +133,7 @@ def hotes_reprise_complets(liste, hote_reprise, pays=None):
     if not pays or pays.upper() not in MARCHES_MULTI_HOTES:
         return hote_reprise
     extras = [h for h, s in liste
-              if h != hote_reprise and not _exclu(h) and _est_reprise(h)
-              and s >= SESSIONS_MINIMALES and h.lower().endswith("." + pays.lower())]
+              if h != hote_reprise and not _exclu(h) and s >= SESSIONS_MINIMALES
+              and ((_est_reprise(h) and h.lower().endswith("." + pays.lower()))
+                   or (h.lower().endswith(".fiatprofessional.com") and re.search(r"reprise|overname", h, re.I)))]
     return "|".join([hote_reprise] + extras)
