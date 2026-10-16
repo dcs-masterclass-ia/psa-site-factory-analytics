@@ -183,13 +183,21 @@ def anneau(slide, x, y, w, h, categories, valeurs, couleurs=None, taille=10):
     ch.legend.include_in_layout = False
     _police(ch.legend, taille)
     plot = ch.plots[0]
-    plot.has_data_labels = False
     s = plot.series[0]
     total = sum(valeurs) or 1
+    plot.has_data_labels = False
     for j in range(len(categories)):
         pt = s.points[j]
         pt.format.fill.solid()
         pt.format.fill.fore_color.rgb = rgb((couleurs or COULEURS_CANAUX)[j % len(couleurs or COULEURS_CANAUX)])
+        part = valeurs[j] / total
+        if part >= 0.04:                                  # parts trop fines : pas d'étiquette (elles restent dans la légende)
+            dl = pt.data_label
+            tf = dl.text_frame
+            tf.text = f"{part * 100:.0f}%"
+            for p in tf.paragraphs:
+                for r in p.runs:
+                    r.font.size = Pt(taille - 1); r.font.bold = True; r.font.color.rgb = rgb("FFFFFF")
     return gf
 
 

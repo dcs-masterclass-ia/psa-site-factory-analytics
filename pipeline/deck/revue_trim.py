@@ -556,6 +556,13 @@ def lead_management_c1st(ctx, rv, groupe, marques):
     return s
 
 
+def _etiq_segments(series, seuil=0.2):
+    """Étiquettes des barres empilées : valeur du segment seulement s'il est assez haut pour être lisible (>= seuil du plus grand empilement)."""
+    n = len(series[0][1]) if series else 0
+    haut = max((sum(v[i] or 0 for _, v, _ in series) for i in range(n)), default=0) or 1
+    return {k: [nb(x) if x and x / haut >= seuil else None for x in v] for k, (_, v, _) in enumerate(series)}
+
+
 def leads_vn_c1st(ctx, rv, groupe, marques):
     """« SALES PERFORMANCE : leads VN <groupe> autobiz » : leads, % de commandes NSC et commandes NSC par mois et par marque, tableau du trimestre."""
     d, per = ctx.d, rv.per
@@ -579,12 +586,13 @@ def leads_vn_c1st(ctx, rv, groupe, marques):
     s = slide_revue(ctx, rv, f"SALES PERFORMANCE: leads VN {groupe} autobiz", source=None)
     coul = lambda m: COULEUR_MARQUE.get(m, "BAB0AC")
     g.texte(s, 0.15, 1.28, 5.0, 0.22, "# Leads Generated", taille=8, gras=True, couleur="000000")
-    g.colonnes(s, 0.15, 1.48, 10.8, 1.7, cats, [(ctx.nom(m), [data[m][i][0] or 0 for i in vues], coul(m)) for m in marques], empile=True, legende=True, taille=6, etiquettes=False, axe_valeurs=True)
+    sl, so = [(ctx.nom(m), [data[m][i][0] or 0 for i in vues], coul(m)) for m in marques], [(ctx.nom(m), [data[m][i][1] or 0 for i in vues], coul(m)) for m in marques]
+    g.colonnes(s, 0.15, 1.48, 10.8, 1.7, cats, sl, empile=True, legende=True, taille=6, etiquettes=True, axe_valeurs=True, libelles_perso=_etiq_segments(sl), fmt=nb)
     g.texte(s, 0.15, 3.2, 5.0, 0.22, "% NSC Orders (NSC orders / leads, months with at least 20 leads)", taille=8, gras=True, couleur="000000")
     g.lignes_chart(s, 0.15, 3.4, 10.8, 1.75, cats, [(ctx.nom(m), [(data[m][i][1] / data[m][i][0]) if (data[m][i][0] and data[m][i][0] >= 20 and data[m][i][1] is not None) else None for i in vues], coul(m))
                                                     for m in marques], taille=6, legende=False, etiquettes=False, format_nombre="0%", axe_valeurs=True, axe_pct=True)
     g.texte(s, 0.15, 5.2, 5.0, 0.22, "NSC Orders", taille=8, gras=True, couleur="000000")
-    g.colonnes(s, 0.15, 5.4, 10.8, 1.65, cats, [(ctx.nom(m), [data[m][i][1] or 0 for i in vues], coul(m)) for m in marques], empile=True, legende=False, taille=6, etiquettes=False, axe_valeurs=True)
+    g.colonnes(s, 0.15, 5.4, 10.8, 1.65, cats, so, empile=True, legende=False, taille=6, etiquettes=True, axe_valeurs=True, libelles_perso=_etiq_segments(so), fmt=nb)
     # commentaires + tableau du trimestre
     lignes = [["Brand", "# Leads", "# Orders", "% Orders"]]
     taux = []
