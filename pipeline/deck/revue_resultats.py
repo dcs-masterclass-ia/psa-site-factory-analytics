@@ -276,8 +276,10 @@ def conversion_ventes_nc(ctx, rv):
         for m in ms:
             if m not in d.marques:
                 continue
-            l26 = sum(d.leads_mensuels(a, m, "VN")[:fin_m])
-            l25 = sum(d.leads_mensuels(a1, m, "VN")[:fin_m])
+            # « # Leads Generated » = leads VN ENVOYÉS (Lead sent = YES), ceux que C1ST affiche ; repli sur tous les leads VN si l'historique des envoyés manque
+            e26, e25 = d.leads_envoyes_mensuels(a, m, "VN"), d.leads_envoyes_mensuels(a1, m, "VN")
+            l26 = sum((e26 if e26 is not None else d.leads_mensuels(a, m, "VN"))[:fin_m])
+            l25 = sum((e25 if e25 is not None else d.leads_mensuels(a1, m, "VN"))[:fin_m])
             o26 = d.c1st_nsc(_Cumul(a, fin_m), m)
             o25 = d.c1st_nsc(_Cumul(a1, fin_m), m)
             infos[m] = (l26, l25, o26, o25)

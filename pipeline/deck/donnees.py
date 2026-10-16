@@ -144,6 +144,21 @@ class Donnees:
                 out[int(jour[5:7]) - 1] += (v.get(projet, 0) if projet else sum(v.values()))
         return out
 
+    def leads_envoyes_mensuels(self, annee, marque, projet="VN"):
+        """12 valeurs (janvier..décembre) : leads valides ENVOYÉS (« Lead sent » = YES du back-office) du projet d'achat — ceux que C1ST affiche ; None si l'historique
+        data/history/leads_envoyes n'existe pas pour la marque (le comparatif avec C1ST se fait sur ce périmètre, pas sur tous les leads VN)."""
+        if not hasattr(self, "_envoyes"):
+            self._envoyes = defaultdict(lambda: [0] * 12)
+            self._envoyes_vus = set()
+            for nom, m, _ in self.sites:
+                for r in _lignes(self.hist / "leads_envoyes" / f"{slug(nom)}.csv.gz"):
+                    self._envoyes_vus.add((m, r["date"][:4]))
+                    if r["statut"] == "valide" and r["envoye"] == "YES":
+                        self._envoyes[(m, r["date"][:4], PROJET_BO.get(r["projet_achat"], "SANS"))][int(r["date"][5:7]) - 1] += int(r["n"])
+        if (marque, str(annee)) not in self._envoyes_vus:
+            return None
+        return list(self._envoyes[(marque, str(annee), projet)])
+
     def dernier_jour_leads(self):
         self._charge_leads()
         return max((j for (_, j) in self._leads), default=None)
