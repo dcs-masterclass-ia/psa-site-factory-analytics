@@ -61,12 +61,20 @@ def _origine(p, y, perim):
     return f"(('{p}PSABrand__c' in {_liste(XP)} && '{p}LeadSourceLabelized' in {_liste(SOURCES_XP_AVANT_2026)}) || ('{p}PSABrand__c' not in {_liste(XP)} && {camp}))"
 
 
-def _nature(p, y, perim):
-    """Nature : aucun filtre pour les marques standard (la nature 47 / A68 écartait 5 à 15 % des leads Autobiz) ; Spoticar : 15.Buyback request."""
+# Belgique avant 2026, marques xP : la référence client (decks BELUX) écarte les demandes de devis et d'information (sources 311 surtout) ; vérifié à l'unité sur T3-2025
+# (Peugeot 1 753, Citroën 1 084, DS 50, Opel 555). La France, validée sans filtre de nature contre son propre tableau, n'est pas concernée.
+NATURES_EXCLUES_BE_XP_AVANT_2026 = ["2.Quote request", "4.Information request"]
+
+
+def _nature(p, y, perim, pays=None):
+    """Nature : aucun filtre pour les marques standard (la nature 47 / A68 écartait 5 à 15 % des leads Autobiz), sauf Belgique avant 2026 sur les marques xP (voir ci-dessus) ;
+    Spoticar : 15.Buyback request."""
     nat = f"'{p}NatureLabelized' in {_liste(perim['natures'])}"
     if perim is not PERIMETRES["std"]:
         return nat
-    return None      # marques standard : aucun filtre de nature (origine Autobiz = campagne / source ; validé à l'unité sur le tableau « NC Sales Conversion » 2025 et 2026)
+    if pays == "BE" and y < 2026:
+        return f"('{p}PSABrand__c' not in {_liste(XP)} || '{p}NatureLabelized' not in {_liste(NATURES_EXCLUES_BE_XP_AVANT_2026)})"
+    return None      # autres cas : aucun filtre de nature (origine Autobiz = campagne / source ; validé à l'unité sur le tableau « NC Sales Conversion » 2025 et 2026)
 
 
 def filtres(v, pays, y, m, perim, prefixe="", m0=None):
@@ -81,7 +89,7 @@ def filtres(v, pays, y, m, perim, prefixe="", m0=None):
         f"{v} = filter {v} by '{p}CentralLocal_lead' in [\"BRAND\", \"Central\"];",
         f"{v} = filter {v} by '{p}Activity__c' in {_liste([perim['activite']])};",
         f"{v} = filter {v} by {_origine(p, y, perim)};",
-        *([f"{v} = filter {v} by {_nature(p, y, perim)};"] if _nature(p, y, perim) else []),
+        *([f"{v} = filter {v} by {_nature(p, y, perim, pays)};"] if _nature(p, y, perim, pays) else []),
         f"{v} = filter {v} by ('{p}LeadQualificationResult__c' not in [\"Black list filtering\"] || '{p}LeadQualificationResult__c' is null);",
         f"{v} = filter {v} by '{p}Test_JustDealer2' in [\"No\"];",
         f"{v} = filter {v} by date('{p}CreatedDate_Year', '{p}CreatedDate_Month', '{p}CreatedDate_Day') in [{_periode(y, m, m0)}];",

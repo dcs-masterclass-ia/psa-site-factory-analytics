@@ -19,6 +19,15 @@ class Saql(unittest.TestCase):
         self.assertIn("'LeadTypeLabelized' in [\"1-Leads (urgent)\"]", q)
         self.assertIn("'CampaignIDUSER__c' in [\"AUTOBIZ\", \"Autobiz\"]", q)
 
+    def test_belgique_avant_2026_ecarte_devis_et_information_sur_xp(self):
+        q = c.saql_leads("x/y", "BE", 2025, 8, c.PERIMETRES["std"])
+        self.assertIn('"2.Quote request", "4.Information request"', q)
+        self.assertIn("'PSABrand__c' not in [\"AC\", \"AP\", \"DS\", \"OP\"] ||", q)         # les marques xF ne sont pas touchées
+        qc = c.saql_commandes("d/v", "BE", 2025, 8, c.PERIMETRES["std"])
+        self.assertIn("'ACCLead.NatureLabelized' not in", qc)                                   # même périmètre sur les jeux dealer et SUB
+        for pays, an in (("BE", 2026), ("FR", 2025), ("ES", 2025)):
+            self.assertNotIn("NatureLabelized", c.saql_leads("x/y", pays, an, 8, c.PERIMETRES["std"]))
+
     def test_spoticar_vo_rachat(self):
         q = c.saql_leads("x/y", "FR", 2026, 9, c.PERIMETRES["sp"])
         self.assertIn('\'PSABrand__c\' in ["SP"]', q)
