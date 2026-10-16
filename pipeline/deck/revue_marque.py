@@ -59,6 +59,18 @@ def _mois_cle(per):
     return f"{per.annee}-{per.indice:02d}"
 
 
+def _entree(ctx, marque, per):
+    """{canal: sessions} des arrivées « Trade In Entry » du mois, sommées sur les sites de la marque ; {} si absent."""
+    cle = _mois_cle(per)
+    out = {}
+    for nom, m, _ in ctx.d.sites:
+        if m != marque:
+            continue
+        for canal, n in ((((ctx.d._site_json(nom) or {}).get("entreeMonth") or {}).get(cle) or {}).get("canaux") or {}).items():
+            out[canal] = out.get(canal, 0) + n
+    return out
+
+
 def _site_principal(ctx, marque, per):
     """(sessions du site principal, sessions du site de reprise) du mois, sommées sur les sites de la marque (data/<site>.json : propSessions.month = propriété GA4 entière, comme Looker / repriseMonth) ; None si absent."""
     cle = _mois_cle(per)
@@ -89,6 +101,11 @@ def trafic(ctx, rv, marque):
         return u[k] if u else repli
     s_p = val(prec, "sessions", sum(can_p.values()) or None)
     s_n = val(n1, "sessions", sum(can_n.values()) or None)
+    # tableau et anneau « Traffic landing on Trade In » = sessions « Trade In Entry » (arrivées sur la home page de la reprise) par canal, comme Looker :
+    # data/<site>.json -> entreeMonth[mois].canaux (pipeline/ga4.py entree_directe_par_canal) ; repli sur les canaux de toutes les sessions si absent
+    ent = [_entree(ctx, marque, p) for p in (rv.per, rv.prec, rv.n1)]
+    if ent[0]:
+        can, can_p, can_n = ent[0], ent[1] or {}, ent[2] or {}
     ij, hl = val(cur, "in_journey"), val(cur, "hot_leads")
     e_s = (_d(ses, s_p), _d(ses, s_n))
     e_ij = (_d(ij, val(prec, "in_journey")), _d(ij, val(n1, "in_journey")))

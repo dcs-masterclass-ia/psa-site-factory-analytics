@@ -128,7 +128,7 @@ def trafic_leads_groupe(ctx, rv, groupe, marques):
     puces = puces[:3]
 
     titre_sous = f"Traffic and leads by brand {groupe}"
-    s = slide_revue(ctx, rv, "Executive Summary", sous_titre=titre_sous, puces=puces, source="Source: autobiz + GA")
+    s = slide_revue(ctx, rv, "Executive Summary", sous_titre=titre_sous, puces=puces, source="Source: autobiz + GA", boite_pleine=True)
     s.shapes.title.text_frame.paragraphs[0].runs[0].font.size = Pt(28)
 
     n = len(marques)

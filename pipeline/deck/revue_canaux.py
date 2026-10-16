@@ -11,7 +11,7 @@ from . import graphiques as g
 from .donnees import PROJET_BO, PROJETS, groupe_source
 
 # groupes de sources du deck de référence (Tableau) : SOL et eDealer sont des sources à part (le regroupement standard de Donnees les met dans Display / Autre)
-ORDRE_SOURCES = ["Display", "Edealer", "Emailing", "LLM", "Main-Website", "Search", "Social", "SOL", "Autre"]
+ORDRE_SOURCES = ["Display", "Edealer", "Emailing", "Main-Website", "Search", "Social", "SOL", "Autre"]      # (LLM est replié dans Autre : pas de ligne LLM dans le deck)
 from .periodes import MOIS_COURTS
 from .revue_commun import C_SANS, C_VN, C_VO, evol, mois_label, nb, pct, slide_revue
 
@@ -107,7 +107,8 @@ def _tot(d):
 
 def groupe_revue(brut):
     b = (brut or "").strip().lower()
-    return "SOL" if b == "sol" else "Edealer" if b == "edealer" else groupe_source(brut)
+    g_ = "SOL" if b == "sol" else "Edealer" if b == "edealer" else groupe_source(brut)
+    return "Autre" if g_ == "LLM" else g_
 
 
 def _sources(ctx, per, marque):

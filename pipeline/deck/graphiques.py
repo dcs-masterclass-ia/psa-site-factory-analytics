@@ -241,7 +241,7 @@ FOND_BOITE = "F3F8FF"         # fond de l'encadré de commentaires à droite
 BORD_BOITE = "1F3F7A"         # trait pointillé de l'encadré
 
 
-def boite_pointillee(slide, x, y, w, h, lignes, taille=12, fond=None, bord=None, espace_apres=12, largeur_trait=1.25):
+def boite_pointillee(slide, x, y, w, h, lignes, taille=12, fond=None, bord=None, espace_apres=12, largeur_trait=1.25, trait=True):
     """Encadré de commentaires à droite des decks de référence : fond bleu très clair, trait pointillé, puces • (retrait suspendu), texte centré
     verticalement, 12 pt, 12 pt d'espace après chaque paragraphe (valeurs relevées sur la diapositive 3 du deck « Reporting PT T3 2026 »)."""
     from pptx.oxml.ns import qn
@@ -250,9 +250,12 @@ def boite_pointillee(slide, x, y, w, h, lignes, taille=12, fond=None, bord=None,
     forme = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
     forme.shadow.inherit = False
     forme.fill.solid(); forme.fill.fore_color.rgb = rgb(fond or FOND_BOITE)
-    forme.line.color.rgb = rgb(bord or BORD_BOITE)
-    forme.line.width = Pt(largeur_trait)
-    forme.line.dash_style = MSO_LINE.DASH
+    if trait:
+        forme.line.color.rgb = rgb(bord or BORD_BOITE)
+        forme.line.width = Pt(largeur_trait)
+        forme.line.dash_style = MSO_LINE.DASH
+    else:
+        forme.line.fill.background()
     tf = forme.text_frame
     tf.word_wrap = True
     tf.vertical_anchor = MSO_ANCHOR.MIDDLE

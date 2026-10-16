@@ -22,7 +22,7 @@ SECTIONS = ["EXECUTIVE SUMMARY", "TRAFFIC & LEAD DEEP DIVE", "PROJECTION CURRENT
 # couleurs du deck : barres 2025 (vert d'eau) / 2026 (orange), projets d'achat (bleu / rouge / orange), encadré de commentaires
 C2025, C2026 = "76B7B2", "F28E2B"
 C_VN, C_SANS, C_VO = "4E79A7", "E15759", "F28E2B"
-BOITE_FOND, BOITE_BORD = "F3F8FF", "8FAADC"
+BOITE_FOND, BOITE_BORD, BOITE_PLEIN = "F3F8FF", "8FAADC", "D9E2F3"
 MARINE = "043882"
 
 
@@ -78,14 +78,16 @@ def pied(slide, rv, source="Source: autobiz"):
         g.texte(slide, 1.08, 7.15, 5.5, 0.28, source, taille=10.5, couleur="000000")
 
 
-def boite_revue(slide, puces, x=11.12, y=1.15, w=2.11, h=5.78, taille=10):
+def boite_revue(slide, puces, x=11.12, y=1.15, w=2.11, h=5.78, taille=10, plein=False):
     """Encadré de commentaires à droite des diapositives de données (fond F3F8FF, trait pointillé bleu clair, puces, texte centré verticalement)."""
     if not puces:
         return None
+    if plein:        # variante des diapositives 5, 6, 8 et 9 du deck : fond bleu-gris plein, sans trait
+        return g.boite_pointillee(slide, x, y, w, h, puces, taille=taille, fond=BOITE_PLEIN, espace_apres=14, trait=False)
     return g.boite_pointillee(slide, x, y, w, h, puces, taille=taille, fond=BOITE_FOND, bord=BOITE_BORD, espace_apres=8, largeur_trait=1.0)
 
 
-def slide_revue(ctx, rv, titre, sous_titre=None, marque=None, puces=None, source="Source: autobiz", taille_titre=24, notes=None, layout="Title and Subtitle", x_titre=0.14):
+def slide_revue(ctx, rv, titre, sous_titre=None, marque=None, puces=None, source="Source: autobiz", taille_titre=24, notes=None, layout="Title and Subtitle", x_titre=0.14, boite_pleine=False):
     """Nouvelle diapositive au format du deck de référence : titre (24 pt, police du gabarit), sous-titre facultatif en gras noir, logo de la marque au centre,
     drapeau, encadré de commentaires à droite (`puces`) et pied de page. Retourne la diapositive ; à elle d'ajouter les graphiques / tableaux
     dans la zone gauche (x de 0,15 à 11,0 po, y de 1,1 à 6,95 po)."""
@@ -113,7 +115,7 @@ def slide_revue(ctx, rv, titre, sous_titre=None, marque=None, puces=None, source
     pied(s, rv, source)
     if notes:
         s.notes_slide.notes_text_frame.text = notes
-    boite_revue(s, puces)
+    boite_revue(s, puces, plein=boite_pleine)
     return s
 
 

@@ -308,7 +308,7 @@ def vue_globale(ctx, rv):
              f"NC leads: {_k(f['vn_mois'])} leads in {_mois_nom(per)}, {pct(f['e_vn_n1'], 0, signe=True)} YoY and {pct(f['e_vn_prec'], 0, signe=True)} vs {_mois_nom(rv.prec)}.",
              f"YTD performance at {_k(f['ytd'])} leads, {pct(f['e_ytd'], 0, signe=True)} vs {an - 1}" +
              (f", with {_liste(top2)} accounting for {pct(part_top2)} of generated leads." if len(top2) == 2 else ".")]
-    s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Global view", puces=puces)
+    s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Global view", puces=puces, boite_pleine=True)
     _bandeau(s, 0.69, 1.14, 9.87, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {mois_label(per).upper()}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
     _bloc_chiffre(s, 0.69, "REPORTING MONTHLY", f"Total generated leads {mois_maj}. {an}", f["mois"], "Evolution vs last month", f["e_mois_prec"], 1.83)
     _bloc_chiffre(s, 2.58, "REPORTING YTD", f"Total generated leads {an}", f["ytd"], f"Evolution vs last year ( {an - 1} et {an})", f["e_ytd"], 1.75)
@@ -359,7 +359,7 @@ def tendance_leads(ctx, rv):
     p2 = f"NC leads {'remain the main growth driver, ' if (f['e_vn_n1'] or 0) > (f['e_mois_n1'] or 0) else ''}{pct(f['e_vn_n1'], 0, signe=True)} YoY in {mois}" + \
          (f", with {'an' if sens[0] == 'a' else 'a'} {sens} vs {prec} ({pct(e_vn_prec_n1, 0, signe=True)})." if e_vn_prec_n1 is not None else ".")
     p3 = f"{mois} volumes: {nb(f['mois'])} total leads ({pct(f['e_mois_prec'], 0, signe=True)} vs {prec}) and {nb(f['vn_mois'])} NC leads ({pct(f['e_vn_prec'], 0, signe=True)} vs {prec})."
-    s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Lead trend – all brands", puces=[p1, p2, p3])
+    s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Lead trend – all brands", puces=[p1, p2, p3], boite_pleine=True)
     graphique_annuel(s, 0.72, 1.22, 9.67, 2.75, "Total leads year trend", f["old_m"], f["cur_m"], ecoules, an)
     graphique_annuel(s, 0.72, 4.05, 9.67, 2.85, "NC leads year trend", f["old_vn"], f["cur_vn"], ecoules, an)
     return s
