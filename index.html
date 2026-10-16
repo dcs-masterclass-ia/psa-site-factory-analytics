@@ -1577,40 +1577,42 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:12.5px;color:#6d727a">Choisis une dimension et des dates : appel en direct à Search Console, données jour par jour</div>
               </div>
             </div>
-            <div style="display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap;margin-bottom:16px;background:#fff;border:1px solid #efeff1;border-radius:14px;padding:14px 16px">
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Dimension</div>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px;background:#fff;border:1px solid #efeff1;border-radius:14px;padding:16px">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div style="font-size:13px;color:#9a9fa6">Dimension</div>
                 <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:4px">
                   <span onClick="{{ dimPages }}" style="{{ dimPagesStyle }}">Pages</span>
                   <span onClick="{{ dimQueries }}" style="{{ dimQueriesStyle }}">Requêtes</span>
                 </div>
               </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Période analysée · du</div>
-                <input type="date" value="{{ cmpStart }}" onInput="{{ onCmpStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">au</div>
-                <input type="date" value="{{ cmpEnd }}" onInput="{{ onCmpEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div style="width:8px"></div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Comparée à · du</div>
-                <input type="date" value="{{ cmpPrevStart }}" onInput="{{ onCmpPrevStart }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">au</div>
-                <input type="date" value="{{ cmpPrevEnd }}" onInput="{{ onCmpPrevEnd }}" style="height:38px;padding:0 14px;border:1px solid #ececee;border-radius:13px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff" />
-              </div>
-              <div>
-                <div style="font-size:13px;color:#9a9fa6;margin-bottom:6px">Raccourcis</div>
-                <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:12px;padding:4px">
-                  <span onClick="{{ presetPrev }}" style="font-size:13px;padding:6px 10px;border-radius:9px;cursor:pointer;color:#2f2f33">Période précédente</span>
-                  <span onClick="{{ presetN1 }}" style="font-size:13px;padding:6px 10px;border-radius:9px;cursor:pointer;color:#2f2f33">Même période N-1</span>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">
+                <div style="border:1px solid #efeff1;border-radius:12px;padding:12px 14px;background:#fafafb">
+                  <div style="font-size:13px;font-weight:600;color:#121214;margin-bottom:10px;min-height:32px;display:flex;align-items:center">Période analysée</div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+                    <input type="date" value="{{ cmpStart }}" onInput="{{ onCmpStart }}" style="height:38px;width:100%;min-width:0;padding:0 12px;border:1px solid #ececee;border-radius:12px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;box-sizing:border-box" />
+                    <span style="color:#9a9fa6;font-size:14px">→</span>
+                    <input type="date" value="{{ cmpEnd }}" onInput="{{ onCmpEnd }}" style="height:38px;width:100%;min-width:0;padding:0 12px;border:1px solid #ececee;border-radius:12px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;box-sizing:border-box" />
+                  </div>
+                </div>
+                <div style="border:1px solid #efeff1;border-radius:12px;padding:12px 14px;background:#fafafb">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;min-height:32px;flex-wrap:wrap">
+                    <div style="font-size:13px;font-weight:600;color:#121214">Comparée à</div>
+                    <div style="display:flex;align-items:center;gap:4px;background:#eaeaee;border-radius:10px;padding:3px">
+                      <span onClick="{{ presetPrev }}" style="font-size:12px;padding:4px 9px;border-radius:8px;cursor:pointer;color:#2f2f33;white-space:nowrap">Période précédente</span>
+                      <span onClick="{{ presetN1 }}" style="font-size:12px;padding:4px 9px;border-radius:8px;cursor:pointer;color:#2f2f33;white-space:nowrap">Même période N-1</span>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+                    <input type="date" value="{{ cmpPrevStart }}" onInput="{{ onCmpPrevStart }}" style="height:38px;width:100%;min-width:0;padding:0 12px;border:1px solid #ececee;border-radius:12px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;box-sizing:border-box" />
+                    <span style="color:#9a9fa6;font-size:14px">→</span>
+                    <input type="date" value="{{ cmpPrevEnd }}" onInput="{{ onCmpPrevEnd }}" style="height:38px;width:100%;min-width:0;padding:0 12px;border:1px solid #ececee;border-radius:12px;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214;background:#fff;box-sizing:border-box" />
+                  </div>
                 </div>
               </div>
-              <div onClick="{{ runApi }}" style="{{ runStyle }}">{{ runLabel }}</div>
-              <span style="font-size:13px;color:#9a9fa6;max-width:260px">{{ apiStatus }}</span>
+              <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+                <div onClick="{{ runApi }}" style="{{ runStyle }}">{{ runLabel }}</div>
+                <span style="font-size:13px;color:#9a9fa6">{{ apiStatus }}</span>
+              </div>
             </div>
 
             <sc-if value="{{ cmpError }}" hint-placeholder-val="{{ false }}">
