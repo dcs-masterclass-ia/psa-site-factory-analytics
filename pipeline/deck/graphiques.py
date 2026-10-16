@@ -286,7 +286,7 @@ def drapeau(slide, code, x=10.29, y=0.22, w=1.21, h=0.81):
         slide.shapes.add_picture(str(f), Inches(x), Inches(y), Inches(w), Inches(h))
 
 
-def lignes_chart(slide, x, y, w, h, categories, series, taille=10, legende=True, etiquettes=True, format_nombre="#,##0", axe_valeurs=False):
+def lignes_chart(slide, x, y, w, h, categories, series, taille=10, legende=True, etiquettes=True, format_nombre="#,##0", axe_valeurs=False, axe_pct=False):
     """Courbes natives avec marqueurs. series = [(nom, [valeurs ou None], couleur_hex)] ; une valeur None laisse un trou (mois non écoulé)."""
     if not categories:
         return texte(slide, x, y, w, 0.4, "Aucune donnée sur ce périmètre.", taille=11, couleur=GRIS, italique=True)
@@ -310,6 +310,9 @@ def lignes_chart(slide, x, y, w, h, categories, series, taille=10, legende=True,
         va.major_gridlines.format.line.color.rgb = rgb(GRIS_CLAIR)
         va.format.line.fill.background()
         va.tick_labels.font.size = Pt(taille - 1)
+        if axe_pct:                      # valeurs = fractions affichées en %
+            va.tick_labels.number_format = "0%"
+            va.tick_labels.number_format_is_linked = False
     ca = ch.category_axis
     ca.format.line.color.rgb = rgb(GRIS_CLAIR)
     ca.tick_labels.font.size = Pt(taille)

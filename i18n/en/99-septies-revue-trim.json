@@ -1,0 +1,17 @@
+{
+ "Ce format reproduit la revue trimestrielle : seule la périodicité Trimestrielle est possible.": "This format reproduces the quarterly review: only the Quarterly frequency is available.",
+ "Ce modèle reproduit le deck « Stellantis Reporting Q3 2026 BE » : contenu fixe, toutes les marques cochées": "This template reproduces the “Stellantis Reporting Q3 2026 BE” deck: fixed content, all the selected brands",
+ "Estimation : {0}. Le plan à droite détaille les diapositives ; la section « Sales performance » (C1ST) n'est créée que si C1ST suit le marché.": "Estimate: {0}. The outline on the right details the slides; the “Sales performance” (C1ST) section is only created if C1ST tracks the market.",
+ "Reporting trimestriel d'un pays, à l'image du deck « Stellantis Reporting Q3 2026 BE » : global overview (leads par marque YoY / QoQ, par mois, projets d'achat), sales performance C1ST, deep dive trafic / leads / conquête par marque, points ouverts, prochaines étapes": "Quarterly reporting for a country, modelled on the “Stellantis Reporting Q3 2026 BE” deck: global overview (leads by brand YoY / QoQ, by month, purchase projects), C1ST sales performance, traffic / leads / conquest deep dive by brand, open points, next steps",
+ "Résumé, leads par marque (YoY / QoQ), par mois, NC par marque, projets d'achat, trafic et leads, vue d'ensemble par marque": "Summary, leads by brand (YoY / QoQ), by month, NC by brand, purchase projects, traffic and leads, overview by brand",
+ "C1ST : suivi des leads, leads VN, ventes additionnelles (si données C1ST)": "C1ST: lead follow-up, VN leads, additional sales (if C1ST data)",
+ "Traffic & lead deep dive": "Traffic & lead deep dive",
+ "Trafic, leads par canal et conquête / fidélité : {0}": "Traffic, leads by channel and conquest / loyalty: {0}",
+ "Tableau des prochaines étapes": "Next steps table",
+ "Questions, page de contacts": "Questions, contacts page",
+ "Sales performance": "Sales performance",
+ "Global overview": "Global overview",
+ "Open points": "Open points",
+ "Next steps": "Next steps",
+ "Q/A et contacts": "Q&A and contacts"
+}

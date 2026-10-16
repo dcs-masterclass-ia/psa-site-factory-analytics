@@ -158,6 +158,18 @@ test("commentaires et actions par marque : clés connues seulement, texte borné
   assert.equal(Object.keys(r.body.brief.actionsMarques).length, 2);
 });
 
+test("format revue_trim : exige une période trimestrielle, contenu fixe", async () => {
+  const refus = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_trim", periode: { type: "mois", annee: 2026, indice: 9 } } });
+  assert.equal(refus.code, 400);
+  const refusAn = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_trim", periode: { type: "annee", annee: 2026 } } });
+  assert.equal(refusAn.code, 400);
+  const r = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_trim", periode: { type: "trimestre", annee: 2026, indice: 3 } } });
+  assert.equal(r.code, 200);
+  assert.equal(r.body.brief.format, "revue_trim");
+  const fr = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_fr", periode: { type: "trimestre", annee: 2026, indice: 3 } } });
+  assert.equal(fr.code, 400);                                       // revue_fr reste mensuelle
+});
+
 test("format revue_fr : exige une période mensuelle ; actions en cours nettoyées (sujet obligatoire, statut en lignes)", async () => {
   const refus = await appelle("POST", { action: "save", brief: { ...brief, format: "revue_fr" } });          // période trimestrielle
   assert.equal(refus.code, 400);

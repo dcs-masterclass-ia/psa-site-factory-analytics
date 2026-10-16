@@ -3001,6 +3001,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Marques <span style="color:#b3b7bd">· clic = une seule, Cmd / Maj + clic = en ajouter ou en retirer</span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prMarquesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Périodicité</div>
               <sc-if value="{{ prFr }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:8px">Ce format reproduit la revue mensuelle : seule la périodicité Mensuelle est possible.</div></sc-if>
+              <sc-if value="{{ prTrim }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#9a9fa6;margin-bottom:8px">Ce format reproduit la revue trimestrielle : seule la périodicité Trimestrielle est possible.</div></sc-if>
               <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prTypesChips }}" as="c" hint-placeholder-count="4"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin:14px 0 8px">Période : {{ prPeriodeLabel }}</div>
               <div style="display:flex;gap:18px;flex-wrap:wrap">
@@ -3024,6 +3025,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <div style="{{ stp3_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
                 <sc-if value="{{ prFr }}" hint-placeholder-val="{{ false }}"><div style="background:#f1eefe;border-radius:14px;padding:14px 16px"><div style="font-size:14px;font-weight:600;color:#5b43d6;margin-bottom:4px">Ce modèle reproduit le deck « Trade in review » : contenu fixe, toutes les marques du périmètre</div><div style="font-size:13px;color:#2f2f33;line-height:1.55">Estimation : {{ prFrNb }}. Le plan à droite détaille les diapositives.</div></div></sc-if>
+                <sc-if value="{{ prTrim }}" hint-placeholder-val="{{ false }}"><div style="background:#f1eefe;border-radius:14px;padding:14px 16px"><div style="font-size:14px;font-weight:600;color:#5b43d6;margin-bottom:4px">Ce modèle reproduit le deck « Stellantis Reporting Q3 2026 BE » : contenu fixe, toutes les marques cochées</div><div style="font-size:13px;color:#2f2f33;line-height:1.55">Estimation : {{ prFrNb }}. Le plan à droite détaille les diapositives ; la section « Sales performance » (C1ST) n'est créée que si C1ST suit le marché.</div></div></sc-if>
                 <sc-if value="{{ prLockedStd }}" hint-placeholder-val="{{ true }}">
                   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><span style="{{ prContentTagStyle }}">{{ prContentTag }}</span><span style="font-size:12.5px;color:#9a9fa6">Structuré pour garantir une présentation cohérente.</span></div>
                   <sc-for list="{{ prModLocked }}" as="m" hint-placeholder-count="5">
@@ -6758,6 +6760,7 @@ class Component extends DCLogic {
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
     const per = prNormPeriode(pr.periode);
     const prFr = pr.format==='revue_fr';
+    const prTrim = pr.format==='revue_trim';      // revue trimestrielle pays : contenu fixe, période trimestrielle
     const prSet = patch => set({pr:Object.assign({}, pr, patch)});
     const prTab = st.prTab || 'nouveau';
     const prData = this._pr || {};
@@ -6779,7 +6782,7 @@ class Component extends DCLogic {
     const prMarquesChips = [{ label:'Toutes ('+prMarquesDispo.length+')', pick:e=>prPick(e,()=>prSet({marques:[]}),true), style:prChip(!pr.marques.length) }]
       .concat(prMarquesDispo.map(m=>({ label:prTitle(m), pick:e=>prPick(e,()=>prSet({marques:(prMulti(e)?(()=>{ const r=prTog(pr.marques,m); return r.length>=prMarquesDispo.length?[]:r; })():(pr.marques.length===1&&pr.marques[0]===m?[]:[m]))}), !prMulti(e)&&!(pr.marques.length===1&&pr.marques[0]===m)), style:prChip(pr.marques.length>0&&pr.marques.includes(m)) })));
     const prCy = new Date(todayIso+'T00:00:00Z').getUTCFullYear();
-    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:e=>{ if (prFr&&k!=='mois') return; prPick(e,()=>prSet({periode:prDernierePeriode(k)}),true); }, style:prChip(per.type===k)+(prFr&&k!=='mois'?';opacity:.4;cursor:not-allowed':'') }));
+    const prTypesChips = PR_TYPES.map(([k,l])=>({ label:l, pick:e=>{ if ((prFr&&k!=='mois')||(prTrim&&k!=='trimestre')) return; prPick(e,()=>prSet({periode:prDernierePeriode(k)}),true); }, style:prChip(per.type===k)+(((prFr&&k!=='mois')||(prTrim&&k!=='trimestre'))?';opacity:.4;cursor:not-allowed':'') }));
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
       .map(([v,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{indice:v})}),true), style:prChip(per.indice===v) }));
     const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{annee:a})}),true), style:prChip(per.annee===a) }));
@@ -6812,6 +6815,16 @@ class Component extends DCLogic {
     const prNbMarquesFr = pr.marques.length||8;
     const prNbAct = pr.actionsEnCours.length;
     const prPlan = (()=>{
+      if (prTrim) {
+        const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
+        const nm = prNbMarquesFr, nPts = pr.pointsOuverts.length, nEt = pr.prochainesEtapes.length>0?1:0;
+        add('Couverture','Page de titre',1); add('Agenda','Sommaire de la revue',3+(nPts?1:0)+(nEt?1:0)+1);
+        add('Global overview','Résumé, leads par marque (YoY / QoQ), par mois, NC par marque, projets d\'achat, trafic et leads, vue d\'ensemble par marque',14);
+        add('Sales performance','C1ST : suivi des leads, leads VN, ventes additionnelles (si données C1ST)',5);
+        add('Traffic & lead deep dive','Trafic, leads par canal et conquête / fidélité : '+nm+' marque'+(nm>1?'s':'')+' × 3',3*nm);
+        add('Open points',nPts+' point'+(nPts>1?'s':''),nPts); add('Next steps','Tableau des prochaines étapes',nEt); add('Q/A et contacts','Questions, page de contacts',2);
+        return { rows, total:n };
+      }
       if (prFr) {
         const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
         add('Couverture','Page de titre',1); add('Actions en cours',prNbAct+' action'+(prNbAct>1?'s':''),prNbAct>0?1:0); add('Agenda','Sommaire de la revue',5);
@@ -6855,8 +6868,8 @@ class Component extends DCLogic {
     if (!prEnCours && this._prTick) { clearInterval(this._prTick); this._prTick = null; }
     // ---- parcours par étapes : modèle -> cadrage -> contenu (obligatoires), puis points ouverts, prochaines étapes, contact (facultatifs)
     const prValidMods = pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
-    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = prFr ? true : prValidMods.length>0;
-    const prS2ok = prTitreOk&&prLangueOk&&prPaysOk&&(!prFr||per.type==='mois');
+    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = (prFr||prTrim) ? true : prValidMods.length>0;
+    const prS2ok = prTitreOk&&prLangueOk&&prPaysOk&&(!prFr||per.type==='mois')&&(!prTrim||per.type==='trimestre');
     // ---- commentaires du DKAM par diapositive et actions recommandées corrigées par marque (champs `commentaires` et `actionsMarques` du brief)
     const PR_COMM_VUES = [['synthese','Synthèse'],['groupes','Leads par groupe de marques'],['leads_marques','Leads par marque (vs période précédente / N-1)'],['leads_mensuels','Leads par mois'],['leads_nc_mensuels','Leads New cars par mois'],['projection','Projection du mois (édition mensuelle en cours)'],['marches','Classement des marchés'],['apercu','Vue d\'ensemble des leads par marque'],['vue_trafic_leads','Trafic et leads (tableau)'],['projets','Projets d\'achat']];
     const prCommSet = (cle,v) => prSet({commentaires:Object.assign({},pr.commentaires||{},{[cle]:v.slice(0,240)})});
@@ -6911,7 +6924,7 @@ class Component extends DCLogic {
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
-      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, format:b.format==='revue_fr'?'revue_fr':'standard', actionsEnCours:Array.isArray(b.actionsEnCours)?b.actionsEnCours:[], modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
+      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, format:(b.format==='revue_fr'||b.format==='revue_trim')?b.format:'standard', actionsEnCours:Array.isArray(b.actionsEnCours)?b.actionsEnCours:[], modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
       pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', commentaires:b.commentaires||{}, actionsMarques:Object.fromEntries(Object.entries(b.actionsMarques||{}).map(([k,v])=>[k,(Array.isArray(v)?v:[v]).join('\n')])), reco:(b.modules||[]).slice(), tplNom:'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
@@ -6940,8 +6953,8 @@ class Component extends DCLogic {
         config:{format:'revue_fr',client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-bilan-annuel',base:true,nom:'Bilan annuel et plan d\'action',description:'Bilan de l\'année : vue globale, suivi C1ST, projets, trafic, sources, CTA, conquête, tendance annuelle, SEO, objectifs, analyse, points ouverts, prochaines étapes',
         config:{client:'Stellantis',langue:'en',periodicite:'annee',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','objectifs','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-trim-pays',base:true,nom:'Reporting trimestriel pays',description:'Reporting trimestriel d\'un pays : vue globale, suivi C1ST, projets, trafic, sources, conquête, leads vs marché, objectifs, analyse, points ouverts, prochaines étapes',
-        config:{client:'Stellantis',langue:'en',periodicite:'trimestre',perimetre:{pays:['PT'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','conquete','marche','objectifs','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
+      {id:'base-trim-pays',base:true,nom:'Reporting trimestriel pays',description:'Reporting trimestriel d\'un pays, à l\'image du deck « Stellantis Reporting Q3 2026 BE » : global overview (leads par marque YoY / QoQ, par mois, projets d\'achat), sales performance C1ST, deep dive trafic / leads / conquête par marque, points ouverts, prochaines étapes',
+        config:{format:'revue_trim',client:'Stellantis',langue:'en',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','conquete','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Une base minimale (vue globale, trafic par marque, analyse) à enrichir selon le besoin',
         config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','trafic_marque','analyse'],contact:{},commentaire:''}}
     ];
@@ -6949,7 +6962,7 @@ class Component extends DCLogic {
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
       set({ prTab:'nouveau', pr:Object.assign({}, prDef, { id:null, titre:'', client:c.client||prDef.client, langue:c.langue||'fr', pays:(c.perimetre&&c.perimetre.pays)||prDef.pays, marques:(c.perimetre&&c.perimetre.marques)||[],
         periode:prDernierePeriode(c.periodicite||'trimestre'), precedente:!!(c.comparaisons&&c.comparaisons.precedente), n1:!!(c.comparaisons&&c.comparaisons.n1), modules:(c.modules||[]).filter(m=>dispo.includes(m)),
-        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], format:c.format==='revue_fr'?'revue_fr':'standard', actionsEnCours:Array.isArray(c.actionsEnCours)?c.actionsEnCours:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
+        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], format:(c.format==='revue_fr'||c.format==='revue_trim')?c.format:'standard', actionsEnCours:Array.isArray(c.actionsEnCours)?c.actionsEnCours:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
         prStep:2, prUnlock:false, prConfirm:false, prTried:{}, prMsg:null }); };
     const prTplChips = prTplAll.map(t=>({ label:t.nom, pick:()=>prApplyTpl(t), style:prChip(pr.tplId===t.id) }));
     const prTplNom = st.prTplNom||'';
@@ -6973,7 +6986,7 @@ class Component extends DCLogic {
     const prStepSummary=n=>{ switch(n){
       case 1: return pr.tplNom||(pr.id?'Brief existant':'');
       case 2: return [pr.titre.trim()?'« '+pr.titre.trim()+' »':'', LANGUES_NOM[pr.langue]||'', prPerimetreLabel+' · '+prPeriodeLabel].filter(Boolean).join(' · ');
-      case 3: if (prFr) return 'Contenu fixe · '+prPlan.total+' diapositives'; return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
+      case 3: if (prFr||prTrim) return 'Contenu fixe · '+prPlan.total+' diapositives'; return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
       case 4: return pr.pointsOuverts.length?pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':'')+' à traiter':'Aucun point ouvert';
       case 5: if (prFr) return prNbAct?prNbAct+' action'+(prNbAct>1?'s':'')+' en cours':'Aucune action'; return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
       case 7: { const nc=Object.values(pr.commentaires||{}).filter(Boolean).length, na=Object.values(pr.actionsMarques||{}).filter(Boolean).length; return (nc||na)?[nc?nc+' commentaire'+(nc>1?'s':''):'',na?na+' marque'+(na>1?'s':'')+' avec actions corrigées':''].filter(Boolean).join(' · '):'Aucun commentaire'; }
@@ -7126,7 +7139,7 @@ class Component extends DCLogic {
       prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
       prCommVues, prCommMarques, prActMarques, prHasCommVues:prCommVues.length>0, prHasCommMarques:prCommMarques.length>0, prHasAct:prActMarques.length>0,
       prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },
-      prFr, prNotFr:!prFr, prLockedStd:!prFr&&!prUnlocked, prUnlockedStd:!prFr&&prUnlocked, prFrNb:prPlan.total+' diapositives', prActions, prAddAction:()=>{ if (pr.actionsEnCours.length<15) prSet({actionsEnCours:pr.actionsEnCours.concat([{sujet:'',details:'',date:'',pilote:'',statut:['']}])}); },
+      prFr, prTrim, prFixe:prFr||prTrim, prNotFr:!prFr, prLockedStd:!prFr&&!prTrim&&!prUnlocked, prUnlockedStd:!prFr&&!prTrim&&prUnlocked, prFrNb:prPlan.total+' diapositives', prActions, prAddAction:()=>{ if (pr.actionsEnCours.length<15) prSet({actionsEnCours:pr.actionsEnCours.concat([{sujet:'',details:'',date:'',pilote:'',statut:['']}])}); },
       prEtapes, prAddEtape:()=>{ if (pr.prochainesEtapes.length<15) prSet({prochainesEtapes:pr.prochainesEtapes.concat([{item:'',responsable:'',statut:'a_faire',echeance:''}])}); },
       prContactNom:pr.contact.nom||'', onPrContactNom:e=>prSet({contact:Object.assign({},pr.contact,{nom:e.target.value.slice(0,80)})}),
       prContactFonction:pr.contact.fonction||'', onPrContactFonction:e=>prSet({contact:Object.assign({},pr.contact,{fonction:e.target.value.slice(0,80)})}),

@@ -43,7 +43,7 @@ const MAX_FILE_BYTES = 900 * 1024;
 const MODULES = ["global", "marques", "projets", "trafic_marque", "sources", "cta", "conquete", "ytd", "seo", "marche", "objectifs", "crm", "analyse", "points_ouverts", "prochaines_etapes", "nps", "utm"];
 const LANGUES = ["fr", "en", "it", "es", "de"];
 const STATUTS_ACTION = ["a_faire", "en_cours", "fait", "bloque"];
-const FORMATS = ["standard", "revue_fr"];      // revue_fr : reproduit le deck « Trade in review » (période mensuelle, contenu fixe)
+const FORMATS = ["standard", "revue_fr", "revue_trim"];      // revue_fr : deck « Trade in review » (période mensuelle, contenu fixe) ; revue_trim : deck « Reporting Q3 2026 BE » (période trimestrielle, contenu fixe)
 
 const CLES_COMMENTAIRE = ["synthese", "groupes", "leads_marques", "leads_mensuels", "leads_nc_mensuels", "projection", "marches", "apercu", "vue_trafic_leads", "projets", "entree_vehicule", "c1st_lead_management", "c1st_conversion", "c1st_ventes_additionnelles", "ytd", "seo", "seo_vue", "marche", "objectifs"];
 const RE_MARQUE = /^[A-Z0-9 &'.-]{1,40}$/;
@@ -146,6 +146,7 @@ function valide(n) {
   if (!n.perimetre.pays.length) return "Choisis au moins un pays.";
   if (!n.periode.type || !n.periode.annee || (n.periode.type !== "annee" && !n.periode.indice)) return "Choisis la période.";
   if (n.format === "revue_fr" && n.periode.type !== "mois") return "Ce format reproduit la revue mensuelle : choisis une période mensuelle.";
+  if (n.format === "revue_trim" && n.periode.type !== "trimestre") return "Ce format reproduit la revue trimestrielle : choisis une période trimestrielle.";
   if (!n.modules.length) return "Choisis au moins un module.";
   return null;
 }

@@ -1377,6 +1377,9 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     if brief.get("format") == "revue_fr":          # format « revue mensuelle France » : reproduit le deck de référence (revue_fr.py)
         from .revue_fr import construit_revue
         return construit_revue(brief, donnees, sortie, gabarit)
+    if brief.get("format") == "revue_trim":        # format « revue trimestrielle pays » : reproduit le deck de référence BE Q3-2026 (revue_trim.py)
+        from .revue_trim import construit_revue_trim
+        return construit_revue_trim(brief, donnees, sortie, gabarit)
     ctx = Ctx(brief, donnees, gabarit)
     m = ctx.modules
     avoir_global = "global" in m
