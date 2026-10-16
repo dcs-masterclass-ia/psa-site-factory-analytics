@@ -183,16 +183,20 @@ test("format revue_fr : exige une période mensuelle ; actions en cours nettoyé
   assert.equal(std.body.brief.format, "standard");
 });
 
-test("téléchargement : le fichier porte le titre du brief (caractères interdits retirés), repli sur l'identifiant", async () => {
+test("téléchargement : le fichier suit la taxonomie REPORTING-année-période-pays-marques-langue, repli sur l'identifiant", async () => {
   global.__binPptx = Buffer.from("pptx");
-  fichier = { briefs: [{ id: "B-abc1", titre: 'Revue "FR" / Sept: 2026?', statut: "generee" }, { id: "B-abc2", titre: "  ", statut: "generee" }] };
+  fichier = { briefs: [
+    { id: "B-abc1", titre: "peu importe", statut: "generee", langue: "en", periode: { type: "trimestre", annee: 2026, indice: 3 }, perimetre: { pays: ["BE", "LU"], marques: [] } },
+    { id: "B-abc2", titre: "x", statut: "generee", langue: "fr", periode: { type: "mois", annee: 2026, indice: 9 }, perimetre: { pays: ["FR"], marques: ["Alfa Romeo"] } },
+    { id: "B-abc3", titre: "x", statut: "generee", langue: "es", periode: { type: "annee", annee: 2025 }, perimetre: { pays: ["ES", "PT"], marques: ["Peugeot", "Citroën"] } },
+    { id: "B-abc4", titre: "x", statut: "generee" }] };
   const telecharge = id => new Promise(resolve => {
     const h = {}; const res = { setHeader(k, v) { h[k] = v; }, status() { return this; }, json(o) { resolve({ h, o }); }, send() { resolve({ h }); } };
     handler({ method: "GET", query: { fichier: id }, headers: {} }, res);
   });
-  const a = await telecharge("B-abc1");
-  assert.match(a.h["content-disposition"], /filename\*=UTF-8''Revue%20FR%20Sept%202026\.pptx/);
-  const b = await telecharge("B-abc2");
-  assert.match(b.h["content-disposition"], /filename\*=UTF-8''presentation-B-abc2\.pptx/);
+  assert.match((await telecharge("B-abc1")).h["content-disposition"], /filename\*=UTF-8''REPORTING-2026-T3-BELUX-ALL-EN\.pptx/);
+  assert.match((await telecharge("B-abc2")).h["content-disposition"], /filename\*=UTF-8''REPORTING-2026-M09-FR-ALFA_ROMEO-FR\.pptx/);
+  assert.match((await telecharge("B-abc3")).h["content-disposition"], /filename\*=UTF-8''REPORTING-2025-A-MULTI-MULTI-ES\.pptx/);
+  assert.match((await telecharge("B-abc4")).h["content-disposition"], /filename\*=UTF-8''presentation-B-abc4\.pptx/);
   global.__binPptx = null;
 });

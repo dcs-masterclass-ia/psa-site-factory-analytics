@@ -266,3 +266,14 @@ test("modèle « Revue mensuelle » : contenu fixe (carte d'information), édite
   await expect(page.getByText("63 diapositives").first()).toBeVisible();                       // la diapositive « actions en cours » existe déjà (vide), le total ne bouge pas
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("cadrage : aperçu du nom de fichier selon la taxonomie REPORTING-année-période-pays-marques-langue", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await ouvre(page);
+  await choisitModele(page, "Reporting trimestriel");
+  await expect(page.getByText("Nom du fichier téléchargé")).toBeVisible();
+  await expect(page.getByText(/^REPORTING-\d{4}-T\d-BELUX-ALL-EN\.pptx$/)).toBeVisible();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

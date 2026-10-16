@@ -151,10 +151,21 @@ function valide(n) {
   return null;
 }
 
-// titre -> nom de fichier sûr : sans caractères interdits (/ \\ : * ? " < > |), espaces compactés, 100 caractères au plus
-function nomFichier(titre, id) {
-  const t = String(titre == null ? "" : titre).replace(/[\u0000-\u001f\/\\:*?"<>|]+/g, " ").replace(/\s+/g, " ").trim().slice(0, 100).replace(/[. ]+$/, "");
-  return t || `presentation-${id}`;
+// nom du fichier = REPORTING-AAAA-PÉRIODE-PAYS-MARQUES-LANGUE (ex. REPORTING-2026-T3-BELUX-ALL-EN) ; même règle que l'aperçu de l'étape « Cadrage » (index.html, prNomFichier)
+const sansAccent = (v) => String(v == null ? "" : v).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+function nomFichier(b, id) {
+  try {
+    const p = b.periode || {};
+    const code = p.type === "mois" ? "M" + String(p.indice).padStart(2, "0") : p.type === "trimestre" ? "T" + p.indice : p.type === "semestre" ? "S" + p.indice : p.type === "annee" ? "A" : null;
+    if (!code || !p.annee) throw new Error("periode");
+    const ps = ((b.perimetre && b.perimetre.pays) || []).map(sansAccent).filter(Boolean);
+    const pays = ps.length === 2 && ps.includes("BE") && ps.includes("LU") ? "BELUX" : ps.length === 1 ? (ps[0] === "UK" ? "GB" : ps[0]) : ps.length ? "MULTI" : "XX";
+    const ms = ((b.perimetre && b.perimetre.marques) || []).map(sansAccent).filter(Boolean);
+    const marques = ms.length === 0 ? "ALL" : ms.length === 1 ? ms[0] : "MULTI";
+    return ["REPORTING", p.annee, code, pays, marques, sansAccent(b.langue) || "XX"].join("-");
+  } catch (e) {
+    return `presentation-${id}`;
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -175,7 +186,7 @@ module.exports = async function handler(req, res) {
       // nom du fichier = titre saisi dans le brief (sinon « presentation-<id> »)
       const { data: dBr } = await readJson(FILE);
       const br = ((dBr && dBr.briefs) || []).find((b) => b && b.id === id);
-      const nom = nomFichier(br && br.titre, id);
+      const nom = br ? nomFichier(br, id) : `presentation-${id}`;
       res.setHeader("content-disposition", `attachment; filename="${nom.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "")}.pptx"; filename*=UTF-8''${encodeURIComponent(nom)}.pptx`);
       res.setHeader("cache-control", "no-store");
       res.status(200).send(buf);

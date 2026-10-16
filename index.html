@@ -3008,6 +3008,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="Titre de la présentation" style="{{ prInputStyle }}" />
                 <sc-if value="{{ prTitreVide }}" hint-placeholder-val="{{ true }}"><div onClick="{{ prSuggest }}" style="display:inline-flex;margin-top:6px;font-size:12.5px;color:#3b76e8;cursor:pointer">Utiliser la proposition&nbsp;: {{ prTitreAutoTxt }}</div></sc-if>
                 <sc-if value="{{ prErrTitreOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#c24a44;margin-top:6px">{{ prErrTitre }}</div></sc-if>
+                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:4px;margin-top:14px">Nom du fichier téléchargé</div>
+                <div style="font-size:13.5px;color:#121214;background:#f4f4f6;border:1px solid #ececee;border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ prNomFichier }}</div>
+                <div style="font-size:12px;color:#9a9fa6;margin-top:4px;line-height:1.5">Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue.</div>
                 <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px;margin-top:18px">Langue de la présentation <span style="color:#e8544a">*</span></div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="5"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
                 <div style="font-size:12px;color:#9a9fa6;margin-top:6px">Libellés, mois et chiffres sont traduits ; les analyses rédigées restent en français ou en anglais.</div>
@@ -6829,6 +6832,16 @@ class Component extends DCLogic {
     const prPeriodeLabel = prLabelPeriode(per);
     const prPerimetreLabel = pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU') ? 'BELUX (Belgique + Luxembourg)' : (pr.pays.join(' + ')||'—');
     const prTitreAuto = 'Stellantis — '+(pr.pays.length===2&&pr.pays.includes('BE')&&pr.pays.includes('LU')?'BELUX':(pr.pays.join('+')||'?'))+' — Reporting '+prPeriodeLabel;
+    // nom du fichier : REPORTING-AAAA-PÉRIODE-PAYS-MARQUES-LANGUE (même règle que api/presentations.js, nomFichier)
+    const prNomFichier = (()=>{
+      const sans = v => String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+      const code = per.type==='mois'?'M'+String(per.indice).padStart(2,'0'):per.type==='trimestre'?'T'+per.indice:per.type==='semestre'?'S'+per.indice:'A';
+      const ps = pr.pays.map(sans), belux = ps.length===2&&ps.includes('BE')&&ps.includes('LU');
+      const pays = belux?'BELUX':ps.length===1?(ps[0]==='UK'?'GB':ps[0]):ps.length?'MULTI':'XX';
+      const ms = (pr.marques||[]).map(sans).filter(Boolean);
+      const marques = ms.length===0?'ALL':ms.length===1?ms[0]:'MULTI';
+      return ['REPORTING',per.annee,code,pays,marques,sans(pr.langue)||'XX'].join('-');
+    })();
     const prNb = pr.pointsOuverts.length;
     // estimation du nombre de diapositives, alignée sur le générateur (pipeline/deck/construit.py) : la vue globale dépend des comparaisons choisies et des marchés suivis dans C1ST
     const prNbRefs = (per.type!=='annee'&&pr.precedente?1:0)+(pr.n1?1:0);
@@ -7164,7 +7177,7 @@ class Component extends DCLogic {
       tkChip:kPuce('#7c63ee'), tkIcon:kIcone('#7c63ee',h('path',{d:'M4 21V4'}),h('path',{d:'M4 5h13l-2 4 2 4H4'})),
       prTabs, prIsNew:prTab==='nouveau', prIsList:prTab==='briefs', prMsgOn:!!prMsg, prMsgText:prMsg?prMsg.text:'',
       prMsgStyle:prMsg?'font-size:13px;border-radius:10px;padding:9px 12px;'+(prMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44'):'',
-      prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
+      prNomFichier:prNomFichier+'.pptx', prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
       prLangues, prBelux, prPaysChips, prMarquesChips, prTypesChips, prIndiceChips, prAnneesChips, prHasIndice:per.type!=='annee', prCompar, prPeriodeLabel, prPerimetreLabel,
       prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
       prCommVues, prCommMarques, prActMarques, prHasCommVues:prCommVues.length>0, prHasCommMarques:prCommMarques.length>0, prHasAct:prActMarques.length>0,
