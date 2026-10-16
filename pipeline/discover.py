@@ -124,6 +124,7 @@ def deduire(liste, pays=None):
 # Fiat BE : le reporting client compte aussi la reprise de Fiat Professional (reprisebelgique / overname.fiatprofessional.com), mesuree dans la
 # propriete GA4 de Fiat BE (908 sessions au T3-2026, ecart de 911 constate face au deck BE) ; Fiat Pro n'a pas de propriete avec trafic propre.
 MARCHES_MULTI_HOTES = {"BE"}
+SESSIONS_MINIMALES_EXTRA = 20       # hote de reprise supplementaire (nl / fr) : seuil bas, les petites marques (Abarth BE : 93 sessions sur reprise.abarthbelgium.be) comptent aussi
 
 
 def hotes_reprise_complets(liste, hote_reprise, pays=None):
@@ -133,7 +134,7 @@ def hotes_reprise_complets(liste, hote_reprise, pays=None):
     if not pays or pays.upper() not in MARCHES_MULTI_HOTES:
         return hote_reprise
     extras = [h for h, s in liste
-              if h != hote_reprise and not _exclu(h) and s >= SESSIONS_MINIMALES
+              if h != hote_reprise and not _exclu(h) and s >= SESSIONS_MINIMALES_EXTRA
               and ((_est_reprise(h) and h.lower().endswith("." + pays.lower()))
                    or (h.lower().endswith(".fiatprofessional.com") and re.search(r"reprise|overname", h, re.I)))]
     return "|".join([hote_reprise] + extras)
