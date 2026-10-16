@@ -19,7 +19,7 @@ PROJETS = ["VN", "SANS", "VO"]
 NOMS_PROJETS = {"VN": "New cars & Demo cars", "SANS": "Trade-in only", "VO": "Used cars"}
 COUL = {"VN": C_VN, "SANS": C_SANS, "VO": C_VO}
 BEIGE, GRIS_TOTAL = "FBF3EA", "E7E6E6"
-NOM_SOURCE = {"Search": "SEA"}
+NOM_SOURCE = {"Search": "SEA", "Autre": "Other"}
 
 
 # ------------------------------------------------------------------ outils de dessin
@@ -44,7 +44,7 @@ def legende_projets(s):
 
 
 def matrice(s, x, y, w, h, lib_col0, lignes, colonnes, blocs, annees=None, hauteur_haut=0.5, taille=8, titre_col0="", hl_max=0.62):
-    """Matrice « Tableau » : `lignes` = libellés (la dernière = Total général), `colonnes` = [{bloc, valeurs[len(lignes)], mois, fond(bool), couleur}],
+    """Matrice « Tableau » : `lignes` = libellés (la dernière = Total), `colonnes` = [{bloc, valeurs[len(lignes)], mois, fond(bool), couleur}],
     `blocs` = {indice: titre}, `annees` = [(première_colonne, dernière_colonne, libellé)]. Chaque cellule : nombre, part de la colonne et barre colorée."""
     nl, nc = len(lignes), len(colonnes)
     wl = lib_col0
@@ -72,7 +72,7 @@ def matrice(s, x, y, w, h, lib_col0, lignes, colonnes, blocs, annees=None, haute
             _rect(s, x + wl + j * wc + wc * 0.1, ytop + hl - bh - 0.03, wc * 0.8, bh, c["couleur"])
     for i, lab in enumerate(lignes):
         dernier = i == nl - 1
-        _t(s, x, y0 + i * hl + hl / 2 - 0.12, wl, 0.25, "Total général" if dernier else lab, taille=taille + (0.5 if dernier else 0), italique=dernier,
+        _t(s, x, y0 + i * hl + hl / 2 - 0.12, wl, 0.25, "Total" if dernier else lab, taille=taille + (0.5 if dernier else 0), italique=dernier,
            align=PP_ALIGN.LEFT, couleur="000000" if dernier else "595959")
     _t(s, x, y + hauteur_haut - 0.27, wl, 0.22, titre_col0, taille=7, gras=True, align=PP_ALIGN.LEFT)
     # blocs et années
@@ -138,7 +138,7 @@ def canaux(ctx, rv, marque):
     if not sum(sum(t.values()) for t in tp):
         return None
     srcs = [sg for sg in ORDRE_SOURCES if sg in data[0] and any(sum(dd[sg].values()) for dd in data)]
-    lignes = [NOM_SOURCE.get(sg, sg) for sg in srcs] + ["Total général"]
+    lignes = [NOM_SOURCE.get(sg, sg) for sg in srcs] + ["Total"]
     colonnes = []
     for b, pj in enumerate(PROJETS):
         for k, dd in enumerate(data):
@@ -148,7 +148,7 @@ def canaux(ctx, rv, marque):
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=_puces_canaux(data, tp, srcs, rv))
     legende_projets(s)
     annees = [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)]
-    matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ")
+    hl = matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ")
     # colonnes empilées à droite
     cats = [f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
@@ -156,7 +156,9 @@ def canaux(ctx, rv, marque):
         vals = [t[pj] for t in tp]
         etiq = [f"{nb(v)}\n{v / _tot(t) * 100:.0f}%" if v and _tot(t) else None for v, t in zip(vals, tp)]
         series.append((NOMS_PROJETS[pj], vals, COUL[pj], etiq))
-    g.colonnes(s, 7.6, 1.75, 3.4, 5.2, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
+    y_haut = 1.3 + 0.5                                              # haut de la première ligne de la matrice
+    bas = 1.3 + 0.5 + hl * len(lignes) + 0.22                       # bas de la matrice (libellés des périodes) : les deux graphiques ont les mêmes bords haut et bas
+    g.colonnes(s, 7.6, y_haut, 3.4, bas - y_haut, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
                libelles_perso={i: e for i, (_, _, _, e) in enumerate(series)})
     _t(s, 7.9, 1.45, 1.5, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
     _t(s, 9.4, 1.45, 1.5, 0.25, str(per_list[2].annee), taille=9, couleur="595959")

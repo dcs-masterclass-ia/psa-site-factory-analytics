@@ -43,7 +43,7 @@ class RevueCanaux(unittest.TestCase):
             self.assertIn("SOURCE_ACQ", txt)
             self.assertIn("SEA", txt)
             self.assertIn("SOL", txt)          # SOL est une source à part, pas un sous-groupe de Display
-            self.assertIn("Total général", txt)
+            self.assertIn("Total", txt)
             # total sept. 2026 = 195 ; août 2026 = 120 -> +62 % MoM ; sept. 2025 = 80 -> +144 % YoY
             self.assertIn("increased by +62% Month-over-Month", txt)
             self.assertIn("+144% Year-over-Year", txt)

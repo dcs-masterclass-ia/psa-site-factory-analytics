@@ -83,7 +83,7 @@ class Resultats(unittest.TestCase):
             self.assertIn("620", t)            # Citroën 200/10*31
             self.assertIn("+200%", t)          # total 930 vs 310 en octobre 2025
             self.assertIn("930", t)            # total général projeté
-            self.assertIn("Total général", t)
+            self.assertIn("Total", t)
         with tempfile.TemporaryDirectory() as tmp:
             ctx, rv = self._ctx(tmp, oct_leads=False)
             self.assertIsNone(projection_nc(ctx, rv))       # aucun lead du mois en cours

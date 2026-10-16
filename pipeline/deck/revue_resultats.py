@@ -235,7 +235,7 @@ def projection_nc(ctx, rv):
                 {"t": nb(proj), "taille": 10.5, "align": PP_ALIGN.RIGHT, "fond": fond, "couleur": BLEU_PROJ, "gras": gras},
                 {"t": nb(r1), "taille": 10.5, "align": PP_ALIGN.RIGHT, "fond": fond, "couleur": tc}]
     corps = [ligne(_nom_projection(m), a, b, pr, r1, i=i) for i, (m, a, b, pr, r1) in enumerate(lignes_v)]
-    corps.append(ligne("Total général", tot[0], tot[1], tot[2], tot[3], gras=True, i=0))
+    corps.append(ligne("Total", tot[0], tot[1], tot[2], tot[3], gras=True, i=0))
     n = len(corps)
     h = min(0.43, 5.1 / n)
     _table(s, 0.96, 1.95, [1.8, 1.3, 1.4, 1.7, 1.7], [h] * n, corps)
