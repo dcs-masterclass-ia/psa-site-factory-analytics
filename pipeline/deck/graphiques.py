@@ -100,7 +100,7 @@ def _police(obj, taille, couleur=TEXTE, gras=False):
 
 
 def colonnes(slide, x, y, w, h, categories, series, empile=False, pourcentage=False, legende=True, taille=10, etiquettes=True,
-             libelles_perso=None, format_nombre="#,##0", largeur_barre=60, axe_valeurs=False, fmt=None):
+             libelles_perso=None, format_nombre="#,##0", largeur_barre=60, axe_valeurs=False, fmt=None, quadrillage=False):
     """Histogramme natif. series = [(nom, [valeurs], couleur_hex)].
     libelles_perso = {indice_série: [texte par catégorie]} pour des étiquettes personnalisées (ex. valeur + évolution)."""
     if not categories:
@@ -129,7 +129,10 @@ def colonnes(slide, x, y, w, h, categories, series, empile=False, pourcentage=Fa
     ca = ch.category_axis
     ca.format.line.color.rgb = rgb(GRIS_CLAIR)
     ca.tick_labels.font.size = Pt(taille)
-    ca.has_major_gridlines = False
+    ca.has_major_gridlines = quadrillage   # traits verticaux entre les groupes (un par mois)
+    if quadrillage:
+        ca.major_gridlines.format.line.color.rgb = rgb(GRIS_CLAIR)
+        ca.major_gridlines.format.line.width = Pt(0.75)
     plot = ch.plots[0]
     plot.gap_width = largeur_barre if not empile else 45
     if not empile:

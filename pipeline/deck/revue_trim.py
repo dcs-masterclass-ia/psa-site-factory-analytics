@@ -213,7 +213,7 @@ def _colonnes_mois(ctx, rv, s, x, y, w, h, projet=None, marque=None, taille=7, e
         if etiquettes:
             labels[i] = [None if (x_ is None) else (f"{nb(x_)}\n{_signe(evol(x_, prev[k]))}" if prev and prev[k] else nb(x_)) for k, x_ in enumerate(v)]
     return g.colonnes(s, x, y, w, h, [f"{k + 1:02d}" for k in range(12)], [(str(an), v, c) for an, v, c in series], taille=taille, libelles_perso=labels if etiquettes else None,
-                      legende=legende, largeur_barre=20, etiquettes=etiquettes)
+                      legende=legende, largeur_barre=20, etiquettes=etiquettes, quadrillage=True)
 
 
 def leads_par_mois(ctx, rv, projet=None):
@@ -246,7 +246,7 @@ def nc_par_mois_marque(ctx, rv, titre, marques):
         _logo_petit(rv, s, m, x, y, h_max=0.4, w_max=1.3)
         if (rv.manifeste.get("logos") or {}).get(m) is None:
             g.texte(s, x, y + 0.02, 3.0, 0.3, ctx.nom(m).upper(), taille=11, gras=True, couleur=MARINE)
-        if _colonnes_mois(ctx, rv, s, x, y + 0.42, 6.35, 2.3, "VN", m, taille=6, etiquettes=False, legende=True) is not None:
+        if _colonnes_mois(ctx, rv, s, x, y + 0.42, 6.35, 2.3, "VN", m, taille=5, etiquettes=True, legende=True) is not None:
             fait += 1
     _source(s, "Source: autobiz")
     return s if fait else None
