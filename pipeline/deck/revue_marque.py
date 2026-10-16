@@ -182,7 +182,7 @@ def trafic(ctx, rv, marque):
     _carre(s, 0.25, 1.85, LT, 0.96, "Sessions", "n/a" if not site else nb(site), [(mm, e_site[0]), (yy, e_site[1])], 20)
     _carre(s, 2.5, 1.85, LT, 0.96, "Sessions", nb(ses), [(mm, e_s[0]), (yy, e_s[1])], 20)
     _carre(s, 5.0, 1.85, LT, 0.96, "In Journey", "n/a" if ij is None else nb(ij), [(mm, e_ij[0]), (yy, e_ij[1])], 20)
-    _carre(s, 7.5, 1.85, LT, 1.0, "GA leads", "n/a" if hl is None else nb(hl), [(mm, e_hl[0]), (yy, e_hl[1])], 20)
+    _carre(s, 7.5, 1.85, LT, 0.96, "GA leads", "n/a" if hl is None else nb(hl), [(mm, e_hl[0]), (yy, e_hl[1])], 20)
     for x, lab in ((4.5, t1), (7.0, t2)):
         _ligne(s, x, 2.17, x + 0.5, 2.17, fleche=True)
         g.texte(s, x - 0.05, 1.93, 0.6, 0.22, "n/a" if lab is None else f"{lab:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
