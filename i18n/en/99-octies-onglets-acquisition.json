@@ -1,6 +1,15 @@
 {
- "Canal sessions parent": "Channel sessions – parent site",
- "Canal sessions Reprise": "Channel sessions – trade-in site",
- "Campagne reprise": "Trade-in campaigns",
- "Qualité du trafic Reprise": "Trade-in traffic quality"
+ "Ce qui fait bouger les leads": "What moves the leads",
+ "Trafic reprise par canal": "Trade-in traffic by channel",
+ "Comparaison avec les années passées": "Comparison with past years",
+ "Campagnes et changements": "Campaigns and changes",
+ "Trafic parent par canal": "Parent-site traffic by channel",
+ "Arrivées sur la reprise par canal": "Trade-in arrivals by channel",
+ "Campagnes de la reprise": "Trade-in campaigns",
+ "Qualité des visites reprise": "Trade-in visit quality",
+ "Taux de conversion par jour": "Conversion rate by day",
+ "Où les visiteurs abandonnent": "Where visitors drop off",
+ "Conversion par canal et appareil": "Conversion by channel and device",
+ "Avant / après la V2": "Before / after V2",
+ "Qui sont les visiteurs": "Who the visitors are"
 }

@@ -12,10 +12,10 @@ test("canal × device : colonne Total ; fuites par canal avec effectifs", async 
   await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Conversion", { exact: true }).first().click();
-  await page.getByText("Canal × device", { exact: true }).first().click();
+  await page.getByText("Conversion par canal et appareil", { exact: true }).first().click();
   await expect(page.getByText("Conversion par canal et device")).toBeVisible();
   await expect(page.getByText("Total", { exact: true }).first()).toBeVisible();
-  await page.getByText("Fuites du tunnel", { exact: true }).first().click();
+  await page.getByText("Où les visiteurs abandonnent", { exact: true }).first().click();
   await page.getByText("Par canal d'acquisition", { exact: true }).click();
   await expect(page.getByText("Moyenne du site").first()).toBeVisible();
   await page.screenshot({ path: process.env.TMPDIR + "/leaks.png" });
@@ -26,7 +26,7 @@ test("canal × device : colonne Sessions, canaux classés par volume décroissan
   await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Conversion", { exact: true }).first().click();
-  await page.getByText("Canal × device", { exact: true }).first().click();
+  await page.getByText("Conversion par canal et appareil", { exact: true }).first().click();
   await expect(page.getByText("Sessions", { exact: true }).first()).toBeVisible();
   const carte = page.locator("div").filter({ hasText: /^Conversion par canal et device/ }).last();
   const valeurs = await page.evaluate(() => {

@@ -13,7 +13,7 @@ test("survol des courbes : bulle avec valeurs", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Analyses détaillées", { exact: false }).first().click().catch(() => {});
   const vus = [];
-  for (const [theme, nav, id] of [["Évolution", "Sessions par canal", "cbTrend"], ["Évolution", "Années passées", "cbHist"], ["Conversion", "Par jour", "cbConv"], ["Audience", "Jour & navigateurs", "cbSeason"], ["Évolution", "Contribution", "cbContrib"]]) {
+  for (const [theme, nav, id] of [["Évolution", "Trafic reprise par canal", "cbTrend"], ["Évolution", "Comparaison avec les années passées", "cbHist"], ["Conversion", "Taux de conversion par jour", "cbConv"], ["Audience", "Qui sont les visiteurs", "cbSeason"], ["Évolution", "Ce qui fait bouger les leads", "cbContrib"]]) {
     await page.getByText(theme, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
     await page.getByText(nav, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
     const box = page.locator("#" + id);

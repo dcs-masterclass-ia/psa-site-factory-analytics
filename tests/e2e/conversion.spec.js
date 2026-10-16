@@ -19,7 +19,7 @@ test("la courbe de conversion par jour s'affiche pour un site avec funnelDaily",
   await page.mouse.click(5, 5);
 
   await page.getByText("Conversion", { exact: true }).first().click();
-  await expect(page.getByText("Conversion par jour")).toBeVisible();
+  await expect(page.getByText("Conversion par jour · leads")).toBeVisible();
   await expect(page.getByText("Moyenne glissante 7 jours")).toBeVisible();
   // courbe de la moyenne glissante : un <path> violet epais
   await expect(page.locator('svg path[stroke="#7c63ee"][stroke-width="2.8"]').first()).toBeVisible();
@@ -34,7 +34,7 @@ test("sans donnees quotidiennes, un message clair remplace la courbe", async ({ 
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Conversion", { exact: true }).first().click();
   // "Marche entier" : la plupart des sites n'ont pas encore funnelDaily en local
-  await expect(page.getByText("Conversion par jour")).toBeVisible();
+  await expect(page.getByText("Conversion par jour · leads")).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
 
@@ -76,7 +76,7 @@ test("onglet Avant / après V2 : indicateurs, jours exacts, écarts en points, i
   await page.keyboard.press("Escape");
   await page.mouse.click(5, 5);
   await page.getByText("Conversion", { exact: true }).first().click();               // thème « Conversion »
-  await page.getByText("Avant / après V2", { exact: true }).first().click();         // vue du thème
+  await page.getByText("Avant / après la V2", { exact: true }).first().click();         // vue du thème
   await expect(page.getByText("Parcours avant / après V2")).toBeVisible();
   await expect(page.getByText(/Avant : \d{2}\/\d{2}–\d{2}\/\d{2} · Après : \d{2}\/\d{2}–\d{2}\/\d{2} · V2 le \d{2}\/\d{2}/)).toBeVisible();   // mode par défaut : les dates du haut
   await page.getByText("Autour de la bascule", { exact: true }).click();
@@ -211,7 +211,7 @@ test("Avant / après V2 : avertissement quand la période mélange ancien et nou
   await page.keyboard.press("Escape");
   await page.mouse.click(5, 5);
   await page.getByText("Conversion", { exact: true }).first().click();
-  await page.getByText("Avant / après V2", { exact: true }).first().click();
+  await page.getByText("Avant / après la V2", { exact: true }).first().click();
   await expect(page.getByText(/Attention : la période choisie contient \d+ jours? avant la V2/)).toBeVisible();
   await page.getByText("Isoler la V2 (autour de la bascule)", { exact: true }).click();                   // le bouton bascule de mode
   await expect(page.getByText(/avant : 28 jours précédant la bascule/)).toBeVisible();
