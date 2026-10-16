@@ -152,9 +152,11 @@ def canaux(ctx, rv, marque):
     # colonnes empilées à droite
     cats = [f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
+    haut = max(_tot(t) for t in tp) or 1
     for pj in ordre:
         vals = [t[pj] for t in tp]
-        etiq = [f"{nb(v)}\n{v / _tot(t) * 100:.0f}%" if v and _tot(t) else None for v, t in zip(vals, tp)]
+        # pas d'étiquette sur un segment trop bas pour la porter (elle chevaucherait celle du segment voisin)
+        etiq = [f"{nb(v)}\n{v / _tot(t) * 100:.0f}%" if v and _tot(t) and v / haut >= 0.08 else None for v, t in zip(vals, tp)]
         series.append((NOMS_PROJETS[pj], vals, COUL[pj], etiq))
     y_haut = 1.3 + 0.5                                              # haut de la première ligne de la matrice
     bas = 1.3 + 0.5 + hl * len(lignes) + 0.22                       # bas de la matrice (libellés des périodes) : les deux graphiques ont les mêmes bords haut et bas
