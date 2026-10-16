@@ -640,7 +640,7 @@ def leads_vn_c1st(ctx, rv, groupe, marques):
         best = sorted(taux, key=lambda x: -x[1])[:2]
         puces.append("Best order rate: " + ", ".join(f"{n} {v:.1f}%" for n, v in best) + ".")
     puces.append("Orders are linked to leads up to 90 days after the lead: recent months are provisional.")
-    boite_revue(s, puces, x=11.12, y=1.3, w=2.11, h=3.2, taille=9)
+    boite_revue(s, puces, x=11.12, y=1.45, w=2.11, h=3.1, taille=9)
     if len(lignes) > 1:
         g.tableau(s, 11.12, 4.6, 2.11, lignes, largeurs=[0.75, 0.45, 0.45, 0.46], taille=6.5, hauteur_ligne=0.26, alignements=[PP_ALIGN.LEFT] + [PP_ALIGN.CENTER] * 3)
     g.texte(s, 1.08, 7.12, 11.5, 0.28, source_c1st(d, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", lien="; data as of "), taille=9, couleur="000000")

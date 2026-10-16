@@ -106,7 +106,7 @@ def pied(slide, rv, source="Source: autobiz"):
         g.texte(slide, 1.08, 7.15, 5.5 if len(source) <= 40 else 11.8, 0.28, source, taille=10.5 if len(source) <= 70 else 8.5, couleur="000000")
 
 
-def boite_revue(slide, puces, x=11.12, y=1.15, w=2.11, h=5.78, taille=10, plein=False):
+def boite_revue(slide, puces, x=11.12, y=1.45, w=2.11, h=5.48, taille=10, plein=False):     # y = 1.45 : sous le trait orange du gabarit et son point (rayon 0,12), sans les toucher
     """Encadré de commentaires à droite des diapositives de données (fond F3F8FF, trait pointillé bleu clair, puces, texte centré verticalement)."""
     if not puces:
         return None
