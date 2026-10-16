@@ -42,7 +42,7 @@ def traite(cli, s, d):
         if deb > dernier:
             continue
         try:
-            lignes = ga4._rapport(cli, s.propriete, deb, fin, ["date", dim], ["sessions"], ga4._egal("hostName", hote_reprise))     # sessions de la reprise par canal
+            lignes = ga4._rapport(cli, s.propriete, deb, fin, ["date", dim], ["sessions"], ga4._egal("hostName", hote_parent))
             par_jour = {}
             for jour, canal, n in lignes:
                 if len(jour) == 8 and jour.isdigit():
@@ -51,6 +51,16 @@ def traite(cli, s, d):
                 canal_q[m] = par_jour
         except Exception as e:
             print(f"  {s.slug} {m} canal quotidien : {type(e).__name__}", file=sys.stderr)
+        try:
+            lignes = ga4._rapport(cli, s.propriete, deb, fin, ["date", dim], ["sessions"], ga4._egal("hostName", hote_reprise))
+            par_jour = {}
+            for jour, canal, n in lignes:
+                if len(jour) == 8 and jour.isdigit():
+                    par_jour.setdefault(f"{jour[:4]}-{jour[4:6]}-{jour[6:]}", {})[canal.strip() or "(non défini)"] = int(n)
+            if par_jour:
+                d.setdefault("canalReprise", {})[m] = par_jour           # sessions de la reprise par canal (courbe « Sessions par canal »)
+        except Exception as e:
+            print(f"  {s.slug} {m} canal reprise : {type(e).__name__}", file=sys.stderr)
         try:
             conv_cd[m] = funnel.conversion_par_canal_device(cli, s.propriete, hote_reprise, deb, fin)
         except Exception as e:

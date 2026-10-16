@@ -37,7 +37,7 @@ function loadSiteRaw(nom) {
 // daily, funnelMonth, v2/v2Weekly, insights...).
 function compactSite(raw) {
   if (!raw) return null;
-  const { canalQuotidien, ...rest } = raw;
+  const { canalQuotidien, canalReprise, ...rest } = raw;
   const searchMonth = {};
   for (const [mois, bloc] of Object.entries(rest.searchMonth || {})) {
     searchMonth[mois] = {

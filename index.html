@@ -3631,7 +3631,7 @@ class Component extends DCLogic {
   _aggregateImpl(debutIso, finIso) {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
-    const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, v2Steps:null, v2Meta:null,
+    const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, canalRep:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
                   convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false,
@@ -3754,6 +3754,14 @@ class Component extends DCLogic {
           if (jour < debutIso || jour > finIso) continue;
           out.canal[jour] = out.canal[jour] || {};
           for (const [ch,v] of Object.entries(c[jour])) out.canal[jour][ch] = (out.canal[jour][ch]||0) + v;
+        }
+      }
+      for (const mois of Object.keys(d.canalReprise || {})) {          // sessions de la reprise par canal (courbe « Sessions par canal »)
+        const c = d.canalReprise[mois];
+        for (const jour of Object.keys(c)) {
+          if (jour < debutIso || jour > finIso) continue;
+          out.canalRep[jour] = out.canalRep[jour] || {};
+          for (const [ch,v] of Object.entries(c[jour])) out.canalRep[jour][ch] = (out.canalRep[jour][ch]||0) + v;
         }
       }
       for (const mois of Object.keys(d.convCanalDevice || {})) {
@@ -4305,39 +4313,46 @@ class Component extends DCLogic {
         out.push(h('circle',{key:kp+'c'+k,cx:x,cy:top,r:5.5,fill:'#d78b35',stroke:'#fff',strokeWidth:1.5},h('title',null,e.date.slice(8,10)+'/'+e.date.slice(5,7)+' · '+e.titre))); });
       return out; };
     const CHAN_COLORS=['#7c63ee','#3fae7a','#d78b35','#e8544a','#3b76e8','#0ea5a4','#c026d3','#65a30d','#64748b','#f59e0b','#06b6d4','#a855f7'];
+    // courbe « Sessions par canal » : sessions de la REPRISE (canalReprise) ; repli sur le site parent tant que l'historique de la reprise n'est pas rattrapé
+    const repOk = Object.keys(agg.canalRep||{}).length>0;
+    const srcCanal = repOk ? agg.canalRep : agg.canal;
+    const joursCanalR = Object.keys(srcCanal).sort();
+    const totalParCanalR = {};
+    joursCanalR.forEach(j => { for (const [c,v] of Object.entries(srcCanal[j])) totalParCanalR[c] = (totalParCanalR[c]||0)+v; });
+    const tousCanauxR = Object.keys(totalParCanalR).sort((a,b)=>totalParCanalR[b]-totalParCanalR[a]);
     // « Sessions par canal » : les 4 plus gros canaux par défaut ; le sélecteur « Tous les canaux » les affiche tous (ils ne sont masqués que par la lisibilité)
-    const canauxTous = !!st.canauxTous && tousCanaux.length>4;
-    const majeurs = tousCanaux.slice(0, canauxTous ? tousCanaux.length : 4);
-    const channelToggles=majeurs.map((name,i)=>({
+    const canauxTous = !!st.canauxTous && tousCanauxR.length>4;
+    const majeursR = tousCanauxR.slice(0, canauxTous ? tousCanauxR.length : 4);
+    const channelToggles=majeursR.map((name,i)=>({
       name, toggle:()=>set({hidden:Object.assign({},st.hidden,{[name]:!st.hidden[name]})}),
       style:`display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;${st.hidden[name]?'color:#b3b7bd;background:#f6f6f8':'color:#2f2f33;background:'+CHAN_COLORS[i%CHAN_COLORS.length]+'1a'}`
     }));
-    if (tousCanaux.length>4) channelToggles.push({ name:canauxTous?'− Canaux secondaires':'+ '+(tousCanaux.length-4)+' autres canaux', toggle:()=>set({canauxTous:!canauxTous}),
+    if (tousCanauxR.length>4) channelToggles.push({ name:canauxTous?'− Canaux secondaires':'+ '+(tousCanauxR.length-4)+' autres canaux', toggle:()=>set({canauxTous:!canauxTous}),
       style:'display:inline-flex;align-items:center;font-size:13px;cursor:pointer;border-radius:10px;padding:5px 11px;white-space:nowrap;color:#3b76e8;background:#eef3fe;font-weight:500' });
     this._hov = {};
     const fmtJL=iso=>iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4);
     const boxH=(k,w,d0)=>Math.max(150,Math.min(520,Math.round(w*(((this._boxes||{})[k])||d0/w))));
     const MW=900,MH=boxH('trend',900,210),ML=58,MR=16,MT=16,MB=40,mpw=MW-ML-MR,mph=MH-MT-MB;
-    const maxCanalVal = Math.max(1, ...joursCanal.map(j=>{ let mx=0; for (const c of majeurs) mx=Math.max(mx,(agg.canal[j]||{})[c]||0); return mx; }))*1.2;
-    const mx2=i=>ML+(joursCanal.length>1?i/(joursCanal.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
+    const maxCanalVal = Math.max(1, ...joursCanalR.map(j=>{ let mx=0; for (const c of majeursR) mx=Math.max(mx,(srcCanal[j]||{})[c]||0); return mx; }))*1.2;
+    const mx2=i=>ML+(joursCanalR.length>1?i/(joursCanalR.length-1):0)*mpw, my=v=>MT+mph-(v/maxCanalVal)*mph, mk=[];
     [0,.3,.6,.9].forEach((frac,i)=>{
       const v=Math.round(maxCanalVal*frac);
       mk.push(h('line',{key:'g'+i,x1:ML,y1:my(v),x2:ML+mpw,y2:my(v),stroke:'#f0f0f2',strokeWidth:1,strokeDasharray:'5 6'}));
       mk.push(h('text',{key:'t'+i,x:ML-12,y:my(v)+4,textAnchor:'end',fontSize:10,fill:'#9a9fa6',fontFamily:F},this.fmt(v)));
     });
-    majeurs.forEach((name,ci)=>{
+    majeursR.forEach((name,ci)=>{
       if (st.hidden[name]) return;
-      const vals = joursCanal.map(j=>(agg.canal[j]||{})[name]||0);
+      const vals = joursCanalR.map(j=>(srcCanal[j]||{})[name]||0);
       if (vals.length<2) return;
       let d=`M${mx2(0)},${my(vals[0])}`;
       for (let i=0;i<vals.length-1;i++){ const x0=mx2(i),x1=mx2(i+1),c=(x0+x1)/2; d+=` C${c},${my(vals[i])} ${c},${my(vals[i+1])} ${x1},${my(vals[i+1])}`; }
       mk.push(h('path',{key:name,d,fill:'none',stroke:CHAN_COLORS[ci%CHAN_COLORS.length],strokeWidth:2.2,strokeLinecap:'round'}));
     });
-    const step8=Math.max(1,Math.floor(joursCanal.length/8));
-    joursCanal.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
-    this._hov.cbTrend={W:MW,H:MH,top:MT,bottom:MT+mph,xs:joursCanal.map((_,i)=>mx2(i)),rows:i=>{ const j=joursCanal[i]; const its=majeurs.map((n,ci)=>({n,c:CHAN_COLORS[ci%CHAN_COLORS.length],raw:(agg.canal[j]||{})[n]||0})).filter(x=>!st.hidden[x.n]);
+    const step8=Math.max(1,Math.floor(joursCanalR.length/8));
+    joursCanalR.forEach((j,i)=>{ if (i%step8===0) mk.push(h('text',{key:'x'+i,x:mx2(i),y:MH-8,textAnchor:'middle',fontSize:10,fill:'#8a8f98',fontFamily:F},j.slice(5))); });
+    this._hov.cbTrend={W:MW,H:MH,top:MT,bottom:MT+mph,xs:joursCanalR.map((_,i)=>mx2(i)),rows:i=>{ const j=joursCanalR[i]; const its=majeursR.map((n,ci)=>({n,c:CHAN_COLORS[ci%CHAN_COLORS.length],raw:(srcCanal[j]||{})[n]||0})).filter(x=>!st.hidden[x.n]);
       const ev=evVisible.filter(e=>e.date===j).map(e=>'◆ '+e.titre); return {title:fmtJL(j),items:its.map(x=>({n:x.n,c:x.c,v:this.fmt(x.raw)})).concat(its.length>1?[{n:'Total affiché',v:this.fmt(its.reduce((a,x)=>a+x.raw,0))}]:[]),foot:ev.length?ev:null}; }};
-    mk.push(...evMarks('ev',joursCanal,mx2,MT,MH-MB));
+    mk.push(...evMarks('ev',joursCanalR,mx2,MT,MH-MB));
     const multiChart=h('svg',{viewBox:`0 0 ${MW} ${MH}`,preserveAspectRatio:'xMidYMid meet',style:{position:'absolute',inset:0,width:'100%',height:'100%',display:'block'}},mk);
 
     // ---------- Conversion par jour (accueil -> estimation, GA4 uniquement) ----------
@@ -4746,7 +4761,7 @@ class Component extends DCLogic {
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
                      ['audience','Audience','Qui sont les visiteurs ?',['audience']],
                      ['pilotage','Pilotage','Où va-t-on ?',['alerts','goals']]];
-    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Sources',entree:'Arrivées directes',utm:'Campagnes',quality:'Qualité du trafic',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs',goals:'Objectifs',alerts:'Alertes'};
+    const GA_LABELS={contrib:'Contribution',trend:'Sessions par canal',hist:'Années passées',events:'Événements',sources:'Canal sessions parent',entree:'Canal sessions Reprise',utm:'Campagne reprise',quality:'Qualité du trafic Reprise',conv:'Par jour',leaks:'Fuites du tunnel',device:'Canal × device',v2:'Avant / après V2',audience:'Jour & navigateurs',goals:'Objectifs',alerts:'Alertes'};
     const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'));
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
@@ -4761,7 +4776,7 @@ class Component extends DCLogic {
     // fmtFr n'est defini que plus bas dans cette fonction (const, TDZ) --
     // formatage local identique pour eviter la ReferenceError.
     const fmtFrLocal=iso=>iso? iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(2,4) : '';
-    const trendRangeLabel=`Site de reprise · ${rangeDays} j (${fmtFrLocal(debut)}→${fmtFrLocal(fin)}) · cliquez une légende pour isoler`;
+    const trendRangeLabel=`${repOk?'Site de reprise':'Site parent'} · ${rangeDays} j (${fmtFrLocal(debut)}→${fmtFrLocal(fin)}) · cliquez une légende pour isoler`;
 
     // ---------- KamIA : 3 encarts, chacun recalcule sur les vraies donnees
     // deja chargees (agg/raw pour le tunnel, historique quotidien des leads

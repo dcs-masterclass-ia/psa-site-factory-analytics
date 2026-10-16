@@ -321,7 +321,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # entierement optionnel : si la dimension n'existe pas sur cette
         # propriete, on continue sans rien publier plutot que de bloquer.
         try:
-            dim_canal, par_jour_canal = channel.canal_quotidien(cli, s.propriete, hote_reprise, deb, f_iso)   # sessions de la REPRISE par canal (pas du site parent)
+            dim_canal, par_jour_canal = channel.canal_quotidien(cli, s.propriete, hote_parent, deb, f_iso)
         except Exception as e:
             dim_canal, par_jour_canal = None, {}
             journal.append(f"{mois} : canal quotidien en erreur ({type(e).__name__})")
@@ -330,6 +330,14 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"{mois} : canal quotidien via {dim_canal}")
         elif mois in d.get("canalQuotidien", {}):
             pass  # on garde la donnee du mois precedemment reussie
+        # sessions de la REPRISE par canal (courbe « Sessions par canal » ; `canalQuotidien` reste celui du site parent, utilise par « Sources »)
+        try:
+            dim_rep, par_jour_rep = channel.canal_quotidien(cli, s.propriete, hote_reprise, deb, f_iso)
+        except Exception as e:
+            dim_rep, par_jour_rep = None, {}
+            journal.append(f"{mois} : canal reprise en erreur ({type(e).__name__})")
+        if dim_rep:
+            d.setdefault("canalReprise", {})[mois] = par_jour_rep
 
         # Search Console : optionnelle comme le canal quotidien — une
         # propriete absente ou une erreur d'API ne bloque jamais le reste du
