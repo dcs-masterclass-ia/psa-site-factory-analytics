@@ -32,7 +32,7 @@ test("calendrier d'événements : liste, ajout, repère sur la courbe de session
   await expect(page.getByText("Nouveau bouton menu").first()).toBeVisible();
   expect(posts[0]).toMatchObject({ action: "save", event: { date: "2026-10-02", type: "site", titre: "Nouveau bouton menu", sites: [] } });
 
-  await page.getByText("Trafic reprise par canal", { exact: true }).first().click();
+  await page.getByText("Évolution du trafic reprise par canal", { exact: true }).first().click();
   await expect(page.locator("svg circle title", { hasText: "Lancement campagne Search Q3" })).toHaveCount(1);   // repère de l'événement sur la courbe
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });

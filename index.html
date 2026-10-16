@@ -4822,7 +4822,7 @@ class Component extends DCLogic {
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
                      ['audience','Audience','Qui sont les visiteurs ?',['audience']],
                      ['pilotage','Pilotage','Où va-t-on ?',['alerts','goals']]];
-    const GA_LABELS={contrib:'Ce qui fait bouger les leads',trend:'Trafic reprise par canal',hist:'Comparaison avec les années passées',events:'Campagnes et changements',sources:'Trafic parent par canal',entree:'Arrivées sur la reprise par canal',utm:'Campagnes de la reprise',quality:'Qualité des visites reprise',conv:'Taux de conversion par jour',leaks:'Où les visiteurs abandonnent',device:'Conversion par canal et appareil',v2:'Avant / après la V2',audience:'Qui sont les visiteurs',goals:'Objectifs',alerts:'Alertes'};
+    const GA_LABELS={contrib:'Ce qui fait bouger les leads',trend:'Évolution du trafic reprise par canal',hist:'Comparaison avec les années passées',events:'Campagnes et changements',sources:'Trafic parent par canal',entree:'Trafic reprise par canal',utm:'Campagnes reprise',quality:'Qualité des visites reprise',conv:'Taux de conversion par jour',leaks:'Où les visiteurs abandonnent',device:'Conversion par canal et appareil',v2:'Avant / après la V2',audience:'Qui sont les visiteurs',goals:'Objectifs',alerts:'Alertes'};
     const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'));
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));

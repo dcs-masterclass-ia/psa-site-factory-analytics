@@ -220,7 +220,7 @@ test("GA4 > Analyses détaillées : navigation par questions, contribution en ca
   await expect(page.getByText("Contribution à l'évolution des leads GA")).toBeVisible();
   const hauteur = async () => page.evaluate(() => { const t = [...document.querySelectorAll("span")].find((s) => s.textContent.trim() === "Analyses détaillées"); return Math.round(t.parentElement.nextElementSibling.nextElementSibling.getBoundingClientRect().height); });
   const h0 = await hauteur();
-  for (const [theme, vue] of [["Acquisition", "Trafic parent par canal"], ["Conversion", "Taux de conversion par jour"], ["Conversion", "Conversion par canal et appareil"], ["Audience", "Qui sont les visiteurs"], ["Évolution", "Trafic reprise par canal"]]) {
+  for (const [theme, vue] of [["Acquisition", "Trafic parent par canal"], ["Conversion", "Taux de conversion par jour"], ["Conversion", "Conversion par canal et appareil"], ["Audience", "Qui sont les visiteurs"], ["Évolution", "Évolution du trafic reprise par canal"]]) {
     await page.getByText(theme, { exact: true }).first().click();
     await page.getByText(vue, { exact: true }).first().click();
     await page.waitForTimeout(500);

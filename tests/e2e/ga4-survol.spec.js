@@ -13,7 +13,7 @@ test("survol des courbes : bulle avec valeurs", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Analyses détaillées", { exact: false }).first().click().catch(() => {});
   const vus = [];
-  for (const [theme, nav, id] of [["Évolution", "Trafic reprise par canal", "cbTrend"], ["Évolution", "Comparaison avec les années passées", "cbHist"], ["Conversion", "Taux de conversion par jour", "cbConv"], ["Audience", "Qui sont les visiteurs", "cbSeason"], ["Évolution", "Ce qui fait bouger les leads", "cbContrib"]]) {
+  for (const [theme, nav, id] of [["Évolution", "Évolution du trafic reprise par canal", "cbTrend"], ["Évolution", "Comparaison avec les années passées", "cbHist"], ["Conversion", "Taux de conversion par jour", "cbConv"], ["Audience", "Qui sont les visiteurs", "cbSeason"], ["Évolution", "Ce qui fait bouger les leads", "cbContrib"]]) {
     await page.getByText(theme, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
     await page.getByText(nav, { exact: true }).first().click({ timeout: 3000 }).catch(() => {});
     if (id === "cbContrib") await page.getByText("Vue graphique", { exact: true }).first().click({ timeout: 3000 }).catch(() => {});      // la cascade n'est plus la vue par défaut
