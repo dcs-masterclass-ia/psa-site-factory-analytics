@@ -61,11 +61,11 @@ def _origine(p, y, perim):
 
 
 def _nature(p, y, perim):
-    """Nature : 47 (xP) / A68 (xF) ; avant 2026 les marques xP sont identifiées par leur source (voir _origine) et toutes natures confondues (validé sur le tableau « NC sales conversion » 2025)."""
+    """Nature : aucun filtre pour les marques standard (la nature 47 / A68 écartait 5 à 15 % des leads Autobiz) ; Spoticar : 15.Buyback request."""
     nat = f"'{p}NatureLabelized' in {_liste(perim['natures'])}"
-    if y >= 2026 or perim is not PERIMETRES["std"]:
+    if perim is not PERIMETRES["std"]:
         return nat
-    return f"('{p}PSABrand__c' in {_liste(XP)} || {nat})"
+    return None      # marques standard : aucun filtre de nature (origine Autobiz = campagne / source ; validé à l'unité sur le tableau « NC Sales Conversion » 2025 et 2026)
 
 
 def filtres(v, pays, y, m, perim, prefixe=""):
@@ -80,7 +80,7 @@ def filtres(v, pays, y, m, perim, prefixe=""):
         f"{v} = filter {v} by '{p}CentralLocal_lead' in [\"BRAND\", \"Central\"];",
         f"{v} = filter {v} by '{p}Activity__c' in {_liste([perim['activite']])};",
         f"{v} = filter {v} by {_origine(p, y, perim)};",
-        f"{v} = filter {v} by {_nature(p, y, perim)};",
+        *([f"{v} = filter {v} by {_nature(p, y, perim)};"] if _nature(p, y, perim) else []),
         f"{v} = filter {v} by ('{p}LeadQualificationResult__c' not in [\"Black list filtering\"] || '{p}LeadQualificationResult__c' is null);",
         f"{v} = filter {v} by '{p}Test_JustDealer2' in [\"No\"];",
         f"{v} = filter {v} by date('{p}CreatedDate_Year', '{p}CreatedDate_Month', '{p}CreatedDate_Day') in [{_periode(y, m)}];",

@@ -14,7 +14,7 @@ class Saql(unittest.TestCase):
         self.assertIn('load "0Fb0O000000XrKuSAK/0Fc1"', q)
         self.assertIn("'LeadCountry__c' in [\"BE\"]", q)
         self.assertIn("'Activity__c' in [\"VN\"]", q)
-        self.assertIn('"47.VO - VN Trade-in Operation"', q)
+        self.assertNotIn("NatureLabelized", q)
         self.assertIn("dateRange([2026,2,1],[2026,2,28])", q)         # février 2026 : 28 jours
         self.assertIn("'LeadTypeLabelized' in [\"1-Leads (urgent)\"]", q)
         self.assertIn("'CampaignIDUSER__c' in [\"AUTOBIZ\", \"Autobiz\"]", q)
@@ -150,5 +150,6 @@ class PerimetreAvant2026(unittest.TestCase):
         apres = c.filtres("q", "FR", 2026, 3, c.PERIMETRES["std"])
         self.assertIn("315.Brand Trade-in/ Reprise", avant)
         self.assertNotIn("315.Brand Trade-in/ Reprise", apres)
-        self.assertIn("'PSABrand__c' in", avant.split("NatureLabelized")[0].split("\n")[-1])
+        self.assertNotIn("NatureLabelized", avant)          # aucun filtre de nature pour les marques standard
+        self.assertNotIn("NatureLabelized", apres)
         self.assertIn("CampaignIDUSER__c", apres)
