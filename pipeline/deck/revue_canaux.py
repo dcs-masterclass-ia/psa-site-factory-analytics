@@ -130,8 +130,10 @@ def canaux(ctx, rv, marque):
     """« Leads by marketing channel » : matrice source × projet × (N-1, N) × (M-1, M) + colonnes empilées par projet."""
     per_list = [rv.prec.n1(), rv.n1, rv.prec, rv.per]            # N-1 M-1, N-1 M, N M-1, N M
     data = [_sources(ctx, p, marque) for p in per_list]
-    if any(dd is None for dd in data):
+    if all(dd is None for dd in data):
         return None
+    vide = {g: {p: 0 for p in PROJETS} for g in ORDRE_SOURCES}
+    data = [dd if dd is not None else vide for dd in data]          # marque lancée depuis : période de comparaison sans lead = 0
     tp = [{p: sum(dd[sg][p] for sg in dd) for p in PROJETS} for dd in data]
     if not sum(sum(t.values()) for t in tp):
         return None
