@@ -660,7 +660,7 @@ def ventes_additionnelles(ctx, rv):
 # ------------------------------------------------------------------ Open points / Next steps / Q&A
 def open_points(ctx, rv):
     out = []
-    for p in ctx.brief.get("pointsOuverts") or []:
+    for p in ctx.brief.get("pointsOuverts") or [{}]:        # sans point saisi : diapositive vide à compléter
         s = slide_revue(ctx, rv, "OPEN POINTS", sous_titre=p.get("titre") or None, source=None)
         if p.get("texte"):
             g.puces(s, 0.5, 1.3, 12.2, 5.4, [l for l in p["texte"].split("\n") if l.strip()], taille=16)
@@ -669,9 +669,7 @@ def open_points(ctx, rv):
 
 
 def next_steps(ctx, rv):
-    et = ctx.brief.get("prochainesEtapes") or []
-    if not et:
-        return None
+    et = ctx.brief.get("prochainesEtapes") or []        # sans étape saisie : tableau vide à compléter
     t = ctx.t
     s = slide_revue(ctx, rv, "NEXT STEPS", source=None)
     lignes = [["Item", t["responsable"], t["statut"], t["echeance"]]]
@@ -697,8 +695,7 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
         ctx.avertissements.append("Éléments statiques du format absents (data/presentations/assets/revue_fr) : logos de marque et drapeau de couverture non affichés.")
     modules = [m for m in (_module(n) for n in ("revue_marque", "revue_canaux", "revue_conquete")) if m]
     f = lambda nom: next((getattr(m, nom) for m in modules if hasattr(m, nom)), None)
-    pts = bool(brief.get("pointsOuverts"))
-    nxt = bool(brief.get("prochainesEtapes"))
+    pts = nxt = True          # slides conservées même vides (à compléter à la main)
     # sections disponibles (une section sans données n'est pas créée)
     avoir_c1st = any(d.c1st(rv.per, m) for m in d.marques if m not in SANS_SUIVI_C1ST)
     if not avoir_c1st:

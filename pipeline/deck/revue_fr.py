@@ -93,9 +93,7 @@ def separateur(ctx, rv, libelle):
 
 def actions_en_cours(ctx, rv):
     """« Ongoing actions » : tableau des actions en cours (brief["actionsEnCours"] : sujet, détails, date, pilote, statut = lignes), comme la diapositive 2 du deck."""
-    actions = ctx.brief.get("actionsEnCours") or []
-    if not actions:
-        return None
+    actions = ctx.brief.get("actionsEnCours") or []      # sans action saisie : diapositive vide à compléter
     s = slide_revue(ctx, rv, "Ongoing actions", source=None, x_titre=0.14)
     entetes = ["#", "Subject", "Details", "Date", "Pilot", "Status"]
     largeurs = [0.38, 1.75, 2.57, 0.95, 2.1, 5.12]
