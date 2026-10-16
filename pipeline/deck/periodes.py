@@ -23,6 +23,21 @@ PAS = {"mois": 1, "trimestre": 3, "semestre": 6, "annee": 12}
 
 
 @dataclass(frozen=True)
+class PeriodeJours:
+    """Plage de dates quelconque (pas une période civile) : sert à la comparaison « période précédente de même nombre de jours » de Looker."""
+    debut: date
+    fin: date
+    type: str = "jours"
+
+    @property
+    def jours(self):
+        return (self.fin - self.debut).days + 1
+
+    def etiquette(self, langue="fr"):
+        return f"{self.debut.strftime('%d/%m/%Y')}-{self.fin.strftime('%d/%m/%Y')}"
+
+
+@dataclass(frozen=True)
 class Periode:
     type: str          # mois | trimestre | semestre | annee
     annee: int
@@ -64,6 +79,12 @@ class Periode:
 
     def n1(self):
         return Periode(self.type, self.annee - 1, self.indice)
+
+    def precedente_jours(self):
+        """Les N jours qui précèdent immédiatement la période (N = sa durée en jours) : la comparaison « période précédente » de Looker.
+        Pour T3 (92 jours) : du 31/03 au 30/06, pas le T2 civil (91 jours)."""
+        from datetime import timedelta
+        return PeriodeJours(self.debut - timedelta(days=self.jours), self.debut - timedelta(days=1))
 
     def mois(self):
         """Les (année, mois) de la période."""

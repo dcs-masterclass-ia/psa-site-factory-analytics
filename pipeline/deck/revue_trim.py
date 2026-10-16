@@ -353,7 +353,8 @@ def trafic_leads_apercu(ctx, rv):
     marques = _actives(ctx, rv)
     if not marques:
         return None
-    trafic = {m: tuple(_sessions(d, p, m) for p in (per, rv.prec, rv.n1)) for m in marques}
+    # sessions : « période précédente » = les mêmes nombres de jours juste avant (définition de Looker, tableaux de référence) ; leads : trimestre civil précédent
+    trafic = {m: tuple(_sessions(d, p, m) for p in (per, per.precedente_jours(), rv.n1)) for m in marques}
     leads = {m: tuple(_L(d, p, m) for p in (per, rv.prec, rv.n1)) for m in marques}
     s = slide_revue(ctx, rv, f"Traffic & leads Overview {mois_label(per)}", source=None)
     n = len(marques)
@@ -401,7 +402,7 @@ def trafic_leads_apercu(ctx, rv):
         p.alignment = PP_ALIGN.LEFT
         r = p.add_run(); r.text = t
         r.font.size = Pt(10); r.font.bold = gras; r.font.underline = gras; r.font.color.rgb = g.rgb("000000")
-    _source(s, "Source: GA4 / autobiz")
+    _source(s, f"Source: GA4 / autobiz — sessions QoQ vs the previous {per.jours} days ({per.precedente_jours().debut.strftime('%d/%m')}-{per.precedente_jours().fin.strftime('%d/%m')}), as in Looker")
     return s
 
 
