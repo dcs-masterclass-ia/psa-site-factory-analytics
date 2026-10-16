@@ -108,6 +108,13 @@ class RevueTrim(unittest.TestCase):
             self.assertEqual(lignes[1][5], "15"); self.assertEqual(lignes[1][7], "30"); self.assertEqual(lignes[1][8], "+15")
             self.assertEqual(lignes[-1][0], "Total"); self.assertEqual(lignes[-1][8], "+30")
 
+    def test_commentaires_en_anglais_meme_si_brief_en_francais(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, prs = self._construit(tmp, _brief(langue="fr"))
+            textes = " ".join(sh.text_frame.text for sl in prs.slides for sh in sl.shapes if sh.has_text_frame)
+            for mot in ("période précédente", "Baisse", "Hausse", "Part de leads", "Relancer", "Compléter le balisage"):
+                self.assertNotIn(mot, textes)
+
     def test_periode_trimestrielle_obligatoire(self):
         from pipeline.deck.construit import construit
         with tempfile.TemporaryDirectory() as tmp:

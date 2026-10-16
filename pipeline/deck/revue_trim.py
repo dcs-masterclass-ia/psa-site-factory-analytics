@@ -697,6 +697,8 @@ def questions_trim(ctx, rv):
 # ------------------------------------------------------------------ assemblage
 def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     from pathlib import Path
+    # le format reprend le deck de référence BELUX : titres et libellés sont en anglais, les commentaires calculés le sont donc aussi quelle que soit la langue du brief
+    brief = dict(brief, langue="en")
     ctx = Ctx(brief, donnees, gabarit)
     if ctx.per.type != "trimestre":
         raise ValueError("Le format « revue trimestrielle » exige une période de type trimestre.")
