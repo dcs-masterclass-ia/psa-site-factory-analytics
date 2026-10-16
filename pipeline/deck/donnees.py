@@ -266,10 +266,17 @@ class Donnees:
             try:
                 brut = json.loads((self.hist.parent / "c1st" / "kpi.json").read_text(encoding="utf-8"))
                 self._c1st_data = brut.get("donnees", {})
-                self._c1st_partiel = str((brut.get("collecte") or {}).get("date", ""))[:7]      # collecte quotidienne : le mois de la collecte est partiel
+                self._c1st_jour = str((brut.get("collecte") or {}).get("date", ""))
+                self._c1st_partiel = self._c1st_jour[:7]      # collecte quotidienne : le mois de la collecte est partiel
             except Exception:
-                self._c1st_data, self._c1st_partiel = {}, ""
+                self._c1st_data, self._c1st_partiel, self._c1st_jour = {}, "", ""
         return self._c1st_data
+
+    def c1st_date(self):
+        """Date de la collecte C1ST (« jj/mm/aaaa »), à afficher en pied des slides qui en dépendent ; None si inconnue."""
+        self._c1st()
+        j = getattr(self, "_c1st_jour", "")
+        return f"{j[8:10]}/{j[5:7]}/{j[:4]}" if len(j) >= 10 else None
 
     def c1st(self, periode, marque):
         """Totaux C1ST (leads VN envoyés vus par C1ST) de la marque sur les mois de la période, pour les marchés du périmètre ; None si un mois manque (jamais de total partiel)."""

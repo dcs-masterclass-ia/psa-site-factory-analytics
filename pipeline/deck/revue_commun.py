@@ -103,7 +103,7 @@ def pied(slide, rv, source="Source: autobiz"):
     """Pied de page du deck : date du deck à gauche, source à côté (10,5 pt)."""
     g.texte(slide, 0.14, 7.12, 1.0, 0.3, rv.date_deck, taille=9, couleur="000000")
     if source:
-        g.texte(slide, 1.08, 7.15, 5.5, 0.28, source, taille=10.5, couleur="000000")
+        g.texte(slide, 1.08, 7.15, 5.5 if len(source) <= 40 else 11.8, 0.28, source, taille=10.5 if len(source) <= 70 else 8.5, couleur="000000")
 
 
 def boite_revue(slide, puces, x=11.12, y=1.15, w=2.11, h=5.78, taille=10, plein=False):
@@ -181,3 +181,10 @@ def graphique_annuel(slide, x, y, w, h, titre, an_prec, an_cur, n_ecoules, annee
         etiq.append(f"{nb(v)}\n{pct(e, 0, signe=True)}" if e is not None else nb(v))
     return g.colonnes(slide, x, y + 0.25, w, h - 0.25, mois, [(str(annee - 1), list(an_prec), C2025), (str(annee), cur, C2026)], taille=taille, libelles_perso={1: etiq},
                       legende=True, largeur_barre=40, format_nombre="#,##0")
+
+
+def source_c1st(d, debut="Source: autobiz", provisoire=False, lien=" — C1ST data as of "):
+    """Pied de page des slides alimentées par C1ST : date de la collecte, et rappel que les commandes NSC sont rattachées au lead jusqu'à 90 jours après (chiffres récents provisoires)."""
+    j = d.c1st_date()
+    txt = f"{debut}{lien}{j}" if j else debut
+    return txt + ("; NSC orders are linked to leads up to 90 days after creation: recent figures are provisional" if provisoire else "")

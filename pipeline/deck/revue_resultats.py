@@ -19,7 +19,7 @@ from pptx.util import Inches, Pt
 from . import graphiques as g
 from .donnees import NOMS_MARQUES
 from .periodes import MOIS_COURTS, MOIS_NOMS, Periode
-from .revue_commun import GROUPE_XF, GROUPE_XP, evol, mois_label, nb, slide_revue
+from .revue_commun import source_c1st, GROUPE_XF, GROUPE_XP, evol, mois_label, nb, slide_revue
 
 VERT_TXT, ROUGE_TXT = "00A651", "FF0000"
 BLEU_PROJ = "4E79A7"
@@ -331,7 +331,7 @@ def conversion_ventes_nc(ctx, rv):
         corps.append(ligne("Total " + "/".join(rv.pays), tous, sous=True, fond_tot=True))
     largeurs = [1.4, 1.15, 1.15, 1.2, 0.85, 0.85, 0.85, 0.85, 0.85, 0.85]
     hauteurs = [0.62] + [0.255] * (len(corps) - 1)
-    s = slide_revue(ctx, rv, "NC Sales Conversion", sous_titre=f"Leads from Jan. to {MOIS_NOMS['en'][fin_m - 1].capitalize()} {jours_fin}th. {str(a)[2:]} incl.", source="Source: autobiz")
+    s = slide_revue(ctx, rv, "NC Sales Conversion", sous_titre=f"Leads from Jan. to {MOIS_NOMS['en'][fin_m - 1].capitalize()} {jours_fin}th. {str(a)[2:]} incl.", source=source_c1st(d, "Source: autobiz", True))
     _table(s, 1.5, 1.2, largeurs, hauteurs, corps)
 
     # encadré de synthèse

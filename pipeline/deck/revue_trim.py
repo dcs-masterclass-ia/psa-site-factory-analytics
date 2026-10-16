@@ -23,7 +23,7 @@ from . import graphiques as g
 from .construit import Ctx, GABARIT, PERIMETRE_C1ST, SANS_SUIVI_C1ST
 from .donnees import PROJETS
 from .periodes import MOIS_COURTS, Periode
-from .revue_commun import (BOITE_BORD, C2025, C2026, C_SANS, C_VN, C_VO, GROUPE_XF, GROUPE_XP, MARINE, Revue, boite_revue, court, evol, mois_label, nb, pct,
+from .revue_commun import (source_c1st, BOITE_BORD, C2025, C2026, C_SANS, C_VN, C_VO, GROUPE_XF, GROUPE_XP, MARINE, Revue, boite_revue, court, evol, mois_label, nb, pct,
                            pied, slide_revue)
 from .revue_fr import _ajoute, _module, agenda_revue, contacts_revue
 from .revue_global import COULEUR_MARQUE, GRIS_BANDEAU, NAVY_TABLEAU, _bandeau, _bloc_chiffre, _legende_projets, _liste, barres_marques
@@ -550,7 +550,7 @@ def lead_management_c1st(ctx, rv, groupe, marques):
         txt += " Note: dealers' follow-up statuses are barely filled in C1ST for this market (contact / treatment rates are not reliable)."
     txt += f"; {tq['contactes'] / tq['clients_envoyes'] * 100:.0f}% contacted, {tq['commandes'] / tq['clients_uniques'] * 100:.0f}% NSC orders (still maturing: orders are linked up to 90 days after the lead)." if tq["clients_uniques"] else "."
     _boite_bas(s, txt, y=6.62, h=0.42, w=12.9)
-    g.texte(s, 1.08, 7.12, 11.5, 0.28, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", taille=9, couleur="000000")
+    g.texte(s, 1.08, 7.12, 11.5, 0.28, source_c1st(d, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", lien="; data as of "), taille=9, couleur="000000")
     s.notes_slide.notes_text_frame.text = ("Rates computed on unique customers sent to dealers (C1ST). % NSC orders = NSC orders (SUB set, 1 to 90 days after the lead) / unique customers; "
                                            "recent months are provisional. Spoticar excluded (no follow-up tracked by C1ST). " + PERIMETRE_C1ST[1])
     return s
@@ -605,7 +605,7 @@ def leads_vn_c1st(ctx, rv, groupe, marques):
     boite_revue(s, puces, x=11.12, y=1.3, w=2.11, h=3.2, taille=9)
     if len(lignes) > 1:
         g.tableau(s, 11.12, 4.6, 2.11, lignes, largeurs=[0.75, 0.45, 0.45, 0.46], taille=6.5, hauteur_ligne=0.26, alignements=[PP_ALIGN.LEFT] + [PP_ALIGN.CENTER] * 3)
-    g.texte(s, 1.08, 7.12, 11.5, 0.28, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", taille=9, couleur="000000")
+    g.texte(s, 1.08, 7.12, 11.5, 0.28, source_c1st(d, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", lien="; data as of "), taille=9, couleur="000000")
     return s
 
 
