@@ -93,7 +93,7 @@
  "Leads": "Leads",
  "Part": "Share",
  "Sessions par canal": "Sessions by channel",
- "Sessions GA4 du site parent (pas de l'outil de reprise) par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.": "GA4 sessions of the parent site (not the trade-in tool) per day, split by GA4 default channel group (Paid Search, Organic Search, Direct...). The first four channels are shown; click a name to isolate it.",
+ "Sessions GA4 du site de reprise (l'outil de reprise, pas le site parent) par jour, ventilées par groupe de canaux par défaut de GA4 (Paid Search, Organic Search, Direct...). Les quatre premiers canaux sont affichés, cliquer un nom pour l'isoler.": "GA4 sessions of the trade-in site (not the parent site) per day, split by GA4 default channel group (Paid Search, Organic Search, Direct...). The first four channels are shown; click a name to isolate it.",
  "Conversion par jour": "Conversion per day",
  "Pour chaque jour : estimations ÷ visiteurs de l'accueil du funnel. Trait épais = moyenne glissante sur 7 jours (somme des estimations ÷ somme des visiteurs sur 7 jours), trait clair = le jour, pointillés = période précédente. Le repère rouge marque la date de bascule V2 quand un seul site V2 est sélectionné.": "For each day: valuations ÷ funnel home page visitors. Thick line = 7-day rolling average (sum of valuations ÷ sum of visitors over 7 days), light line = the day, dotted = previous period. The red marker shows the V2 switchover date when a single V2 site is selected.",
  "Moyenne glissante 7 jours": "7-day rolling average",

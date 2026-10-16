@@ -321,7 +321,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         # entierement optionnel : si la dimension n'existe pas sur cette
         # propriete, on continue sans rien publier plutot que de bloquer.
         try:
-            dim_canal, par_jour_canal = channel.canal_quotidien(cli, s.propriete, hote_parent, deb, f_iso)
+            dim_canal, par_jour_canal = channel.canal_quotidien(cli, s.propriete, hote_reprise, deb, f_iso)   # sessions de la REPRISE par canal (pas du site parent)
         except Exception as e:
             dim_canal, par_jour_canal = None, {}
             journal.append(f"{mois} : canal quotidien en erreur ({type(e).__name__})")

@@ -117,7 +117,7 @@
  "Fuites du tunnel": "Funnel leaks",
  "Avant / après V2": "Before / after V2",
  "Jour & navigateurs": "Day & browsers",
- "Site parent · {0} j ({1}→{2}) · cliquez une légende pour isoler": "Parent site · {0} d ({1}→{2}) · click a legend to isolate",
+ "Site de reprise · {0} j ({1}→{2}) · cliquez une légende pour isoler": "Trade-in site · {0} d ({1}→{2}) · click a legend to isolate",
  "Tunnel indisponible sur la période sélectionnée.": "Funnel unavailable over the selected period.",
  "Fuite dominante de {0} % entre « {1} » et « {2} ».": "Dominant leak of {0}% between “{1}” and “{2}”.",
  "Aucune fuite marquée détectée sur le tunnel actuel.": "No marked leak detected on the current funnel.",

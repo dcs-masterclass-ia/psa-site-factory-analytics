@@ -42,7 +42,7 @@ def traite(cli, s, d):
         if deb > dernier:
             continue
         try:
-            lignes = ga4._rapport(cli, s.propriete, deb, fin, ["date", dim], ["sessions"], ga4._egal("hostName", hote_parent))
+            lignes = ga4._rapport(cli, s.propriete, deb, fin, ["date", dim], ["sessions"], ga4._egal("hostName", hote_reprise))     # sessions de la reprise par canal
             par_jour = {}
             for jour, canal, n in lignes:
                 if len(jour) == 8 and jour.isdigit():
