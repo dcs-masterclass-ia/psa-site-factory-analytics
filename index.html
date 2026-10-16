@@ -2989,14 +2989,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
             <div style="{{ stp2_wrap }}"><div style="overflow:hidden;min-height:0"><div style="padding-top:14px">
-                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px">Titre de la présentation <span style="color:#e8544a">*</span></div>
-                <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5margin-top:-2px">Il apparaît sur la couverture. Ex. « Stellantis BELUX — Reporting T3-2026 ».</div>
-                <input type="text" value="{{ prTitre }}" onInput="{{ onPrTitre }}" placeholder="Titre de la présentation" style="{{ prInputStyle }}" />
-                <sc-if value="{{ prTitreVide }}" hint-placeholder-val="{{ true }}"><div onClick="{{ prSuggest }}" style="display:inline-flex;margin-top:6px;font-size:12.5px;color:#3b76e8;cursor:pointer">Utiliser la proposition&nbsp;: {{ prTitreAutoTxt }}</div></sc-if>
-                <sc-if value="{{ prErrTitreOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#c24a44;margin-top:6px">{{ prErrTitre }}</div></sc-if>
-                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:4px;margin-top:14px">Nom du fichier téléchargé</div>
+                <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:4px">Nom de la présentation</div>
                 <div style="font-size:13.5px;color:#121214;background:#f4f4f6;border:1px solid #ececee;border-radius:10px;padding:8px 12px;font-family:ui-monospace,Menlo,monospace;word-break:break-all">{{ prNomFichier }}</div>
-                <div style="font-size:12px;color:#9a9fa6;margin-top:4px;line-height:1.5">Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue.</div>
+                <div style="font-size:12px;color:#9a9fa6;margin-top:4px;line-height:1.5">Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue. C'est aussi le nom du fichier téléchargé. Titre de la couverture : {{ prTitreAuto }}.</div>
                 <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px;margin-top:18px">Langue de la présentation <span style="color:#e8544a">*</span></div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="5"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
                 <div style="font-size:12px;color:#9a9fa6;margin-top:6px">Libellés, mois et chiffres sont traduits ; les analyses rédigées restent en français ou en anglais.</div>
@@ -3169,7 +3164,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:12px">Plan de la présentation</div>
               <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Modèle</span><span style="color:#121214;text-align:right">{{ prSumTpl }}</span></div>
-                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Titre</span><span style="color:#121214;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ prSumTitre }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Nom</span><span style="color:#121214;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ prSumTitre }}</span></div>
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Langue</span><span style="color:#121214">{{ prSumLangue }}</span></div>
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Périmètre</span><span style="color:#121214;text-align:right">{{ prSumPerim }}</span></div>
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Période</span><span style="color:#121214">{{ prSumPeriode }}</span></div>
@@ -6930,7 +6925,7 @@ class Component extends DCLogic {
     if (!prEnCours && this._prTick) { clearInterval(this._prTick); this._prTick = null; }
     // ---- parcours par étapes : modèle -> cadrage -> contenu (obligatoires), puis points ouverts, prochaines étapes, contact (facultatifs)
     const prValidMods = pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non'));
-    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = pr.titre.trim().length>=3, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = (prFr||prTrim) ? true : prValidMods.length>0;
+    const prTplOk = !!(pr.tplId||pr.id), prTitreOk = true, prLangueOk = !!pr.langue, prPaysOk = pr.pays.length>0, prModsOk = (prFr||prTrim) ? true : prValidMods.length>0;
     const prS2ok = prTitreOk&&prLangueOk&&prPaysOk&&(!prFr||per.type==='mois')&&(!prTrim||per.type==='trimestre');
     // ---- commentaires du DKAM par diapositive et actions recommandées corrigées par marque (champs `commentaires` et `actionsMarques` du brief)
     const PR_COMM_VUES = [['synthese','Synthèse'],['groupes','Leads par groupe de marques'],['leads_marques','Leads par marque (vs période précédente / N-1)'],['leads_mensuels','Leads par mois'],['leads_nc_mensuels','Leads New cars par mois'],['projection','Projection du mois (édition mensuelle en cours)'],['marches','Classement des marchés'],['apercu','Vue d\'ensemble des leads par marque'],['vue_trafic_leads','Trafic et leads (tableau)'],['projets','Projets d\'achat']];
@@ -6955,7 +6950,7 @@ class Component extends DCLogic {
       if (!prValide) return;
       set({prBusy:true, prMsg:null});
       try {
-        const brief = { id:pr.id, titre:pr.titre.trim(), client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
+        const brief = { id:pr.id, titre:prTitreAuto, client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
           comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques, format:pr.format||'standard', actionsEnCours:pr.actionsEnCours||[] };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
@@ -7042,7 +7037,7 @@ class Component extends DCLogic {
     const LANGUES_NOM={fr:'Français',en:'English',it:'Italiano',es:'Español',de:'Deutsch'};
     const prStepSummary=n=>{ switch(n){
       case 1: return pr.tplNom||(pr.id?'Brief existant':'');
-      case 2: return [pr.titre.trim()?'« '+pr.titre.trim()+' »':'', LANGUES_NOM[pr.langue]||'', prPerimetreLabel+' · '+prPeriodeLabel].filter(Boolean).join(' · ');
+      case 2: return [prNomFichier, LANGUES_NOM[pr.langue]||'', prPerimetreLabel+' · '+prPeriodeLabel].filter(Boolean).join(' · ');
       case 3: if (prFr||prTrim) return 'Contenu fixe · '+prPlan.total+' diapositives'; return prValidMods.length+' module'+(prValidMods.length>1?'s':'')+' · '+prPlan.total+' diapositives · '+((pr.reco&&pr.reco.length&&JSON.stringify(pr.reco.slice().sort())===JSON.stringify(prValidMods.slice().sort()))||!pr.reco?'contenu recommandé':'contenu personnalisé');
       case 4: return pr.pointsOuverts.length?pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':'')+' à traiter':'Aucun point ouvert';
       case 5: if (prFr) return prNbAct?prNbAct+' action'+(prNbAct>1?'s':'')+' en cours':'Aucune action'; return pr.prochainesEtapes.length?pr.prochainesEtapes.length+' action'+(pr.prochainesEtapes.length>1?'s':''):'Aucune action';
@@ -7113,7 +7108,7 @@ class Component extends DCLogic {
       prDraftFn:prDraft, prDraftLabel:st.prBusy?'Enregistrement…':(pr.id?'Mettre à jour le brouillon':'Enregistrer le brouillon'),
       prTplFormOpen:!!st.prTplForm, prTplFormToggle:()=>set({prTplForm:!st.prTplForm}), prTplFormLabel:st.prTplForm?'Annuler':'Enregistrer comme modèle',
       prPlanDetail, prPlanDetailToggle:()=>set({prPlanDetail:!prPlanDetail}), prPlanDetailLabel:prPlanDetail?'Masquer le détail des diapositives':'Voir le détail des diapositives',
-      prSumTpl:pr.tplNom||(pr.id?'Brief existant':'—'), prSumPerim:prTplOk?prPerimetreLabel:'—', prSumPeriode:prTplOk?prPeriodeLabel:'—', prSumTotal:prTplOk?prPlan.total+' diapositives':'—', prSumLangue:prTplOk?(LANGUES_NOM[pr.langue]||'—'):'—', prSumTitre:pr.titre.trim()||'Titre à renseigner', prSumTitreEmpty:!pr.titre.trim(),
+      prSumTpl:pr.tplNom||(pr.id?'Brief existant':'—'), prSumPerim:prTplOk?prPerimetreLabel:'—', prSumPeriode:prTplOk?prPeriodeLabel:'—', prSumTotal:prTplOk?prPlan.total+' diapositives':'—', prSumLangue:prTplOk?(LANGUES_NOM[pr.langue]||'—'):'—', prSumTitre:prNomFichier, prSumTitreEmpty:false,
     }, prStepUiFlat);
     const queriesCtl=modalCtl('queriesModal'), queriesStyles=modalStyles(queriesCtl,'width:760px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');
     const pagesCtl=modalCtl('pagesModal'), pagesStyles=modalStyles(pagesCtl,'width:900px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(20,16,40,.3);overflow:hidden');

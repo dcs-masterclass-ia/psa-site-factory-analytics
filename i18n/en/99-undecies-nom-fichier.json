@@ -1,4 +1,7 @@
 {
  "Nom du fichier téléchargé": "Downloaded file name",
- "Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue.": "Computed from the period, country, brands and language: REPORTING-year-period-country-brands-language."
+ "Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue.": "Computed from the period, country, brands and language: REPORTING-year-period-country-brands-language.",
+ "Nom de la présentation": "Presentation name",
+ "Nom": "Name",
+ "Calculé d'après la période, le pays, les marques et la langue : REPORTING-année-période-pays-marques-langue. C'est aussi le nom du fichier téléchargé. Titre de la couverture : {0}.": "Computed from the period, country, brands and language: REPORTING-year-period-country-brands-language. It is also the name of the downloaded file. Cover title: {0}."
 }

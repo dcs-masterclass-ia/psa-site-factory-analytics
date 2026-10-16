@@ -109,7 +109,7 @@ def couverture_trim(ctx, rv):
     s = ctx.prs.slides.add_slide(ctx.lay["Title Slide"])
     ctx.n += 1
     pays = " & ".join(dict.fromkeys(NOMS_PAYS.get(p, p) for p in rv.pays)) or "STELLANTIS"
-    ligne1 = (ctx.brief.get("titre") if ctx.brief.get("titre") not in (None, "", "Trade In Performance") else f"STELLANTIS {pays}")
+    ligne1 = f"STELLANTIS {pays}"
     g.texte(s, 0.62, 3.15, 7.0, 0.7, ligne1, taille=32, gras=True, couleur="FFFFFF")
     ligne2 = f"TRADE-IN WEBSITES PERFORMANCE REVIEW Q{rv.per.indice}-{rv.per.annee} – {pays}"
     g.texte(s, 0.62, 5.1, 7.4, 0.9, ligne2, taille=20 if len(ligne2) <= 62 else 16, gras=True, couleur="FFFFFF")

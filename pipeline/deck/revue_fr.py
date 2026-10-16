@@ -47,7 +47,7 @@ def couverture_revue(ctx, rv):
     """Couverture : titre « Trade In Performance », mois, bloc blanc avec logo Stellantis et drapeau."""
     s = ctx.prs.slides.add_slide(ctx.lay["Title Slide"])
     ctx.n += 1
-    g.texte(s, 0.62, 2.96, 7.1, 0.79, ctx.brief.get("titre") or "Trade In Performance", taille=32, couleur="FFFFFF")
+    g.texte(s, 0.62, 2.96, 7.1, 0.79, "Trade In Performance", taille=32, couleur="FFFFFF")
     g.texte(s, 0.62, 3.8, 7.0, 0.7, f"{mois_label(rv.per).split()[0][:3]}. {rv.per.annee}", taille=28, couleur="FFFFFF")
     boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(6.35), Inches(2.34))
     boite.fill.solid(); boite.fill.fore_color.rgb = g.rgb("FFFFFF"); boite.line.fill.background(); boite.shadow.inherit = False
