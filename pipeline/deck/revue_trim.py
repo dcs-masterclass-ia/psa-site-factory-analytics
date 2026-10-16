@@ -162,7 +162,7 @@ def global_overview(ctx, rv):
     _legende_projets(s, 11.5, 5.5)
     mot = lambda e: "increasing" if (e or 0) >= 0 else "decreasing"
     nc = f"NC leads {mot(evol(vn, vn_n1))} ({_signe(evol(vn, vn_n1))} YoY)" if evol(vn, vn_n1) is not None else ""
-    txt = f"{q}-{an} performance {mot(e_q)} by {_signe(e_q)} QoQ & {mot(e_y)} by {_signe(e_y)} YoY" + (f", {nc}" if nc else "") + "."
+    txt = f"{q}-{an} performance {mot(e_q)} by {_signe(e_q)} QoQ & {mot(e_ytd)} by {_signe(e_ytd)} YoY" + (f", {nc}" if nc else "") + "."
     g.boite_pointillee(s, 0.35, 6.5, 12.55, 0.45, [txt], taille=11, fond="FFFFFF", bord="000000", espace_apres=0, largeur_trait=0.75)
     _source(s, "Source: autobiz")
     return s
