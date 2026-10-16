@@ -40,7 +40,7 @@ class RevueMarque(unittest.TestCase):
                 d._trafic[("PEUGEOT", "2026-09-10")]["Display"] = [500, 0]
             d._site_marque[("PEUGEOT", "2026-09-10")] = [200, 1000]
             d._site_marque[("PEUGEOT", "2025-09-10")] = [250, 1250]
-        d._site_json = lambda nom: {"trafficMonth": {"2026-09": {"sessions": 20000}, "2026-08": {"sessions": 25000}, "2025-09": {"sessions": 30000}},
+        d._site_json = lambda nom: {"propSessions": {"month": {"2026-09": 20000, "2026-08": 25000, "2025-09": 30000}},
                                     "repriseMonth": {"2026-09": {"sessions": 1000}}}
         ctx = Ctx(brief, d)
         return ctx, Revue(ctx)

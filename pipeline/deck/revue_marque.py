@@ -60,14 +60,14 @@ def _mois_cle(per):
 
 
 def _site_principal(ctx, marque, per):
-    """(sessions du site principal, sessions du site de reprise) du mois, sommées sur les sites de la marque (data/<site>.json : trafficMonth / repriseMonth) ; None si absent."""
+    """(sessions du site principal, sessions du site de reprise) du mois, sommées sur les sites de la marque (data/<site>.json : propSessions.month = propriété GA4 entière, comme Looker / repriseMonth) ; None si absent."""
     cle = _mois_cle(per)
     a = r = None
     for nom, m, _ in ctx.d.sites:
         if m != marque:
             continue
         j = ctx.d._site_json(nom) or {}
-        v = ((j.get("trafficMonth") or {}).get(cle) or {}).get("sessions")
+        v = ((j.get("propSessions") or {}).get("month") or {}).get(cle)          # « Visites site marque » de Looker = sessions de toute la propriété GA4 (build.py / looker_align.py)
         w = ((j.get("repriseMonth") or {}).get(cle) or {}).get("sessions")
         if v is not None:
             a = (a or 0) + v
