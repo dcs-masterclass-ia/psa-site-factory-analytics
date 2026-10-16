@@ -70,9 +70,25 @@ def main():
     print(f"{ctx.n} diapositives -> {sortie}")
     for w in ctx.avertissements:
         print("AVERTISSEMENT :", w)
+    qa_resume = None
+    rapport = getattr(ctx, "qa", None)
+    if rapport is not None:
+        from . import qa
+        qa_resume = qa.resume(rapport)
+        print(f"QA : {qa_resume['erreurs']} erreur(s), {qa_resume['alertes']} alerte(s), {qa_resume['infos']} info(s) sur {qa_resume['faits']} chiffres")
+        for niveau in ("erreurs", "alertes"):
+            for m in rapport[niveau][:15]:
+                print(f"  [{niveau[:-1]}] {m['message']}")
+        if a.briefs:
+            base = os.path.join(a.sortie_dir, a.id)
+            with open(base + ".qa.json", "w", encoding="utf-8") as f:
+                json.dump(rapport, f, ensure_ascii=False, indent=1)
+            ctx.faits.ecrit(base + ".faits.json")
     if a.briefs:
-        _maj_statut(a.briefs, a.id, statut="generee", fichier=f"presentations/out/{a.id}.pptx", genereeLe=int(time.time() * 1000),
-                    diapositives=ctx.n, avertissements=list(ctx.avertissements)[:10])
+        champs = dict(statut="generee", fichier=f"presentations/out/{a.id}.pptx", genereeLe=int(time.time() * 1000), diapositives=ctx.n, avertissements=list(ctx.avertissements)[:10])
+        if qa_resume is not None:
+            champs["qa"] = qa_resume
+        _maj_statut(a.briefs, a.id, **champs)
 
 
 if __name__ == "__main__":

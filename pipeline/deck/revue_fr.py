@@ -33,6 +33,7 @@ def _ajoute(ctx, f, *args, libelle=""):
         ctx.avertissements.append(f"Diapositive non disponible : {libelle}.")
         return None
     try:
+        ctx.faits.debut(ctx.n + 1, libelle)
         s = f(*args)
     except Exception as e:                      # une diapositive en échec n'empêche pas le reste du deck
         ctx.avertissements.append(f"Diapositive en échec ({libelle}) : {type(e).__name__}: {e}")

@@ -137,6 +137,10 @@ def canaux(ctx, rv, marque):
     tp = [{p: sum(dd[sg][p] for sg in dd) for p in PROJETS} for dd in data]
     if not sum(sum(t.values()) for t in tp):
         return None
+    for p_, t_ in zip(per_list, tp):
+        for k_, nom_ in (("VN", "leads_vn"), ("SANS", "leads_sans"), ("VO", "leads_vo")):
+            ctx.faits.ajoute(nom_, t_[k_], marque, p_.etiquette("en"), "lead_deep_dive")
+        ctx.faits.ajoute("leads", sum(t_.values()), marque, p_.etiquette("en"), "lead_deep_dive")
     srcs = [sg for sg in ORDRE_SOURCES if sg in data[0] and any(sum(dd[sg].values()) for dd in data)]
     lignes = [NOM_SOURCE.get(sg, sg) for sg in srcs] + ["Total"]
     colonnes = []

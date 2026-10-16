@@ -130,6 +130,11 @@ def trafic(ctx, rv, marque):
     e_s = (_d(ses, s_p), _d(ses, s_n))
     e_ij = (_d(ij, val(prec, "in_journey")), _d(ij, val(n1, "in_journey")))
     e_hl = (_d(hl, val(prec, "hot_leads")), _d(hl, val(n1, "hot_leads")))
+    pays_dd = "+".join(ctx.d.pays)
+    for p_, u_ in ((rv.per, cur), (rv.prec, prec), (rv.n1, n1)):
+        if u_:
+            for k_, nom_ in (("sessions", "sessions"), ("in_journey", "in_journey"), ("hot_leads", "ga_leads")):
+                ctx.faits.ajoute(nom_, u_.get(k_), marque, p_.etiquette("en"), "traffic_deep_dive", perimetre=pays_dd)
     site, rep = _site_principal(ctx, marque, rv.per)
     site_p = _site_principal(ctx, marque, rv.prec)[0]
     site_n = _site_principal(ctx, marque, rv.n1)[0]

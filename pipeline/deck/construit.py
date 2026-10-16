@@ -40,6 +40,8 @@ class Ctx:
         self.comm_utilises = set()         # clés de commentaires déjà affichées
         self.aujourdhui = date.today()     # date de référence (maturité des commandes C1ST : 90 jours)
         self.avertissements = []
+        from .faits import Faits
+        self.faits = Faits()                # chiffres affichés, pour le contrôle qualité (qa.py)
         self.modules = set(brief.get("modules") or [])
         pays = [p.upper() for p in brief["perimetre"]["pays"]]
         self.perimetre = "BELUX" if sorted(pays) == ["BE", "LU"] else " + ".join(pays)

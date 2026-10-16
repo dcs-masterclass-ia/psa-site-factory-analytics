@@ -136,6 +136,7 @@ def global_overview(ctx, rv):
     e_q, e_y, e_ytd = evol(L, Lp), evol(L, Ln), evol(ytd, ytd_n1)
     vn, vn_n1 = d.leads(per)["VN"], d.leads(rv.n1)["VN"]
     q = f"Q{per.indice}"
+    ctx.faits.ajoute("leads", L, None, per.etiquette("en"), "global_overview", marques=d.marques)
     s = slide_revue(ctx, rv, "Global Overview", source=None)
     _bandeau(s, 0.35, 1.14, 12.55, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {q}-{an}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
     _bloc_chiffre(s, 0.35, "REPORTING QUARTERLY", f"Total generated leads {q}-{an}", L, "Evolution vs last quarter", e_q, 2.3)
@@ -153,6 +154,11 @@ def global_overview(ctx, rv):
     _bandeau(s, 0.35, 3.95, 12.55, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
     qs = _trimestres(per, 8)
     cats = [f"{p.annee} Q{p.indice}" for p in qs]
+    for p_ in qs:
+        pj_ = d.leads(p_)
+        for k_, nom_ in (("VN", "leads_vn"), ("SANS", "leads_sans"), ("VO", "leads_vo")):
+            ctx.faits.ajoute(nom_, pj_[k_], None, p_.etiquette("en"), "global_trend")
+        ctx.faits.ajoute("leads", sum(pj_.values()), None, p_.etiquette("en"), "global_trend", marques=d.marques)
     gf = g.lignes_chart(s, 0.35, 4.22, 11.0, 2.2, cats, [("New cars & Demo cars", [d.leads(p)["VN"] for p in qs], C_VN), ("Trade-in only", [d.leads(p)["SANS"] for p in qs], C_SANS),
                                                        ("Used cars", [d.leads(p)["VO"] for p in qs], C_VO)], taille=8, legende=False, etiquettes=True)
     try:
@@ -178,6 +184,9 @@ def leads_par_marque(ctx, rv, ref):
     nom_ref = "YoY" if ref == "n1" else "QoQ"
     cur = [_L(d, per, m) for m in marques]
     old = [_L(d, pref, m) for m in marques]
+    for m, v, o in zip(marques, cur, old):
+        ctx.faits.ajoute("leads", v, m, per.etiquette("en"), f"leads_par_marque_{ref}")
+        ctx.faits.ajoute("leads", o, m, pref.etiquette("en"), f"leads_par_marque_{ref}")
     etiq = [None if not v else (f"{nb(v)}\n{_signe(evol(v, o))}" if o else nb(v)) for v, o in zip(cur, old)]
     puces = _evols(ctx, [(ctx.nom(m), c, o) for m, c, o in zip(marques, cur, old)], nom_ref)
     if ref == "prec":
@@ -223,6 +232,10 @@ def leads_par_mois(ctx, rv, projet=None):
     n1 = [d.leads_mensuels(a - 1, None, projet)[m - 1] for a, m in ms]
     if not sum(cur):
         return None
+    for (a_, m_), c_ in zip(ms, cur):
+        ctx.faits.ajoute("leads_vn" if projet else "leads", c_, None, f"{a_}-{m_:02d}", "leads_par_mois")
+    for (a_, m_), o_ in zip(ms, n1):
+        ctx.faits.ajoute("leads_vn" if projet else "leads", o_, None, f"{a_ - 1}-{m_:02d}", "leads_par_mois")
     nom = "NC leads" if projet else "Leads"
     ups = [MOIS_COURTS["en"][m - 1] for (a, m), c, o in zip(ms, cur, n1) if o and c > o]
     lq, lp = sum(cur), (sum(d.leads_mensuels(a, None, projet)[m - 1] for a, m in rv.prec.mois()))
@@ -285,6 +298,11 @@ def projets_groupe(ctx, rv, groupe, marques):
     tot = [sum(vals[k][i] for k in vals) for i in range(len(marques) * 4)]
     for k, nom, _ in ordre:
         cd.add_series(nom, vals[k])
+    nom_f = {"VN": "leads_vn", "SANS": "leads_sans", "VO": "leads_vo"}
+    for i_, (m_, p_) in enumerate([(m, p) for m in marques for p in pers]):
+        for k, _n, _c in ordre:
+            ctx.faits.ajoute(nom_f[k], vals[k][i_], m_, p_.etiquette("en"), f"projets_{groupe}")
+        ctx.faits.ajoute("leads", sum(vals[k][i_] for k in vals), m_, p_.etiquette("en"), f"projets_{groupe}")
     x, y, w, h = 0.15, 1.3, 8.7, 4.9
     gf = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_STACKED, Inches(x), Inches(y), Inches(w), Inches(h), cd)
     ch = gf.chart
@@ -356,6 +374,12 @@ def trafic_leads_apercu(ctx, rv):
     # sessions : « période précédente » = les mêmes nombres de jours juste avant (définition de Looker, tableaux de référence) ; leads : trimestre civil précédent
     trafic = {m: tuple(_sessions(d, p, m) for p in (per, per.precedente_jours(), rv.n1)) for m in marques}
     leads = {m: tuple(_L(d, p, m) for p in (per, rv.prec, rv.n1)) for m in marques}
+    pays_ses = "+".join(p for p in d.pays if p != "LU") or "+".join(d.pays)
+    for m in marques:
+        for p_, v_ in zip((per, per.precedente_jours(), rv.n1), trafic[m]):
+            ctx.faits.ajoute("sessions", v_ or None, m, p_.etiquette("en"), "traffic_leads_overview", perimetre=pays_ses)
+        for p_, v_ in zip((per, rv.prec, rv.n1), leads[m]):
+            ctx.faits.ajoute("leads", v_, m, p_.etiquette("en"), "traffic_leads_overview")
     s = slide_revue(ctx, rv, f"Traffic & leads Overview {mois_label(per)}", source=None)
     n = len(marques)
     w0 = 0.85
@@ -581,6 +605,11 @@ def leads_vn_c1st(ctx, rv, groupe, marques):
     if not vues or not marques:
         return None
     tq = {m: (d.c1st(per, m), d.c1st_nsc(per, m)) for m in marques}
+    for m in marques:
+        for i_, (a_, mo_) in enumerate(mois):
+            if data[m][i_][0] is not None:
+                ctx.faits.ajoute("c1st_leads", data[m][i_][0], m, f"{a_}-{mo_:02d}", "c1st_leads_vn")
+                ctx.faits.ajoute("c1st_orders", data[m][i_][1], m, f"{a_}-{mo_:02d}", "c1st_leads_vn")
     if not any(c for c, n in tq.values()):
         return None
     cats = [f"{mois[i][1]:02d}/{mois[i][0] % 100}" for i in vues]
@@ -630,6 +659,9 @@ def ventes_additionnelles(ctx, rv):
         if a is None or b is None or na is None or nb_ is None:
             continue
         lignes.append((m, b["leads"], a["leads"], nb_, na))
+        for p_, v_, o_ in ((per, a["leads"], na), (rv.n1, b["leads"], nb_)):
+            ctx.faits.ajoute("c1st_leads", v_, m, p_.etiquette("en"), "c1st_ventes_additionnelles")
+            ctx.faits.ajoute("c1st_orders", o_, m, p_.etiquette("en"), "c1st_ventes_additionnelles")
         tot = [tot[0] + b["leads"], tot[1] + a["leads"], tot[2] + nb_, tot[3] + na]
     if not lignes:
         return None
@@ -757,6 +789,21 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     agenda(SECTIONS_TRIM[5])
     questions_trim(ctx, rv)
     contacts_revue(ctx, rv)
+    ctx.qa = _qa_trim(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
     ctx.prs.save(str(sortie))
     return ctx
+
+
+def _qa_trim(ctx, rv):
+    """Contrôle qualité des chiffres affichés (voir qa.py) ; ne doit jamais empêcher la génération."""
+    from . import qa
+    try:
+        d, per = ctx.d, rv.per
+        d.c1st_date()
+        j = getattr(d, "_c1st_jour", "") or ""
+        infos = {"fin_periode": per.fin.isoformat(), "dernier_jour_leads": d.dernier_jour_leads(), "collecte_c1st": j[:10] or None}
+        lab = lambda p: p.etiquette("en")
+        return qa.controle(ctx.faits, infos, [(lab(per), lab(rv.prec)), (lab(per), lab(rv.n1))])
+    except Exception as e:
+        return {"erreurs": [], "alertes": [{"code": "qa_indisponible", "message": f"Contrôle qualité non exécuté : {type(e).__name__}: {e}"}], "infos": [], "nb_faits": len(ctx.faits.lignes)}
