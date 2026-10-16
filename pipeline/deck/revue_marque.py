@@ -76,6 +76,22 @@ def _entree(ctx, marque, per):
     return out
 
 
+def _entree_origines(ctx, marque, per):
+    """(entrées depuis le site de la marque, entrées directes « Trade In Entry ») du mois ou du trimestre, sommées sur les sites de la marque ; None si absent (champs « marque » et « total » de entreeMonth)."""
+    marque_n = direct_n = 0
+    vu = False
+    for nom, m, _ in ctx.d.sites:
+        if m != marque:
+            continue
+        for cle in _cles(per):
+            e = ((ctx.d._site_json(nom) or {}).get("entreeMonth") or {}).get(cle)
+            if e and e.get("marque") is not None:
+                marque_n += e.get("marque") or 0
+                direct_n += e.get("total") or 0
+                vu = True
+    return (marque_n, direct_n) if vu and (marque_n + direct_n) else None
+
+
 def _site_principal(ctx, marque, per):
     """(sessions du site principal, sessions du site de reprise) du mois, sommées sur les sites de la marque (data/<site>.json : propSessions.month = propriété GA4 entière, comme Looker / repriseMonth) ; None si absent."""
     a = r = None
@@ -134,12 +150,12 @@ def trafic(ctx, rv, marque):
     if ratio is not None:
         puces.append(f"Ratio trade-in sessions / main website sessions: {ratio:.1f}%")
     if hl is not None and cvr is not None:
-        p = f"Funnel: {nb(ses)} sessions, {nb(ij)} in journey, {nb(hl)} hot leads"
+        p = f"Funnel: {nb(ses)} sessions, {nb(ij)} in journey, {nb(hl)} GA leads"
         if e_hl[1] is not None:
-            p += f" ({pct(e_hl[1], 1, True)} YoY hot leads)"
+            p += f" ({pct(e_hl[1], 1, True)} YoY GA leads)"
         puces.append(p + f"; overall conversion rate {cvr:.1f}%.")
     else:
-        puces.append("In Journey and Hot Leads: n/a (GA4 unavailable).")
+        puces.append("In Journey and GA leads: n/a (GA4 unavailable).")
     ct = sum(can.values())
     if ordre and ct:
         c0 = ordre[0]
@@ -151,20 +167,26 @@ def trafic(ctx, rv, marque):
 
     titre, sous = ("Traffic DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Traffic", mois_label(rv.per))
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=puces[:5])
-    g.texte(s, 0.26, 1.25, 3.0, 0.32, "Trade-in website", taille=14, gras=True, couleur="000000")
-    g.texte(s, 0.26, 1.55, 4.0, 0.22, "Sum up (Period set above vs Y-1)", taille=8, italique=True, gras=True, couleur="595959")
+    g.texte(s, 0.31, 1.25, 1.9, 0.3, "Brand website", taille=14, gras=True, couleur="000000")
+    g.texte(s, 2.35, 1.25, 3.0, 0.32, "Trade-in website", taille=14, gras=True, couleur="000000")
+    g.texte(s, 2.35, 1.55, 4.0, 0.22, "Sum up (Period set above vs Y-1)", taille=8, italique=True, gras=True, couleur="595959")
+    g.texte(s, 0.31, 1.55, 1.9, 0.22, "Brand website visits", taille=8, italique=True, gras=True, couleur="595959")
     mm, yy = (rv.vs_prec, "YoY")
-    _carre(s, 0.31, 1.85, 1.92, 0.96, "Sessions", nb(ses), [(mm, e_s[0]), (yy, e_s[1])], 20)
-    _carre(s, 2.87, 1.85, 1.93, 0.96, "In Journey", "n/a" if ij is None else nb(ij), [(mm, e_ij[0]), (yy, e_ij[1])], 20)
-    _carre(s, 5.42, 1.85, 1.85, 1.0, "Hot Leads", "n/a" if hl is None else nb(hl), [(mm, e_hl[0]), (yy, e_hl[1])], 20)
-    for x, lab in ((2.23, t1), (4.8, t2)):
-        _ligne(s, x, 2.17, x + 0.64, 2.17, fleche=True)
-        g.texte(s, x + 0.1, 1.93, 0.6, 0.22, "n/a" if lab is None else f"{lab:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
-    _ligne(s, 1.27, 2.81, 1.27, 3.13); _ligne(s, 1.27, 3.13, 6.35, 3.13); _ligne(s, 6.35, 3.13, 6.35, 2.87, fleche=True)
-    g.texte(s, 3.4, 3.17, 1.0, 0.22, "n/a" if cvr is None else f"{cvr:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
-    for x, lab, e in ((7.62, f"Visites site marque {rv.vs_prec}", e_site[0]), (9.37, "Visites site marque YoY", e_site[1])):
-        g.texte(s, x, 1.69, 1.6, 0.22, lab, taille=8, italique=True, gras=True, couleur="000000")
-        _carre(s, x, 1.93, 1.5, 0.87, "Sessions", "n/a" if not site else nb(site), [(rv.vs_prec if rv.vs_prec in lab else "YoY", e)], 16)
+    # visites du site de la marque tout à gauche, puis l'entonnoir du site de reprise : Sessions -> In Journey -> GA leads
+    _carre(s, 0.31, 1.85, 1.65, 0.96, "Sessions", "n/a" if not site else nb(site), [(mm, e_site[0]), (yy, e_site[1])], 20)
+    _carre(s, 2.35, 1.85, 1.65, 0.96, "Sessions", nb(ses), [(mm, e_s[0]), (yy, e_s[1])], 20)
+    _carre(s, 4.65, 1.85, 1.65, 0.96, "In Journey", "n/a" if ij is None else nb(ij), [(mm, e_ij[0]), (yy, e_ij[1])], 20)
+    _carre(s, 6.95, 1.85, 1.65, 1.0, "GA leads", "n/a" if hl is None else nb(hl), [(mm, e_hl[0]), (yy, e_hl[1])], 20)
+    for x, lab in ((4.0, t1), (6.3, t2)):
+        _ligne(s, x, 2.17, x + 0.65, 2.17, fleche=True)
+        g.texte(s, x + 0.02, 1.93, 0.6, 0.22, "n/a" if lab is None else f"{lab:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
+    _ligne(s, 3.17, 2.81, 3.17, 3.13); _ligne(s, 3.17, 3.13, 7.77, 3.13); _ligne(s, 7.77, 3.13, 7.77, 2.87, fleche=True)
+    g.texte(s, 4.97, 3.17, 1.0, 0.22, "n/a" if cvr is None else f"{cvr:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
+    # part des entrées sur la home de la reprise venant du site de la marque / directes (« Brand Websites » / « Trade In Entry » de Looker)
+    orig = _entree_origines(ctx, marque, rv.per)
+    if orig:
+        g.texte(s, 8.8, 1.25, 2.3, 0.3, "Trade-in entries by origin", taille=9, gras=True, italique=True, couleur="595959")
+        g.anneau(s, 8.75, 1.45, 2.3, 1.75, ["Brand Websites", "Trade In Entry"], [orig[0], orig[1]], couleurs=["4472C4", "5BC0BE"], taille=7)
 
     # tableau des canaux + anneau
     if ct:
