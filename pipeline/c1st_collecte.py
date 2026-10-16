@@ -34,6 +34,9 @@ API = "v68.0"
 DATASETS = {"leads": "0Fb0O000000XrKuSAK", "dealer": "0Fba2000000JM6TCAW", "sub": "0Fba20000014ZhlCAE"}
 PAYS = ["FR", "BE", "ES", "PT", "IT", "DE", "PL", "AT", "GB"]          # marchés où C1ST contient des leads Autobiz (BE comprend le Luxembourg) ; suivi des concessionnaires quasi nul en DE / AT
 MARQUES_STD = ["AC", "AH", "AP", "AR", "DS", "FO", "FT", "JE", "LA", "OP"]
+XP = ["AC", "AP", "DS", "OP"]
+# Avant 2026, les leads Autobiz xP se reconnaissent à la « Level 1 (Source Detail) » (315 / 515 / 311 / 511), toutes natures, pas à la campagne (identifiants numériques) ; xF : nature A68 + campagne Autobiz.
+SOURCES_XP_AVANT_2026 = ["315.Brand Trade-in/ Reprise", "515.Brand by back/ Reprise (Mobile)", "311.PSA RETAIL", "511.PSA RETAIL (Mobile)"]
 PERIMETRES = {
     "std": {"marques": MARQUES_STD, "natures": ["A68.Trade-In Value", "47.VO - VN Trade-in Operation"], "activite": "VN"},
     "sp": {"marques": ["SP"], "natures": ["15.Buyback request"], "activite": "VO"},
@@ -49,6 +52,22 @@ def _periode(y, m):
     return f"dateRange([{y},{m},1],[{y},{m},{calendar.monthrange(y, m)[1]}])"
 
 
+def _origine(p, y, perim):
+    """Origine Autobiz du lead : 2026 -> campagne (Provider) AUTOBIZ / Autobiz ; avant 2026 -> pour les marques xP la source 315/515/311/511, pour xF la campagne Autobiz."""
+    camp = f"'{p}CampaignIDUSER__c' in [\"AUTOBIZ\", \"Autobiz\"]"
+    if y >= 2026 or perim is not PERIMETRES["std"]:
+        return camp
+    return f"(('{p}PSABrand__c' in {_liste(XP)} && '{p}LeadSourceLabelized' in {_liste(SOURCES_XP_AVANT_2026)}) || ('{p}PSABrand__c' not in {_liste(XP)} && {camp}))"
+
+
+def _nature(p, y, perim):
+    """Nature : 47 (xP) / A68 (xF) ; avant 2026 les marques xP sont identifiées par leur source (voir _origine) et toutes natures confondues (validé sur le tableau « NC sales conversion » 2025)."""
+    nat = f"'{p}NatureLabelized' in {_liste(perim['natures'])}"
+    if y >= 2026 or perim is not PERIMETRES["std"]:
+        return nat
+    return f"('{p}PSABrand__c' in {_liste(XP)} || {nat})"
+
+
 def filtres(v, pays, y, m, perim, prefixe=""):
     """Bloc de filtres commun (comme le dashboard « Leads Funnel »). prefixe = « ACCLead. » pour les jeux dealer et SUB."""
     p = prefixe
@@ -60,8 +79,8 @@ def filtres(v, pays, y, m, perim, prefixe=""):
         f"{v} = filter {v} by '{p}{type_client}' in [\"B2B\", \"B2C\"];",
         f"{v} = filter {v} by '{p}CentralLocal_lead' in [\"BRAND\", \"Central\"];",
         f"{v} = filter {v} by '{p}Activity__c' in {_liste([perim['activite']])};",
-        f"{v} = filter {v} by '{p}CampaignIDUSER__c' in [\"AUTOBIZ\", \"Autobiz\"];",
-        f"{v} = filter {v} by '{p}NatureLabelized' in {_liste(perim['natures'])};",
+        f"{v} = filter {v} by {_origine(p, y, perim)};",
+        f"{v} = filter {v} by {_nature(p, y, perim)};",
         f"{v} = filter {v} by ('{p}LeadQualificationResult__c' not in [\"Black list filtering\"] || '{p}LeadQualificationResult__c' is null);",
         f"{v} = filter {v} by '{p}Test_JustDealer2' in [\"No\"];",
         f"{v} = filter {v} by date('{p}CreatedDate_Year', '{p}CreatedDate_Month', '{p}CreatedDate_Day') in [{_periode(y, m)}];",

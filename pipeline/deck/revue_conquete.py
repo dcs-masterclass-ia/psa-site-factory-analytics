@@ -143,7 +143,10 @@ def conquete(ctx, rv, marque):
             t += f", mostly from {_joli(pa[0][0])} {_joli(pa[0][1])} owners"
         puces.append(t + ".")
 
-    s = slide_revue(ctx, rv, f"Conquest & loyalty – {mois_label(per)}", marque=marque, puces=puces)
+    if rv.trim:
+        s = slide_revue(ctx, rv, "LEAD DEEP DIVE", sous_titre=f"Conquest Vs Loyalty {mois_label(per)}", marque=marque, puces=puces)
+    else:
+        s = slide_revue(ctx, rv, f"Conquest & loyalty – {mois_label(per)}", marque=marque, puces=puces)
 
     # --- panneaux (positions relevées sur la diapositive de référence)
     X1, X2, W1, W2 = 0.6, 5.7, 5.05, 5.05

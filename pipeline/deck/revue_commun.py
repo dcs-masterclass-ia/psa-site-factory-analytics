@@ -27,8 +27,10 @@ MARINE = "043882"
 
 
 def mois_label(per, langue="en"):
-    """« August 2026 » (nom complet du mois, comme dans les titres du deck)."""
+    """« August 2026 » (nom complet du mois, comme dans les titres du deck) ; « Q3-2026 » pour un trimestre."""
     from .periodes import MOIS_NOMS
+    if per.type == "trimestre":
+        return f"Q{per.indice}-{per.annee}"
     return f"{MOIS_NOMS[langue][per.indice - 1].capitalize()} {per.annee}"
 
 
@@ -38,8 +40,10 @@ class Revue:
     def __init__(self, ctx):
         self.per = ctx.per
         self.pays = list(ctx.d.pays)
-        if self.per.type != "mois":
-            raise ValueError("Le format « revue mensuelle France » exige une période mensuelle.")
+        if self.per.type not in ("mois", "trimestre"):
+            raise ValueError("Les formats de revue exigent une période mensuelle (revue_fr) ou trimestrielle (revue_trim).")
+        self.trim = self.per.type == "trimestre"
+        self.vs_prec = "QoQ" if self.trim else "MoM"          # libellé de la comparaison à la période précédente
         self.prec = self.per.precedente()
         self.n1 = self.per.n1()
         self.dossier = ctx.d.hist.parent / "presentations" / "assets" / "revue_fr"
@@ -85,6 +89,11 @@ class Revue:
         if grand:
             spec.update({"x": 9.88, "y": 0.09, "w": 1.0, "h": 0.6})
         return self._drapeau_pays(slide, spec)
+
+
+def court(per):
+    """Étiquette courte d'une période pour les colonnes : « Aug » (mois) ou « Q3 » (trimestre)."""
+    return f"Q{per.indice}" if per.type == "trimestre" else MOIS_COURTS["en"][per.indice - 1]
 
 
 # ------------------------------------------------------------------ pied de page, titre, encadré

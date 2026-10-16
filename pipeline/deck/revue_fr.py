@@ -58,12 +58,12 @@ def couverture_revue(ctx, rv):
     return s
 
 
-def agenda_revue(ctx, rv, actif):
-    """Sommaire : 5 sections, la section courante en bleu marine plein (géométrie relevée sur la diapositive 3 du deck de référence)."""
+def agenda_revue(ctx, rv, actif, sections=None):
+    """Sommaire : 5 sections (ou `sections`), la section courante en bleu marine plein (géométrie relevée sur la diapositive 3 du deck de référence)."""
     s = slide_revue(ctx, rv, "Agenda", source=None)
     rv.drapeau(s)
     y = 1.67
-    for i, libelle in enumerate(SECTIONS):
+    for i, libelle in enumerate(sections or SECTIONS):
         on = i == actif
         b = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.45), Inches(y), Inches(10.1), Inches(0.47))
         b.adjustments[0] = 0.12

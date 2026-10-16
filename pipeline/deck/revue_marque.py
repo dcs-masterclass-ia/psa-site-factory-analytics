@@ -59,32 +59,36 @@ def _mois_cle(per):
     return f"{per.annee}-{per.indice:02d}"
 
 
+def _cles(per):
+    """Clés « AAAA-MM » des mois de la période (un seul mois, ou les 3 d'un trimestre)."""
+    return [f"{a}-{m:02d}" for a, m in per.mois()]
+
+
 def _entree(ctx, marque, per):
     """{canal: sessions} des arrivées « Trade In Entry » du mois, sommées sur les sites de la marque ; {} si absent."""
-    cle = _mois_cle(per)
     out = {}
     for nom, m, _ in ctx.d.sites:
         if m != marque:
             continue
-        for canal, n in ((((ctx.d._site_json(nom) or {}).get("entreeMonth") or {}).get(cle) or {}).get("canaux") or {}).items():
-            out[canal] = out.get(canal, 0) + n
+        for cle in _cles(per):
+            for canal, n in ((((ctx.d._site_json(nom) or {}).get("entreeMonth") or {}).get(cle) or {}).get("canaux") or {}).items():
+                out[canal] = out.get(canal, 0) + n
     return out
 
 
 def _site_principal(ctx, marque, per):
     """(sessions du site principal, sessions du site de reprise) du mois, sommées sur les sites de la marque (data/<site>.json : propSessions.month = propriété GA4 entière, comme Looker / repriseMonth) ; None si absent."""
-    cle = _mois_cle(per)
     a = r = None
     for nom, m, _ in ctx.d.sites:
         if m != marque:
             continue
         j = ctx.d._site_json(nom) or {}
-        v = ((j.get("propSessions") or {}).get("month") or {}).get(cle)          # « Visites site marque » de Looker = sessions de toute la propriété GA4 (build.py / looker_align.py)
-        w = ((j.get("repriseMonth") or {}).get(cle) or {}).get("sessions")
-        if v is not None:
-            a = (a or 0) + v
-        if w is not None:
-            r = (r or 0) + w
+        vs = [((j.get("propSessions") or {}).get("month") or {}).get(cle) for cle in _cles(per)]       # « Visites site marque » de Looker = sessions de toute la propriété GA4 (build.py / looker_align.py)
+        ws = [((j.get("repriseMonth") or {}).get(cle) or {}).get("sessions") for cle in _cles(per)]
+        if all(v is not None for v in vs):                  # jamais de total partiel sur un trimestre
+            a = (a or 0) + sum(vs)
+        if all(w is not None for w in ws):
+            r = (r or 0) + sum(ws)
     return a, r
 
 
@@ -126,7 +130,7 @@ def trafic(ctx, rv, marque):
             tr += f" and {'outperformed' if e_s[1] > e_site[1] else 'underperformed'} {nom} main website traffic ({pct(e_site[1], 1, True)} YoY)"
         puces.append(tr + ".")
     else:
-        puces.append(f"Trade-in website sessions: {nb(ses)}" + (f" ({pct(e_s[0], 1, True)} MoM)." if e_s[0] is not None else "."))
+        puces.append(f"Trade-in website sessions: {nb(ses)}" + (f" ({pct(e_s[0], 1, True)} {rv.vs_prec})." if e_s[0] is not None else "."))
     if ratio is not None:
         puces.append(f"Ratio trade-in sessions / main website sessions: {ratio:.1f}%")
     if hl is not None and cvr is not None:
@@ -145,10 +149,11 @@ def trafic(ctx, rv, marque):
             p += f" ({pct(e0, 1, True)} YoY)"
         puces.append(p + ".")
 
-    s = slide_revue(ctx, rv, "Traffic", sous_titre=mois_label(rv.per), marque=marque, puces=puces[:5])
+    titre, sous = ("Traffic DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Traffic", mois_label(rv.per))
+    s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=puces[:5])
     g.texte(s, 0.26, 1.25, 3.0, 0.32, "Trade-in website", taille=14, gras=True, couleur="000000")
     g.texte(s, 0.26, 1.55, 4.0, 0.22, "Sum up (Period set above vs Y-1)", taille=8, italique=True, gras=True, couleur="595959")
-    mm, yy = ("MoM", "YoY")
+    mm, yy = (rv.vs_prec, "YoY")
     _carre(s, 0.31, 1.85, 1.92, 0.96, "Sessions", nb(ses), [(mm, e_s[0]), (yy, e_s[1])], 20)
     _carre(s, 2.87, 1.85, 1.93, 0.96, "In Journey", "n/a" if ij is None else nb(ij), [(mm, e_ij[0]), (yy, e_ij[1])], 20)
     _carre(s, 5.42, 1.85, 1.85, 1.0, "Hot Leads", "n/a" if hl is None else nb(hl), [(mm, e_hl[0]), (yy, e_hl[1])], 20)
@@ -157,14 +162,14 @@ def trafic(ctx, rv, marque):
         g.texte(s, x + 0.1, 1.93, 0.6, 0.22, "n/a" if lab is None else f"{lab:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
     _ligne(s, 1.27, 2.81, 1.27, 3.13); _ligne(s, 1.27, 3.13, 6.35, 3.13); _ligne(s, 6.35, 3.13, 6.35, 2.87, fleche=True)
     g.texte(s, 3.4, 3.17, 1.0, 0.22, "n/a" if cvr is None else f"{cvr:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
-    for x, lab, e in ((7.62, "Visites site marque MoM", e_site[0]), (9.37, "Visites site marque YoY", e_site[1])):
+    for x, lab, e in ((7.62, f"Visites site marque {rv.vs_prec}", e_site[0]), (9.37, "Visites site marque YoY", e_site[1])):
         g.texte(s, x, 1.69, 1.6, 0.22, lab, taille=8, italique=True, gras=True, couleur="000000")
-        _carre(s, x, 1.93, 1.5, 0.87, "Sessions", "n/a" if not site else nb(site), [("MoM" if "MoM" in lab else "YoY", e)], 16)
+        _carre(s, x, 1.93, 1.5, 0.87, "Sessions", "n/a" if not site else nb(site), [(rv.vs_prec if rv.vs_prec in lab else "YoY", e)], 16)
 
     # tableau des canaux + anneau
     if ct:
         g.texte(s, 0.5, 3.62, 3.5, 0.3, "Traffic landing on Trade In", taille=11, gras=True, couleur="000000")
-        g.texte(s, 3.25, 3.67, 0.8, 0.25, "MoM", taille=10, italique=True, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
+        g.texte(s, 3.25, 3.67, 0.8, 0.25, rv.vs_prec, taille=10, italique=True, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
         g.texte(s, 4.45, 3.67, 0.8, 0.25, "YoY", taille=10, italique=True, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
         lignes = [["Channel group", "Sessions", "% Δ", "% Δ"]]
         for i, c in enumerate(ordre[:10], 1):

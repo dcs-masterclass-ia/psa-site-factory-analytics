@@ -13,7 +13,7 @@ from .donnees import PROJET_BO, PROJETS, groupe_source
 # groupes de sources du deck de référence (Tableau) : SOL et eDealer sont des sources à part (le regroupement standard de Donnees les met dans Display / Autre)
 ORDRE_SOURCES = ["Display", "Edealer", "Emailing", "Main-Website", "Search", "Social", "SOL", "Autre"]      # (LLM est replié dans Autre : pas de ligne LLM dans le deck)
 from .periodes import MOIS_COURTS
-from .revue_commun import C_SANS, C_VN, C_VO, evol, mois_label, nb, pct, slide_revue
+from .revue_commun import C_SANS, C_VN, C_VO, court, evol, mois_label, nb, pct, slide_revue
 
 PROJETS = ["VN", "SANS", "VO"]
 NOMS_PROJETS = {"VN": "New cars & Demo cars", "SANS": "Trade-in only", "VO": "Used cars"}
@@ -93,7 +93,7 @@ def matrice(s, x, y, w, h, lib_col0, lignes, colonnes, blocs, annees=None, haute
 
 # ------------------------------------------------------------------ données
 def _mois_court(per):
-    return MOIS_COURTS["en"][per.indice - 1]
+    return court(per)
 
 
 def _pcts(a, b):
@@ -142,8 +142,8 @@ def canaux(ctx, rv, marque):
         for k, dd in enumerate(data):
             vals = [dd[sg][pj] if dd[sg][pj] else None for sg in srcs] + [tp[k][pj]]
             colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_court(per_list[k]), "fond": k >= 2, "couleur": COUL[pj], "bloc_vals": vals[:-1]})
-    s = slide_revue(ctx, rv, "Leads by marketing channel", sous_titre=mois_label(rv.per), marque=marque,
-                    puces=_puces_canaux(data, tp, srcs, rv))
+    titre, sous = ("LEAD DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Leads by marketing channel", mois_label(rv.per))
+    s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=_puces_canaux(data, tp, srcs, rv))
     legende_projets(s)
     annees = [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)]
     matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ")
@@ -168,7 +168,7 @@ def _puces_canaux(data, tp, srcs, rv):
     em, ey = evol(cur, prec), evol(cur, n1)
     if em is not None:
         mot = lambda e: "increased" if e > 0 else "decreased"
-        txt = f"Leads have {mot(em)} by {pct(em, 0, True)} Month-over-Month"
+        txt = f"Leads have {mot(em)} by {pct(em, 0, True)} {'Quarter' if rv.trim else 'Month'}-over-{'Quarter' if rv.trim else 'Month'}"
         if ey is not None:
             txt += f" and {mot(ey)} by {pct(ey, 0, True)} Year-over-Year"
         out.append(txt)

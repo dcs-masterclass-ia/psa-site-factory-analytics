@@ -142,3 +142,13 @@ class Principal(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PerimetreAvant2026(unittest.TestCase):
+    def test_xp_par_source_avant_2026_campagne_apres(self):
+        avant = c.filtres("q", "FR", 2025, 3, c.PERIMETRES["std"])
+        apres = c.filtres("q", "FR", 2026, 3, c.PERIMETRES["std"])
+        self.assertIn("315.Brand Trade-in/ Reprise", avant)
+        self.assertNotIn("315.Brand Trade-in/ Reprise", apres)
+        self.assertIn("'PSABrand__c' in", avant.split("NatureLabelized")[0].split("\n")[-1])
+        self.assertIn("CampaignIDUSER__c", apres)
