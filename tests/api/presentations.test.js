@@ -10,7 +10,7 @@ let fichier = null, fichierTpl = null, sha = 0, session = null;
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async p => { const f = p.includes("templates") ? fichierTpl : fichier; return { data: f ? JSON.parse(JSON.stringify(f)) : null, sha: String(sha) }; },
   writeJson: async (p, d) => { const c = JSON.parse(JSON.stringify(d)); if (p.includes("templates")) fichierTpl = c; else fichier = c; sha++; return { sha: String(sha) }; },
-  readBinary: async () => null } };
+  readBinary: async () => (global.__binPptx || null) } };
 const vraiAuth = require(authPath);
 require.cache[authPath].exports = { ...vraiAuth, verifySessionFromRequest: () => session };
 const handler = require(path.join(racine, "api/presentations.js"));
@@ -181,4 +181,18 @@ test("format revue_fr : exige une période mensuelle ; actions en cours nettoyé
   assert.deepEqual(r.body.brief.actionsEnCours[0].statut, ["Lancement fait", "Prochain : AC & FT"]);
   const std = await appelle("POST", { action: "save", brief: { ...brief, format: "inconnu" } });
   assert.equal(std.body.brief.format, "standard");
+});
+
+test("téléchargement : le fichier porte le titre du brief (caractères interdits retirés), repli sur l'identifiant", async () => {
+  global.__binPptx = Buffer.from("pptx");
+  fichier = { briefs: [{ id: "B-abc1", titre: 'Revue "FR" / Sept: 2026?', statut: "generee" }, { id: "B-abc2", titre: "  ", statut: "generee" }] };
+  const telecharge = id => new Promise(resolve => {
+    const h = {}; const res = { setHeader(k, v) { h[k] = v; }, status() { return this; }, json(o) { resolve({ h, o }); }, send() { resolve({ h }); } };
+    handler({ method: "GET", query: { fichier: id }, headers: {} }, res);
+  });
+  const a = await telecharge("B-abc1");
+  assert.match(a.h["content-disposition"], /filename\*=UTF-8''Revue%20FR%20Sept%202026\.pptx/);
+  const b = await telecharge("B-abc2");
+  assert.match(b.h["content-disposition"], /filename\*=UTF-8''presentation-B-abc2\.pptx/);
+  global.__binPptx = null;
 });

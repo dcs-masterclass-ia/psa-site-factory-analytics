@@ -6940,7 +6940,8 @@ class Component extends DCLogic {
       try {
         const r = await fetch('/api/presentations?fichier='+encodeURIComponent(id));
         if (!r.ok) { let j=null; try{ j=await r.json(); }catch(e){} throw new Error((j&&j.error)||('Erreur '+r.status)); }
-        const url = URL.createObjectURL(await r.blob()); const a=document.createElement('a'); a.href=url; a.download='presentation-'+id+'.pptx'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
+        const cd=r.headers.get('content-disposition')||''; const m=cd.match(/filename\*=UTF-8''([^;]+)/i); let nom='presentation-'+id+'.pptx'; try{ if(m) nom=decodeURIComponent(m[1]); }catch(e){}
+        const url = URL.createObjectURL(await r.blob()); const a=document.createElement('a'); a.href=url; a.download=nom; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000);
       } catch(e) { this.setState({prMsg:{ok:false,text:e.message}}); }
     };
     const prSuivi = () => {   // tant qu'une génération est demandée, on relit la liste toutes les 20 s
