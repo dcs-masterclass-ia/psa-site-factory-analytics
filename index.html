@@ -6852,20 +6852,20 @@ class Component extends DCLogic {
     const prPlan = (()=>{
       if (prTrim) {
         const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
-        const nm = prNbMarquesFr, nPts = pr.pointsOuverts.length, nEt = pr.prochainesEtapes.length>0?1:0;
+        const nm = prNbMarquesFr, nPts = Math.max(1,pr.pointsOuverts.length), nEt = 1;      // slides conservées même vides
         add('Couverture','Page de titre',1); add('Agenda','Sommaire de la revue',3+(nPts?1:0)+(nEt?1:0)+1);
         add('Global overview','Résumé, leads par marque (YoY / QoQ), par mois, NC par marque, projets d\'achat, trafic et leads, vue d\'ensemble par marque',14);
         add('Sales performance','C1ST : suivi des leads, leads VN, ventes additionnelles (si données C1ST)',5);
         add('Traffic & lead deep dive','Trafic, leads par canal et conquête / fidélité : '+nm+' marque'+(nm>1?'s':'')+' × 3',3*nm);
-        add('Open points',nPts+' point'+(nPts>1?'s':''),nPts); add('Next steps','Tableau des prochaines étapes',nEt); add('Q/A et contacts','Questions, page de contacts',2);
+        add('Open points',pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':''),nPts); add('Next steps','Tableau des prochaines étapes',nEt); add('Q/A et contacts','Questions, page de contacts',2);
         return { rows, total:n };
       }
       if (prFr) {
         const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
-        add('Couverture','Page de titre',1); add('Actions en cours',prNbAct+' action'+(prNbAct>1?'s':''),prNbAct>0?1:0); add('Agenda','Sommaire de la revue',5);
+        add('Couverture','Page de titre',1); add('Actions en cours',prNbAct+' action'+(prNbAct>1?'s':''),1); add('Agenda','Sommaire de la revue',5);
         add('Résumé exécutif','Synthèse du mois',3); add('Trafic et leads','Vues xP / xF',2); add('Projection','Projection du mois',1); add('Conversion NSC','Conversion des leads en ventes neuves',1);
         add('Marques',prNbMarquesFr+' marque'+(prNbMarquesFr>1?'s':'')+' × 6',6*prNbMarquesFr);
-        add('Annexe','Séparateur + annexe CTA',10); add('Contacts','Page de contacts',1);
+        add('Contacts','Page de contacts',1);
         return { rows, total:n };
       }
       const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
@@ -6978,20 +6978,14 @@ class Component extends DCLogic {
 
     // ---- modèles : configuration réutilisable (sans période, points ouverts ni prochaines étapes)
     const PR_TPL_BASE = [
-      {id:'base-trim',base:true,nom:'Reporting trimestriel — pays',description:'Vue globale, projets d\'achat, trafic et leads par marque, sources, analyse et recommandation, points ouverts, prochaines étapes',
-        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-mois',base:true,nom:'Reporting mensuel — pays',description:'Modèle du reporting mensuel : vue globale par groupes de marques (hors Spoticar), projets d\'achat, trafic / CVR / part du site marque, leads et sources par marque, analyse et recommandation sur chaque diapositive, points ouverts, prochaines étapes, blocs NPS et UTM',
-        config:{client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','analyse','points_ouverts','prochaines_etapes','nps','utm'],contact:{},commentaire:''}},
-      {id:'base-annee',base:true,nom:'Annuel — pays',description:'Vue globale, projets d\'achat, trafic par marque et prochaines étapes, comparés à l\'année précédente',
-        config:{client:'Stellantis',langue:'fr',periodicite:'annee',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-fr-mois',base:true,nom:'Revue mensuelle France',description:'Revue mensuelle du marché français : vue globale, suivi C1ST, projets d\'achat, trafic, sources, CTA, conquête, tendance annuelle, SEO, analyse, points ouverts, prochaines étapes',
+      {id:'base-fr-mois',base:true,nom:'Revue mensuelle',description:'Revue mensuelle d\'un marché, à l\'image du deck « Stellantis FR – Trade in review » : vue globale, projets d\'achat, trafic et leads par marque, canaux, conquête et fidélité, tendance annuelle. Pays et marques au choix',
         config:{format:'revue_fr',client:'Stellantis',langue:'en',periodicite:'mois',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
+      {id:'base-trim-pays',base:true,nom:'Reporting trimestriel',description:'Reporting trimestriel d\'un pays, à l\'image du deck « Stellantis Reporting Q3 2026 BE » : global overview (leads par marque YoY / QoQ, par mois, projets d\'achat), sales performance C1ST, deep dive trafic / leads / conquête par marque, points ouverts, prochaines étapes',
+        config:{format:'revue_trim',client:'Stellantis',langue:'en',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','conquete','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-bilan-annuel',base:true,nom:'Bilan annuel et plan d\'action',description:'Bilan de l\'année : vue globale, suivi C1ST, projets, trafic, sources, CTA, conquête, tendance annuelle, SEO, objectifs, analyse, points ouverts, prochaines étapes',
         config:{client:'Stellantis',langue:'en',periodicite:'annee',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','objectifs','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-trim-pays',base:true,nom:'Reporting trimestriel pays',description:'Reporting trimestriel d\'un pays, à l\'image du deck « Stellantis Reporting Q3 2026 BE » : global overview (leads par marque YoY / QoQ, par mois, projets d\'achat), sales performance C1ST, deep dive trafic / leads / conquête par marque, points ouverts, prochaines étapes',
-        config:{format:'revue_trim',client:'Stellantis',langue:'en',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','conquete','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Une base minimale (vue globale, trafic par marque, analyse) à enrichir selon le besoin',
-        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','trafic_marque','analyse'],contact:{},commentaire:''}}
+      {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Base libre : période, pays et modules au choix (vue globale, projets d\'achat, trafic et leads par marque, sources, analyse, points ouverts, prochaines étapes)',
+        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}}
     ];
     const prTplAll = PR_TPL_BASE.concat(((this._pr&&this._pr.templates)||[]).map(t=>Object.assign({base:false},t)));
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
@@ -7044,7 +7038,7 @@ class Component extends DCLogic {
     const prStepUiFlat={}; Object.keys(prStepUi).forEach(k=>{ Object.keys(prStepUi[k]).forEach(f=>{ prStepUiFlat[k+'_'+f]=prStepUi[k][f]; }); });
     // étape 1 : cartes de modèles
     const prTplCards=prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1]; const sel=pr.tplId===t.id;
-      return { nom:({'Reporting trimestriel — pays':'Trimestriel — pays','Reporting mensuel — pays':'Mensuel — pays','Présentation personnalisée':'Personnalisée'})[t.nom]||t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
+      return { nom:({'Présentation personnalisée':'Personnalisée'})[t.nom]||t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
         pick:()=>prApplyTpl(t), tip:(t.description?t.description+' — ':'')+per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), style:`position:relative;cursor:pointer;border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
         check:sel }; });
     // étape 2 : erreurs de champ

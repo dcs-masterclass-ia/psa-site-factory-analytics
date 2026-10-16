@@ -22,7 +22,7 @@ const ouvre = async (page) => {
   await page.locator('div[title="Présentations"]').click();
 };
 const continuer = (page) => page.locator("span.pr-btn:visible", { hasText: /^Continuer$/ }).last().click();   // le dernier = celui de l'étape qui vient de s'ouvrir
-const choisitModele = async (page, nom = "Trimestriel — pays") => {
+const choisitModele = async (page, nom = "Personnalisée") => {
   await page.getByText(nom, { exact: true }).first().click();
   await expect(page.getByText("Titre de la présentation").first()).toBeVisible();      // l'étape 2 s'ouvre toute seule
 };
@@ -168,14 +168,14 @@ test("modèles : choix d'un modèle de base, création d'un modèle, onglet Mod�
     return route.fulfill({ json: { ok: true, template: t } });
   });
   await ouvre(page);
-  await choisitModele(page, "Mensuel — pays");
+  await choisitModele(page, "Revue mensuelle");
   await expect(page.getByText("vs mois précédent")).toBeVisible();                  // périodicité du modèle
   await page.getByText("Enregistrer comme modèle", { exact: true }).click();
   await page.getByPlaceholder("Nom du modèle").fill("Mon mensuel BELUX");
   await page.getByText("Créer le modèle", { exact: true }).click();
   await expect(page.getByText(/Modèle « Mon mensuel BELUX » créé/)).toBeVisible();
   expect(posts[0]).toMatchObject({ action: "save_template", template: { nom: "Mon mensuel BELUX", config: { periodicite: "mois", client: "Stellantis" } } });
-  expect(posts[0].template.config.perimetre.pays).toEqual(["BE", "LU"]);
+  expect(posts[0].template.config.perimetre.pays).toEqual(["FR"]);
   await page.getByText("Modèles", { exact: true }).click();
   await expect(page.getByText("Mon mensuel BELUX").first()).toBeVisible();
   await expect(page.getByText("Modèle de base").first()).toBeVisible();
@@ -246,23 +246,23 @@ test("commentaires et actions : étape dédiée, saisie envoyée dans le brief",
   expect(Object.values(posts[0].brief.actionsMarques)[0]).toContain("Renforcer le display");
 });
 
-test("modèle « Revue mensuelle France » : contenu fixe (carte d'information), éditeur d'actions en cours", async ({ page }) => {
+test("modèle « Revue mensuelle » : contenu fixe (carte d'information), éditeur d'actions en cours", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
   await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
   await ouvre(page);
-  await choisitModele(page, "Revue mensuelle France");
+  await choisitModele(page, "Revue mensuelle");
   await page.getByPlaceholder("Titre de la présentation").fill("Revue mensuelle France — Septembre 2026");
   await continuer(page);
   await expect(page.getByText("Ce modèle reproduit le deck « Trade in review »")).toBeVisible();
   await expect(page.locator(".pr-box:visible")).toHaveCount(0);                                  // pas de cases à cocher
-  await expect(page.getByText("Estimation : 72 diapositives")).toBeVisible();                    // 1+5+3+2+1+1+48+1+9+1 = 72, sans action saisie
+  await expect(page.getByText("Estimation : 63 diapositives")).toBeVisible();                    // 1+1+5+3+2+1+1+48+1 = 63 (actions en cours conservées vides, sans annexe CTA)
   await continuer(page);                                                                         // étape 4 (points ouverts)
   await page.locator("span.pr-btn:visible", { hasText: /^Passer cette étape$/ }).last().click();   // étape 4 (points ouverts) : on passe
   await expect(page.getByText("+ Ajouter une action en cours")).toBeVisible();
   await page.getByText("+ Ajouter une action en cours").click();
   await page.getByPlaceholder("Sujet").fill("Migration V2");
   await page.getByPlaceholder("Statut (une ligne par puce)").fill("Lancé\nEn recette");
-  await expect(page.getByText("73 diapositives").first()).toBeVisible();                       // +1 : la diapositive « actions en cours » apparaît
+  await expect(page.getByText("63 diapositives").first()).toBeVisible();                       // la diapositive « actions en cours » existe déjà (vide), le total ne bouge pas
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
