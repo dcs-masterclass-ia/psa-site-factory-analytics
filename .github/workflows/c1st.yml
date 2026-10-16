@@ -17,6 +17,10 @@ on:
         description: "Mois de début AAAA-MM (vide = le mois en cours + les 3 précédents)"
         required: false
         default: ""
+      pays:
+        description: "Marchés (ex. DE,PL,AT,GB ; vide = tous)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -56,9 +60,13 @@ jobs:
           C1ST_LOGIN_URL: ${{ secrets.C1ST_LOGIN_URL }}
           C1ST_AUDIENCE: ${{ secrets.C1ST_AUDIENCE }}
           DEPUIS: ${{ inputs.depuis }}
+          PAYS: ${{ inputs.pays }}
         run: |
           set +e
-          if [ -n "$DEPUIS" ]; then python -m pipeline.c1st_collecte --courant --depuis "$DEPUIS"; else python -m pipeline.c1st_collecte --courant; fi
+          ARGS="--courant"
+          [ -n "$DEPUIS" ] && ARGS="$ARGS --depuis $DEPUIS"
+          [ -n "$PAYS" ] && ARGS="$ARGS --pays $PAYS"
+          python -m pipeline.c1st_collecte $ARGS
           code=$?
           if [ "$code" -eq 3 ]; then echo "::notice::C1ST non configuré (secrets C1ST_* absents) : rien collecté"; echo "NON_CONFIGURE=1" >> "$GITHUB_ENV"; exit 0; fi
           exit $code
