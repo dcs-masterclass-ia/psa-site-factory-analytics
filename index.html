@@ -307,34 +307,63 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </div>
         <sc-if value="{{ brandOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="position:absolute;top:48px;right:0;z-index:20;width:340px;background:#fff;border:1px solid #ececee;border-radius:14px;box-shadow:0 18px 40px rgba(16,24,40,.14);padding:10px">
+        <div style="{{ scopePanelStyle }}">
           <div style="display:flex;align-items:center;gap:10px;height:34px;padding:0 12px;border-radius:12px;background:#f4f4f6;margin-bottom:8px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a9fa6" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
             <input data-testid="scope-search-input" type="text" value="{{ scopeQuery }}" onInput="{{ onScopeSearch }}" placeholder="Marque, pays ou site…" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:Poppins,sans-serif;font-size:14.5px;color:#121214" />
           </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:2px 10px 8px">
-            <span style="font-size:12px;color:#9a9fa6">{{ nbSitesSelectionnes }} / {{ nbSitesTotal }} sites</span>
-            <span style="display:flex;gap:10px">
-              <span onClick="{{ scopeSelectAll }}" style="font-size:12px;font-weight:600;color:#7c63ee;cursor:pointer">Tout</span>
-              <span onClick="{{ scopeSelectNone }}" style="font-size:12px;font-weight:600;color:#9a9fa6;cursor:pointer">Aucun</span>
-            </span>
-          </div>
-          <div style="max-height:320px;overflow-y:auto">
-            <sc-for list="{{ scopeGroups }}" as="g" hint-placeholder-count="6">
-              <div data-testid="scope-group" onClick="{{ g.pick }}" style="{{ g.rowStyle }}" style-hover="background:#f7f6fe">
-                <span style="{{ g.checkStyle }}">{{ g.checkMark }}</span>
-                <span style="flex:1;min-width:0;font-size:14.5px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.label }}</span>
-              </div>
-              <sc-for list="{{ g.sites }}" as="s" hint-placeholder-count="6">
-                <div data-testid="scope-item" onClick="{{ s.pick }}" style="{{ s.rowStyle }}" style-hover="background:#f7f6fe">
-                  <span style="{{ s.checkStyle }}">{{ s.checkMark }}</span>
-                  <span style="flex:1;min-width:0">
-                    <span style="display:block;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
-                    <span style="display:block;font-size:12px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.sub }}</span>
-                  </span>
-                </div>
+          <div style="max-height:min(70vh,560px);overflow-y:auto;padding:0 2px">
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding:2px 0 10px">
+              <sc-for list="{{ scopeShortcuts }}" as="c" hint-placeholder-count="4">
+                <button type="button" data-testid="scope-shortcut" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
               </sc-for>
-            </sc-for>
+            </div>
+            <sc-if value="{{ scopeBrowsing }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ scopeHasRecents }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:0 0 10px">
+                  <div style="font-size:11.5px;font-weight:600;color:#9a9fa6;letter-spacing:.02em;margin-bottom:4px">Dernières sélections</div>
+                  <sc-for list="{{ scopeRecents }}" as="r" hint-placeholder-count="3">
+                    <button type="button" data-testid="scope-recent" onClick="{{ r.pick }}" title="{{ r.label }}" style="display:block;width:100%;text-align:left;border:none;background:transparent;font-family:Poppins,sans-serif;font-size:13px;color:#121214;padding:5px 8px;border-radius:8px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" style-hover="background:#f7f6fe">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="font-size:11.5px;font-weight:600;color:#9a9fa6;letter-spacing:.02em;margin-bottom:5px">Marché</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;padding-bottom:12px">
+                <sc-for list="{{ scopeMarketPills }}" as="m" hint-placeholder-count="10">
+                  <button type="button" data-testid="scope-market" aria-pressed="{{ m.on }}" title="{{ m.title }}" onClick="{{ m.pick }}" style="{{ m.style }}">{{ m.code }}</button>
+                </sc-for>
+              </div>
+              <div style="font-size:11.5px;font-weight:600;color:#9a9fa6;letter-spacing:.02em;margin-bottom:5px">Marque</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;padding-bottom:12px">
+                <sc-for list="{{ scopeBrandPills }}" as="b" hint-placeholder-count="12">
+                  <button type="button" data-testid="scope-brand" aria-pressed="{{ b.on }}" onClick="{{ b.pick }}" style="{{ b.style }}">{{ b.label }}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div data-testid="scope-summary" aria-live="polite" style="padding:9px 12px;border-radius:12px;background:#f7f6fe;border:1px solid #e4defc;font-size:13.5px;font-weight:600;color:#4b3bb5;margin-bottom:6px">{{ scopeSummary }}</div>
+            <sc-if value="{{ scopeSearching }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12px;color:#9a9fa6;padding:4px 10px">{{ nbSitesSelectionnes }} / {{ nbSitesTotal }} sites</div>
+            </sc-if>
+            <sc-if value="{{ scopeBrowsing }}" hint-placeholder-val="{{ true }}">
+              <button type="button" data-testid="scope-expand" aria-expanded="{{ scopeListOpen }}" onClick="{{ scopeToggleList }}" style="display:block;width:100%;text-align:left;border:none;background:transparent;font-family:Poppins,sans-serif;font-size:13px;font-weight:600;color:#7c63ee;padding:6px 10px;border-radius:8px;cursor:pointer" style-hover="background:#f7f6fe">{{ scopeExpandLabel }}</button>
+            </sc-if>
+            <sc-if value="{{ scopeListOpen }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ scopeGroups }}" as="g" hint-placeholder-count="6">
+                <div data-testid="scope-group" style="padding:8px 10px 2px;font-size:11.5px;font-weight:600;color:#9a9fa6;letter-spacing:.02em">{{ g.label }}</div>
+                <sc-for list="{{ g.sites }}" as="s" hint-placeholder-count="6">
+                  <div data-testid="scope-item" onClick="{{ s.pick }}" style="{{ s.rowStyle }}" style-hover="background:#f7f6fe">
+                    <span style="{{ s.checkStyle }}">{{ s.checkMark }}</span>
+                    <span style="flex:1;min-width:0">
+                      <span style="display:block;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.name }}</span>
+                      <span style="display:block;font-size:12px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ s.sub }}</span>
+                    </span>
+                  </div>
+                </sc-for>
+              </sc-for>
+            </sc-if>
+          </div>
+          <div style="display:flex;justify-content:flex-end;padding-top:8px;border-top:1px solid #ececee;margin-top:8px">
+            <button type="button" data-testid="scope-done" onClick="{{ scopeDone }}" style="height:32px;padding:0 18px;border:none;border-radius:12px;background:#7c63ee;color:#fff;font-family:Poppins,sans-serif;font-size:13.5px;font-weight:600;cursor:pointer">Terminé</button>
           </div>
         </div>
         </sc-if>
@@ -3349,7 +3378,7 @@ class Component extends DCLogic {
             // ---- infra donnees reelles (module GA4, 13/09/2026) ----
             sites: [], booted: false, compareOpen: false, pageQueriesState: 'idle' };
 
-  static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','cmpPrevStart','cmpPrevEnd','sites','sort','brandSort','hidden',
+  static ETAT_PERSISTE = ['source','tab','scTab','from','to','cmpMode','cmpCustomStart','cmpCustomEnd','cmpStart','cmpEnd','cmpPrevStart','cmpPrevEnd','sites','scopeMarkets','scopeBrands','sort','brandSort','hidden',
     'canauxTous','leakDim','histMetric','utmSort','utmGroup','v2Mode','pagesCanal','psSynthDev','prTab','prStep','pr','c1Vue'];
 
   /* ---------------------------- vraies donnees (module GA4) ---------------------------- */
@@ -3454,12 +3483,36 @@ class Component extends DCLogic {
     // une valeur, les fermait -- pas un clic ailleurs sur la page).
     this._onOutsideClick = e => {
       if (e.target.closest && e.target.closest('[data-popover]')) return;
-      if (this.state.calOpen || this.state.brandOpen) this.setState({ calOpen:false, brandOpen:false });
+      if (this.state.brandOpen) this.fermeScope();
+      if (this.state.calOpen) this.setState({ calOpen:false });
     };
     document.addEventListener('mousedown', this._onOutsideClick);
+    this._onEscape = e => {
+      if (e.key !== 'Escape') return;
+      if (this.state.brandOpen) this.fermeScope();
+      if (this.state.calOpen) this.setState({ calOpen:false });
+    };
+    document.addEventListener('keydown', this._onEscape);
+  }
+  // ferme le sélecteur de sites ; si la sélection a changé depuis l'ouverture, elle est
+  // mémorisée (3 dernières, localStorage) pour « Dernières sélections »
+  fermeScope() {
+    const st = this.state, avant = this._scopeAtOpen || [];
+    const change = st.sites.length !== avant.length || st.sites.some(n => !avant.includes(n));
+    if (change && st.sites.length) {
+      try {
+        const cle = a => a.slice().sort().join('|');
+        const l = (JSON.parse(localStorage.getItem('psf_scope_recent') || '[]') || []).filter(r => cle(r.sites || []) !== cle(st.sites));
+        l.unshift({ sites: st.sites.slice(), m: st.scopeMarkets || [], b: st.scopeBrands || [] });
+        localStorage.setItem('psf_scope_recent', JSON.stringify(l.slice(0, 3)));
+      } catch (e) {}
+    }
+    this._scopeAtOpen = st.sites.slice();
+    this.setState({ brandOpen:false, scopeQuery:'' });
   }
   componentWillUnmount() {
     if (this._onOutsideClick) document.removeEventListener('mousedown', this._onOutsideClick);
+    if (this._onEscape) document.removeEventListener('keydown', this._onEscape);
   }
   setTheme(k) { if (window.__setTheme) window.__setTheme(k); this.setState({ theme:k }); }
   presentationsOuvertes() { return /(^|; )psf_feat=pres/.test(document.cookie); }   // interface seulement : /api/presentations refuse les autres adresses
@@ -6517,40 +6570,93 @@ class Component extends DCLogic {
     const checkMark=stateName=>stateName==='checked'?'✓':stateName==='partial'?'–':'';
     const rowStyle=`display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:12px;cursor:pointer`;
     const toggleSite=n=>()=>{ const s=new Set(st.sites); s.has(n)?s.delete(n):s.add(n); set({sites:[...s]}); };
-    const togglePays=pays=>()=>{
-      const sitesP=sitesParPaysScope[pays]||[];
-      const allChecked=sitesP.every(n=>selectedSet.has(n));
-      const s=new Set(st.sites);
-      sitesP.forEach(n=>allChecked?s.delete(n):s.add(n));
-      set({sites:[...s]});
+    // --- sélecteur : raccourcis + pastilles marché / marque (16/10/2026) ---
+    // st.scopeMarkets / st.scopeBrands = pastilles cochées (vide = tous) ; st.sites reste
+    // la seule vérité pour le reste du dashboard. Les pastilles ne servent qu'à calculer
+    // st.sites (intersection) et à vérifier que la sélection y correspond encore.
+    const NOMS_PAYS={FR:'France',BE:'Belgique',LU:'Luxembourg',ES:'Espagne',PT:'Portugal',IT:'Italie',DE:'Allemagne',PL:'Pologne',AT:'Autriche',GB:'Royaume-Uni',UK:'Royaume-Uni'};
+    const ORDRE_PAYS=['FR','BE','LU','ES','PT','IT','DE','PL','AT','GB','UK'];
+    const ORDRE_MARQUES=['PEUGEOT','CITROEN','DS','OPEL','FIAT','FIAT PRO','JEEP','ALFA ROMEO','LANCIA','ABARTH','LEAPMOTOR','SPOTICAR','STELLANTIS &YOU'];
+    const rang=(liste,x)=>{ const i=liste.indexOf(x); return i<0?999:i; };
+    const nomPays=c=>NOMS_PAYS[c]?T(NOMS_PAYS[c]):c;
+    const marquePretty=b=>b==='CITROEN'?'Citroën':b==='DS'?'DS':b.toLowerCase().replace(/(^| )(\S)/g,(m,a,c)=>a+c.toUpperCase());
+    const marquesScope=[...new Set(allSitesReal.map(marqueDeSite))].sort((a,b)=>rang(ORDRE_MARQUES,a)-rang(ORDRE_MARQUES,b)||a.localeCompare(b));
+    const paysPastilles=Object.keys(sitesParPaysScope).sort((a,b)=>rang(ORDRE_PAYS,a)-rang(ORDRE_PAYS,b)||a.localeCompare(b));
+    const selMarches=(st.scopeMarkets||[]).filter(c=>sitesParPaysScope[c]);
+    const selMarques=(st.scopeBrands||[]).filter(b=>marquesScope.includes(b));
+    const croise=(m,b)=>allSitesReal.filter(n=>(!m.length||m.includes(paysDeSite(n)))&&(!b.length||b.includes(marqueDeSite(n))));
+    const memesSites=(a,b)=>{ const sb=new Set(b); return a.length===b.length && a.every(n=>sb.has(n)); };
+    const nbSitesTxt=n=>n+' '+T(n>1?'sites':'site');
+    const phraseAxes=(m,b)=>{
+      const p = !m.length ? T('Tous les marchés') : m.length<=3 ? [...new Set(m.map(nomPays))].join(' + ') : m.length+' '+T('marchés');
+      const r = !b.length ? T('Toutes les marques') : b.length===1 ? marquePretty(b[0]) : b.length+' '+T('marques');
+      return p+' · '+r;
     };
+    const sitesCroises=croise(selMarches,selMarques);
+    const selectionExacte = st.sites.length>0 && memesSites(sitesCroises, st.sites);
+    const phraseSelection=(m,b,sites)=>{
+      if (!sites.length) return T('Aucun site sélectionné');
+      if (memesSites(croise(m,b), sites)) return phraseAxes(m,b)+' → '+nbSitesTxt(sites.length);
+      return (sites.length===1?sites[0]:T('Sélection personnalisée'))+' · '+nbSitesTxt(sites.length);
+    };
+    const scopeSummary=phraseSelection(selMarches,selMarques,st.sites);
+    const setAxes=(m,b)=>set({scopeMarkets:m,scopeBrands:b,sites:croise(m,b)});
+    const basculer=(liste,x)=>liste.includes(x)?liste.filter(y=>y!==x):[...liste,x];
+    const pillStyle=(on,dim)=>`display:inline-flex;align-items:center;height:28px;padding:0 11px;border-radius:14px;font-family:Poppins,sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid ${on?'#7c63ee':'#ececee'};background:${on?'#7c63ee':'#fff'};color:${on?'#fff':'#121214'};opacity:${dim&&!on?.45:1}`;
+    const scopeMarketPills=paysPastilles.map(c=>({
+      code:c, title:nomPays(c), on:selMarches.includes(c),
+      style:pillStyle(selMarches.includes(c), selMarques.length>0 && croise([c],selMarques).length===0),
+      pick:()=>setAxes(basculer(selMarches,c),selMarques)
+    }));
+    const scopeBrandPills=marquesScope.map(b=>({
+      code:b, label:marquePretty(b), on:selMarques.includes(b),
+      style:pillStyle(selMarques.includes(b), selMarches.length>0 && croise(selMarches,[b]).length===0),
+      pick:()=>setAxes(selMarches,basculer(selMarques,b))
+    }));
+    const hasBelux=['BE','LU'].some(c=>sitesParPaysScope[c]);
+    const beluxCodes=['BE','LU'].filter(c=>sitesParPaysScope[c]);
+    const memeListe=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
+    const raccourci=(label,on,pick)=>({label,style:pillStyle(on,false),pick});
+    const scopeShortcuts=[
+      raccourci(T('Tout'), selectionExacte && !selMarches.length && !selMarques.length, ()=>setAxes([],[])),
+      ...(hasBelux?[raccourci('BELUX', selectionExacte && memeListe(selMarches,beluxCodes) && !selMarques.length, ()=>setAxes(beluxCodes,[]))]:[]),
+      ...(sitesParPaysScope.FR?[raccourci(T('France'), selectionExacte && memeListe(selMarches,['FR']) && !selMarques.length, ()=>setAxes(['FR'],[]))]:[]),
+      raccourci(T('Aucun'), st.sites.length===0, ()=>set({scopeMarkets:[],scopeBrands:[],sites:[]}))
+    ];
+    // dernières sélections validées (fermeture du panneau) : localStorage, jamais bloquant
+    let scopeRecents=[];
+    try { scopeRecents=(JSON.parse(localStorage.getItem('psf_scope_recent')||'[]')||[]).slice(0,3).map(r=>{
+      const sites=(r.sites||[]).filter(n=>allSitesReal.includes(n)); if(!sites.length) return null;
+      const m=(r.m||[]).filter(c=>sitesParPaysScope[c]), b=(r.b||[]).filter(x=>marquesScope.includes(x));
+      const txt=phraseSelection(m,b,sites);
+      return { label:txt, pick:()=>set({scopeMarkets:m,scopeBrands:b,sites}) };
+    }).filter(Boolean); } catch(e) { scopeRecents=[]; }
+    // petit écran : panneau pleine largeur sous le bouton (sinon il déborde à gauche)
+    let scopePanelStyle='position:absolute;top:48px;right:0;width:380px;';
+    try { if (window.innerWidth<700) { const r=document.querySelector('[data-testid="scope-picker-toggle"]').getBoundingClientRect(); scopePanelStyle=`position:fixed;top:${Math.round(r.bottom+6)}px;left:16px;right:16px;`; } } catch(e) {}
+    scopePanelStyle+='z-index:20;box-sizing:border-box;background:#fff;border:1px solid #ececee;border-radius:14px;box-shadow:0 18px 40px rgba(16,24,40,.14);padding:10px';
+    const scopeSearching = words.length>0;
+    const scopeListOpen = scopeSearching || !!st.scopeExpand;
+    const perimetreListe = new Set([...sitesCroises, ...st.sites]);   // liste dépliée : le périmètre des pastilles + ce qui est déjà coché
     const scopeGroups = paysNomsScope
       .map(pays=>{
         const sitesP = sitesParPaysScope[pays];
-        const sitesVisibles = sitesP.filter(n=>matches(n, marqueDeSite(n)+' '+pays));
+        const sitesVisibles = sitesP.filter(n=>matches(n, marqueDeSite(n)+' '+pays+' '+nomPays(pays)));
         return { pays, sitesP, sitesVisibles };
       })
-      .filter(g => !words.length || g.sitesVisibles.length>0 || norm(g.pays).includes(q))
-      .map(g=>{
-        const sitesToShow = words.length ? g.sitesVisibles : g.sitesP;
-        const nbChecked = g.sitesP.filter(n=>selectedSet.has(n)).length;
-        const groupState = nbChecked===0?'unchecked':nbChecked===g.sitesP.length?'checked':'partial';
-        return {
-          pays:g.pays, label:`${g.pays} — ${g.sitesP.length} site(s)`,
-          rowStyle:`${rowStyle};font-weight:600`,
-          checkStyle:checkStyle(groupState), checkMark:checkMark(groupState),
-          pick:togglePays(g.pays),
-          sites: sitesToShow.map(n=>{
-            const checked = selectedSet.has(n);
-            return {
-              name:n, sub:marqueDeSite(n)+' · '+g.pays,
-              rowStyle:`${rowStyle};padding-left:26px`,
-              checkStyle:checkStyle(checked?'checked':'unchecked'), checkMark:checkMark(checked?'checked':'unchecked'),
-              pick:toggleSite(n)
-            };
-          })
-        };
-      });
+      .filter(g => words.length ? g.sitesVisibles.length>0 : g.sitesP.some(n=>perimetreListe.has(n)))
+      .map(g=>({
+        pays:g.pays, label:`${nomPays(g.pays)} (${g.pays}) · ${words.length?g.sitesVisibles.length:g.sitesP.filter(n=>perimetreListe.has(n)).length}`,
+        sites: (words.length?g.sitesVisibles:g.sitesP.filter(n=>perimetreListe.has(n))).map(n=>{
+          const checked = selectedSet.has(n);
+          return {
+            name:n, sub:marquePretty(marqueDeSite(n))+' · '+nomPays(g.pays),
+            rowStyle:`${rowStyle};padding-left:12px`,
+            checkStyle:checkStyle(checked?'checked':'unchecked'), checkMark:checkMark(checked?'checked':'unchecked'),
+            pick:toggleSite(n)
+          };
+        })
+      }));
     // libellé du bouton : "Marché entier" si tout est coché, le nom du site
     // si un seul, les marchés entiers cochés (s'ils forment exactement la
     // sélection), sinon un simple décompte -- jamais une valeur trompeuse.
@@ -6568,8 +6674,6 @@ class Component extends DCLogic {
         scopeLabel = `${st.sites.length} sites sélectionnés`;
       }
     }
-    const scopeSelectAll = ()=>set({sites:allSitesReal.slice()});
-    const scopeSelectNone = ()=>set({sites:[]});
     const ctrl=open=>`display:flex;align-items:center;gap:9px;height:34px;padding:0 14px;border:1px solid ${open?'#b6a5f8':'#ececee'};border-radius:12px;font-size:14.5px;color:#121214;cursor:pointer;white-space:nowrap;background:${open?'#f7f6fe':'#fff'}`;
     const weekDays=['L','M','M','J','V','S','D'].map((l,i)=>({l,key:i}));
     // vraie grille mensuelle navigable (corrige le calendrier bloque du
@@ -7141,14 +7245,16 @@ class Component extends DCLogic {
       onCmpCustomStart:e=>set({cmpCustomStart:e.target.value}),
       onCmpCustomEnd:e=>set({cmpCustomEnd:e.target.value}),
       compareRangeLabel:cmpLabels[cmpMode],
-      scopeGroups, scopeSelectAll, scopeSelectNone, nbSitesSelectionnes:st.sites.length, nbSitesTotal:allSitesReal.length,
+      scopeGroups, scopePanelStyle, scopeShortcuts, scopeRecents, scopeHasRecents:scopeRecents.length>0, scopeMarketPills, scopeBrandPills, scopeSummary, scopeSearching, scopeBrowsing:!scopeSearching, scopeListOpen,
+      scopeExpandLabel:(scopeListOpen&&!scopeSearching?'▾ ':'▸ ')+(st.sites.length?T('Voir / ajuster les')+' '+nbSitesTxt(st.sites.length):T('Choisir les sites un par un')), scopeToggleList:()=>set({scopeExpand:!st.scopeExpand}), scopeDone:()=>this.fermeScope(),
+      nbSitesSelectionnes:st.sites.length, nbSitesTotal:allSitesReal.length,
       scopeQuery:st.scopeQuery||'',
       userInitials, userEmail,
       onScopeSearch:e=>set({scopeQuery:e.target.value}),
       brandLabel:scopeLabel, brandOpen:st.brandOpen, brandBtn:ctrl(st.brandOpen),
-      toggleBrand:()=>set({brandOpen:!st.brandOpen,calOpen:false}),
+      toggleBrand:()=>{ if (st.brandOpen) this.fermeScope(); else { this._scopeAtOpen=(st.sites||[]).slice(); set({brandOpen:true,calOpen:false,scopeExpand:false}); } },
       calOpen:st.calOpen, calBtn:ctrl(st.calOpen),
-      toggleCal:()=>set({calOpen:!st.calOpen,brandOpen:false}),
+      toggleCal:()=>{ if (st.brandOpen) this.fermeScope(); set({calOpen:!st.calOpen}); },
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
       c1RappDesc:c1RappRepli?"Leads de reprise avec un projet d'achat VN dans le back-office (le décompte des leads envoyés n'est pas encore disponible pour tous les mois), face aux leads VN vus par C1ST, sur la même période.":"Leads VN envoyés au réseau (Lead sent = YES) dans le back-office, face aux leads VN vus par C1ST, sur la même période : c'est le périmètre que C1ST affiche.", c1RappBoLabel:c1RappRepli?'Back-office (VN)':'Back-office (VN envoyés)',
       isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), isC1ST:st.source==='c1st'&&!this.estLimite(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFiches, aaaHasFiches:aaaFiches.length>0, aaaNoData, aaaHasNoData:aaaNoData.length>0, aaaNoSel:!aaaSel.length, aaaShowEu, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel des sources nationales (AAA Data, KBA, UNRAE, ANFAC, SMMT, Samar, ACAP), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,

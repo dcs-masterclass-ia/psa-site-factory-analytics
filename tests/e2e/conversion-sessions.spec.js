@@ -18,10 +18,10 @@ test("carte principale : conversion en sessions quand evDaily existe, tunnel inc
   });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.waitForTimeout(1500);
-  await expect(page.getByText("estimations ÷ sessions du site de reprise").first()).toBeVisible();
+  await expect(page.getByText("leads GA ÷ sessions du site de reprise").first()).toBeVisible();
   await expect(page.locator("span").filter({ hasText: /^15,0 %$/ }).first()).toBeVisible();
   // le tunnel, lui, garde son entrée en utilisateurs de la page d'accueil
-  await expect(page.getByText("Visiteurs de l'accueil menés jusqu'à l'estimation").first()).toBeVisible();
+  await expect(page.getByText("Visiteurs de l'accueil menés jusqu'aux leads GA").first()).toBeVisible();
 });
 
 test("mois entier : total mensuel GA4 (comme Looker) pour les sessions et le taux", async ({ page, context }) => {
