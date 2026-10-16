@@ -253,6 +253,8 @@ def main(argv=None):
                 ko += 1
                 print(f"  {pays} {cle} : {type(e).__name__}: {e}", file=sys.stderr)
             time.sleep(0.4)
+        sortie.parent.mkdir(parents=True, exist_ok=True)       # sauvegarde après chaque marché : une collecte interrompue ne perd pas le travail fait
+        sortie.write_text(json.dumps(existant, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     existant["collecte"] = {"date": date.today().isoformat(), "source": "C1ST (CRM Analytics), collecte automatique — totaux par marché, mois et marque, aucune donnée personnelle ; le mois de la date de collecte est partiel",
                             "mois": f"{mois[0][0]}-{mois[0][1]:02d} à {mois[-1][0]}-{mois[-1][1]:02d} (derniers mois collectés)", "pays": a.pays.split(",")}
     existant["perimetre"] = "type 1, activité VN, campagne Autobiz, nature 47 (xP) ou A68 (xF) ; SPOTICAR (SP) : activité VO, nature 15.Buyback request (leads de rachat)"
