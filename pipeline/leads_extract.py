@@ -318,8 +318,10 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
         elif l.get(COL_PLATE) == "NO":
             entree["Marque / modele"] += 1
 
+    # leads VN ENVOYÉS au réseau (colonne BB « LEAD SENT » = YES) : le périmètre que C1ST affiche (rapprochement BO ↔ C1ST du dashboard)
+    envoyes_vn = sum(1 for l in lignes if (l.get("LEAD SENT") or "").strip().upper() == "YES" and l.get(COL_PROJECT) == "VN")
     return {
-        "total": len(lignes), "daily": daily,
+        "total": len(lignes), "daily": daily, "envoyesVN": envoyes_vn,
         "brand": _top(brand), "fuel": _top(fuel),
         "entry": entree, "project": _top(project),
         "source": _top(source), "code": _top(code),

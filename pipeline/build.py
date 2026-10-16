@@ -658,6 +658,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     except Exception as e:
         journal.append(f"historique mensuel en erreur ({type(e).__name__}: {e})")
 
+    # leads VN envoyés (LEAD SENT = YES), mois anciens : depuis l'historique profond ; les mois récents sont comptés à l'extraction (leads_extract.bloc_leads_mois)
+    try:
+        for mois, n in hist_month.envoyes_vn(s.slug).items():
+            bloc = (d.get("leads") or {}).get(mois)
+            if isinstance(bloc, dict) and "envoyesVN" not in bloc:
+                bloc["envoyesVN"] = n
+    except Exception as e:
+        journal.append(f"leads envoyés en erreur ({type(e).__name__}: {e})")
+
     # avant / apres V2 : derive du funnel quotidien ci-dessus (meme definition que
     # le reste du dashboard), pour TOUS les sites ayant une date de bascule --
     # y compris ceux dont l'avant/apres avait ete saisi a la main. v2Weekly

@@ -1,0 +1,5 @@
+{
+ "Back-office (VN envoyés)": "Back-office (VN sent)",
+ "Leads VN envoyés au réseau (Lead sent = YES) dans le back-office, face aux leads VN vus par C1ST, sur la même période : c'est le périmètre que C1ST affiche.": "VN leads sent to the network (Lead sent = YES) in the back-office, against the VN leads seen by C1ST, over the same period: this is the scope C1ST displays.",
+ "Leads de reprise avec un projet d'achat VN dans le back-office (le décompte des leads envoyés n'est pas encore disponible pour tous les mois), face aux leads VN vus par C1ST, sur la même période.": "Trade-in leads with a VN purchase project in the back-office (the sent-lead count is not yet available for every month), against the VN leads seen by C1ST, over the same period."
+}

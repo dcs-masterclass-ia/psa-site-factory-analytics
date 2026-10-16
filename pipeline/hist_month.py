@@ -31,3 +31,12 @@ def mensuel(slug, hist=HIST):
         mois[m][2] += int(r["accueil"] or 0)
         mois[m][3] += int(r["estimation"] or 0)
     return {m: v for m, v in sorted(mois.items()) if any(v)}
+
+
+def envoyes_vn(slug, hist=HIST):
+    """{AAAA-MM: leads VN valides ENVOYÉS au réseau (LEAD SENT = YES)} d'après data/history/leads_envoyes : périmètre de C1ST, pour le rapprochement BO ↔ C1ST."""
+    mois = defaultdict(int)
+    for r in _lignes(Path(hist) / "leads_envoyes" / f"{slug}.csv.gz"):
+        if r["projet_achat"] == "VN" and r["envoye"] == "YES" and r["statut"] == "valide":
+            mois[r["date"][:7]] += int(r["n"] or 0)
+    return dict(sorted(mois.items()))
