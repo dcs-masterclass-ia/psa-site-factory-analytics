@@ -546,6 +546,8 @@ def lead_management_c1st(ctx, rv, groupe, marques):
     if tp and tp["clients_envoyes"]:
         dd = (nt - (1 - tp["traites"] / tp["clients_envoyes"])) * 100
         txt += f" ({'+' if dd >= 0 else '-'}{abs(dd):.0f}pt QoQ)"
+    if set(rv.pays) & {"DE", "PL", "AT", "GB"}:
+        txt += " Note: dealers' follow-up statuses are barely filled in C1ST for this market (contact / treatment rates are not reliable)."
     txt += f"; {tq['contactes'] / tq['clients_envoyes'] * 100:.0f}% contacted, {tq['commandes'] / tq['clients_uniques'] * 100:.0f}% NSC orders (still maturing: orders are linked up to 90 days after the lead)." if tq["clients_uniques"] else "."
     _boite_bas(s, txt, y=6.62, h=0.42, w=12.9)
     g.texte(s, 1.08, 7.12, 11.5, 0.28, "Source: C1ST, VN type 1 leads sent to dealers (Autobiz campaign) — C1ST scope, not comparable with the back-office", taille=9, couleur="000000")
