@@ -131,3 +131,33 @@ test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à 
   await expect(page.getByText("Leads générés par mois").first()).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("C1ST : code d'accès mensuel requis, l'onglet se déverrouille avec le bon code", async ({ context, page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
+  let ouvert = false, essais = 0;
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/api/c1st-acces", async (r) => {
+    essais++;
+    const bon = JSON.parse(r.request().postData() || "{}").code === "BON-CODE";
+    if (bon) ouvert = true;
+    await r.fulfill({ status: bon ? 200 : 403, json: bon ? { ouvert: true } : { error: "Code incorrect." } });
+  });
+  await page.route("**/data/c1st/kpi.json", (r) => (ouvert ? r.fallback() : r.fulfill({ status: 403, json: { error: "Code d'acces C1ST requis.", code: "c1st_code" } })));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText("Code d'accès C1ST")).toBeVisible();
+  await expect(page.getByText("Du lead envoyé à la commande")).toHaveCount(0);                 // aucune donnée tant que le code n'est pas bon
+  await page.getByPlaceholder("XXXXX-XXXXX").fill("FAUX");
+  await page.getByText("Déverrouiller", { exact: true }).click();
+  await expect(page.getByText("Code incorrect.")).toBeVisible();
+  await page.getByPlaceholder("XXXXX-XXXXX").fill("BON-CODE");
+  await page.getByText("Déverrouiller", { exact: true }).click();
+  await expect(page.getByText("Code d'accès C1ST")).toHaveCount(0);
+  await expect(page.getByText("Évolution mensuelle").first()).toBeVisible();
+  expect(essais).toBe(2);
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});

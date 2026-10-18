@@ -80,6 +80,24 @@ function roleFor(email) {
 // seulement ces routes API.
 const LIMITED_API = ["/api/data", "/api/gsc-compare", "/api/gsc-page-queries", "/api/perf-ticket", "/api/tickets", "/api/events", "/api/alertes", "/api/indexation", "/api/preferences"];
 
+// Code d'accès mensuel C1ST : meme calcul que api/_lib/c1st-acces.js (cookie psf_c1st = HMAC(adresse, mois de Paris, revision)).
+function moisParis() {
+  const p = new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit" }).formatToParts(new Date());
+  return p.find(x => x.type === "year").value + "-" + p.find(x => x.type === "month").value;
+}
+async function cookieC1stValide(email, valeur) {
+  const s = process.env.C1ST_CODE_SECRET || process.env.AUTH_COOKIE_SECRET;
+  if (!s || !valeur) return false;
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", enc.encode(s + "|c1st"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(`cookie|${String(email).toLowerCase()}|${moisParis()}|${process.env.C1ST_CODE_REV || "0"}`));
+  const attendu = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  if (attendu.length !== valeur.length) return false;
+  let diff = 0;
+  for (let i = 0; i < attendu.length; i++) diff |= attendu.charCodeAt(i) ^ valeur.charCodeAt(i);
+  return diff === 0;
+}
+
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
   headers: { "content-type": "application/json" },
@@ -108,6 +126,9 @@ export default async function middleware(request) {
   // C1ST (données CRM Salesforce) : réservé aux adresses de PRESENTATIONS_EMAILS, comme l'onglet Présentations.
   if (/^\/data\/c1st(\/|$)/i.test(new URL(request.url).pathname) && !parseList(process.env.PRESENTATIONS_EMAILS).includes(String(session.email || "").toLowerCase())) {
     return json(403, { error: "Acces non autorise pour ce profil." });
+  }
+  if (/^\/data\/c1st(\/|$)/i.test(new URL(request.url).pathname) && !(await cookieC1stValide(session.email, cookies.psf_c1st))) {
+    return json(403, { error: "Code d'acces C1ST requis.", code: "c1st_code" });
   }
   if (role === "limited") {
     const path = new URL(request.url).pathname.replace(/\/+$/, "");

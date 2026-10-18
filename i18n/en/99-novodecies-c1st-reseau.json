@@ -64,5 +64,10 @@
  "de conversion": "conversion",
  "statuts non saisis dans C1ST": "statuses not entered in C1ST",
  "Commandes rattachées à un lead (identifiants C1ST)": "Orders linked to a lead (C1ST identifiers)",
- "Lead {0} → commande {1} · lead du {2} · {3}": "Lead {0} → order {1} · lead of {2} · {3}"
+ "Lead {0} → commande {1} · lead du {2} · {3}": "Lead {0} → order {1} · lead of {2} · {3}",
+ "Code d'accès C1ST": "C1ST access code",
+ "Ces données viennent du CRM Salesforce. Saisis le code du mois : il change le 1er de chaque mois et te sera communiqué par M.": "This data comes from the Salesforce CRM. Enter this month's code: it changes on the 1st of each month and is given to you by M.",
+ "Déverrouiller": "Unlock",
+ "Code incorrect.": "Wrong code.",
+ "Connexion impossible, réessaie.": "Connection failed, try again."
 }
