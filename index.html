@@ -2836,10 +2836,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-for list="{{ c1RsKpis }}" as="k" hint-placeholder-count="7"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:15px 17px"><div style="font-size:12.5px;color:#6d727a;margin-bottom:6px">{{ k.lib }}</div><div style="{{ k.st }}">{{ k.val }}</div></div></sc-for>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Du lead envoyé à la commande</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Part des clients uniques envoyés aux concessionnaires.</div>
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0;display:flex;flex-direction:column"><div style="font-size:15px;font-weight:600;color:#121214">Du lead envoyé à la commande</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Part des clients uniques envoyés aux concessionnaires.</div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:9px">
             <sc-for list="{{ c1RsFun }}" as="b" hint-placeholder-count="6">
-              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px"><span style="color:#4a4f57">{{ b.label }}</span><div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div><span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span></div>
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;font-size:13px"><span style="color:#4a4f57">{{ b.label }}</span><div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div><span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span></div>
             </sc-for>
+            </div>
           </div>
           <sc-if value="{{ c1RsHasDistrib }}" hint-placeholder-val="{{ true }}">
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Où en sont les contrats ?</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats de 20 clients ou plus, répartis selon leur taux de contact.</div>
