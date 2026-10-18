@@ -55,17 +55,40 @@ jobs:
         id: consigne
         run: |
           { echo 'texte<<CONSIGNE_EOF'; cat ticket-question-prompt.md; echo; echo 'CONSIGNE_EOF'; } >> "$GITHUB_OUTPUT"
+      - name: Isoler l'agent (retirer les identifiants git, ne rien lui laisser de secret)
+        if: steps.choisir.outputs.id != ''
+        run: |
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git -C data config --local --unset-all http.https://github.com/.extraheader || true
       - name: Agent (analyse et brouillon de réponse)
         if: steps.choisir.outputs.id != ''
         uses: anthropics/claude-code-action@v1
         env:
           GA4_SERVICE_ACCOUNT_JSON: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+          GH_TOKEN: ""
+          TICKETS_WEBHOOK_URL: ""
+          TICKETS_LINK_SECRET: ""
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.consigne.outputs.texte }}
           claude_args: >-
             --max-turns 30
             --allowedTools "Read,Glob,Grep,Write,Bash(python3 scripts/ga4_lecture.py:*)"
+      - name: Contrôler la configuration git après l'agent, puis rétablir les identifiants
+        if: steps.choisir.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+        run: |
+          # l'agent a pu écrire dans .git : toute option qui exécute du code ou redirige l'authentification fait échouer le job
+          for d in . data; do
+            if git -C "$d" config --local --get-regexp '^(core\.(fsmonitor|hookspath|sshcommand|pager|editor|askpass)|credential\.|alias\.|http\.|url\.|include|protocol\.|filter\.|diff\.|merge\.)' ; then
+              echo "Configuration git modifiée pendant l'agent ($d) : arrêt" >&2; exit 1
+            fi
+            git -C "$d" config --local core.hooksPath /dev/null
+          done
+          H="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git config --local http.https://github.com/.extraheader "$H"
+          git -C data config --local http.https://github.com/.extraheader "$H"
       - name: Brouillon prêt — carte Teams
         if: steps.choisir.outputs.id != ''
         run: python -m pipeline.tickets_agent reponse-prete "${{ steps.choisir.outputs.id }}"

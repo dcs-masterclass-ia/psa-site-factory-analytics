@@ -79,15 +79,39 @@ jobs:
         if: steps.choisir.outputs.id != ''
         working-directory: tests
         run: npm ci && npx playwright install --with-deps chromium
+      - name: Isoler l'agent (retirer les identifiants git, ne rien lui laisser de secret)
+        if: steps.choisir.outputs.id != ''
+        run: |
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git -C data config --local --unset-all http.https://github.com/.extraheader || true
       - name: Agent (modification du code)
         if: steps.choisir.outputs.id != ''
         uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ""
+          TICKETS_WEBHOOK_URL: ""
+          TICKETS_LINK_SECRET: ""
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.consigne.outputs.texte }}
           claude_args: >-
             --max-turns 40
             --allowedTools "Read,Edit,Write,Glob,Grep,Bash(python3:*),Bash(python:*),Bash(node:*),Bash(npx playwright:*),Bash(npm test:*),Bash(git status:*),Bash(git diff:*)"
+      - name: Contrôler la configuration git après l'agent, puis rétablir les identifiants
+        if: steps.choisir.outputs.id != ''
+        env:
+          GH_TOKEN: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+        run: |
+          # l'agent a pu écrire dans .git : toute option qui exécute du code ou redirige l'authentification fait échouer le job
+          for d in . data; do
+            if git -C "$d" config --local --get-regexp '^(core\.(fsmonitor|hookspath|sshcommand|pager|editor|askpass)|credential\.|alias\.|http\.|url\.|include|protocol\.|filter\.|diff\.|merge\.)' ; then
+              echo "Configuration git modifiée pendant l'agent ($d) : arrêt" >&2; exit 1
+            fi
+            git -C "$d" config --local core.hooksPath /dev/null
+          done
+          H="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git config --local http.https://github.com/.extraheader "$H"
+          git -C data config --local http.https://github.com/.extraheader "$H"
       - name: Contrôler le périmètre et la taille de la modification
         if: steps.choisir.outputs.id != ''
         run: |
