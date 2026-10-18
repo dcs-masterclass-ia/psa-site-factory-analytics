@@ -77,6 +77,24 @@ function getSeries(site, metric, months) {
   return { labels, values };
 }
 
+// Totaux calcules ICI, jamais par le modele : un modele additionne mal une longue suite de nombres (constate le 18/10/2026 : 1 777 au lieu de 1 908
+// leads sur 17 jours). total / moyenne / extremes / total par mois sont a recopier tels quels dans la reponse.
+function syntheseSerie(serie) {
+  const labels = serie.labels || [], values = (serie.values || []).map(v => Number(v) || 0);
+  if (!values.length) return { nb_jours: 0, total: 0 };
+  const total = values.reduce((a, b) => a + b, 0);
+  let imax = 0, imin = 0;
+  values.forEach((v, i) => { if (v > values[imax]) imax = i; if (v < values[imin]) imin = i; });
+  const parMois = {};
+  labels.forEach((l, i) => { const m = String(l).slice(0, 7); parMois[m] = (parMois[m] || 0) + values[i]; });
+  return {
+    nb_jours: values.length, premier_jour: labels[0], dernier_jour: labels[labels.length - 1], total,
+    moyenne_par_jour: Math.round((total / values.length) * 10) / 10,
+    maximum: { jour: labels[imax], valeur: values[imax] }, minimum: { jour: labels[imin], valeur: values[imin] },
+    total_par_mois: parMois,
+  };
+}
+
 // seuils repris de pipeline/insights.py (PLANCHER_ENTREES, seuil "mois
 // incomplet" sur tdays) -- un mois sans assez de recul ou d'entrees dans le
 // parcours fausserait le classement (petit echantillon = pourcentage
@@ -219,7 +237,7 @@ const TOOLS = [
   },
   {
     name: "get_series",
-    description: "Renvoie une serie numerique quotidienne EXACTE pour un site et une metrique -- toujours passer par cet outil avant show_chart, jamais recopier des chiffres approximes depuis la reponse d'un autre agent.",
+    description: "Renvoie une serie numerique quotidienne EXACTE pour un site et une metrique, avec une `synthese` deja calculee (total, moyenne par jour, maximum, minimum, total par mois) -- toujours passer par cet outil avant show_chart, jamais recopier des chiffres approximes depuis la reponse d'un autre agent. Pour tout total, moyenne ou extremum, RECOPIE la `synthese` : n'additionne jamais toi-meme les valeurs.",
     input_schema: {
       type: "object",
       properties: {
@@ -409,7 +427,7 @@ async function runTool(name, input) {
   }
   if (name === "get_series") {
     const result = getSeries(input.site, input.metric, input.months);
-    return result || { error: "Site ou metrique inconnu -- verifie avec list_sites." };
+    return result ? { ...result, synthese: syntheseSerie(result) } : { error: "Site ou metrique inconnu -- verifie avec list_sites." };
   }
   if (name === "compare_to_peers") {
     return compareToPeers(input.site, input.metric);
@@ -420,4 +438,4 @@ async function runTool(name, input) {
   throw new Error("Outil inconnu : " + name);
 }
 
-module.exports = { TOOLS, runTool, askSpecialist };
+module.exports = { TOOLS, runTool, askSpecialist, syntheseSerie };
