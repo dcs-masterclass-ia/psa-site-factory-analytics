@@ -2271,7 +2271,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ hhHas }}" hint-placeholder-val="{{ false }}">
         <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#eef0fe;box-shadow:inset 0 0 0 1px #5b6cf226;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <span style="font-size:15px;font-weight:600;color:#121214">Leads par heure</span>
             <span style="flex:1"></span>
             <span>{{ hhSelect }}</span>
@@ -2292,9 +2292,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         </sc-if>
         <sc-if value="{{ trHas }}" hint-placeholder-val="{{ false }}">
-        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0;display:flex;flex-direction:column">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+            <span style="width:32px;height:32px;border-radius:50%;background:#eef0fe;box-shadow:inset 0 0 0 1px #5b6cf226;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
             <span style="font-size:15px;font-weight:600;color:#121214">Leads par jour</span><span style="font-size:13px;color:#9a9fa6">{{ trScope }}</span>
             <span style="flex:1"></span>
             <span style="display:inline-flex;background:#f4f4f6;border-radius:11px;padding:2px">
@@ -2306,7 +2306,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span>{{ trDer }}</span>
             
           </div>
-          <div id="trBox" data-hov>{{ trChart }}</div>
+          <div id="trBox" data-hov style="flex:1;min-height:200px;position:relative">{{ trChart }}</div>
         </div>
         </sc-if>
 
@@ -3704,7 +3704,7 @@ class Component extends DCLogic {
   }
   /* hauteur des graphiques de « Analyses détaillées » : le conteneur remplit la carte (même hauteur pour tous les onglets), le viewBox suit son rapport largeur/hauteur */
   measureBoxes() {
-    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib', hist:'cbHist' };
+    const ids = { trend:'cbTrend', conv:'cbConv', season:'cbSeason', contrib:'cbContrib', hist:'cbHist', tr:'trBox' };
     const prev = this._boxes || {};
     let changed = false; const next = Object.assign({}, prev);
     for (const [k, id] of Object.entries(ids)) {
@@ -6754,7 +6754,7 @@ class Component extends DCLogic {
         trPts=Object.entries(an).sort().map(([y,c])=>({label:y,total:c.n?c.t/c.n:0,jours:1,we:false})); } }
     let trChart=null, trMoy='', trDer='';
     if(trPts.length>=2){
-      const W=620,H=240,L=50,R=14,T=12,B=26, n=trPts.length;
+      const W=620,H=boxH('tr',620,240),L=50,R=14,T=12,B=26, n=trPts.length;       // hauteur mesurée : le graphique remplit la carte (pas de blanc dessous)
       const vmax=Math.max(...trPts.map(p=>p.total)), vmin=Math.min(...trPts.map(p=>p.total));
       const rng=vmax-vmin||1, lo=Math.max(0,vmin-rng*.15), hi=vmax+rng*.1;
       const X=i=>L+(W-L-R)*(n===1?.5:i/(n-1)), Y=v=>T+(H-T-B)*(1-(v-lo)/(hi-lo));
