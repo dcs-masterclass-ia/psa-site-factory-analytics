@@ -1028,6 +1028,8 @@ window.I18N_EN = {
 "Roumanie": "Romania",
 "Royaume-Uni": "United Kingdom",
 "Ruptures de tendance": "Trend breaks",
+"Règles automatiques sur les données affichées": "Automatic rules on the displayed data",
+"Règles automatiques sur les données affichées · {0}": "Automatic rules on the displayed data · {0}",
 "Réactiver": "Reactivate",
 "Réactivité terrain (INP)": "Field responsiveness (INP)",
 "Réalisé": "Achieved",

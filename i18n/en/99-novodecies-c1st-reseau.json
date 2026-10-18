@@ -124,5 +124,7 @@
  "Capture": "Capture",
  "Mode capture : copier ou exporter les modules en image": "Capture mode: copy or export modules as images",
  "Activer / désactiver les captures d'image des modules": "Turn module image captures on / off",
- "Mode capture : exporter toute la vue en images (ZIP ou une seule image)": "Capture mode: export the whole view as images (ZIP or a single image)"
+ "Mode capture : exporter toute la vue en images (ZIP ou une seule image)": "Capture mode: export the whole view as images (ZIP or a single image)",
+ "Règles automatiques sur les données affichées · {0}": "Automatic rules on the displayed data · {0}",
+ "Règles automatiques sur les données affichées": "Automatic rules on the displayed data"
 }

@@ -621,7 +621,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                   </span>
                 <div style="min-width:0;flex:1">
                   <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px;font-weight:600;color:#121214">KamIA</span><span style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#7c63ee;background:#f1eefe;border-radius:999px;padding:2px 8px">BÊTA</span></div>
-                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9a9fa6"><span style="width:6px;height:6px;border-radius:3px;background:#2b8f62"></span>Analyse IA · il y a 4 min</div>
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9a9fa6"><span style="width:6px;height:6px;border-radius:3px;background:#2b8f62"></span>{{ kamiaStamp }}</div>
                 </div>
               </div>
               <div style="flex:1;min-height:0;display:flex;flex-direction:column">
@@ -5277,6 +5277,7 @@ class Component extends DCLogic {
     // jamais de cause inventee (ex: "selecteur mobile"), jamais de
     // projection budgetaire fabriquee : uniquement des faits mesures, avec
     // repli honnete si le volume est insuffisant pour un signal fiable.
+    const kamiaStamp=T('Règles automatiques sur les données affichées')+' · '+String(fin).slice(8,10)+'/'+String(fin).slice(5,7);     // ce ne sont PAS des réponses d'une IA : trois règles calculées sur la période choisie
     let kamiaVigilance='Tunnel indisponible sur la période sélectionnée.';
     if (agg.funnelSteps && agg.funnelSteps.length > 1) {
       let pire=null;
@@ -7990,7 +7991,7 @@ class Component extends DCLogic {
       channelCount:allChannels.length,
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
-      kamiaVigilance, kamiaRupture, kamiaOpportunite, isLimited:this.estLimite(),
+      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, isLimited:this.estLimite(),
       isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isAlerts:gaCur==='alerts',
       alHas, alRows, alEmpty, alSubtitle, alSeuils, alFormOpen, alFields, alToggle, alToggleLabel, alNotifLabel, alNotifPick, alNotifStyle, alMsg, alMsgOn, alSaveLabel, alSaveStyle, alSave, insAlerts, alIcon, alChip, alCanWrite, isEvents:gaCur==='events',
       glHas, glRows, glEmpty, glSubtitle, glToggleEdit, glEditLabel, glEditing, glMsg, glMsgOn, glSaveLabel, glSaveStyle, glSave, insGoals, glIcon, glChip, isHist:gaCur==='hist',
