@@ -3470,7 +3470,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-if value="{{ prHasUsers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><sc-for list="{{ prUsers }}" as="u" hint-placeholder-count="3"><span onClick="{{ u.pick }}" style="{{ u.style }}">{{ u.label }}</span></sc-for></div></sc-if>
             <sc-for list="{{ prTree }}" as="b" hint-placeholder-count="3">
               <sc-if value="{{ b.isDossier }}" hint-placeholder-val="{{ false }}">
-                <div onClick="{{ b.toggle }}" style="{{ b.dossierStyle }}"><span style="display:inline-block;width:14px;color:#9a9fa6;font-size:11px">{{ b.chevron }}</span><span style="font-weight:600;color:#121214">{{ b.label }}</span><span style="font-size:12px;color:#9a9fa6">{{ b.count }}</span></div>
+                <div onClick="{{ b.toggle }}" style="{{ b.dossierStyle }}"><span style="display:inline-block;width:12px;color:#8a8f98;font-size:13px;line-height:1;flex:none">{{ b.chevron }}</span>
+                  <sc-if value="{{ b.ouvert }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5V9H2V5.5Z" fill="#b6a5f8"/><path d="M3.3 9.6A1.5 1.5 0 0 1 4.7 8.5H22.3a1.2 1.2 0 0 1 1.1 1.6l-2.2 7.6A2.5 2.5 0 0 1 18.8 19.5H4.5A2.5 2.5 0 0 1 2 17V10.8c0-.5.5-1.2 1.3-1.2Z" fill="#8f78f2"/></svg></span></sc-if>
+                  <sc-if value="{{ !b.ouvert }}" hint-placeholder-val="{{ true }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5v9A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-11Z" fill="#b6a5f8"/><path d="M2 9.5A2.5 2.5 0 0 1 4.5 7h15A2.5 2.5 0 0 1 22 9.5v7A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-7Z" fill="#8f78f2"/></svg></span></sc-if>
+                  <span style="font-weight:600;color:#121214">{{ b.label }}</span><span style="font-size:11.5px;font-weight:500;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:2px 9px">{{ b.count }}</span></div>
               </sc-if>
               <sc-if value="{{ !b.isDossier }}" hint-placeholder-val="{{ true }}">
               <div style="{{ b.rowStyle }}">
@@ -7609,8 +7612,8 @@ class Component extends DCLogic {
         const dernier=niv===niveaux.length-1, annee=niveaux[niv]===niveaux[prAdmin?2:1];
         const cles=[...groupes.keys()].sort((k1,k2)=>dernier?(prPerOrdre(groupes.get(k2)[0].b)-prPerOrdre(groupes.get(k1)[0].b)):(annee?trie(k2,k1):trie(k1,k2)));
         cles.forEach(k=>{ const g=groupes.get(k), id=chemin+'/'+k, ouvert=!prFermes[id];
-          prTree.push({ isDossier:true, label:k, count:'· '+g.length+(g.length>1?' présentations':' présentation'), chevron:ouvert?'▼':'▶', toggle:()=>set({prFermes:Object.assign({},prFermes,{[id]:ouvert})}),
-            dossierStyle:'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;padding:9px 4px 9px '+(4+niv*18)+'px;border-top:1px solid #f2f2f4;user-select:none' });
+          prTree.push({ isDossier:true, label:k, ouvert, count:g.length+(g.length>1?' présentations':' présentation'), chevron:ouvert?'▾':'▸', toggle:()=>set({prFermes:Object.assign({},prFermes,{[id]:ouvert})}),
+            dossierStyle:'display:flex;align-items:center;gap:9px;cursor:pointer;font-size:14.5px;padding:10px 6px 10px '+(4+niv*20)+'px;border-top:1px solid #f2f2f4;user-select:none;border-radius:8px' });
           if (ouvert) rec(g,niv+1,id); }); };
       rec(items,0,''); }
     const prTabs = [['nouveau','Nouveau brief'],['briefs','Mes présentations'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },

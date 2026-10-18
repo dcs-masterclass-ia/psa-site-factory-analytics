@@ -316,6 +316,8 @@ test("Mes présentations : dossiers pays > année > période, pliables", async (
   await expect(page.getByText("2026", { exact: true })).toHaveCount(2);                               // France > 2026 et BELUX > 2026
   await expect(page.getByText("Revue sept FR")).toBeVisible();
   await expect(page.getByText(/^e2e · /).first()).toBeVisible();
+  await expect(page.locator("svg path[fill='#8f78f2']").first()).toBeVisible();                     // vraies icônes de dossier
+  await expect(page.getByText("1 présentation", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("Tous (", { exact: false })).toHaveCount(0);                            // pas de filtre par utilisateur pour un utilisateur simple
   await page.getByText("France", { exact: true }).click();                                           // plie le dossier
   await expect(page.getByText("Revue sept FR")).toHaveCount(0);
