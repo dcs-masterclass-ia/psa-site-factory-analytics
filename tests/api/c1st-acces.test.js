@@ -70,3 +70,13 @@ test("un administrateur n'est jamais suspendu", async () => {
   assert.ok(!(await A.estSuspendu("chef@b.c")));
   delete process.env.C1ST_ADMIN_EMAILS;
 });
+
+test("trace d'inspection : une ligne par adresse et par 30 s, 200 dernières seulement", async () => {
+  const f = faux(); A._setStore(f.lis, f.ecris);
+  assert.ok(await A.trace("x@b.c", "f12"));
+  assert.ok(!(await A.trace("X@b.c", "f12")));                       // trop proche
+  assert.ok(await A.trace("y@b.c", "motif-inconnu"));
+  assert.deepStrictEqual(f.etat().alertes.map((a) => [a.email, a.motif]), [["x@b.c", "f12"], ["y@b.c", "autre"]]);
+  const l = await A.listeAlertes();
+  assert.strictEqual(l[0].email, "y@b.c");                           // la plus récente d'abord
+});

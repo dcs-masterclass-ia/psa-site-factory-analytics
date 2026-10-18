@@ -6,6 +6,7 @@
  *   GET ?bans=1 / POST { action:"reactiver", email } -> (admin) liste des adresses suspendues / réactivation
  *   POST { action:"revoquer" } -> (admin) nouvelle révision : nouveau code, tous les cookies invalidés ; renvoie le nouveau code
  *   PATCH            -> renouvelle l'inactivité (5 min) tant que la personne est active ; 403 si déjà verrouillé
+ *   POST { action:"alerte", motif } -> trace une tentative d'inspection (c1st/alertes.json) ; GET ?alertes=1 (admin) -> les 20 dernières
  *   DELETE           -> efface le cookie (« Verrouiller maintenant »)
  */
 const { verifySessionFromRequest, parseCookies, presentationsAllowed } = require("./_lib/auth");
@@ -25,10 +26,16 @@ module.exports = async function handler(req, res) {
     const admin = A.admins().includes(email);
     if (req.method === "GET") {
       if (req.query && req.query.bans && admin) { res.status(200).json({ bans: await A.listeBans() }); return; }
+      if (req.query && req.query.alertes && admin) { res.status(200).json({ alertes: await A.listeAlertes() }); return; }
       if (req.query && req.query.code && admin) { res.status(200).json({ code: A.codeDuMois(), mois: A.moisParis() }); return; }
       res.status(200).json({ ouvert, admin }); return;
     }
     if (req.method === "POST") {
+      if (req.body && req.body.action === "alerte") {
+        const ecrit = await A.trace(email, String(req.body.motif || ""));
+        console.warn("[c1st-acces] tentative d'inspection de", email, req.body.motif);
+        res.status(200).json({ ok: true, ecrit }); return;
+      }
       if (req.body && req.body.action === "reactiver") {
         if (!admin) { res.status(403).json({ error: "Acces non autorise pour ce profil." }); return; }
         const ok = await A.reactive(String(req.body.email || ""));

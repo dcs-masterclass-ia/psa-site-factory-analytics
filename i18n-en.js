@@ -1144,6 +1144,7 @@ window.I18N_EN = {
 "Tendance": "Trend",
 "Tendance annuelle des leads par marque (YTD)": "Annual lead trend by brand (YTD)",
 "Tendances et qualité": "Trends and quality",
+"Tentatives d'inspection récentes :": "Recent inspection attempts:",
 "Termine l'étape précédente pour la débloquer": "Complete the previous step to unlock it",
 "Terminer": "Finish",
 "Terminé": "Done",

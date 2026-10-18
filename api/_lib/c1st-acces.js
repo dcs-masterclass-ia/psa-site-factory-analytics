@@ -114,4 +114,20 @@ async function reactive(email) {
 }
 async function listeBans() { return await chargeBans(true); }
 
-module.exports = { estSuspendu, echec, succes, reactive, listeBans, MAX_ESSAIS, _setStore: (r, w) => { readJson = r; writeJson = w; bansLu = 0; bansCache = {}; }, charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, INACTIVITE_MS, admins, normalise };
+// ---- Trace des tentatives d'inspection (F12, Ctrl+Maj+I, clic droit… sur l'onglet C1ST) : c1st/alertes.json du repo de données, 200 dernières, 1 par adresse et par 30 s.
+const FICHIER_ALERTES = "c1st/alertes.json", MAX_ALERTES = 200;
+const MOTIFS = ["f12", "devtools", "source", "clic_droit"];
+async function trace(email, motif) {
+  const m = MOTIFS.includes(motif) ? motif : "autre";
+  const { data, sha } = await readJson(FICHIER_ALERTES);
+  const liste = (data && Array.isArray(data.alertes)) ? data.alertes : [];
+  const now = Date.now(), e = adresse(email);
+  const derniere = [...liste].reverse().find((a) => a.email === e);
+  if (derniere && now - derniere.at < 30000) return false;
+  liste.push({ email: e, at: now, motif: m });
+  await writeJson(FICHIER_ALERTES, { alertes: liste.slice(-MAX_ALERTES) }, "chore(c1st): tentative d'inspection", sha);
+  return true;
+}
+async function listeAlertes() { const { data } = await readJson(FICHIER_ALERTES); return ((data && data.alertes) || []).slice(-20).reverse(); }
+
+module.exports = { trace, listeAlertes, estSuspendu, echec, succes, reactive, listeBans, MAX_ESSAIS, _setStore: (r, w) => { readJson = r; writeJson = w; bansLu = 0; bansCache = {}; }, charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, INACTIVITE_MS, admins, normalise };
