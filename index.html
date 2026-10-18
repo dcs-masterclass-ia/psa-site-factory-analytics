@@ -98,6 +98,7 @@ if (location.hostname === "psa-site-factory-dashboard.vercel.app") location.repl
 <script src="./i18n-en.js"></script>
 <script src="./i18n.js"></script>
 <script src="./support.js"></script>
+<script src="./capture.js" defer></script>
 </head>
 <body>
 
@@ -451,6 +452,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <span style="width:26px;height:26px;border-radius:50%;background:#fff;flex:none;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(124,99,238,.25)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6f55e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg></span>
         Ticket
         <sc-if value="{{ tkNewCount }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#e8544a;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;animation:tabFadeIn .2s ease">{{ tkNewCount }}</span></sc-if>
+      </div>
+
+      <div onClick="{{ toggleCapture }}" title="Mode capture : copier ou exporter les modules en image" aria-label="Capture" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 15px 0 8px;border-radius:999px;border:1px solid #e9e9ee;background:#fff;color:#2a2a31;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:0 1px 2px rgba(18,18,20,.04);transition:border-color .15s,transform .15s" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
+        <span style="width:26px;height:26px;border-radius:50%;background:#eef3fe;flex:none;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l1-1.6A1.5 1.5 0 0 1 10 3.7h4a1.5 1.5 0 0 1 1.3.7l1 1.6h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><circle cx="12" cy="12.5" r="3.2"/></svg></span>
+        Capture
       </div>
 
       <div role="group" aria-label="Langue" style="display:flex;align-items:center;gap:2px;height:40px;padding:4px;border-radius:999px;background:#f1f1f6;box-sizing:border-box">
@@ -7299,6 +7305,8 @@ class Component extends DCLogic {
       style:`display:flex;align-items:flex-start;gap:10px;padding:10px 14px;cursor:pointer;border-radius:12px;transition:background .12s;${c.id===convId?'background:#f1edff':''}`,
       titleStyle:`flex:1;min-width:0;font-size:13.5px;line-height:1.4;color:${c.id===convId?'#4b35c8':'#2a2a31'};font-weight:${c.id===convId?600:500};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden`}));
     const kamTitre=conv.title==='Nouvelle conversation'?T('Nouvelle conversation'):conv.title;
+    // contexte des captures d'image (capture.js) : périmètre, période, comparaison, onglet, personne
+    window.psfCaptureCtx=()=>({ tab:({ga:'Analytics GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',pr:'Présentations',aaa:'AAA Data',ads:'Google Ads',c1st:'C1ST'})[st.source]||'', scope:scopeLabel, sites:st.sites.length, from:fmtFr(debut), to:fmtFr(fin), cmp:cmpMode==='none'?'':'vs '+({previous:'période précédente',year:'N-1',custom:'période perso.'})[cmpMode], user:(userEmail||'').split('@')[0] });
     const kamCtx=()=>{ const n=st.sites.length; return { scope:n<=8?st.sites.slice():[], view:{site:st.sites[0]||'',tab:st.source}, note:n>8?`\n\n(Périmètre affiché : ${scopeLabel}, ${n} sites, période du ${fmtFr(debut)} au ${fmtFr(fin)})`:`\n\n(Période affichée : du ${fmtFr(debut)} au ${fmtFr(fin)})` }; };
     const pushMsg=text=>{ if(st.thinking) return; this.kamEnvoie(conv,text,kamCtx()); };
     const suggestions=['Compare ce périmètre au parc','Où est le principal frein dans le tunnel ?','Que faire cette semaine ?'].map(t=>({text:t,pick:()=>pushMsg(t)}));
@@ -7804,6 +7812,7 @@ class Component extends DCLogic {
       draft:st.draft||'', onDraft:e=>set({draft:e.target.value}),
       onKey:e=>{ if(e.key==='Enter'&&(this.state.draft||'').trim()) pushMsg(this.state.draft.trim()); },
       send:()=>{ if((this.state.draft||'').trim()) pushMsg(this.state.draft.trim()); },
+      toggleCapture:()=>{ if (window.psfCapture) window.psfCapture.toggle(); },
       newConv:()=>{ const vide=kam.convs.find(c=>!c.msgs.length&&c.loaded); const c=vide||this.kamNouvelle(); if(!vide) kam.convs.unshift(c); set({convId:c.id}); },
       weekDays, calDays, presets, compareModes, calMonthLabel, prevMonth, nextMonth,
       cmpIsCustom, cmpCustomStart, cmpCustomEnd,

@@ -120,5 +120,7 @@
  "Certains chiffres n’ont pas pu être vérifiés dans les données": "Some figures could not be verified in the data",
  "Chiffres vérifiés dans les données": "Figures verified in the data",
  "Aujourd’hui": "Today",
- "Hier": "Yesterday"
+ "Hier": "Yesterday",
+ "Capture": "Capture",
+ "Mode capture : copier ou exporter les modules en image": "Capture mode: copy or export modules as images"
 }
