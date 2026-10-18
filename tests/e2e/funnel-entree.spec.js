@@ -28,8 +28,11 @@ test("tunnel : pastilles par mode de saisie, barres à partir de « Version », 
   await page.getByText("Marque / modèle", { exact: true }).first().click();
   await expect(page.getByText("Version → Leads GA · 5 étapes")).toBeVisible();
   await expect(page.getByText("Page d'accueil", { exact: true })).toHaveCount(0);                    // le mode ne se lit pas à l'accueil
+  await expect(page.getByText(/Visiteurs de « Version » menés jusqu'à l'estimation · parcours marque \/ modèle/)).toBeVisible();   // la jauge « Conversion funnel » suit le mode
+  await expect(page.getByText("20,0 %", { exact: true })).toHaveCount(2);                           // dernière étape (8 / 40) + jauge
   await page.getByText("Immatriculation", { exact: true }).first().click();
   await expect(page.getByText("visiteurs du parcours immatriculation")).toBeVisible();
+  await expect(page.getByText("42,2 %", { exact: true })).toHaveCount(2);                           // (160 - 8) / (400 - 40)
   await page.getByText("Tous les parcours", { exact: true }).click();
   await expect(page.getByText("Page d'accueil", { exact: true }).first()).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);

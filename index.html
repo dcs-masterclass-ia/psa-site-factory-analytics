@@ -568,7 +568,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
                 <div style="min-width:0;flex:1">
                   <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:3px">Conversion funnel<span class="dc-info" tabindex="0">i<span class="dc-tip">Part des VISITEURS (utilisateurs) de la page d'accueil qui arrivent jusqu'aux leads GA, étape par étape. C'est la mesure du parcours, utile pour juger le funnel (V2, étapes qui fuient). Le taux global, à côté, compte les leads GA ÷ les sessions du site de reprise (même définition que Looker).</span></span></div>
-                  <div style="font-size:13px;line-height:1.45;color:#9a9fa6">Visiteurs de l'accueil menés jusqu'aux leads GA · {{ compMedianLabel }}</div>
+                  <div style="font-size:13px;line-height:1.45;color:#9a9fa6">{{ compDesc }}</div>
                   <div style="display:flex;align-items:center;gap:8px;margin-top:5px"><span style="{{ funnelDelta.style }}">{{ funnelDelta.text }}</span><span style="font-size:12px;color:#9a9fa6">Abandon cumulé {{ abandonLabel }}</span></div>
                 </div>
               </div>
@@ -4637,7 +4637,7 @@ class Component extends DCLogic {
       :raw[st.step-1] && raw[st.step-1][1] ? `Passage ${dec(raw[st.step][1]/raw[st.step-1][1]*100,1)} % · abandon ${dec(100-raw[st.step][1]/raw[st.step-1][1]*100,1)} %`
       :'Donnée non disponible';
 
-    const compPct = funnelFirst ? funnelLast/funnelFirst*100 : 0;
+    const compPct = feArr ? (feArr[1] ? feArr[5]/feArr[1]*100 : 0) : (funnelFirst ? funnelLast/funnelFirst*100 : 0);
     const compPctLabel = dec(compPct,1)+' %';
     const abandonLabel = dec(100-compPct,1)+' %';
     // « Parcours comme Looker » : Sessions de la reprise -> In Journey -> Leads GA (affiché seulement quand In Journey est mesuré pour tous les sites choisis)
@@ -4652,11 +4652,14 @@ class Component extends DCLogic {
     const ijRate1 = ijShow ? dec(ijN/ijSess*100,1)+' %' : '', ijRate2 = ijShow && ijN>0 ? dec(ijLeads/ijN*100,1)+' %' : '';
     const ijNote = ijShow ? (agg.ijApprox ? 'Période en jours : somme des jours (jusqu\'à ~1 % de plus que les totaux mensuels de Looker)' : 'Mois entiers : totaux mensuels GA4') : '';
 
-    const cmpCompPct = cmpFirst ? cmpFunnelLast/cmpFirst*100 : null;
+    const cfe = cmp && cmp.funnelEntree && cmp.funnelEntree.mois>0 ? cmp.funnelEntree : null;
+    const cfeArr = !feArr ? null : !cfe ? null : funMode==='immat' ? cfe.tous.map((v,i)=>Math.max(0,v-cfe.mm[i])) : cfe.mm;
+    const cmpCompPct = feArr ? (cfeArr && cfeArr[1]>0 ? cfeArr[5]/cfeArr[1]*100 : null) : (cmpFirst ? cmpFunnelLast/cmpFirst*100 : null);
     const funnelDelta = cmpCompPct==null ? {text:'',style:'display:none'} : ptDeltaBadge(compPct, cmpCompPct);
     const globalRateLabel = rateGlobal==null ? '—' : dec(rateGlobal,1)+' %';
-    const globalRateSub = agg.convSessTot>0 ? `${this.fmt(agg.convEv)} leads GA ÷ ${this.fmt(agg.convSessTot)} sessions du site de reprise` : 'leads GA ÷ visiteurs de l\'accueil (sessions du site de reprise indisponibles sur la période)';
+    const globalRateSub = (feArr ? T('Tous parcours confondus')+' · ' : '') + (agg.convSessTot>0 ? `${this.fmt(agg.convEv)} leads GA ÷ ${this.fmt(agg.convSessTot)} sessions du site de reprise` : 'leads GA ÷ visiteurs de l\'accueil (sessions du site de reprise indisponibles sur la période)');
     const compMedianLabel = convMedianTunnel || convMedianLabel || 'médiane parc indisponible';
+    const compDesc = feArr ? T('Visiteurs de « Version » menés jusqu\'à l\'estimation')+' · '+T(funMode==='immat'?'parcours immatriculation':'parcours marque / modèle') : T('Visiteurs de l\'accueil menés jusqu\'aux leads GA')+' · '+compMedianLabel;
     const cx=100,cy=98,r=70;
     const arc=p=>{const a=Math.PI*(1-Math.max(0,Math.min(1,p)));return `M${cx-r},${cy} A${r},${r} 0 0 1 ${cx+r*Math.cos(a)},${cy-r*Math.sin(a)}`;};
     const gauge=h('svg',{viewBox:'0 0 200 124',width:'100%',style:{display:'block',height:'auto'}},[
@@ -7851,7 +7854,7 @@ class Component extends DCLogic {
       convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel, ijShow, ij1, ij2, ij3, ijRate1, ijRate2, ijNote, funnelDelta, globalRateLabel, globalRateSub,
-      steps, funPills, funHasEntree:feOk, funCmp, funSub, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
+      steps, funPills, funHasEntree:feOk, funCmp, funSub, compDesc, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
       tChipV:kPuce('#d78b35'), tIconV:kIcone('#d78b35',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})),
