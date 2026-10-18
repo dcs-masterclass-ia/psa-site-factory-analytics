@@ -85,12 +85,25 @@ function moisParis() {
   const p = new Intl.DateTimeFormat("fr-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit" }).formatToParts(new Date());
   return p.find(x => x.type === "year").value + "-" + p.find(x => x.type === "month").value;
 }
+// Compteur du bouton « Révoquer les accès » (c1st/revision.json du repo de donnees prive), 15 s de cache ; illisible et jamais lu -> on refuse.
+let revStore = null, revLu = 0;
+async function revisionC1st() {
+  if (revStore !== null && Date.now() - revLu < 15000) return revStore;
+  try {
+    const r = await fetch(`https://api.github.com/repos/${process.env.KAMIA_STORE_REPO || "dcs-masterclass-ia/psa-site-factory-data"}/contents/c1st/revision.json?ref=${process.env.KAMIA_STORE_BRANCH || "main"}`,
+      { headers: { Authorization: `Bearer ${process.env.DATA_REPO_TOKEN}`, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" } });
+    if (r.status === 404) { revStore = "0"; revLu = Date.now(); }
+    else if (r.ok) { const j = await r.json(); revStore = String((j && j.rev) || "0"); revLu = Date.now(); }
+  } catch (e) { /* garde la derniere valeur connue */ }
+  return revStore;
+}
 async function cookieC1stValide(email, valeur) {
   const s = process.env.C1ST_CODE_SECRET || process.env.AUTH_COOKIE_SECRET;
-  if (!s || !valeur) return false;
+  const rs = await revisionC1st();
+  if (!s || !valeur || rs === null) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(s + "|c1st"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(`cookie|${String(email).toLowerCase()}|${moisParis()}|${process.env.C1ST_CODE_REV || "0"}`));
+  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(`cookie|${String(email).toLowerCase()}|${moisParis()}|${process.env.C1ST_CODE_REV || "0"}:${rs}`));
   const attendu = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
   if (attendu.length !== valeur.length) return false;
   let diff = 0;

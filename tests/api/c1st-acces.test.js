@@ -23,6 +23,13 @@ test("révision d'urgence : nouveau code, anciens cookies invalides", () => {
   assert.ok(!A.cookieValide("a@b.c", ck, "2026-11"));
   delete process.env.C1ST_CODE_REV;
 });
+test("révocation (bouton) : même effet qu'une nouvelle révision", () => {
+  const avant = A.codeDuMois("2026-11"), ck = A.valeurCookie("a@b.c", "2026-11");
+  A._setRev("nouvelle");
+  assert.notStrictEqual(avant, A.codeDuMois("2026-11"));
+  assert.ok(!A.cookieValide("a@b.c", ck, "2026-11"));
+  A._setRev("0");
+});
 test("cookie lié à l'adresse et au mois", () => {
   const ck = A.valeurCookie("a@b.c", "2026-11");
   assert.ok(A.cookieValide("A@b.c", ck, "2026-11"));

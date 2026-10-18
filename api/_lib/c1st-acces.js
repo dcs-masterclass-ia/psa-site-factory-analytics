@@ -15,7 +15,24 @@ function cle() {
   if (!s) throw new Error("Secret du code C1ST non configuré.");
   return s + "|c1st";
 }
-function rev() { return String(process.env.C1ST_CODE_REV || "0"); }
+// Révision = variable Vercel C1ST_CODE_REV + compteur du bouton « Révoquer les accès » (c1st/revision.json du repo de données privé, lu avec 15 s de cache).
+const { readJson, writeJson } = require("./store");
+const FICHIER_REV = "c1st/revision.json";
+let revStore = "0", revLu = 0;
+function rev() { return String(process.env.C1ST_CODE_REV || "0") + ":" + revStore; }
+/** À appeler avant tout calcul. Si la lecture échoue et qu'aucune valeur n'est connue : erreur (on refuse plutôt que d'ouvrir). */
+async function charge() {
+  if (Date.now() - revLu < 15000) return;
+  try { const { data } = await readJson(FICHIER_REV); revStore = String((data && data.rev) || "0"); revLu = Date.now(); }
+  catch (e) { if (!revLu) throw e; }
+}
+/** Bouton d'urgence : nouvelle révision -> nouveau code, tous les cookies invalidés (≤ 15 s sur les autres instances). */
+async function revoque(par) {
+  const { sha } = await readJson(FICHIER_REV);
+  const nouvelle = Date.now().toString(36) + crypto.randomBytes(3).toString("hex");
+  await writeJson(FICHIER_REV, { rev: nouvelle, at: new Date().toISOString(), par }, "chore(c1st): révocation des accès", sha);
+  revStore = nouvelle; revLu = Date.now();
+}
 
 /** « AAAA-MM » à Paris. */
 function moisParis(date = new Date()) {
@@ -50,4 +67,4 @@ function secondesJusquaFinDeMois() {
 }
 const admins = () => (process.env.C1ST_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
-module.exports = { codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, secondesJusquaFinDeMois, admins, normalise };
+module.exports = { charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, secondesJusquaFinDeMois, admins, normalise };

@@ -140,6 +140,7 @@ test("C1ST : code d'accès mensuel requis, l'onglet se déverrouille avec le bon
   let ouvert = false, essais = 0;
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.route("**/api/c1st-acces", async (r) => {
+    if (r.request().method() !== "POST") return r.fulfill({ json: { ouvert, admin: false } });
     essais++;
     const bon = JSON.parse(r.request().postData() || "{}").code === "BON-CODE";
     if (bon) ouvert = true;
@@ -159,5 +160,29 @@ test("C1ST : code d'accès mensuel requis, l'onglet se déverrouille avec le bon
   await expect(page.getByText("Code d'accès C1ST")).toHaveCount(0);
   await expect(page.getByText("Évolution mensuelle").first()).toBeVisible();
   expect(essais).toBe(2);
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("C1ST : l'administrateur voit le code du mois et peut révoquer les accès (avec confirmation)", async ({ context, page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
+  const appels = [];
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/api/c1st-acces**", async (r) => {
+    const req = r.request(); appels.push(req.method() + " " + (req.postData() || req.url().split("?")[1] || ""));
+    if (req.method() === "POST") return r.fulfill({ json: { ouvert: true, code: "NEUF1-NEUF2" } });
+    return r.fulfill({ json: req.url().includes("code=1") ? { code: "ABCDE-FGHJK" } : { ouvert: true, admin: true } });
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await page.getByText("Voir le code du mois").click();
+  await expect(page.getByText("ABCDE-FGHJK")).toBeVisible();
+  await page.getByText("Révoquer tous les accès").click();
+  expect(appels.some((a) => a.startsWith("POST"))).toBe(false);                                 // premier clic = demande de confirmation seulement
+  await page.getByText(/Confirmer : tout le monde/).click();
+  await expect(page.getByText("NEUF1-NEUF2")).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
