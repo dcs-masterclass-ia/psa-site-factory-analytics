@@ -1238,6 +1238,7 @@ window.I18N_EN = {
 "Une base minimale (vue globale, trafic par marque, analyse) à enrichir selon le besoin": "A minimal base (overall view, traffic by brand, analysis) to enrich as needed",
 "Une diapositive par point à traiter (saisis ci-dessous)": "One slide per point to address (entered below)",
 "Une question ou un souci ? Utilise le bouton Ticket.": "A question or an issue? Use the Ticket button.",
+"Utilisateur": "User",
 "Utiliser": "Use",
 "Utiliser la proposition : {0}": "Use the suggestion: {0}",
 "V2 le": "V2 on",

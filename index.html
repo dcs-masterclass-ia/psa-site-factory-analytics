@@ -3468,25 +3468,38 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <sc-if value="{{ prNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun brief enregistré pour l'instant.</div></sc-if>
             <div style="font-size:13.5px;color:#c24a44">{{ prErr }}</div>
             <sc-if value="{{ prHasUsers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><sc-for list="{{ prUsers }}" as="u" hint-placeholder-count="3"><span onClick="{{ u.pick }}" style="{{ u.style }}">{{ u.label }}</span></sc-for></div></sc-if>
-            <sc-for list="{{ prTree }}" as="b" hint-placeholder-count="3">
-              <sc-if value="{{ b.isDossier }}" hint-placeholder-val="{{ false }}">
-                <div onClick="{{ b.toggle }}" style="{{ b.dossierStyle }}"><span style="display:inline-block;width:12px;color:#8a8f98;font-size:13px;line-height:1;flex:none">{{ b.chevron }}</span>
-                  <sc-if value="{{ b.ouvert }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5V9H2V5.5Z" fill="#b6a5f8"/><path d="M3.3 9.6A1.5 1.5 0 0 1 4.7 8.5H22.3a1.2 1.2 0 0 1 1.1 1.6l-2.2 7.6A2.5 2.5 0 0 1 18.8 19.5H4.5A2.5 2.5 0 0 1 2 17V10.8c0-.5.5-1.2 1.3-1.2Z" fill="#8f78f2"/></svg></span></sc-if>
-                  <sc-if value="{{ !b.ouvert }}" hint-placeholder-val="{{ true }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5v9A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-11Z" fill="#b6a5f8"/><path d="M2 9.5A2.5 2.5 0 0 1 4.5 7h15A2.5 2.5 0 0 1 22 9.5v7A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-7Z" fill="#8f78f2"/></svg></span></sc-if>
-                  <span style="font-weight:600;color:#121214">{{ b.label }}</span><span style="font-size:11.5px;font-weight:500;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:2px 9px">{{ b.count }}</span></div>
-              </sc-if>
-              <sc-if value="{{ !b.isDossier }}" hint-placeholder-val="{{ true }}">
-              <div style="{{ b.rowStyle }}">
-                <div style="flex:1;min-width:220px"><div style="font-size:14.5px;font-weight:500;color:#121214">{{ b.titre }}</div><div style="font-size:12.5px;color:#9a9fa6">{{ b.client }} · {{ b.meta }}</div></div>
-                <span style="font-size:11px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:3px 10px">{{ b.statut }}</span>
-                <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ b.qui }}</span>
-                <sc-if value="{{ b.pret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.dl }}" style="font-size:13px;font-weight:600;color:#2b8f62;cursor:pointer">Télécharger le PPTX</span></sc-if>
-                <span onClick="{{ b.open }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Ouvrir</span>
-                <span onClick="{{ b.dup }}" style="font-size:13px;color:#6d727a;cursor:pointer">Dupliquer</span>
-                <sc-if value="{{ b.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.del }}" style="{{ b.delStyle }}">{{ b.delLabel }}</span></sc-if>
-              </div>
-              </sc-if>
-            </sc-for>
+            <div style="display:flex;align-items:stretch;overflow-x:auto;border:1px solid #efeff1;border-radius:14px;min-height:340px">
+              <sc-for list="{{ prCols }}" as="col" hint-placeholder-count="4">
+                <sc-if value="{{ col.isDossiers }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:0 0 190px;border-right:1px solid #efeff1;padding:12px 8px;display:flex;flex-direction:column;gap:3px;background:#fcfcfd">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9a9fa6;padding:0 10px 8px">{{ col.titre }}</div>
+                    <sc-for list="{{ col.entrees }}" as="e" hint-placeholder-count="3">
+                      <div onClick="{{ e.pick }}" style="{{ e.style }}">
+                        <sc-if value="{{ e.open }}" hint-placeholder-val="{{ false }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5V9H2V5.5Z" fill="#b6a5f8"/><path d="M3.3 9.6A1.5 1.5 0 0 1 4.7 8.5H22.3a1.2 1.2 0 0 1 1.1 1.6l-2.2 7.6A2.5 2.5 0 0 1 18.8 19.5H4.5A2.5 2.5 0 0 1 2 17V10.8c0-.5.5-1.2 1.3-1.2Z" fill="#8f78f2"/></svg></span></sc-if>
+                        <sc-if value="{{ e.closed }}" hint-placeholder-val="{{ true }}"><span style="flex:none;display:inline-flex" data-keep><svg width="22" height="20" viewBox="0 0 24 22" fill="none" aria-hidden="true"><path d="M2 5.5A2.5 2.5 0 0 1 4.5 3h4.6c.6 0 1.2.25 1.6.7l1.2 1.3H19.5A2.5 2.5 0 0 1 22 7.5v9A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-11Z" fill="#b6a5f8"/><path d="M2 9.5A2.5 2.5 0 0 1 4.5 7h15A2.5 2.5 0 0 1 22 9.5v7A2.5 2.5 0 0 1 19.5 19h-15A2.5 2.5 0 0 1 2 16.5v-7Z" fill="#8f78f2"/></svg></span></sc-if>
+                        <span style="flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ e.label }}">{{ e.label }}</span>
+                        <span style="font-size:11.5px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:1px 8px">{{ e.count }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ col.isBriefs }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1 1 380px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-width:300px">
+                    <div style="font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#9a9fa6;padding:0 2px">{{ col.titre }}</div>
+                    <sc-for list="{{ col.briefs }}" as="b" hint-placeholder-count="2">
+                      <div style="border:1px solid #efeff1;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+                        <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><div style="font-size:14.5px;font-weight:600;color:#121214">{{ b.titre }}</div><div style="font-size:12.5px;color:#9a9fa6">{{ b.client }} · {{ b.meta }}</div></div><span style="flex:none;font-size:11px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:3px 10px">{{ b.statut }}</span></div>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ b.qui }}</span><span style="flex:1"></span>
+                          <sc-if value="{{ b.pret }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.dl }}" style="font-size:13px;font-weight:600;color:#2b8f62;cursor:pointer">Télécharger le PPTX</span></sc-if>
+                          <span onClick="{{ b.open }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">Ouvrir</span>
+                          <span onClick="{{ b.dup }}" style="font-size:13px;color:#6d727a;cursor:pointer">Dupliquer</span>
+                          <sc-if value="{{ b.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.del }}" style="{{ b.delStyle }}">{{ b.delLabel }}</span></sc-if></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </sc-for>
+            </div>
           </div>
         </sc-if>
       </div>
@@ -7601,21 +7614,24 @@ class Component extends DCLogic {
     const prUsersAll=[...new Set(prListe.map(prUserNom))].sort();
     const prUserSel=prAdmin&&prUsersAll.includes(st.prUser)?st.prUser:'';
     const prUsers=prAdmin&&prUsersAll.length>1?[''].concat(prUsersAll).map(u=>({ label:(u||T('Tous'))+' ('+(u?prListe.filter(b=>prUserNom(b)===u).length:prListe.length)+')', pick:()=>set({prUser:u}), style:this.prChipLite(prUserSel===u) })):[];
-    const prFermes=st.prFermes||{};
-    const prTree=[];
+    // affichage en colonnes (comme le Finder) : une colonne par niveau, le dossier choisi ouvre la colonne suivante, la dernière colonne liste les présentations
+    const prCols=[];
     { const items=prListe.map((b,i)=>({b,row:prRows[i]})).filter(x=>!prUserSel||prUserNom(x.b)===prUserSel);
-      const niveaux=[]; if (prAdmin) niveaux.push(x=>prUserNom(x.b)); niveaux.push(x=>prPaysDossier(x.b), x=>String(prNormPeriode(x.b.periode).annee), x=>prPerLabel(x.b));
-      const trie=(a,c,d)=>a<c?-1:a>c?1:0;
-      const rec=(liste,niv,chemin)=>{
-        if (niv===niveaux.length) { liste.sort((x,y)=>(y.b.updatedAt||0)-(x.b.updatedAt||0)).forEach(x=>prTree.push(Object.assign({isDossier:false,rowStyle:'display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 4px 11px '+(8+niv*18)+'px;border-top:1px solid #f2f2f4'},x.row))); return; }
-        const groupes=new Map(); liste.forEach(x=>{ const k=niveaux[niv](x); (groupes.get(k)||groupes.set(k,[]).get(k)).push(x); });
-        const dernier=niv===niveaux.length-1, annee=niveaux[niv]===niveaux[prAdmin?2:1];
+      const niveaux=[]; if (prAdmin) niveaux.push([x=>prUserNom(x.b),'Utilisateur']); niveaux.push([x=>prPaysDossier(x.b),'Pays'],[x=>String(prNormPeriode(x.b.periode).annee),'Année'],[x=>prPerLabel(x.b),'Période']);
+      const trie=(a,c)=>a<c?-1:a>c?1:0;
+      const choix=Array.isArray(st.prSel)?st.prSel:[];
+      let courant=items;
+      for (let k=0;k<niveaux.length&&courant.length;k++) {
+        const [cle,titre]=niveaux[k], dernier=k===niveaux.length-1, annee=titre==='Année';
+        const groupes=new Map(); courant.forEach(x=>{ const g=cle(x); (groupes.get(g)||groupes.set(g,[]).get(g)).push(x); });
         const cles=[...groupes.keys()].sort((k1,k2)=>dernier?(prPerOrdre(groupes.get(k2)[0].b)-prPerOrdre(groupes.get(k1)[0].b)):(annee?trie(k2,k1):trie(k1,k2)));
-        cles.forEach(k=>{ const g=groupes.get(k), id=chemin+'/'+k, ouvert=!prFermes[id];
-          prTree.push({ isDossier:true, label:k, ouvert, count:g.length+(g.length>1?' présentations':' présentation'), chevron:ouvert?'▾':'▸', toggle:()=>set({prFermes:Object.assign({},prFermes,{[id]:ouvert})}),
-            dossierStyle:'display:flex;align-items:center;gap:9px;cursor:pointer;font-size:14.5px;padding:10px 6px 10px '+(4+niv*20)+'px;border-top:1px solid #f2f2f4;user-select:none;border-radius:8px' });
-          if (ouvert) rec(g,niv+1,id); }); };
-      rec(items,0,''); }
+        const actif=cles.includes(choix[k])?choix[k]:cles[0];
+        prCols.push({ titre:T(titre), isDossiers:true, isBriefs:false, entrees:cles.map(c=>{ const n=groupes.get(c).length, on=c===actif;
+          return { label:c, count:String(n), on, pick:()=>set({prSel:choix.slice(0,k).concat([c])}),
+            style:'display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 10px;border-radius:10px;font-size:14px;user-select:none;'+(on?'background:#f1edff;color:#4a35b8;':'color:#2f2f33;')+'', open:on, closed:!on }; }) });
+        courant=groupes.get(actif);
+      }
+      prCols.push({ titre:T('Présentations'), isDossiers:false, isBriefs:true, briefs:courant.slice().sort((x,y)=>(y.b.updatedAt||0)-(x.b.updatedAt||0)).map(x=>x.row) }); }
     const prTabs = [['nouveau','Nouveau brief'],['briefs','Mes présentations'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(prTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
     const prMsg = st.prMsg||null;
@@ -7836,7 +7852,7 @@ class Component extends DCLogic {
       prContenuSub:prContenuOpen?'Coche les modules à inclure ; le plan se met à jour à droite':(pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non')).length+' module'+(pr.modules.length>1?'s':'')+' sélectionné'+(pr.modules.length>1?'s':'')+' · '+prPlan.total+' diapositives · cliquer pour modifier'),
       prContenuChev:'flex:none;transition:transform .38s cubic-bezier(.22,.9,.3,1);transform:rotate('+(prContenuOpen?180:0)+'deg)',
       prContenuWrap:'display:grid;grid-template-rows:'+(prContenuOpen?'1fr':'0fr')+';transition:grid-template-rows .38s cubic-bezier(.22,.9,.3,1),visibility 0s linear '+(prContenuOpen?'0s':'.38s')+';visibility:'+(prContenuOpen?'visible':'hidden'),
-      prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prTree, prUsers, prHasUsers:prUsers.length>0, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
+      prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prCols, prUsers, prHasUsers:prUsers.length>0, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
       prChipA:kPuce('#7c63ee'), prIconA:kIcone('#7c63ee',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M12 16v4M8 20h8'})),
       prChipB:kPuce('#3b76e8'), prIconB:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
       prChipC:kPuce('#3fae7a'), prIconC:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),
