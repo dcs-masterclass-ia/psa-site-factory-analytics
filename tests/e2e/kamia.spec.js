@@ -24,7 +24,9 @@ test("KamIA : plus de conversation factice, vraie question -> /api/agent, répon
   await page.locator('[data-chrome="chat"][data-fab]').click();
   for (const faux of ["Chute des leads", "Tunnel mobile", "Budget Paid", "742 contre 1 076"]) await expect(page.getByText(faux)).toHaveCount(0);   // plus aucune maquette
   await expect(page.getByText(/Je suis connectée aux vraies données/)).toBeVisible();
+  await page.getByText("Nouvelle conversation").first().click();                                       // sélecteur d'historique
   await expect(page.getByText("Question de la semaine dernière")).toBeVisible();                       // historique réel du profil
+  await page.getByText("Nouvelle conversation").first().click();                                       // referme
   await page.getByPlaceholder("Poser une question sur ce périmètre…").fill("Où sont les leads ?");
   await page.keyboard.press("Enter");
   await expect(page.getByText(/Les leads de PEUGEOT FR sont à 1 200/)).toBeVisible();

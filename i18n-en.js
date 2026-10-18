@@ -145,6 +145,7 @@ window.I18N_EN = {
 "Aucune page en déclin sur cette sélection (ou les données arrivent avec le prochain rafraîchissement).": "No declining page on this selection (or the data arrives with the next refresh).",
 "Audience & saisonnalité": "Audience & seasonality",
 "Aujourd'hui": "Today",
+"Aujourd’hui": "Today",
 "Automatique": "Automatic",
 "Automatique (suit l'appareil)": "Automatic (follows the device)",
 "Autour de la bascule": "Around the switchover",

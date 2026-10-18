@@ -3543,10 +3543,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6d727a" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </span>
       </div>
-      <div style="display:flex;gap:6px;margin-top:14px;overflow-x:auto;padding-bottom:2px">
-        <sc-for list="{{ convs }}" as="c" hint-placeholder-count="3">
-          <span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.title }}</span>
-        </sc-for>
+      <div style="position:relative;margin-top:14px">
+        <div onClick="{{ kamHistToggle }}" style="display:flex;align-items:center;gap:9px;height:38px;padding:0 12px 0 14px;border-radius:999px;border:1px solid #e9e9ee;background:#fff;cursor:pointer;box-shadow:0 1px 2px rgba(18,18,20,.04);transition:border-color .15s" style-hover="border-color:#cdbffb">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c63ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+          <span style="flex:1;min-width:0;font-size:13.5px;font-weight:500;color:#2a2a31;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kamTitre }}</span>
+          <span style="flex:none;font-size:11.5px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:1px 8px">{{ kamNb }}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2" stroke-linecap="round" style="flex:none"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <sc-if value="{{ kamHistOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:44px;left:0;right:0;z-index:5;max-height:320px;overflow-y:auto;padding:6px;border-radius:16px;background:#fff;border:1px solid #ececf2;box-shadow:0 18px 40px rgba(16,24,40,.16)">
+          <sc-for list="{{ convs }}" as="c" hint-placeholder-count="3">
+            <div onClick="{{ c.pick }}" style="{{ c.style }}" style-hover="background:#f7f6fe"><span style="{{ c.titleStyle }}">{{ c.title }}</span><span style="flex:none;font-size:11.5px;color:#a3a7ae;white-space:nowrap;padding-top:2px">{{ c.date }}</span></div>
+          </sc-for>
+        </div>
+        </sc-if>
       </div>
     </div>
 
@@ -7287,8 +7297,11 @@ class Component extends DCLogic {
         chart:charts.length?h('div',{style:{display:'flex',flexDirection:'column',gap:12}},charts):null};
     });
     const kamVide=!conv.msgs.length&&!st.thinking;
-    const convs=kam.convs.map(c=>({title:c.title,pick:()=>this.kamOuvre(c),
-      style:`display:inline-flex;align-items:center;height:30px;padding:0 13px;border-radius:999px;font-size:12.5px;cursor:pointer;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis;transition:background .15s;${c.id===convId?'background:#f1edff;color:#5b43d6;font-weight:600;box-shadow:inset 0 0 0 1px #d9d0fb':'background:#f4f4f8;color:#6d727a'}`}));
+    const kamDate=t=>{ if(!t) return ''; const d=new Date(t), n=new Date(), j=x=>Math.floor(x/86400000), diff=j(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate()))-j(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); return diff<=0?T('Aujourd’hui'):diff===1?T('Hier'):String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); };
+    const convs=kam.convs.map(c=>({title:c.title==='Nouvelle conversation'?T('Nouvelle conversation'):c.title, date:(c.msgs.length||c.loaded===false)?kamDate(c.updatedAt):'', pick:()=>{ this.kamOuvre(c); this.setState({kamHist:false}); },
+      style:`display:flex;align-items:flex-start;gap:10px;padding:10px 14px;cursor:pointer;border-radius:12px;transition:background .12s;${c.id===convId?'background:#f1edff':''}`,
+      titleStyle:`flex:1;min-width:0;font-size:13.5px;line-height:1.4;color:${c.id===convId?'#4b35c8':'#2a2a31'};font-weight:${c.id===convId?600:500};display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden`}));
+    const kamTitre=conv.title==='Nouvelle conversation'?T('Nouvelle conversation'):conv.title;
     const kamCtx=()=>{ const n=st.sites.length; return { scope:n<=8?st.sites.slice():[], view:{site:st.sites[0]||'',tab:st.source}, note:n>8?`\n\n(Périmètre affiché : ${scopeLabel}, ${n} sites, période du ${fmtFr(debut)} au ${fmtFr(fin)})`:`\n\n(Période affichée : du ${fmtFr(debut)} au ${fmtFr(fin)})` }; };
     const pushMsg=text=>{ if(st.thinking) return; this.kamEnvoie(conv,text,kamCtx()); };
     const suggestions=['Compare ce périmètre au parc','Où est le principal frein dans le tunnel ?','Que faire cette semaine ?'].map(t=>({text:t,pick:()=>pushMsg(t)}));
@@ -7790,7 +7803,7 @@ class Component extends DCLogic {
       chatPanelInnerStyle:`height:100%;display:flex;flex-direction:column;background:#fff;border-left:1px solid #ececf2;border-radius:22px 0 0 22px;overflow:hidden;box-shadow:-24px 0 60px rgba(20,16,40,.18);animation:${st.chatClosing?'chatSlideOut .2s ease forwards':'chatSlideIn .25s cubic-bezier(.16,1,.3,1)'}`,
       chatFabStyle:`position:fixed;right:16px;bottom:16px;z-index:55;display:${st.chatOpen?'none':'flex'};align-items:center;gap:8px;height:40px;padding:0 7px;border-radius:20px;cursor:pointer;background:linear-gradient(150deg,#1b1636,#3a2160);box-shadow:0 14px 34px rgba(43,25,90,.35);transition:transform .15s`,
       convs, messages, suggestions,
-      thinking:!!st.thinking, thinkingLabel:'KamIA interroge les données réelles…', kamVide, kamHasSuggestions:!kamVide, kamIntro:'Je suis connectée aux vraies données du dashboard (GA4, Search Console, PageSpeed, leads et parc de sites). Pose-moi une question sur '+scopeLabel+' : je cherche les chiffres, je compare au parc et je te montre les graphiques.',
+      thinking:!!st.thinking, thinkingLabel:'KamIA interroge les données réelles…', kamTitre, kamNb:kam.convs.length, kamHistOpen:!!st.kamHist, kamHistToggle:()=>set({kamHist:!st.kamHist}), kamVide, kamHasSuggestions:!kamVide, kamIntro:'Je suis connectée aux vraies données du dashboard (GA4, Search Console, PageSpeed, leads et parc de sites). Pose-moi une question sur '+scopeLabel+' : je cherche les chiffres, je compare au parc et je te montre les graphiques.',
       draft:st.draft||'', onDraft:e=>set({draft:e.target.value}),
       onKey:e=>{ if(e.key==='Enter'&&(this.state.draft||'').trim()) pushMsg(this.state.draft.trim()); },
       send:()=>{ if((this.state.draft||'').trim()) pushMsg(this.state.draft.trim()); },

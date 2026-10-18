@@ -118,5 +118,7 @@
  "Je n’ai pas pu répondre pour le moment. Réessaie dans un instant.": "I could not answer right now. Please try again in a moment.",
  "Connexion impossible : vérifie ta connexion puis réessaie.": "Connection failed: check your connection and try again.",
  "Certains chiffres n’ont pas pu être vérifiés dans les données": "Some figures could not be verified in the data",
- "Chiffres vérifiés dans les données": "Figures verified in the data"
+ "Chiffres vérifiés dans les données": "Figures verified in the data",
+ "Aujourd’hui": "Today",
+ "Hier": "Yesterday"
 }
