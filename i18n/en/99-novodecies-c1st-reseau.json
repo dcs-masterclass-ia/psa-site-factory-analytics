@@ -122,5 +122,7 @@
  "Aujourd’hui": "Today",
  "Hier": "Yesterday",
  "Capture": "Capture",
- "Mode capture : copier ou exporter les modules en image": "Capture mode: copy or export modules as images"
+ "Mode capture : copier ou exporter les modules en image": "Capture mode: copy or export modules as images",
+ "Activer / désactiver les captures d'image des modules": "Turn module image captures on / off",
+ "Mode capture : exporter toute la vue en images (ZIP ou une seule image)": "Capture mode: export the whole view as images (ZIP or a single image)"
 }

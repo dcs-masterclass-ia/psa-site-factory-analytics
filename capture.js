@@ -22,6 +22,8 @@
   const VIDE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
   const TXT = (fr, en) => ((window.i18n && window.i18n.lang) === "en" ? en : fr);
   let bouton = null, courant = null, toast = null, barre = null, enCours = false;
+  // désactivé par défaut : interrupteur « Capture » du menu (localStorage psf_capture = 1). Désactivé = aucune pastille sur les modules, pas de mode capture.
+  const actif = () => { try { return localStorage.getItem("psf_capture") === "1"; } catch (e) { return false; } };
 
   // ---------- utilitaires
   const attend = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -163,7 +165,7 @@
     bouton.style.top = Math.max(r.top + 10, 64) + "px";
   }
   function survol(e) {
-    if (enCours) return;
+    if (enCours || !actif()) return;
     if (bouton && (e.target === bouton || bouton.contains(e.target))) return;
     const c = carteSous(e.target);
     if (c !== courant) { courant = c; if (!c && bouton) bouton.style.display = "none"; }
@@ -262,5 +264,5 @@
   }
   if (document.body) init(); else document.addEventListener("DOMContentLoaded", init);
 
-  window.psfCapture = { toggle: () => bascule(), actif: () => document.documentElement.classList.contains("psf-capture"), _modules: modules, _zip: zip };
+  window.psfCapture = { enabled: actif, setEnabled: (v) => { if (!v) { bascule(false); courant = null; if (bouton) bouton.style.display = "none"; } }, toggle: () => { if (actif()) bascule(); }, actif: () => document.documentElement.classList.contains("psf-capture"), _modules: modules, _zip: zip };
 })();
