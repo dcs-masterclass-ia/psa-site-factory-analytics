@@ -4164,15 +4164,19 @@ class Component extends DCLogic {
           }
         }
       }
-      // entonnoir par mode de saisie du véhicule (immatriculation / marque-modèle), mensuel : mois entiers qui chevauchent la période, comme funnelSeg
+      // entonnoir par mode de saisie du véhicule (immatriculation / marque-modèle), mensuel : mois entiers qui chevauchent la période, comme funnelSeg.
+      // Un site sans ces données sur la période rend le total partiel : on le signale (manque) pour ne pas afficher un mélange.
+      let feMoisSite = 0;
       for (const mois of Object.keys(d.funnelEntree || {})) {
+        const e = d.funnelEntree[mois];
+        if (!e || !Array.isArray(e.immat) || !Array.isArray(e.marque_modele)) continue;
         const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
         if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
-          const e = d.funnelEntree[mois];
-          for (let i = 0; i < 5; i++) { out.funnelEntree.immat[i] += (e.immat||[])[i] || 0; out.funnelEntree.mm[i] += (e.marque_modele||[])[i] || 0; }
-          out.funnelEntree.mois++;
+          for (let i = 0; i < 5; i++) { out.funnelEntree.immat[i] += e.immat[i] || 0; out.funnelEntree.mm[i] += e.marque_modele[i] || 0; }
+          out.funnelEntree.mois++; feMoisSite++;
         }
       }
+      if (!feMoisSite) out.funnelEntree.manque = true;
       // historique mensuel profond (années passées) : indépendant de la période
       for (const [mois, arr] of Object.entries(d.histMonth || {})) {
         const cur = out.histMonth.get(mois) || [0,0,0,0];
@@ -4616,7 +4620,7 @@ class Component extends DCLogic {
     }
 
     // modes de saisie du véhicule : pastilles Tous / Immatriculation / Marque-modèle (le parcours manuel = visiteurs passés par « registration date », « fuel type » ou « engine power »)
-    const fe=agg.funnelEntree, feOk=!!(fe&&fe.mois>0&&(fe.immat[0]+fe.mm[0])>0&&agg.funnelSteps&&agg.funnelSteps.length===6);
+    const fe=agg.funnelEntree, feOk=!!(fe&&fe.mois>0&&!fe.manque&&(fe.immat[0]+fe.mm[0])>0&&agg.funnelSteps&&agg.funnelSteps.length===6);
     const funMode=feOk&&['immat','mm'].includes(st.funMode)?st.funMode:'tous';
     const feTous=feOk?agg.funnelSteps.slice(1).map(x=>x.users):null;                       // « Tous » = le tunnel général (step_name), de Version à l'estimation
     const feArr=funMode==='immat'?fe.immat:funMode==='mm'?fe.mm:null;                        // [Version, Kilométrage, Coordonnées, Point de vente, Estimation]

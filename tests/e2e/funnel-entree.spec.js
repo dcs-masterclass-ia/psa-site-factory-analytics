@@ -37,3 +37,18 @@ test("tunnel : pastilles par mode de saisie, barres à partir de « Version », 
   await expect(page.getByText("Page d'accueil", { exact: true }).first()).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+test("tunnel : données par mode au format ancien ou absentes -> pas de pastilles (jamais de total partiel)", async ({ page }) => {
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/data/peugeot-fr.json", async (route) => {
+    const d = await (await route.fetch()).json();
+    d.funnelEntree = {};
+    for (const m of d.months || []) d.funnelEntree[m] = { tous: [1, 1, 1, 1, 1, 1], marque_modele: [1, 1, 1, 1, 1, 1] };     // ancien format : ignoré
+    await route.fulfill({ json: d });
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate(() => sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "ga", tab: "dash", sites: ["PEUGEOT FR"], from: null, to: null, cmpMode: "none" })));
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText("Page d'accueil", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("Tous les parcours", { exact: true })).toHaveCount(0);
+});
