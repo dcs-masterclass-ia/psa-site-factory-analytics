@@ -2675,8 +2675,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <sc-if value="{{ c1HasOnglets }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1Onglets }}" as="o" hint-placeholder-count="2"><span onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</span></sc-for></div></sc-if>
-        <sc-if value="{{ c1Vide }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">{{ c1Pend }}</div></sc-if>
-        <sc-if value="{{ !c1Vide }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ c1VideF }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">{{ c1Pend }}</div></sc-if>
+        <sc-if value="{{ !c1VideF }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ c1IsFunnel }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ c1HasPanels }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:15px">
@@ -2810,6 +2810,62 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#5b43d6;margin-bottom:8px">À RETENIR</div>
           <sc-for list="{{ c1Lectures }}" as="l" hint-placeholder-count="4"><div style="font-size:13.5px;color:#2a2d33;line-height:1.55;margin-top:5px">{{ l }}</div></sc-for>
         </div>
+        </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ c1IsReseau }}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{ !c1RsHas }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">Aucun contrat de reprise pour cette sélection de marchés et de marques (Spoticar, Leapmotor et Stellantis &amp;You ne sont pas suivis par C1ST).</div></sc-if>
+        <sc-if value="{{ c1RsHas }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:13px;color:#9a9fa6">Fenêtre glissante : du jour d'il y a un mois au {{ c1RsDate }}, comme le tableau de bord C1ST « Leads Network Vision ». Marchés et marques : ceux choisis en haut de page ; la période du calendrier ne s'applique pas ici.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+          <sc-for list="{{ c1RsKpis }}" as="k" hint-placeholder-count="7"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:15px 17px"><div style="font-size:12.5px;color:#6d727a;margin-bottom:6px">{{ k.lib }}</div><div style="{{ k.st }}">{{ k.val }}</div></div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Du lead envoyé à la commande</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Part des clients uniques envoyés aux concessionnaires.</div>
+            <sc-for list="{{ c1RsFun }}" as="b" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px"><span style="color:#4a4f57">{{ b.label }}</span><div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div><span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span></div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ c1RsHasDistrib }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Où en sont les contrats ?</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats de 20 clients ou plus, répartis selon leur taux de contact.</div>
+            <sc-for list="{{ c1RsDistrib }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14px;color:#2f2f33">{{ g.nom }}</span><span style="font-size:13px;color:#6d727a"><b style="color:#121214">{{ g.n }}</b> · {{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+          </div>
+          </sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px">
+          <sc-if value="{{ c1RsHasSilence }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">À traiter en priorité</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients qui ont contacté moins de 10 % de leurs leads (0 % peut aussi vouloir dire statuts non saisis dans C1ST).</div>
+            <sc-for list="{{ c1RsSilence }}" as="r" hint-placeholder-count="5"><div style="padding:8px 0;border-top:1px solid #f1f1f3"><div style="display:flex;gap:8px;align-items:baseline;font-size:14px;color:#121214;font-weight:600;min-width:0"><span style="color:#9a9fa6;font-weight:400;font-size:12.5px;flex:none">{{ r.code }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ r.nom }}">{{ r.nom }}</span></div><div style="font-size:12.5px;color:#6d727a;margin-top:2px">{{ r.det }}</div></div></sc-for>
+          </div>
+          </sc-if>
+          <sc-if value="{{ c1RsHasMeilleurs }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Les mieux suivis</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients, par part de leads traités dans les délais.</div>
+            <sc-for list="{{ c1RsMeilleurs }}" as="r" hint-placeholder-count="5"><div style="padding:8px 0;border-top:1px solid #f1f1f3"><div style="display:flex;gap:8px;align-items:baseline;font-size:14px;color:#121214;font-weight:600;min-width:0"><span style="color:#9a9fa6;font-weight:400;font-size:12.5px;flex:none">{{ r.code }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ r.nom }}">{{ r.nom }}</span></div><div style="font-size:12.5px;color:#6d727a;margin-top:2px">{{ r.det }}</div></div></sc-for>
+          </div>
+          </sc-if>
+        </div>
+        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div><div style="font-size:15px;font-weight:600;color:#121214">Summary Table</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">Un contrat par ligne ({{ c1RsNb }} contrats). Dénominateur de tous les % : clients uniques envoyés. Vert / orange / rouge : seuils de C1ST (dans les délais : 70 % et 90 % ; commandes : 5 % et 6 %).</div></div>
+            <input type="text" value="{{ c1RsQuery }}" onInput="{{ c1RsOnSearch }}" placeholder="Rechercher un contrat ou un code…" style="min-width:230px;border:1px solid #e8e8ec;border-radius:10px;padding:8px 12px;font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;outline:none">
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><sc-for list="{{ c1RsChipsTri }}" as="c" hint-placeholder-count="4"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
+          <div style="overflow-x:auto;margin-top:12px">
+            <div style="min-width:1700px">
+              <div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:8px 4px;font-size:12px;font-weight:600;color:#6d727a;border-bottom:2px solid #e4e4e8;align-items:end"><sc-for list="{{ c1RsHead }}" as="h" hint-placeholder-count="22"><span>{{ h }}</span></sc-for></div>
+              <sc-for list="{{ c1RsRows }}" as="r" hint-placeholder-count="10"><div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:7px 4px;border-bottom:1px solid #f1f1f3;align-items:center;font-size:13px"><span style="color:#9a9fa6">{{ r.code }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#121214;font-weight:500" title="{{ r.nom }}">{{ r.nom }}</span><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="20"><span style="{{ c.s }}">{{ c.t }}</span></sc-for></div></sc-for>
+              <div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:9px 4px;border-top:2px solid #e4e4e8;align-items:center;font-size:13px;font-weight:700;background:#f7f6fb"><span>{{ c1RsTotRow.code }}</span><span>{{ c1RsTotRow.nom }}</span><sc-for list="{{ c1RsTotRow.cells }}" as="c" hint-placeholder-count="20"><span style="{{ c.s }}">{{ c.t }}</span></sc-for></div>
+            </div>
+          </div>
+          <sc-if value="{{ c1RsHasPlus }}" hint-placeholder-val="{{ false }}"><div style="margin-top:12px"><span onClick="{{ c1RsPlus.pick }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer">{{ c1RsPlus.label }}</span></div></sc-if>
+        </div>
+        <sc-if value="{{ c1RsHasLectures }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#f7f6fe;border:1px solid #e4defc;border-radius:16px;padding:17px 21px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#5b43d6;margin-bottom:8px">À RETENIR</div>
+          <sc-for list="{{ c1RsLectures }}" as="l" hint-placeholder-count="3"><div style="font-size:13.5px;color:#2a2d33;line-height:1.55;margin-top:5px">{{ l }}</div></sc-for>
+        </div>
+        </sc-if>
+        <div style="font-size:12.5px;color:#9a9fa6;line-height:1.55">Leads de reprise (campagne Autobiz), type 1, VN, B2B / B2C, circuit BRAND ou Central, hors « SOL ready for order », liste noire et tests. Les chiffres du tableau de bord C1ST couvrent tous les leads du réseau : ici, seuls les leads de reprise.</div>
         </sc-if>
         </sc-if>
 
@@ -3735,6 +3791,7 @@ class Component extends DCLogic {
       this.data = loaded;
       if (!limite) { try { this._market = await (await fetch('/data/market.json')).json(); } catch (e) {} }
       if (!limite) { try { this._c1st = await (await fetch('/data/c1st/kpi.json')).json(); } catch (e) {} }
+      if (!limite && this.presentationsOuvertes()) { try { const rr = await fetch('/data/c1st/reseau.json'); if (rr.ok) this._c1reseau = await rr.json(); } catch (e) {} }
       if (!limite) { this.chargeHoraire(true); if (!this._hhTimer) this._hhTimer = setInterval(() => { if (this.state && this.state.source === 'tb') this.chargeHoraire(); }, 120000); }
       if (!limite) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
       // préférences du compte (page Paramètres) : serveur, sinon dernier réglage local
@@ -6058,6 +6115,52 @@ class Component extends DCLogic {
       return {nom:T(nom)+(suivi?' ('+T('indicatif')+')':''), a:a===null?'–':a.toFixed(1).replace('.',',')+' %', b:b===null?'–':b.toFixed(1).replace('.',',')+' %',
         d:d===null?(mature?T('provisoire'):'–'):c1Sg(d,' pt'), ds:d===null?'font-size:12.5px;font-weight:600;color:#9a6b00':'font-size:13px;font-weight:600;color:'+(Math.abs(d)<0.1?'#9a9fa6':d>0?'#1f9254':'#a33c39')}; }):[];
     const c1HasTaux=c1Taux.length>0;
+    // ---- « Leads Network Vision » : suivi des leads de reprise par contrat concessionnaire (data/c1st/reseau.json, fenêtre glissante d'un mois comme le tableau de bord C1ST)
+    const RS_CH=['leads','clients','fca','tot','tov','tr','cot','cov','c','eso','es','q','o','rel'];
+    const c1RsPairs=new Set(c1Mapped.pairs.filter(c1HorsSP).map(p=>p.pays+'|'+p.code));
+    const c1RsBrut=c1ReseauOk?c1Reseau.contrats.filter(r=>c1RsPairs.has(r.pays+'|'+r.marque)):[];
+    const c1RsMap=new Map(); for(const r of c1RsBrut){ const k=r.code+'|'+r.nom; let t=c1RsMap.get(k); if(!t){ t={code:r.code||'—',nom:r.nom||'—'}; RS_CH.forEach(f=>t[f]=0); c1RsMap.set(k,t); } RS_CH.forEach(f=>t[f]+=r[f]||0); }
+    const c1RsTous=[...c1RsMap.values()];
+    const c1RsTot=(()=>{ const t={}; RS_CH.forEach(f=>t[f]=c1RsTous.reduce((a,r)=>a+r[f],0)); return t; })();
+    const c1RsHas=c1ReseauOk&&c1RsTous.length>0&&c1RsTot.clients>0;
+    const rsP=(a,b)=>b>0?a/b*100:null, rsPc=(v,d)=>v===null?'–':v.toFixed(d===undefined?1:d).replace('.',',')+' %';
+    const rsTon=v=>v===null?null:v<70?['#fbe1df','#a33c39']:v<90?['#fbecd2','#9a6b00']:['#dcf1e5','#1f7a4a'];        // seuils de C1ST : % dans les délais
+    const rsCmd=v=>v===null?null:v<5?['#fbe1df','#a33c39']:v<6?['#fbecd2','#9a6b00']:['#dcf1e5','#1f7a4a'];            // seuils de C1ST : % commandes
+    const rsCell=(v,col,d)=>({t:rsPc(v,d),s:'text-align:right;font-variant-numeric:tabular-nums;'+(col?`background:${col[0]};color:${col[1]};font-weight:600;border-radius:6px;padding:3px 8px`:'color:#2f2f33')});
+    const rsNum=v=>({t:c1Nf(v),s:'text-align:right;font-variant-numeric:tabular-nums;color:#2f2f33'});
+    const c1RsKpis=c1RsHas?[['UNIQUE LEADS',c1Nf(c1RsTot.clients),null],['1° call attempt on time',rsPc(rsP(c1RsTot.fca,c1RsTot.clients)),rsTon(rsP(c1RsTot.fca,c1RsTot.clients))],['Treated on time',rsPc(rsP(c1RsTot.tot,c1RsTot.clients)),rsTon(rsP(c1RsTot.tot,c1RsTot.clients))],
+      ['Contacted on time',rsPc(rsP(c1RsTot.cot,c1RsTot.clients)),rsTon(rsP(c1RsTot.cot,c1RsTot.clients))],['Contacted',rsPc(rsP(c1RsTot.c,c1RsTot.clients)),null],['With quote',rsPc(rsP(c1RsTot.q,c1RsTot.clients)),null],['Orders',rsPc(rsP(c1RsTot.o,c1RsTot.clients)),rsCmd(rsP(c1RsTot.o,c1RsTot.clients))]].map(([lib,val,col])=>({lib:T(lib),val,
+        st:`font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:${col?col[1]:'#121214'}`})):[];
+    const c1RsMails=c1RsTot.es>0;
+    const c1RsHead=['Code','Contrat','Leads envoyés','Leads uniques','1° appel dans les délais','%','Traités dans les délais','%','Traités hors délais','%','Traités','%','Contactés dans les délais','%','Contactés hors délais','%','Contactés','%'].concat(c1RsMails?['E-mails envoyés','%','E-mails dans les délais','%']:[]).concat(['Avec devis','%','Commandes','%']);
+    const c1RsCols=`minmax(90px,.7fr) minmax(220px,2.6fr) repeat(${c1RsHead.length-2},minmax(68px,1fr))`;
+    const c1RsLigne=r=>{ const cl=r.clients, pc=f=>rsP(r[f],cl); const cells=[rsNum(r.leads),rsNum(cl),rsNum(r.fca),rsCell(pc('fca'),rsTon(pc('fca'))),rsNum(r.tot),rsCell(pc('tot'),rsTon(pc('tot'))),rsNum(r.tov),rsCell(pc('tov')),rsNum(r.tr),rsCell(pc('tr')),
+        rsNum(r.cot),rsCell(pc('cot'),rsTon(pc('cot'))),rsNum(r.cov),rsCell(pc('cov')),rsNum(r.c),rsCell(pc('c'))].concat(c1RsMails?[rsNum(r.es),rsCell(pc('es')),rsNum(r.eso),rsCell(pc('eso'))]:[]).concat([rsNum(r.q),rsCell(pc('q')),rsNum(r.o),rsCell(pc('o'),rsCmd(pc('o')))]);
+      return {code:r.code,nom:r.nom,cells,haystack:(r.code+' '+r.nom).toLowerCase()}; };
+    const RS_TRIS=[['clients','Leads uniques'],['pc','% contactés'],['pf','% 1er appel'],['po','% commandes']];
+    const c1RsTri=RS_TRIS.some(x=>x[0]===st.c1RsTri)?st.c1RsTri:'clients';
+    const c1RsVal=(r,k)=>k==='clients'?r.clients:k==='pc'?(r.clients?r.c/r.clients:-1):k==='pf'?(r.clients?r.fca/r.clients:-1):(r.clients?r.o/r.clients:-1);
+    const c1RsQ=String(st.c1RsQ||'').trim().toLowerCase();
+    const c1RsFiltres=c1RsTous.filter(r=>!c1RsQ||(r.code+' '+r.nom).toLowerCase().includes(c1RsQ)).sort((a,b)=>c1RsVal(b,c1RsTri)-c1RsVal(a,c1RsTri));
+    const c1RsMax=st.c1RsTous?c1RsFiltres.length:50;
+    const c1RsRows=c1RsFiltres.slice(0,c1RsMax).map(c1RsLigne);
+    const c1RsTotRow=c1RsLigne(Object.assign({},c1RsTot,{code:'Total',nom:'—'}));
+    const c1RsChipsTri=RS_TRIS.map(([v,l])=>({label:T('Trier par')+' '+T(l).toLowerCase(),pick:()=>set({c1RsTri:v}),style:this.prChipLite(c1RsTri===v)}));
+    const c1RsPlus=c1RsFiltres.length>50?{label:st.c1RsTous?T('Réduire à 50 contrats'):T('Voir les')+' '+c1RsFiltres.length+' '+T('contrats'),pick:()=>set({c1RsTous:!st.c1RsTous})}:null;
+    // entonnoir réseau (part des clients uniques envoyés)
+    const c1RsFun=c1RsHas?[['Clients uniques envoyés',c1RsTot.clients,'#cfc4fb'],['1° appel dans les délais',c1RsTot.fca,'#b6a5f8'],['Contactés',c1RsTot.c,'#a794f6'],['Traités',c1RsTot.tr,'#8f78f1'],['Avec devis',c1RsTot.q,'#4fb67f'],['Commandes',c1RsTot.o,'#1f9254']].map(([l,v,c])=>c1Bar(T(l),v,c1RsTot.clients,c)):[];
+    // répartition des contrats (au moins 20 clients) selon leur taux de contact
+    const c1RsEligibles=c1RsTous.filter(r=>r.clients>=20);
+    const RS_TR=[[0,10,'moins de 10 %'],[10,25,'10 à 25 %'],[25,50,'25 à 50 %'],[50,75,'50 à 75 %'],[75,101,'75 % et plus']];
+    const c1RsDistrib=c1RsEligibles.length?RS_TR.map(([a,b,l])=>{ const g=c1RsEligibles.filter(r=>{ const p=r.c/r.clients*100; return p>=a&&p<b; }); const cl=g.reduce((x,r)=>x+r.clients,0), tot=c1RsEligibles.reduce((x,r)=>x+r.clients,0);
+      return {nom:T(l),n:g.length+' '+T(g.length>1?'contrats':'contrat'),pct:Math.round(cl/tot*100)+' % '+T('des leads'),bar:`width:${Math.max(g.length?2:0,cl/tot*100).toFixed(1)}%;height:100%;border-radius:4px;background:${a<25?'#e8544a':a<50?'#f2b36b':'#3fae7a'}`}; }):[];
+    const rsListe=(arr,asc)=>arr.slice(0,8).map(r=>({nom:r.nom,code:r.code,det:c1Nf(r.clients)+' '+T('leads')+' · '+rsPc(rsP(r.c,r.clients),0)+' '+T('contactés')+' · '+rsPc(rsP(r.fca,r.clients),0)+' '+T('1er appel')}));
+    const c1RsSilence=rsListe(c1RsEligibles.filter(r=>r.clients>=50&&r.c/r.clients<0.1).sort((a,b)=>b.clients-a.clients));
+    const c1RsMeilleurs=rsListe(c1RsEligibles.filter(r=>r.clients>=50).sort((a,b)=>(b.tot/b.clients)-(a.tot/a.clients)||b.clients-a.clients));
+    const c1RsDate=c1ReseauOk&&c1Reseau.collecte&&c1Reseau.collecte.date?String(c1Reseau.collecte.date).slice(8,10)+'/'+String(c1Reseau.collecte.date).slice(5,7)+'/'+String(c1Reseau.collecte.date).slice(0,4):'—';
+    const c1RsLectures=[]; if(c1RsHas){ c1RsLectures.push(c1Nf(c1RsTot.clients)+' '+T('clients uniques envoyés à')+' '+c1Nf(c1RsTous.length)+' '+T('contrats')+', '+T('dont')+' '+rsPc(rsP(c1RsTot.c,c1RsTot.clients),0)+' '+T('contactés')+' ('+rsPc(rsP(c1RsTot.cot,c1RsTot.clients),0)+' '+T('dans les délais')+').');
+      if(c1RsSilence.length) c1RsLectures.push(c1RsSilence.length+(c1RsSilence.length>=8?'+':'')+' '+T('contrats avec au moins 50 leads ont contacté moins de 10 % de leurs clients : voir « À traiter en priorité ».'));
+      const cm=rsP(c1RsTot.fca,c1RsTot.clients); if(cm!==null&&cm<70) c1RsLectures.push(T('Le 1° appel dans les délais est sous le seuil de 70 % de C1ST (rouge).')); }
     const c1Chip=(on,fn,l)=>({label:l,pick:fn,style:this.prChipLite(on)});
     const c1ChipsVue=[['marque',T('Par marque')],['marche',T('Par marché')]].map(([v,l])=>c1Chip(c1Vue===v,()=>set({c1Vue:v}),l));
     const c1Date=c1Ok&&c1Raw.collecte&&c1Raw.collecte.date?String(c1Raw.collecte.date).slice(8,10)+'/'+String(c1Raw.collecte.date).slice(5,7)+'/'+String(c1Raw.collecte.date).slice(0,4):'—';
@@ -7609,6 +7712,7 @@ class Component extends DCLogic {
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
       histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isGeo:gaCur==='geo', isProfil:gaCur==='profil', isSources:gaCur==='sources', isEntree:gaCur==='entree', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', v2ModeChips, v2PreChips, v2IsBascule:v2Mode==='bascule', v2Warn, v2WarnOn:!!v2Warn, v2WarnAction, v2WarnPick:()=>set({v2Mode:'bascule'}), gaThemes, gaViews, gaThemeQuestion,
+      c1RsHas, c1RsKpis, c1RsHead, c1RsCols, c1RsRows, c1RsTotRow, c1RsChipsTri, c1RsPlus, c1RsHasPlus:!!c1RsPlus, c1RsFun, c1RsDistrib, c1RsHasDistrib:c1RsDistrib.length>0, c1RsSilence, c1RsHasSilence:c1RsSilence.length>0, c1RsMeilleurs, c1RsHasMeilleurs:c1RsMeilleurs.length>0, c1RsDate, c1RsLectures, c1RsHasLectures:c1RsLectures.length>0, c1RsQuery:st.c1RsQ||'', c1RsOnSearch:e=>set({c1RsQ:e.target.value}), c1VideF:c1Vide&&c1IsFunnel, c1RsNb:c1RsFiltres.length,
       c1PuceA, c1PuceB, c1PuceC, c1PuceD, c1IcoLeads, c1IcoStatut, c1IcoAppel, c1IcoContact, c1IcoDevis, c1IcoCmd,
       c1Onglets, c1HasOnglets:c1ReseauOk, c1IsFunnel, c1IsReseau, c1HasPanels, c1PanLeads, c1PanPremierAppel, c1PanContactes, c1PanDevis, c1PanCommandes, c1StatRows, c1HasStat, c1Taux, c1HasTaux,
       entryHas, entryBarA, entryBarB, entryAvecTxt, entryManuelTxt, entryTotalTxt,

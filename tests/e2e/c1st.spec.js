@@ -79,7 +79,43 @@ test("C1ST : onglet « Leads Funnel » avec les six graphiques de C1ST et les ta
     await expect(page.locator("div", { hasText: new RegExp("^" + titre + "i") }).first()).toBeVisible();      // le titre porte une pastille « i » (+ son infobulle)
   }
   await expect(page.getByText("Taux clés face à la comparaison")).toBeVisible();
-  // un seul onglet tant que la vue par contrat n'a pas de données : pas de barre d'onglets
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("C1ST : sans données par contrat, pas d'onglet « Leads Network Vision »", async ({ context, page }) => {
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/data/c1st/reseau.json", (r) => r.fulfill({ status: 404, body: "" }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText("Leads générés par mois").first()).toBeVisible();
   await expect(page.getByText("Leads Network Vision", { exact: true })).toHaveCount(0);
+});
+
+test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à traiter, tableau par contrat)", async ({ context, page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  const contrats = [
+    { pays: "FR", marque: "AP", code: "0000013", nom: "MSCAR TEST", leads: 120, clients: 100, fca: 80, tot: 70, tov: 5, tr: 75, cot: 60, cov: 5, c: 65, eso: 0, es: 0, q: 30, o: 7, rel: 3 },
+    { pays: "FR", marque: "AP", code: "0000022", nom: "SILENCE TEST", leads: 70, clients: 60, fca: 2, tot: 1, tov: 0, tr: 1, cot: 1, cov: 0, c: 2, eso: 0, es: 0, q: 5, o: 0, rel: 1 },
+  ];
+  await page.route("**/data/c1st/reseau.json", (r) => r.fulfill({ json: { collecte: { date: "2026-10-18" }, contrats } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", c1Onglet: "reseau", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText("UNIQUE LEADS")).toBeVisible();
+  await expect(page.getByText("160", { exact: true }).first()).toBeVisible();                 // 100 + 60 clients uniques envoyés
+  await expect(page.getByText("Summary Table")).toBeVisible();
+  await expect(page.getByText("MSCAR TEST", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("À traiter en priorité").first()).toBeVisible();                // SILENCE TEST : 60 clients, 3 % contactés
+  await expect(page.getByText("SILENCE TEST").first()).toBeVisible();
+  // retour sur Leads Funnel
+  await page.getByText("Leads Funnel", { exact: true }).click();
+  await expect(page.getByText("Leads générés par mois").first()).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
