@@ -2747,27 +2747,31 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:15px">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
             <div style="font-size:15px;font-weight:600;color:#121214">Suivi par les concessionnaires</div>
             <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients envoyés. À comparer entre marques seulement : les statuts sont saisis par les concessionnaires, déployés progressivement selon les marchés.</div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:9px">
             <sc-for list="{{ c1Suivi }}" as="b" hint-placeholder-count="5">
-              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;font-size:13px">
                 <span style="color:#4a4f57">{{ b.label }}</span>
                 <div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div>
                 <span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span>
               </div>
             </sc-for>
+            </div>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
             <div style="font-size:15px;font-weight:600;color:#121214">Du lead à la commande</div>
             <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients uniques. Commandes NSC rattachées au lead entre 1 et 90 jours après sa création.</div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:9px">
             <sc-for list="{{ c1Conv }}" as="b" hint-placeholder-count="4">
-              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;margin-bottom:9px;font-size:13px">
+              <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;font-size:13px">
                 <span style="color:#4a4f57">{{ b.label }}</span>
                 <div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div>
                 <span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span>
               </div>
             </sc-for>
+            </div>
           </div>
         </div>
 
