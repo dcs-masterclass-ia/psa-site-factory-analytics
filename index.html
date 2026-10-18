@@ -3568,6 +3568,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-if>
             <sc-if value="{{ m.hasBadges }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:5px;flex-wrap:wrap;margin:-2px 0 8px"><sc-for list="{{ m.badges }}" as="b" hint-placeholder-count="2"><span style="{{ b.style }}">{{ b.b }}</span></sc-for></div></sc-if>
             <div style="{{ m.textStyle }}">{{ m.text }}</div>
+            <sc-if value="{{ m.hasVerif }}" hint-placeholder-val="{{ false }}"><div style="{{ m.verifStyle }}">{{ m.verifTxt }}</div></sc-if>
             <sc-if value="{{ m.hasChart }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:12px;border-radius:12px;background:#fafafb;border:1px solid #efeff1;padding:10px 12px">
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:6px">{{ m.chartTitle }}</div>
@@ -4471,7 +4472,7 @@ class Component extends DCLogic {
       const j=await r.json().catch(()=>({}));
       if (r.status===401) { c.msgs.push({ role:'agent', text:'Ta session a expiré : recharge la page pour te reconnecter.', erreur:true, time:hh() }); }
       else if (!r.ok||!j.answer) { c.msgs.push({ role:'agent', text:j.error||'Je n’ai pas pu répondre pour le moment. Réessaie dans un instant.', erreur:true, time:hh() }); }
-      else { c.history=j.history||c.history; c.scope=ctx.scope||[]; c.msgs.push({ role:'agent', text:j.answer, badges:j.agentsConsultes||[], charts:j.charts||[], time:hh() }); this.kamSauve(c); }
+      else { c.history=j.history||c.history; c.scope=ctx.scope||[]; c.msgs.push({ role:'agent', text:j.answer, badges:j.agentsConsultes||[], charts:j.charts||[], time:hh(), verifie:j.verifie }); this.kamSauve(c); }
     } catch(e) { c.msgs.push({ role:'agent', text:'Connexion impossible : vérifie ta connexion puis réessaie.', erreur:true, time:hh() }); }
     this.setState({thinking:false,kamTick:Date.now()});
   }
@@ -7275,6 +7276,7 @@ class Component extends DCLogic {
         bubble:`max-width:92%;border-radius:16px;padding:12px 14px;${m.role==='user'?'background:#141414;border-bottom-right-radius:6px':'background:#fff;border:1px solid #eeeef0;border-bottom-left-radius:6px'}`,
         textStyle:`font-size:14.5px;line-height:1.55;white-space:pre-wrap;color:${m.role==='user'?'#fff':ok?'#2f2f33':'#c24a44'}`,
         text:kamTexte(m.text),hasChart:charts.length>0,chartTitle:'',
+        hasVerif:ag&&ok&&m.verifie!==undefined, verifTxt:m.verifie===false?T('Certains chiffres n’ont pas pu être vérifiés dans les données'):T('Chiffres vérifiés dans les données'), verifStyle:'margin-top:9px;font-size:11.5px;font-weight:600;color:'+(m.verifie===false?'#b7791f':'#1f9254'),
         chart:charts.length?h('div',{style:{display:'flex',flexDirection:'column',gap:12}},charts):null};
     });
     const kamVide=!conv.msgs.length&&!st.thinking;

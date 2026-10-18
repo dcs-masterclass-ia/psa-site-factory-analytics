@@ -14,6 +14,7 @@ const { callClaudeStream } = require("./_lib/anthropic");
 const { TOOLS, runTool } = require("./_lib/tools");
 const { verifySessionFromRequest } = require("./_lib/auth");
 const { sanitizeHistory } = require("./_lib/history");
+const { nonVerifies } = require("./_lib/grounding");
 const { fail } = require("./_lib/errors");
 
 // Sonnet 5 + effort medium : qualite proche d'Opus sur ce type de travail
@@ -38,7 +39,7 @@ const SYSTEM = `Tu es Agent KAM, le cerveau de l'assistant "Hermes" du dashboard
 
 Regles :
 - Reponds en interrogeant les agents specialises a ta disposition (list_sites, ask_agent_analytics, ask_agent_business, ask_agent_ux, get_series, compare_to_peers, show_chart, ask_agent_dashboard) plutot qu'a partir de connaissances generales -- ce sont eux qui ont acces aux vraies donnees.
-- Ne calcule JAMAIS toi-meme une somme, une moyenne ou un maximum sur une serie : appelle get_series et recopie sa `synthese` (total, moyenne_par_jour, maximum, total_par_mois). Un calcul mental sur une longue suite est faux (constate : 1 777 au lieu de 1 908).
+- Ne calcule JAMAIS toi-meme une somme, une moyenne ou un maximum sur une serie : appelle get_series et recopie sa synthese (total, moyenne_par_jour, maximum, total_par_mois). Un calcul mental sur une longue suite est faux (constate : 1 777 au lieu de 1 908).
 - Utilise list_sites si tu n'es pas sur du nom exact d'un site. Si un "Perimetre selectionne" est indique dans le message de l'utilisateur, priorise ces sites sauf si la question en nomme explicitement d'autres. Si rien n'est selectionne et que la question est ambigue ("ce site", "ici", "on"), utilise en repli le site/onglet indique par "Actuellement affiche dans le dashboard" quand ce contexte est present.
 - Pour une question d'analyse ("pourquoi X a baisse", "quel impact business", "quelles actions proposer"), appelle plusieurs agents pertinents (analytics + business + ux selon le cas) puis synthetise UNE reponse argumentee et chiffree qui croise leurs constats -- jamais une simple liste de chiffres juxtaposes sans interpretation.
 - Pour une question de positionnement ("comment se situe ce site", "est-ce dans la moyenne", "est-ce un bon chiffre"), appelle compare_to_peers plutot que de qualifier un chiffre a l'instinct -- un chiffre n'est "bon" ou "mauvais" que compare au reste du parc.
@@ -105,9 +106,11 @@ function buildInitialContent(question, scope, attachments, view) {
  * JSON (answer/agentsConsultes/charts/history), pour rester compatible avec
  * le front actuel qui ne consomme que ca.
  */
-async function* runAgentLoop(messages) {
+async function* runAgentLoop(messages, question) {
   const agentsConsultes = new Set();
   const charts = [];
+  const preuves = { brut: [], calcule: [] };     // tout ce que les outils ont renvoyé pendant cette question : sert à vérifier les chiffres de la réponse
+  let controle = 0;                              // un seul rappel à l'ordre par question
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     let finalContent = null;
@@ -145,7 +148,16 @@ async function* runAgentLoop(messages) {
           ? "La reponse a ete coupee avant d'etre generee (limite de tokens atteinte pendant le raisonnement). Reessaie, ou reformule une question plus ciblee."
           : "Je n'ai pas reussi a formuler de reponse pour cette question. Reessaie en la reformulant.";
       }
-      yield { type: "done", answer, agentsConsultes: [...agentsConsultes], charts, history: messages };
+      // contrôle des chiffres : tout nombre cité doit venir des outils (ou s'en déduire) ; sinon un rappel, puis un avertissement honnête
+      const inconnus = nonVerifies(answer, question, preuves);
+      if (inconnus.length && controle === 0 && i < MAX_ITERATIONS - 1) {
+        controle = 1;
+        messages.push({ role: "user", content: [{ type: "text", text: `Controle automatique : les chiffres suivants de ta reponse ne figurent dans aucun resultat d'outil et ne se deduisent pas de deux resultats d'outils : ${inconnus.join(", ")}. Recalcule-les avec les outils (get_series.synthese pour un total, une moyenne ou un maximum) ou retire-les. Ne donne aucun chiffre que tu n'as pas obtenu d'un outil. Redige la reponse corrigee, sans mentionner ce controle.` }] });
+        continue;
+      }
+      const verifie = inconnus.length === 0;
+      if (!verifie) answer += `\n\n⚠ Chiffres non verifies par les outils : ${inconnus.join(", ")}. Ne les reprends pas sans controle.`;
+      yield { type: "done", answer, verifie, agentsConsultes: [...agentsConsultes], charts, history: messages };
       return;
     }
 
@@ -160,7 +172,7 @@ async function* runAgentLoop(messages) {
         continue;
       }
       try {
-        const result = await runTool(block.name, block.input);
+        const result = await runTool(block.name, block.input, preuves);
         yield { type: "tool-call-end", toolName: block.name };
         toolResults.push({
           type: "tool_result",
@@ -449,9 +461,9 @@ module.exports = async function handler(req, res) {
   messages.push({ role: "user", content: buildInitialContent(question, scope, attachments, view) });
 
   try {
-    for await (const ev of runAgentLoop(messages)) {
+    for await (const ev of runAgentLoop(messages, question)) {
       if (ev.type === "done") {
-        res.status(200).json({ answer: ev.answer, agentsConsultes: ev.agentsConsultes, charts: ev.charts, history: ev.history });
+        res.status(200).json({ answer: ev.answer, verifie: ev.verifie, agentsConsultes: ev.agentsConsultes, charts: ev.charts, history: ev.history });
         return;
       }
     }

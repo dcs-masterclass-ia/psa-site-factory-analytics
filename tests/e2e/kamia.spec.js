@@ -17,7 +17,7 @@ test("KamIA : plus de conversation factice, vraie question -> /api/agent, répon
   });
   await page.route("**/api/agent", async (r) => {
     appels.push(JSON.parse(r.request().postData() || "{}"));
-    await r.fulfill({ json: { answer: "Les leads de PEUGEOT FR sont à 1 200 sur la période, **+8 %** vs la précédente.", agentsConsultes: ["Données", "Comparaison"],
+    await r.fulfill({ json: { answer: "Les leads de PEUGEOT FR sont à 1 200 sur la période, **+8 %** vs la précédente.", verifie: true, agentsConsultes: ["Données", "Comparaison"],
       charts: [{ title: "Leads par semaine", type: "line", labels: ["S1", "S2", "S3"], series: [{ name: "PEUGEOT FR", values: [100, 140, 120] }] }], history: [{ role: "user", content: "x" }] } });
   });
   await page.goto("/", { waitUntil: "networkidle" });
@@ -29,6 +29,7 @@ test("KamIA : plus de conversation factice, vraie question -> /api/agent, répon
   await page.keyboard.press("Enter");
   await expect(page.getByText(/Les leads de PEUGEOT FR sont à 1 200/)).toBeVisible();
   await expect(page.getByText("Comparaison", { exact: true })).toBeVisible();                           // agents consultés
+  await expect(page.getByText("Chiffres vérifiés dans les données")).toBeVisible();
   await expect(page.getByText("Leads par semaine")).toBeVisible();                                    // graphique issu de l'agent
   expect(appels.length).toBe(1);
   expect(appels[0].question).toContain("Où sont les leads ?");

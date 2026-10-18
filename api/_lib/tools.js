@@ -159,7 +159,7 @@ function compareToPeers(site, metric) {
   };
 }
 
-async function askSpecialist(systemPrompt, question, sites) {
+async function askSpecialist(systemPrompt, question, sites, preuves) {
   const ctx = siteContext(sites);
   if (Object.keys(ctx).length === 0) {
     return "Aucune donnee disponible pour ce(s) site(s) -- verifie le nom exact du site (utilise list_sites).";
@@ -174,6 +174,7 @@ async function askSpecialist(systemPrompt, question, sites) {
     maxTokens: 1200,
   });
   const text = (resp.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
+  if (preuves) { (preuves.brut = preuves.brut || []).push(JSON.stringify(ctx)); (preuves.calcule = preuves.calcule || []).push(text); }      // données lues + réponse de l'agent (contrôle des chiffres, grounding.js)
   return text || "Pas de reponse exploitable.";
 }
 
@@ -402,7 +403,7 @@ Fais UNE ou plusieurs editions ciblees avec str_replace (jamais de reecriture co
   }
 }
 
-async function runTool(name, input) {
+async function runTool(name, input, preuves) {
   input = input || {};
   if (name === "list_sites") {
     return { sites: listSites() };
@@ -410,27 +411,32 @@ async function runTool(name, input) {
   if (name === "ask_agent_analytics") {
     return await askSpecialist(
       "Tu es l'Agent Analytics du dashboard PSA Site Factory. Analyse le trafic GA4 (site parent vs site de reprise), le funnel de conversion et Search Console a partir des donnees JSON fournies. Reponds en francais, de facon factuelle et chiffree (cite les vrais chiffres du JSON), en 4 a 8 phrases, sans jamais inventer de donnee absente du JSON.",
-      input.question, input.sites
+      input.question, input.sites, preuves
     );
   }
   if (name === "ask_agent_business") {
     return await askSpecialist(
       "Tu es l'Agent Business du dashboard PSA Site Factory. Analyse les leads (volume, repartition marque/carburant/source/code marketing/appareil) a partir des donnees JSON fournies. Reponds en francais, factuel et chiffre, en 4 a 8 phrases, sans jamais inventer de donnee absente du JSON.",
-      input.question, input.sites
+      input.question, input.sites, preuves
     );
   }
   if (name === "ask_agent_ux") {
     return await askSpecialist(
       "Tu es l'Agent UX du dashboard PSA Site Factory. Identifie les points de friction du parcours (chute entre etapes du funnel, ecarts mobile/desktop) a partir des donnees JSON fournies, et propose 1 a 3 actions concretes. Reponds en francais, factuel et chiffre, sans jamais inventer de donnee absente du JSON.",
-      input.question, input.sites
+      input.question, input.sites, preuves
     );
   }
   if (name === "get_series") {
     const result = getSeries(input.site, input.metric, input.months);
-    return result ? { ...result, synthese: syntheseSerie(result) } : { error: "Site ou metrique inconnu -- verifie avec list_sites." };
+    if (!result) return { error: "Site ou metrique inconnu -- verifie avec list_sites." };
+    const synthese = syntheseSerie(result);
+    if (preuves) { (preuves.brut = preuves.brut || []).push(JSON.stringify(result.values)); (preuves.calcule = preuves.calcule || []).push(JSON.stringify(synthese)); }
+    return { ...result, synthese };
   }
   if (name === "compare_to_peers") {
-    return compareToPeers(input.site, input.metric);
+    const r = compareToPeers(input.site, input.metric);
+    if (preuves) (preuves.calcule = preuves.calcule || []).push(typeof r === "string" ? r : JSON.stringify(r));
+    return r;
   }
   if (name === "ask_agent_dashboard") {
     return await runDashboardAgent(input.spec || "");
