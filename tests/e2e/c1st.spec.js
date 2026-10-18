@@ -112,7 +112,7 @@ test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à 
     { pays: "FR", marque: "AP", code: "0000013", nom: "MSCAR TEST", leads: 120, clients: 100, fca: 80, tot: 70, tov: 5, tr: 75, cot: 60, cov: 5, c: 65, eso: 0, es: 0, q: 30, o: 7, rel: 3 },
     { pays: "FR", marque: "AP", code: "0000022", nom: "SILENCE TEST", leads: 70, clients: 60, fca: 2, tot: 1, tov: 0, tr: 1, cot: 1, cov: 0, c: 2, eso: 0, es: 0, q: 5, o: 0, rel: 1 },
   ];
-  await page.route("**/data/c1st/reseau.json", (r) => r.fulfill({ json: { collecte: { date: "2026-10-18" }, contrats } }));
+  await page.route("**/data/c1st/reseau.json", (r) => r.fulfill({ json: { collecte: { date: "2026-10-18" }, contrats, commandes: [{ lead: "LEAD-A1", commande: "CMD-B2", code: "0000013", pays: "FR", marque: "AP", cree: "2026-10-02", jours: 12 }] } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", c1Onglet: "reseau", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
   await page.reload({ waitUntil: "networkidle" });
@@ -125,6 +125,7 @@ test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à 
   await expect(page.getByText("À traiter", { exact: true }).first()).toBeVisible();           // verdict de suivi du contrat SILENCE TEST (traités à l'heure < 70 %)
   await page.getByText("MSCAR TEST", { exact: true }).last().click();                        // clic sur la ligne : détail complet
   await expect(page.getByText("Traités hors délais").first()).toBeVisible();
+  await expect(page.getByText("LEAD-A1", { exact: false }).first()).toBeVisible();           // lien lead -> commande (identifiants seulement)
   // retour sur Leads Funnel
   await page.getByText("Leads Funnel", { exact: true }).click();
   await expect(page.getByText("Leads générés par mois").first()).toBeVisible();

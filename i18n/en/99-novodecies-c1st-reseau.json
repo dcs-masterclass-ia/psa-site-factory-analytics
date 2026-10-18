@@ -62,5 +62,7 @@
  "À relancer": "To relaunch",
  "commandes": "orders",
  "de conversion": "conversion",
- "statuts non saisis dans C1ST": "statuses not entered in C1ST"
+ "statuts non saisis dans C1ST": "statuses not entered in C1ST",
+ "Commandes rattachées à un lead (identifiants C1ST)": "Orders linked to a lead (C1ST identifiers)",
+ "Lead {0} → commande {1} · lead du {2} · {3}": "Lead {0} → order {1} · lead of {2} · {3}"
 }

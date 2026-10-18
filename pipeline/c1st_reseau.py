@@ -15,7 +15,7 @@ Mesures (clients uniques envoyés = dénominateur de tous les %) :
   q        clients avec devis                               HasQuotes = YES
   o        commandes liées au lead (1 à 90 jours)           unique(OrderIdwMailPhone)
   rel      leads à relancer                                 Status = ToRelaunch
-Seuls des comptages par contrat (sociétés) sont écrits : aucune donnée sur un client. Usage : python -m pipeline.c1st_reseau [--sortie data/c1st/reseau.json]
+Comptages par contrat (sociétés) + « commandes » : une ligne par commande rattachée à un lead (identifiants du lead et de la commande, date, délai : jamais de nom, mail ni téléphone). Usage : python -m pipeline.c1st_reseau [--sortie data/c1st/reseau.json]
 """
 
 import argparse
@@ -111,6 +111,35 @@ def collecte(client):
     return out
 
 
+def saql_commandes(ds):
+    """Une ligne par commande rattachée à un lead envoyé de la fenêtre : identifiants (lead, commande), contrat, date de création du lead, délai en jours. Ni nom, ni mail, ni téléphone."""
+    cond = ENVOYE + " && 'LeadConversionTimeMailPhone' >= 1 && 'LeadConversionTimeMailPhone' <= 90"
+    cle = f"'{P}Id', 'OrderIdwMailPhone', '{P}Partner_Contract', '{P}LeadCountry__c', '{P}PSABrand__c', '{P}CreatedDate_Year', '{P}CreatedDate_Month', '{P}CreatedDate_Day'"
+    sortie = (f"'{P}Id' as 'lead', 'OrderIdwMailPhone' as 'commande', '{P}Partner_Contract' as 'code', '{P}LeadCountry__c' as 'pays', '{P}PSABrand__c' as 'marque', "
+              f"'{P}CreatedDate_Year' as 'a', '{P}CreatedDate_Month' as 'm', '{P}CreatedDate_Day' as 'j', max('LeadConversionTimeMailPhone') as 'delai'")
+    return f"""q = load "{ds}";
+{filtres("q")}
+q = filter q by {cond};
+r = group q by ({cle});
+r = foreach r generate {sortie};
+r = limit r 10000;"""
+
+
+def collecte_commandes(client):
+    ds = client.version("dealer")
+    out = []
+    for r in client.requete(saql_commandes(ds)):
+        if not r.get("lead") or not r.get("commande"):
+            continue
+        try:
+            cree = f"{int(r['a']):04d}-{int(r['m']):02d}-{int(r['j']):02d}"
+        except (TypeError, ValueError, KeyError):
+            cree = None
+        out.append({"lead": r["lead"], "commande": r["commande"], "code": r.get("code"), "pays": r.get("pays"), "marque": r.get("marque"), "cree": cree, "jours": int(r.get("delai") or 0)})
+    out.sort(key=lambda c: (c["code"] or "", c["cree"] or "", c["lead"]))
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--sortie", default=str(FICHIER))
@@ -122,6 +151,11 @@ def main(argv=None):
         return 3
     client = Client(token, instance)
     contrats = collecte(client)
+    try:
+        commandes = collecte_commandes(client)
+    except Exception as e:                       # le détail des commandes est un plus : on garde le reste
+        print(f"Commandes par lead non collectées : {e}", file=sys.stderr)
+        commandes = []
     if not contrats:
         print("Aucun contrat collecté : fichier existant conservé", file=sys.stderr)
         return 1
@@ -131,7 +165,7 @@ def main(argv=None):
         "collecte": {"date": date.today().isoformat(), "fenetre": "du même jour il y a 1 mois au jour de la collecte (fenêtre glissante, comme le tableau de bord C1ST Network Vision)",
                      "source": "C1ST (CRM Analytics), jeu PruebaDealer3MLNV ; comptages par contrat concessionnaire, aucune donnée sur un client"},
         "perimetre": "leads de reprise (campagne Autobiz), type 1, VN, B2B/B2C, circuit BRAND ou Central, hors « SOL ready for order », liste noire et tests",
-        "contrats": contrats}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        "contrats": contrats, "commandes": commandes}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"C1ST réseau : {len(contrats)} lignes (contrat × marque × marché), {sum(c['clients'] for c in contrats)} clients uniques envoyés")
     return 0
 
