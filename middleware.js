@@ -115,6 +115,20 @@ async function cookieC1stValide(email, valeur) {
   return diff === 0;
 }
 
+// Adresses suspendues (3 codes C1ST faux) : c1st/bans.json du repo de donnees prive, 15 s de cache. Illisible : derniere valeur connue (jamais de blocage general pour une panne GitHub).
+let bansCache = null, bansLu = 0;
+async function suspendue(email) {
+  if (bansCache === null || Date.now() - bansLu >= 15000) {
+    try {
+      const r = await fetch(`https://api.github.com/repos/${process.env.KAMIA_STORE_REPO || "dcs-masterclass-ia/psa-site-factory-data"}/contents/c1st/bans.json?ref=${process.env.KAMIA_STORE_BRANCH || "main"}`,
+        { headers: { Authorization: `Bearer ${process.env.DATA_REPO_TOKEN}`, Accept: "application/vnd.github.raw+json", "X-GitHub-Api-Version": "2022-11-28" } });
+      if (r.status === 404) { bansCache = {}; bansLu = Date.now(); }
+      else if (r.ok) { const j = await r.json(); bansCache = (j && j.bans) || {}; bansLu = Date.now(); }
+    } catch (e) { /* garde la derniere valeur */ }
+  }
+  return !!(bansCache && bansCache[String(email).toLowerCase()]);
+}
+
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
   headers: { "content-type": "application/json" },
@@ -140,6 +154,7 @@ export default async function middleware(request) {
   const session = await verifySession(cookies.psf_session, secret);
   const role = session ? roleFor(session.email) : null;
   if (!role) return json(401, { error: "Non authentifie." });
+  if (await suspendue(session.email)) return json(403, { error: "Acces suspendu. Contacte l'administrateur.", suspendu: true });
   // C1ST (données CRM Salesforce) : réservé aux adresses de PRESENTATIONS_EMAILS, comme l'onglet Présentations.
   if (/^\/data\/c1st(\/|$)/i.test(new URL(request.url).pathname) && !parseList(process.env.PRESENTATIONS_EMAILS).includes(String(session.email || "").toLowerCase())) {
     return json(403, { error: "Acces non autorise pour ce profil." });
