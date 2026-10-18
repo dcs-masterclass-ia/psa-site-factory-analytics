@@ -2846,17 +2846,20 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-            <div><div style="font-size:15px;font-weight:600;color:#121214">Summary Table</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">Un contrat par ligne ({{ c1RsNb }} contrats). Dénominateur de tous les % : clients uniques envoyés. Vert / orange / rouge : seuils de C1ST (dans les délais : 70 % et 90 % ; commandes : 5 % et 6 %).</div></div>
+            <div><div style="font-size:15px;font-weight:600;color:#121214">Summary Table</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px;max-width:760px;line-height:1.5">Un contrat par ligne ({{ c1RsNb }} contrats), les taux clés d'un coup d'œil. Clique sur une ligne pour le détail complet. Vert / orange / rouge : seuils de C1ST (traités à l'heure : 70 % et 90 % ; commandes : 5 % et 6 %). Les % sont rapportés aux clients uniques envoyés.</div></div>
             <input type="text" value="{{ c1RsQuery }}" onInput="{{ c1RsOnSearch }}" placeholder="Rechercher un contrat ou un code…" style="min-width:230px;border:1px solid #e8e8ec;border-radius:10px;padding:8px 12px;font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;outline:none">
           </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><sc-for list="{{ c1RsChipsTri }}" as="c" hint-placeholder-count="4"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
-          <div style="overflow-x:auto;margin-top:12px">
-            <div style="min-width:1700px">
-              <div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:8px 4px;font-size:12px;font-weight:600;color:#6d727a;border-bottom:2px solid #e4e4e8;align-items:end"><sc-for list="{{ c1RsHead }}" as="h" hint-placeholder-count="22"><span>{{ h }}</span></sc-for></div>
-              <sc-for list="{{ c1RsRows }}" as="r" hint-placeholder-count="10"><div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:7px 4px;border-bottom:1px solid #f1f1f3;align-items:center;font-size:13px"><span style="color:#9a9fa6">{{ r.code }}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#121214;font-weight:500" title="{{ r.nom }}">{{ r.nom }}</span><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="20"><span style="{{ c.s }}">{{ c.t }}</span></sc-for></div></sc-for>
-              <div style="display:grid;grid-template-columns:{{ c1RsCols }};gap:8px;padding:9px 4px;border-top:2px solid #e4e4e8;align-items:center;font-size:13px;font-weight:700;background:#f7f6fb"><span>{{ c1RsTotRow.code }}</span><span>{{ c1RsTotRow.nom }}</span><sc-for list="{{ c1RsTotRow.cells }}" as="c" hint-placeholder-count="20"><span style="{{ c.s }}">{{ c.t }}</span></sc-for></div>
-            </div>
-          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px"><sc-for list="{{ c1RsChipsFiltre }}" as="c" hint-placeholder-count="5"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
+          <div style="overflow-x:auto;margin-top:12px"><div style="min-width:880px">
+            <div style="display:grid;grid-template-columns:minmax(200px,2.2fr) 112px repeat(5,minmax(92px,1fr)) 110px;gap:14px;align-items:center;padding:8px 6px;border-bottom:2px solid #e4e4e8"><sc-for list="{{ c1RsHeads }}" as="h" hint-placeholder-count="7"><span onClick="{{ h.pick }}" style="{{ h.st }}">{{ h.label }}{{ h.arrow }}</span></sc-for><span style="font-size:12.5px;font-weight:600;color:#6d727a">Suivi</span></div>
+            <div style="display:grid;grid-template-columns:minmax(200px,2.2fr) 112px repeat(5,minmax(92px,1fr)) 110px;gap:14px;align-items:center;padding:11px 6px;{{ c1RsTotRow.rowSt }}"><span style="font-size:14px;font-weight:700;color:#121214">{{ c1RsTotRow.nom }}</span><span style="text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:#121214;font-size:14px">{{ c1RsTotRow.leads }}</span><sc-for list="{{ c1RsTotRow.cells }}" as="c" hint-placeholder-count="5"><div style="min-width:0"><div style="{{ c.st }}">{{ c.pct }}</div><div style="height:5px;border-radius:3px;background:#f2f2f4;margin-top:4px"><div style="{{ c.bar }}"></div></div></div></sc-for><span></span></div>
+            <sc-for list="{{ c1RsRows }}" as="r" hint-placeholder-count="10">
+              <div onClick="{{ r.pick }}" style="cursor:{{ r.cursor }};{{ r.rowSt }}" style-hover="background:#faf9fe">
+                <div style="display:grid;grid-template-columns:minmax(200px,2.2fr) 112px repeat(5,minmax(92px,1fr)) 110px;gap:14px;align-items:center;padding:11px 6px"><div style="min-width:0"><div style="font-size:14px;font-weight:600;color:#121214;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ r.nom }}">{{ r.nom }}</div><div style="font-size:12px;color:#9a9fa6">{{ r.code }}</div></div><span style="text-align:right;font-variant-numeric:tabular-nums;color:#2f2f33;font-size:14px">{{ r.leads }}</span><sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="5"><div style="min-width:0"><div style="{{ c.st }}">{{ c.pct }}</div><div style="height:5px;border-radius:3px;background:#f2f2f4;margin-top:4px"><div style="{{ c.bar }}"></div></div></div></sc-for><span style="justify-self:start;{{ r.verdictSt }}">{{ r.verdict }}</span></div>
+                <sc-if value="{{ r.open }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px 22px;padding:4px 14px 14px;background:#faf9fe"><sc-for list="{{ r.detail }}" as="d" hint-placeholder-count="12"><div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;border-bottom:1px dashed #e9e7f5;padding:4px 0"><span style="color:#6d727a">{{ d.k }}</span><b style="color:#121214;font-variant-numeric:tabular-nums">{{ d.v }}</b></div></sc-for></div></sc-if>
+              </div>
+            </sc-for>
+          </div></div>
           <sc-if value="{{ c1RsHasPlus }}" hint-placeholder-val="{{ false }}"><div style="margin-top:12px"><span onClick="{{ c1RsPlus.pick }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer">{{ c1RsPlus.label }}</span></div></sc-if>
         </div>
         <sc-if value="{{ c1RsHasLectures }}" hint-placeholder-val="{{ false }}">
@@ -6139,22 +6142,35 @@ class Component extends DCLogic {
     const c1RsKpis=c1RsHas?[['UNIQUE LEADS',c1Nf(c1RsTot.clients),null],['1° call attempt on time',rsPc(rsP(c1RsTot.fca,c1RsTot.clients)),rsTon(rsP(c1RsTot.fca,c1RsTot.clients))],['Treated on time',rsPc(rsP(c1RsTot.tot,c1RsTot.clients)),rsTon(rsP(c1RsTot.tot,c1RsTot.clients))],
       ['Contacted on time',rsPc(rsP(c1RsTot.cot,c1RsTot.clients)),rsTon(rsP(c1RsTot.cot,c1RsTot.clients))],['Contacted',rsPc(rsP(c1RsTot.c,c1RsTot.clients)),null],['With quote',rsPc(rsP(c1RsTot.q,c1RsTot.clients)),null],['Orders',rsPc(rsP(c1RsTot.o,c1RsTot.clients)),rsCmd(rsP(c1RsTot.o,c1RsTot.clients))]].map(([lib,val,col])=>({lib:T(lib),val,
         st:`font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:${col?col[1]:'#121214'}`})):[];
+    // Summary Table : une synthèse lisible (cinq taux clés en barres colorées, un verdict de suivi par contrat), le détail complet s'ouvre au clic sur la ligne
+    const RS_VERT='#3fae7a', RS_ORANGE='#f2b36b', RS_ROUGE='#e8544a', RS_VIOLET='#7c63ee';
+    const rsCoul=(v,type)=>v===null?'#c8c8ce':type==='cmd'?(v<5?RS_ROUGE:v<6?RS_ORANGE:RS_VERT):type==='ton'?(v<70?RS_ROUGE:v<90?RS_ORANGE:RS_VERT):RS_VIOLET;      // seuils de C1ST
+    const rsVerdict=r=>{ if(r.clients<20) return {k:'faible',label:T('Faible volume'),st:'color:#6d727a;background:#f1f1f4'}; const p=r.tot/r.clients*100;
+      return p>=90?{k:'bien',label:T('Bien suivi'),st:'color:#1f7a4a;background:#dcf1e5'}:p>=70?{k:'surveiller',label:T('À surveiller'),st:'color:#9a6b00;background:#fbecd2'}:{k:'traiter',label:T('À traiter'),st:'color:#a33c39;background:#fbe1df'}; };
+    const rsCellule=(v,type,lib)=>({lib,pct:rsPc(v,v!==null&&v>0&&v<10?1:0),bar:`width:${v===null?0:Math.max(v>0?3:0,Math.min(100,v)).toFixed(1)}%;height:100%;border-radius:3px;background:${rsCoul(v,type)}`,
+      st:`font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:${v===null?'#9a9fa6':type?rsCoul(v,type)==='#e8544a'?'#c4413a':'#121214':'#121214'}`});
     const c1RsMails=c1RsTot.es>0;
-    const c1RsHead=['Code','Contrat','Leads envoyés','Leads uniques','1° appel dans les délais','%','Traités dans les délais','%','Traités hors délais','%','Traités','%','Contactés dans les délais','%','Contactés hors délais','%','Contactés','%'].concat(c1RsMails?['E-mails envoyés','%','E-mails dans les délais','%']:[]).concat(['Avec devis','%','Commandes','%']);
-    const c1RsCols=`minmax(90px,.7fr) minmax(220px,2.6fr) repeat(${c1RsHead.length-2},minmax(68px,1fr))`;
-    const c1RsLigne=r=>{ const cl=r.clients, pc=f=>rsP(r[f],cl); const cells=[rsNum(r.leads),rsNum(cl),rsNum(r.fca),rsCell(pc('fca'),rsTon(pc('fca'))),rsNum(r.tot),rsCell(pc('tot'),rsTon(pc('tot'))),rsNum(r.tov),rsCell(pc('tov')),rsNum(r.tr),rsCell(pc('tr')),
-        rsNum(r.cot),rsCell(pc('cot'),rsTon(pc('cot'))),rsNum(r.cov),rsCell(pc('cov')),rsNum(r.c),rsCell(pc('c'))].concat(c1RsMails?[rsNum(r.es),rsCell(pc('es')),rsNum(r.eso),rsCell(pc('eso'))]:[]).concat([rsNum(r.q),rsCell(pc('q')),rsNum(r.o),rsCell(pc('o'),rsCmd(pc('o')))]);
-      return {code:r.code,nom:r.nom,cells,haystack:(r.code+' '+r.nom).toLowerCase()}; };
-    const RS_TRIS=[['clients','Leads uniques'],['pc','% contactés'],['pf','% 1er appel'],['po','% commandes']];
+    const rsDetail=r=>{ const cl=r.clients, pc=f=>cl?rsPc(r[f]/cl*100,1):'–'; const d=[['Leads envoyés',c1Nf(r.leads)],['Leads uniques',c1Nf(cl)],['1° appel dans les délais',c1Nf(r.fca)+' · '+pc('fca')],['Traités dans les délais',c1Nf(r.tot)+' · '+pc('tot')],['Traités hors délais',c1Nf(r.tov)+' · '+pc('tov')],['Traités',c1Nf(r.tr)+' · '+pc('tr')],
+        ['Contactés dans les délais',c1Nf(r.cot)+' · '+pc('cot')],['Contactés hors délais',c1Nf(r.cov)+' · '+pc('cov')],['Contactés',c1Nf(r.c)+' · '+pc('c')],['Avec devis',c1Nf(r.q)+' · '+pc('q')],['Commandes',c1Nf(r.o)+' · '+pc('o')],['À relancer',c1Nf(r.rel)]];
+      if(c1RsMails) d.splice(9,0,['E-mails envoyés',c1Nf(r.es)+' · '+pc('es')],['E-mails dans les délais',c1Nf(r.eso)+' · '+pc('eso')]); return d.map(([k,v])=>({k:T(k),v})); };
+    const c1RsLigne=(r,total)=>{ const cl=r.clients, pc=f=>rsP(r[f],cl); const key=r.code+'|'+r.nom; const ouvert=!total&&st.c1RsOuvert===key; const vd=total?null:rsVerdict(r);
+      return {key,code:r.code,nom:r.nom,leads:c1Nf(cl),verdict:vd?vd.label:'',verdictSt:vd?'font-size:12px;font-weight:600;border-radius:8px;padding:3px 9px;white-space:nowrap;'+vd.st:'',hasVerdict:!!vd,
+        cells:[rsCellule(pc('fca'),'ton',T('1° appel')),rsCellule(pc('c'),null,T('Contactés')),rsCellule(pc('tot'),'ton',T('Traités à l\'heure')),rsCellule(pc('q'),null,T('Devis')),rsCellule(pc('o'),'cmd',T('Commandes'))],
+        open:ouvert, detail:ouvert?rsDetail(r):[], pick:total?(()=>{}):(()=>set({c1RsOuvert:ouvert?null:key})), cursor:total?'default':'pointer', rowSt:total?'background:#f7f6fb;border-top:2px solid #e4e4e8;border-bottom:1px solid #f1f1f3':'border-bottom:1px solid #f1f1f3'}; };
+    const RS_TRIS=[['clients','Leads uniques'],['pf','1° appel'],['pc','Contactés'],['pt','Traités à l\'heure'],['pq','Devis'],['po','Commandes']];
     const c1RsTri=RS_TRIS.some(x=>x[0]===st.c1RsTri)?st.c1RsTri:'clients';
-    const c1RsVal=(r,k)=>k==='clients'?r.clients:k==='pc'?(r.clients?r.c/r.clients:-1):k==='pf'?(r.clients?r.fca/r.clients:-1):(r.clients?r.o/r.clients:-1);
+    const c1RsVal=(r,k)=>{ const cl=r.clients; return k==='clients'?cl:!cl?-1:k==='pf'?r.fca/cl:k==='pc'?r.c/cl:k==='pt'?r.tot/cl:k==='pq'?r.q/cl:r.o/cl; };
+    const c1RsHeads=[['','Contrat'],['clients','Leads uniques']].concat(RS_TRIS.slice(1).map(x=>[x[0],x[1]])).map(([k,l])=>({label:T(l),k,pick:k?()=>set({c1RsTri:k}):()=>{},st:`font-size:12.5px;font-weight:600;cursor:${k?'pointer':'default'};white-space:nowrap;${k&&k===c1RsTri?'color:#5b43d6':'color:#6d727a'};${k&&k!=='clients'?'':k==='clients'?'text-align:right':''}`,arrow:k&&k===c1RsTri?' ▾':''}));
+    const c1RsVerdicts=c1RsTous.map(r=>rsVerdict(r).k);
+    const RS_FILTRES=[['tous','Tous'],['traiter','À traiter'],['surveiller','À surveiller'],['bien','Bien suivis'],['faible','Faible volume']];
+    const c1RsFiltre=RS_FILTRES.some(x=>x[0]===st.c1RsFiltre)?st.c1RsFiltre:'tous';
+    const c1RsChipsFiltre=RS_FILTRES.map(([v,l])=>{ const n=v==='tous'?c1RsTous.length:c1RsVerdicts.filter(x=>x===v).length; return {label:T(l)+' ('+c1Nf(n)+')',pick:()=>set({c1RsFiltre:v,c1RsTous:false}),style:this.prChipLite(c1RsFiltre===v)}; });
     const c1RsQ=String(st.c1RsQ||'').trim().toLowerCase();
-    const c1RsFiltres=c1RsTous.filter(r=>!c1RsQ||(r.code+' '+r.nom).toLowerCase().includes(c1RsQ)).sort((a,b)=>c1RsVal(b,c1RsTri)-c1RsVal(a,c1RsTri));
-    const c1RsMax=st.c1RsTous?c1RsFiltres.length:50;
-    const c1RsRows=c1RsFiltres.slice(0,c1RsMax).map(c1RsLigne);
-    const c1RsTotRow=c1RsLigne(Object.assign({},c1RsTot,{code:'Total',nom:'—'}));
-    const c1RsChipsTri=RS_TRIS.map(([v,l])=>({label:T('Trier par')+' '+T(l).toLowerCase(),pick:()=>set({c1RsTri:v}),style:this.prChipLite(c1RsTri===v)}));
-    const c1RsPlus=c1RsFiltres.length>50?{label:st.c1RsTous?T('Réduire à 50 contrats'):T('Voir les')+' '+c1RsFiltres.length+' '+T('contrats'),pick:()=>set({c1RsTous:!st.c1RsTous})}:null;
+    const c1RsFiltres=c1RsTous.filter(r=>(c1RsFiltre==='tous'||rsVerdict(r).k===c1RsFiltre)&&(!c1RsQ||(r.code+' '+r.nom).toLowerCase().includes(c1RsQ))).sort((a,b)=>c1RsVal(b,c1RsTri)-c1RsVal(a,c1RsTri)||b.clients-a.clients);
+    const c1RsMax=st.c1RsTous?c1RsFiltres.length:30;
+    const c1RsRows=c1RsFiltres.slice(0,c1RsMax).map(r=>c1RsLigne(r,false));
+    const c1RsTotRow=c1RsLigne(Object.assign({},c1RsTot,{code:'',nom:T('Ensemble de la sélection')}),true);
+    const c1RsPlus=c1RsFiltres.length>30?{label:st.c1RsTous?T('Réduire à 30 contrats'):T('Voir les')+' '+c1RsFiltres.length+' '+T('contrats'),pick:()=>set({c1RsTous:!st.c1RsTous})}:null;
     // entonnoir réseau (part des clients uniques envoyés)
     const c1RsFun=c1RsHas?[['Clients uniques envoyés',c1RsTot.clients,'#cfc4fb'],['1° appel dans les délais',c1RsTot.fca,'#b6a5f8'],['Contactés',c1RsTot.c,'#a794f6'],['Traités',c1RsTot.tr,'#8f78f1'],['Avec devis',c1RsTot.q,'#4fb67f'],['Commandes',c1RsTot.o,'#1f9254']].map(([l,v,c])=>c1Bar(T(l),v,c1RsTot.clients,c)):[];
     // répartition des contrats (au moins 20 clients) selon leur taux de contact
@@ -7720,7 +7736,7 @@ class Component extends DCLogic {
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
       histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isGeo:gaCur==='geo', isProfil:gaCur==='profil', isSources:gaCur==='sources', isEntree:gaCur==='entree', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', v2ModeChips, v2PreChips, v2IsBascule:v2Mode==='bascule', v2Warn, v2WarnOn:!!v2Warn, v2WarnAction, v2WarnPick:()=>set({v2Mode:'bascule'}), gaThemes, gaViews, gaThemeQuestion,
-      c1RsHas, c1RsKpis, c1RsHead, c1RsCols, c1RsRows, c1RsTotRow, c1RsChipsTri, c1RsPlus, c1RsHasPlus:!!c1RsPlus, c1RsFun, c1RsDistrib, c1RsHasDistrib:c1RsDistrib.length>0, c1RsSilence, c1RsHasSilence:c1RsSilence.length>0, c1RsMeilleurs, c1RsHasMeilleurs:c1RsMeilleurs.length>0, c1RsDate, c1RsLectures, c1RsHasLectures:c1RsLectures.length>0, c1RsQuery:st.c1RsQ||'', c1RsOnSearch:e=>set({c1RsQ:e.target.value}), c1VideF:c1Vide&&c1IsFunnel, c1RsNb:c1RsFiltres.length,
+      c1RsHas, c1RsKpis, c1RsHeads, c1RsRows, c1RsTotRow, c1RsChipsFiltre, c1RsPlus, c1RsHasPlus:!!c1RsPlus, c1RsFun, c1RsDistrib, c1RsHasDistrib:c1RsDistrib.length>0, c1RsSilence, c1RsHasSilence:c1RsSilence.length>0, c1RsMeilleurs, c1RsHasMeilleurs:c1RsMeilleurs.length>0, c1RsDate, c1RsLectures, c1RsHasLectures:c1RsLectures.length>0, c1RsQuery:st.c1RsQ||'', c1RsOnSearch:e=>set({c1RsQ:e.target.value}), c1VideF:c1Vide&&c1IsFunnel, c1RsNb:c1RsFiltres.length,
       c1PuceA, c1PuceB, c1PuceC, c1PuceD, c1IcoLeads, c1IcoStatut, c1IcoAppel, c1IcoContact, c1IcoDevis, c1IcoCmd,
       c1Onglets, c1HasOnglets:c1ReseauOk, c1IsFunnel, c1IsReseau, c1HasPanels, c1PanLeads, c1PanPremierAppel, c1PanContactes, c1PanDevis, c1PanCommandes, c1StatRows, c1HasStat, c1Taux, c1HasTaux,
       entryHas, entryBarA, entryBarB, entryAvecTxt, entryManuelTxt, entryTotalTxt,

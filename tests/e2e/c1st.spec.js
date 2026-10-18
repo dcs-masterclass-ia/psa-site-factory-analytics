@@ -122,6 +122,9 @@ test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à 
   await expect(page.getByText("MSCAR TEST", { exact: true }).first()).toBeVisible();
   await expect(page.getByText("À traiter en priorité").first()).toBeVisible();                // SILENCE TEST : 60 clients, 3 % contactés
   await expect(page.getByText("SILENCE TEST").first()).toBeVisible();
+  await expect(page.getByText("À traiter", { exact: true }).first()).toBeVisible();           // verdict de suivi du contrat SILENCE TEST (traités à l'heure < 70 %)
+  await page.getByText("MSCAR TEST", { exact: true }).last().click();                        // clic sur la ligne : détail complet
+  await expect(page.getByText("Traités hors délais").first()).toBeVisible();
   // retour sur Leads Funnel
   await page.getByText("Leads Funnel", { exact: true }).click();
   await expect(page.getByText("Leads générés par mois").first()).toBeVisible();

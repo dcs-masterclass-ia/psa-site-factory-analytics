@@ -8,7 +8,6 @@
  "À traiter en priorité": "To handle first",
  "Les mieux suivis": "Best followed",
  "Contrats d'au moins 50 clients, par part de leads traités dans les délais.": "Contracts with at least 50 customers, by share of leads treated on time.",
- "Un contrat par ligne ({0} contrats). Dénominateur de tous les % : clients uniques envoyés. Vert / orange / rouge : seuils de C1ST (dans les délais : 70 % et 90 % ; commandes : 5 % et 6 %).": "One contract per row ({0} contracts). Denominator of all %: unique customers sent. Green / orange / red: C1ST thresholds (on time: 70% and 90%; orders: 5% and 6%).",
  "Rechercher un contrat ou un code…": "Search a contract or a code…",
  "Leads de reprise (campagne Autobiz), type 1, VN, B2B / B2C, circuit BRAND ou Central, hors « SOL ready for order », liste noire et tests. Les chiffres du tableau de bord C1ST couvrent tous les leads du réseau : ici, seuls les leads de reprise.": "Trade-in leads (Autobiz campaign), type 1, VN, B2B / B2C, BRAND or Central channel, excluding “SOL ready for order”, black list and tests. The C1ST dashboard figures cover all leads of the network: here, trade-in leads only.",
  "Code": "Code",
@@ -46,5 +45,19 @@
  "75 % et plus": "75% and above",
  "contrats avec au moins 50 leads ont contacté moins de 10 % de leurs clients : voir « À traiter en priorité ».": "contracts with at least 50 leads contacted fewer than 10% of their customers: see “To handle first”.",
  "Le 1° appel dans les délais est sous le seuil de 70 % de C1ST (rouge).": "First call on time is below C1ST's 70% threshold (red).",
- "Contrats d'au moins 50 clients qui ont contacté moins de 10 % de leurs leads (0 % peut aussi vouloir dire statuts non saisis dans C1ST).": "Contracts with at least 50 customers that contacted fewer than 10% of their leads (0% can also mean statuses not entered in C1ST)."
+ "Contrats d'au moins 50 clients qui ont contacté moins de 10 % de leurs leads (0 % peut aussi vouloir dire statuts non saisis dans C1ST).": "Contracts with at least 50 customers that contacted fewer than 10% of their leads (0% can also mean statuses not entered in C1ST).",
+ "Un contrat par ligne ({0} contrats), les taux clés d'un coup d'œil. Clique sur une ligne pour le détail complet. Vert / orange / rouge : seuils de C1ST (traités à l'heure : 70 % et 90 % ; commandes : 5 % et 6 %). Les % sont rapportés aux clients uniques envoyés.": "One contract per row ({0} contracts), key rates at a glance. Click a row for the full detail. Green / orange / red: C1ST thresholds (treated on time: 70% and 90%; orders: 5% and 6%). All % are over unique customers sent.",
+ "Suivi": "Follow-up",
+ "Bien suivi": "Well followed",
+ "À surveiller": "To watch",
+ "À traiter": "To handle",
+ "Faible volume": "Low volume",
+ "Tous": "All",
+ "Bien suivis": "Well followed",
+ "1° appel": "1st call",
+ "Traités à l'heure": "Treated on time",
+ "Devis": "Quotes",
+ "Ensemble de la sélection": "Whole selection",
+ "Réduire à 30 contrats": "Show 30 contracts only",
+ "À relancer": "To relaunch"
 }
