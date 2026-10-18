@@ -3202,7 +3202,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ prMsgOn }}" hint-placeholder-val="{{ false }}"><div style="{{ prMsgStyle }}">{{ prMsgText }}</div></sc-if>
 
         <sc-if value="{{ prIsNew }}" hint-placeholder-val="{{ true }}">
-        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);gap:15px;align-items:start">
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);gap:15px;align-items:stretch">
           <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
           <div style="{{ stp1_cardStyle }}">
             <div onClick="{{ stp1_toggle }}" style="{{ stp1_head }}">
@@ -3403,8 +3403,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </div>
 
-          <div style="position:sticky;top:0;display:flex;flex-direction:column;gap:12px;min-width:0">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;flex:1;display:flex;flex-direction:column">
               <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:12px">Plan de la présentation</div>
               <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Modèle</span><span style="color:#121214;text-align:right">{{ prSumTpl }}</span></div>
@@ -3433,7 +3433,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <sc-if value="{{ prQaOn }}" hint-placeholder-val="{{ false }}"><div style="{{ prQaStyle }}">{{ prQaTxt }}</div></sc-if>
                 <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;text-align:center">La génération enregistre automatiquement ta présentation, puis la prépare en 2 à 4 minutes.</div>
               </div>
-              <div style="border-top:1px solid #f2f2f4;margin-top:14px;padding-top:12px;display:flex;flex-direction:column;gap:12px">
+              <div style="border-top:1px solid #f2f2f4;margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:12px">
                 <div>
                   <span onClick="{{ prDraftFn }}" style="font-size:13px;font-weight:500;color:#3b76e8;cursor:pointer">{{ prDraftLabel }}</span>
                   <div style="font-size:11.5px;color:#9a9fa6;line-height:1.5;margin-top:2px">Garde cette présentation dans « Mes présentations » pour la reprendre plus tard, sans la générer.</div>
@@ -3467,8 +3467,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
             <sc-if value="{{ prNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun brief enregistré pour l'instant.</div></sc-if>
             <div style="font-size:13.5px;color:#c24a44">{{ prErr }}</div>
-            <sc-for list="{{ prRows }}" as="b" hint-placeholder-count="3">
-              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 4px;border-top:1px solid #f2f2f4">
+            <sc-if value="{{ prHasUsers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><sc-for list="{{ prUsers }}" as="u" hint-placeholder-count="3"><span onClick="{{ u.pick }}" style="{{ u.style }}">{{ u.label }}</span></sc-for></div></sc-if>
+            <sc-for list="{{ prTree }}" as="b" hint-placeholder-count="3">
+              <sc-if value="{{ b.isDossier }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ b.toggle }}" style="{{ b.dossierStyle }}"><span style="display:inline-block;width:14px;color:#9a9fa6;font-size:11px">{{ b.chevron }}</span><span style="font-weight:600;color:#121214">{{ b.label }}</span><span style="font-size:12px;color:#9a9fa6">{{ b.count }}</span></div>
+              </sc-if>
+              <sc-if value="{{ !b.isDossier }}" hint-placeholder-val="{{ true }}">
+              <div style="{{ b.rowStyle }}">
                 <div style="flex:1;min-width:220px"><div style="font-size:14.5px;font-weight:500;color:#121214">{{ b.titre }}</div><div style="font-size:12.5px;color:#9a9fa6">{{ b.client }} · {{ b.meta }}</div></div>
                 <span style="font-size:11px;font-weight:600;color:#6d727a;background:#f2f2f5;border-radius:999px;padding:3px 10px">{{ b.statut }}</span>
                 <span style="font-size:12px;color:#9a9fa6;white-space:nowrap">{{ b.qui }}</span>
@@ -3477,6 +3482,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span onClick="{{ b.dup }}" style="font-size:13px;color:#6d727a;cursor:pointer">Dupliquer</span>
                 <sc-if value="{{ b.canDel }}" hint-placeholder-val="{{ false }}"><span onClick="{{ b.del }}" style="{{ b.delStyle }}">{{ b.delLabel }}</span></sc-if>
               </div>
+              </sc-if>
             </sc-for>
           </div>
         </sc-if>
@@ -7501,7 +7507,7 @@ class Component extends DCLogic {
       onStatut:ev=>prActSet(i,{statut:ev.target.value.slice(0,600).split('\n')}),
       remove:()=>prSet({actionsEnCours:pr.actionsEnCours.filter((_,j)=>j!==i)}) }));
     const prApi = async body => { const r=await fetch('/api/presentations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); let j=null; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error((j&&j.error)||('Erreur '+r.status)); return j; };
-    const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
+    const prCharge = async () => { try { const r=await fetch('/api/presentations'); const j=await r.json(); if(!r.ok) throw new Error((j&&j.error)||'Erreur '+r.status); this._pr={ list:j.briefs||[], templates:j.templates||[], moi:j.moi, admin:!!j.admin }; } catch(e) { this._pr=Object.assign({},this._pr,{err:'Chargement des briefs impossible.'}); } this.setState({prTick:Date.now()}); };
     const prCur = pr.id ? (((this._pr&&this._pr.list)||[]).find(x=>x.id===pr.id)||null) : null;
     const prQa = prCur&&prCur.statut==='generee'&&prCur.qa&&typeof prCur.qa==='object' ? prCur.qa : null;   // contrôle qualité des chiffres (pipeline/deck/qa.py)
     const prContenuOpen = !!st.prContenuOpen;   // module « Contenu » replié par défaut
@@ -7579,8 +7585,34 @@ class Component extends DCLogic {
       open:()=>set({pr:prFromBrief(b), prTab:'nouveau', prMsg:null, prStep:undefined, prUnlock:false, prConfirm:false, prTried:{}}),
       dup:()=>set({pr:Object.assign(prFromBrief(b),{id:null,titre:b.titre+' (copie)',tplId:'copie',tplNom:'Copie de « '+b.titre+' »'}), prTab:'nouveau', prStep:undefined, prUnlock:false, prConfirm:false, prTried:{}, prMsg:{ok:true,text:'Copie de « '+b.titre+' » : modifie ce qu\'il faut, puis génère ou enregistre.'}}),
       delLabel:st.prDel===b.id?'Confirmer ?':'Supprimer', delStyle:'font-size:12.5px;cursor:pointer;color:'+(st.prDel===b.id?'#c24a44':'#9a9fa6')+';'+(st.prDel===b.id?'font-weight:600':''),
-      canDel:b.auteur===((this._pr&&this._pr.moi)||''),
+      canDel:!!(this._pr&&this._pr.admin)||b.auteur===((this._pr&&this._pr.moi)||''),
       del:async()=>{ if (st.prDel!==b.id) { set({prDel:b.id}); return; } try { await prApi({action:'delete',id:b.id}); this._pr=Object.assign({},this._pr,{list:this._pr.list.filter(x=>x.id!==b.id)}); this.setState({prDel:null, prMsg:null, pr:(pr.id===b.id?Object.assign({},pr,{id:null}):pr)}); } catch(e) { this.setState({prDel:null, prMsg:{ok:false,text:e.message}}); } } }));
+    // « Mes présentations » rangées en dossiers : (administrateur : utilisateur >) pays > année > période (mois, trimestre, semestre ou année) ; le serveur ne renvoie que les présentations de l'appelant (toutes pour l'administrateur)
+    const prAdmin=!!(this._pr&&this._pr.admin);
+    const PR_PAYS_NOMS={FR:'France',BE:'Belgique',LU:'Luxembourg',ES:'Espagne',PT:'Portugal',IT:'Italie',DE:'Allemagne',PL:'Pologne',AT:'Autriche',GB:'Royaume-Uni',UK:'Royaume-Uni'};
+    const prPaysDossier=b=>{ const ps=[...new Set(((b.perimetre&&b.perimetre.pays)||[]).map(x=>String(x).toUpperCase()))].sort(); return ps.length===2&&ps[0]==='BE'&&ps[1]==='LU'?'BELUX (Belgique + Luxembourg)':ps.length===1?(PR_PAYS_NOMS[ps[0]]||ps[0]):ps.length?'Multi-pays':'Pays non précisé'; };
+    const prUserNom=b=>String(b.auteur||'?').split('@')[0].split(/[._-]/).filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+    const prPerLabel=b=>{ const p=prNormPeriode(b.periode); return p.type==='mois'?PR_MOIS[(p.indice||1)-1]:p.type==='trimestre'?'T'+p.indice:p.type==='semestre'?'S'+p.indice:'Année complète'; };
+    const prPerOrdre=b=>{ const p=prNormPeriode(b.periode); return p.type==='annee'?0:(p.type==='semestre'?100:p.type==='trimestre'?200:300)+(p.indice||0); };
+    const prListe=((this._pr&&this._pr.list)||[]);
+    const prUsersAll=[...new Set(prListe.map(prUserNom))].sort();
+    const prUserSel=prAdmin&&prUsersAll.includes(st.prUser)?st.prUser:'';
+    const prUsers=prAdmin&&prUsersAll.length>1?[''].concat(prUsersAll).map(u=>({ label:(u||T('Tous'))+' ('+(u?prListe.filter(b=>prUserNom(b)===u).length:prListe.length)+')', pick:()=>set({prUser:u}), style:this.prChipLite(prUserSel===u) })):[];
+    const prFermes=st.prFermes||{};
+    const prTree=[];
+    { const items=prListe.map((b,i)=>({b,row:prRows[i]})).filter(x=>!prUserSel||prUserNom(x.b)===prUserSel);
+      const niveaux=[]; if (prAdmin) niveaux.push(x=>prUserNom(x.b)); niveaux.push(x=>prPaysDossier(x.b), x=>String(prNormPeriode(x.b.periode).annee), x=>prPerLabel(x.b));
+      const trie=(a,c,d)=>a<c?-1:a>c?1:0;
+      const rec=(liste,niv,chemin)=>{
+        if (niv===niveaux.length) { liste.sort((x,y)=>(y.b.updatedAt||0)-(x.b.updatedAt||0)).forEach(x=>prTree.push(Object.assign({isDossier:false,rowStyle:'display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 4px 11px '+(8+niv*18)+'px;border-top:1px solid #f2f2f4'},x.row))); return; }
+        const groupes=new Map(); liste.forEach(x=>{ const k=niveaux[niv](x); (groupes.get(k)||groupes.set(k,[]).get(k)).push(x); });
+        const dernier=niv===niveaux.length-1, annee=niveaux[niv]===niveaux[prAdmin?2:1];
+        const cles=[...groupes.keys()].sort((k1,k2)=>dernier?(prPerOrdre(groupes.get(k2)[0].b)-prPerOrdre(groupes.get(k1)[0].b)):(annee?trie(k2,k1):trie(k1,k2)));
+        cles.forEach(k=>{ const g=groupes.get(k), id=chemin+'/'+k, ouvert=!prFermes[id];
+          prTree.push({ isDossier:true, label:k, count:'· '+g.length+(g.length>1?' présentations':' présentation'), chevron:ouvert?'▼':'▶', toggle:()=>set({prFermes:Object.assign({},prFermes,{[id]:ouvert})}),
+            dossierStyle:'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:14px;padding:9px 4px 9px '+(4+niv*18)+'px;border-top:1px solid #f2f2f4;user-select:none' });
+          if (ouvert) rec(g,niv+1,id); }); };
+      rec(items,0,''); }
     const prTabs = [['nouveau','Nouveau brief'],['briefs','Mes présentations'+(prRows.length?' ('+prRows.length+')':'')],['modeles','Modèles']].map(([k,l])=>({ label:l, pick:()=>{ set({prTab:k,prMsg:null}); if (k==='briefs'||k==='modeles') prCharge(); },
       style:'font-size:13px;font-weight:500;border-radius:10px;padding:6px 14px;cursor:pointer;'+(prTab===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') }));
     const prMsg = st.prMsg||null;
@@ -7801,7 +7833,7 @@ class Component extends DCLogic {
       prContenuSub:prContenuOpen?'Coche les modules à inclure ; le plan se met à jour à droite':(pr.modules.filter(id=>PR_MODULES.some(m=>m.id===id&&m.dispo!=='non')).length+' module'+(pr.modules.length>1?'s':'')+' sélectionné'+(pr.modules.length>1?'s':'')+' · '+prPlan.total+' diapositives · cliquer pour modifier'),
       prContenuChev:'flex:none;transition:transform .38s cubic-bezier(.22,.9,.3,1);transform:rotate('+(prContenuOpen?180:0)+'deg)',
       prContenuWrap:'display:grid;grid-template-rows:'+(prContenuOpen?'1fr':'0fr')+';transition:grid-template-rows .38s cubic-bezier(.22,.9,.3,1),visibility 0s linear '+(prContenuOpen?'0s':'.38s')+';visibility:'+(prContenuOpen?'visible':'hidden'),
-      prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
+      prNewFn:()=>set({pr:null,prMsg:null}), prHasId:!!pr.id, prRows, prTree, prUsers, prHasUsers:prUsers.length>0, prNoRows:!prRows.length&&!(this._pr&&this._pr.err), prErr:(this._pr&&this._pr.err)||'',
       prChipA:kPuce('#7c63ee'), prIconA:kIcone('#7c63ee',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M12 16v4M8 20h8'})),
       prChipB:kPuce('#3b76e8'), prIconB:kIcone('#3b76e8',h('circle',{cx:12,cy:12,r:9}),h('path',{d:'M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18'})),
       prChipC:kPuce('#3fae7a'), prIconC:kIcone('#3fae7a',h('rect',{x:3,y:5,width:18,height:16,rx:2}),h('path',{d:'M8 3v4M16 3v4M3 10h18'})),

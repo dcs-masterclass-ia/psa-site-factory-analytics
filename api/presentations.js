@@ -18,7 +18,7 @@
  * Routes :
  *   GET  /api/presentations                          -> { briefs, templates, moi }
  *   POST /api/presentations {action:"save", brief}   crée (sans id) ou met à jour
- *   POST /api/presentations {action:"delete", id}    l'auteur seulement
+ *   POST /api/presentations {action:"delete", id}    l'auteur (ou un administrateur) seulement ; GET ne renvoie que les briefs de l'appelant (tous pour un administrateur)
  *   POST /api/presentations {action:"generate", id}  declenche le workflow presentation.yml (GITHUB_TOKEN, scope Actions)
  *   GET  /api/presentations?fichier=<id>             telecharge le PPTX genere (presentations/out/<id>.pptx)
  *   POST /api/presentations {action:"save_template", template:{id?, nom, description, config}}
@@ -30,6 +30,7 @@
 
 const crypto = require("crypto");
 const { verifySessionFromRequest, presentationsAllowed } = require("./_lib/auth");
+const { admins } = require("./_lib/c1st-acces");
 const { fail } = require("./_lib/errors");
 const { readJson, writeJson, readBinary } = require("./_lib/store");
 
@@ -175,17 +176,22 @@ module.exports = async function handler(req, res) {
   const email = String(session.email).toLowerCase();
   // fonctionnalité verrouillée : seules les adresses de PRESENTATIONS_EMAILS (variable Vercel) y accèdent
   if (!presentationsAllowed(email)) { res.status(403).json({ error: "Fonctionnalite verrouillee pour le moment." }); return; }
+  // chacun ne voit et ne touche que ses présentations ; les administrateurs (C1ST_ADMIN_EMAILS) voient et gèrent tout
+  const admin = admins().includes(email);
+  const sienne = (b) => !!b && (admin || String(b.auteur || "").toLowerCase() === email);
 
   try {
     if (req.method === "GET" && req.query && req.query.fichier) {
       const id = txt(req.query.fichier, 40);
       if (!/^B-[a-z0-9]+$/.test(id)) { res.status(400).json({ error: "Identifiant invalide." }); return; }
+      // droit d'accès d'abord (auteur ou administrateur), avant toute lecture du fichier
+      const { data: dBr } = await readJson(FILE);
+      const br = ((dBr && dBr.briefs) || []).find((b) => b && b.id === id);
+      if (!(br ? sienne(br) : admin)) { res.status(404).json({ error: "Presentation introuvable (pas encore generee ?)." }); return; }
       const buf = await readBinary(`presentations/out/${id}.pptx`);
       if (!buf) { res.status(404).json({ error: "Presentation introuvable (pas encore generee ?)." }); return; }
       res.setHeader("content-type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
       // nom du fichier = titre saisi dans le brief (sinon « presentation-<id> »)
-      const { data: dBr } = await readJson(FILE);
-      const br = ((dBr && dBr.briefs) || []).find((b) => b && b.id === id);
       const nom = br ? nomFichier(br, id) : `presentation-${id}`;
       res.setHeader("content-disposition", `attachment; filename="${nom.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "")}.pptx"; filename*=UTF-8''${encodeURIComponent(nom)}.pptx`);
       res.setHeader("cache-control", "no-store");
@@ -194,10 +200,10 @@ module.exports = async function handler(req, res) {
     }
     if (req.method === "GET") {
       const [{ data }, { data: dt }] = await Promise.all([readJson(FILE), readJson(FILE_TPL)]);
-      const briefs = (data && Array.isArray(data.briefs)) ? data.briefs : [];
+      const briefs = ((data && Array.isArray(data.briefs)) ? data.briefs : []).filter(sienne);
       const templates = (dt && Array.isArray(dt.templates)) ? dt.templates : [];
       res.setHeader("cache-control", "no-store");
-      res.status(200).json({ briefs: briefs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), templates: templates.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), moi: email });
+      res.status(200).json({ admin, briefs: briefs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), templates: templates.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)), moi: email });
       return;
     }
     if (req.method !== "POST") { res.status(405).json({ error: "Methode non supportee." }); return; }
@@ -251,7 +257,7 @@ module.exports = async function handler(req, res) {
       let brief;
       if (id) {
         const i = briefs.findIndex(x => x.id === id);
-        if (i < 0) { res.status(404).json({ error: "Brief introuvable." }); return; }
+        if (i < 0 || !sienne(briefs[i])) { res.status(404).json({ error: "Brief introuvable." }); return; }
         brief = Object.assign(briefs[i], n, { updatedAt: now, modifiePar: email });
       } else {
         if (briefs.length >= MAX_BRIEFS) { res.status(507).json({ error: "Trop de briefs stockés." }); return; }
@@ -266,7 +272,7 @@ module.exports = async function handler(req, res) {
     if (body.action === "generate") {
       const id = txt(body.id, 40);
       const b = briefs.find(x => x.id === id);
-      if (!b) { res.status(404).json({ error: "Brief introuvable : enregistre-le d'abord." }); return; }
+      if (!b || !sienne(b)) { res.status(404).json({ error: "Brief introuvable : enregistre-le d'abord." }); return; }
       if (b.statut === "demandee" && now - (b.demandeeLe || 0) < 10 * 60 * 1000) { res.status(429).json({ error: "Une génération est déjà en cours pour ce brief." }); return; }
       const token = process.env.GITHUB_TOKEN;
       if (!token) throw new Error("GITHUB_TOKEN non configure");
@@ -286,8 +292,7 @@ module.exports = async function handler(req, res) {
     if (body.action === "delete") {
       const id = txt(body.id, 40);
       const b = briefs.find(x => x.id === id);
-      if (!b) { res.status(404).json({ error: "Brief introuvable." }); return; }
-      if (b.auteur !== email) { res.status(403).json({ error: "Seul l'auteur peut supprimer ce brief." }); return; }
+      if (!b || !sienne(b)) { res.status(404).json({ error: "Brief introuvable." }); return; }
       briefs = briefs.filter(x => x.id !== id);
       await ecrit(briefs, sha, `suppression brief ${id}`);
       res.status(200).json({ ok: true });

@@ -6,6 +6,7 @@ const racine = path.resolve(__dirname, "../..");
 const storePath = require.resolve(path.join(racine, "api/_lib/store.js"));
 const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
 process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com, perso@example.com, autre@autobiz.com, b.moumni@autobiz.com";
+process.env.C1ST_ADMIN_EMAILS = "m.foureau@autobiz.com";       // administrateur : voit et gère toutes les présentations
 let fichier = null, fichierTpl = null, sha = 0, session = null;
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async p => { const f = p.includes("templates") ? fichierTpl : fichier; return { data: f ? JSON.parse(JSON.stringify(f)) : null, sha: String(sha) }; },
@@ -46,21 +47,50 @@ test("validation : titre, client, pays, période, modules", async () => {
     assert.equal((await appelle("POST", { action: "save", brief: { ...brief, ...m } })).code, 400);
   assert.equal(fichier, null);
 });
-test("mise à jour par id, autre auteur peut modifier, introuvable = 404", async () => {
-  const c = await appelle("POST", { action: "save", brief });
+test("mise à jour par id : l'auteur ou un administrateur ; un autre utilisateur ne voit pas le brief (404)", async () => {
   session = { email: "autre@autobiz.com", role: "full" };
+  const c = await appelle("POST", { action: "save", brief });
   const u = await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id, titre: "Titre modifié" } });
-  assert.equal(u.body.brief.titre, "Titre modifié"); assert.equal(u.body.brief.modifiePar, "autre@autobiz.com");
+  assert.equal(u.body.brief.titre, "Titre modifié");
+  session = { email: "b.moumni@autobiz.com", role: "full" };                                              // ni auteur ni administrateur
+  assert.equal((await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id } })).code, 404);
+  session = { email: "m.foureau@autobiz.com", role: "full" };                                            // administrateur
+  const a = await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id, titre: "Corrigé par l'admin" } });
+  assert.equal(a.body.brief.titre, "Corrigé par l'admin"); assert.equal(a.body.brief.auteur, "autre@autobiz.com");
   assert.equal(fichier.briefs.length, 1);
   assert.equal((await appelle("POST", { action: "save", brief: { ...brief, id: "B-nope" } })).code, 404);
 });
-test("suppression : l'auteur seulement", async () => {
-  const c = await appelle("POST", { action: "save", brief });
+test("suppression : l'auteur ou un administrateur", async () => {
   session = { email: "autre@autobiz.com", role: "full" };
-  assert.equal((await appelle("POST", { action: "delete", id: c.body.brief.id })).code, 403);
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  const c = await appelle("POST", { action: "save", brief });
+  session = { email: "b.moumni@autobiz.com", role: "full" };
+  assert.equal((await appelle("POST", { action: "delete", id: c.body.brief.id })).code, 404);
+  session = { email: "autre@autobiz.com", role: "full" };
   assert.equal((await appelle("POST", { action: "delete", id: c.body.brief.id })).code, 200);
+  const d = await appelle("POST", { action: "save", brief });
+  session = { email: "m.foureau@autobiz.com", role: "full" };
+  assert.equal((await appelle("POST", { action: "delete", id: d.body.brief.id })).code, 200);
   assert.equal(fichier.briefs.length, 0);
+});
+test("cloisonnement : la liste ne contient que les briefs de l'appelant, l'administrateur voit tout (et le sait)", async () => {
+  session = { email: "autre@autobiz.com", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De autre" } });
+  session = { email: "b.moumni@autobiz.com", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De Brahim" } });
+  const vue = async (email) => { session = { email, role: "full" }; const r = await appelle("GET"); return { admin: r.body.admin, titres: r.body.briefs.map((b) => b.titre).sort() }; };
+  assert.deepEqual(await vue("autre@autobiz.com"), { admin: false, titres: ["De autre"] });
+  assert.deepEqual(await vue("b.moumni@autobiz.com"), { admin: false, titres: ["De Brahim"] });
+  assert.deepEqual(await vue("m.foureau@autobiz.com"), { admin: true, titres: ["De Brahim", "De autre"] });
+});
+test("génération et téléchargement : refusés (404) à qui n'est ni l'auteur ni administrateur", async () => {
+  process.env.GITHUB_TOKEN = "t"; global.fetch = async () => ({ status: 204 }); global.__binPptx = Buffer.from("pptx");
+  session = { email: "autre@autobiz.com", role: "full" };
+  const c = await appelle("POST", { action: "save", brief });
+  const id = c.body.brief.id;
+  session = { email: "b.moumni@autobiz.com", role: "full" };
+  assert.equal((await appelle("POST", { action: "generate", id })).code, 404);
+  assert.equal((await appelle("GET", null, { fichier: id })).code, 404);
+  session = { email: "autre@autobiz.com", role: "full" };
+  assert.equal((await appelle("POST", { action: "generate", id })).code, 200);
+  global.__binPptx = null;
 });
 test("entrées hostiles tronquées, GET trié", async () => {
   const r = await appelle("POST", { action: "save", brief: { ...brief, titre: "T".repeat(500), commentaire: "C".repeat(9999) } });

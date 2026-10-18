@@ -295,3 +295,57 @@ test("cadrage : aperçu du nom de fichier selon la taxonomie REPORTING-année-p�
   await expect(page.getByText(/^REPORTING-\d{4}-T\d-BELUX-ALL-EN\.pptx$/)).toBeVisible();
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
+
+const unBrief = (id, titre, auteur, pays, periode) => ({ id, titre, client: "Stellantis", langue: "fr", perimetre: { pays, marques: [] }, periode, comparaisons: { precedente: true, n1: true }, modules: ["global"],
+  contact: {}, pointsOuverts: [], prochainesEtapes: [], statut: "brouillon", auteur, updatedAt: Date.now() });
+const ouvreListe = async (page, reponse) => {
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { templates: MODELE_TEST, moi: "e2e@autobiz.com", ...reponse } }));
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.locator('div[title="Présentations"]').click();
+  await page.getByText(/^Mes présentations/).click();
+};
+
+test("Mes présentations : dossiers pays > année > période, pliables", async ({ page }) => {
+  const erreurs = [];
+  page.on("pageerror", (e) => erreurs.push(e.message));
+  await ouvreListe(page, { briefs: [
+    unBrief("B-1", "Revue sept FR", "e2e@autobiz.com", ["FR"], { type: "mois", annee: 2026, indice: 9 }),
+    unBrief("B-2", "Reporting T3 BELUX", "e2e@autobiz.com", ["BE", "LU"], { type: "trimestre", annee: 2026, indice: 3 }),
+    unBrief("B-3", "Bilan 2025 FR", "e2e@autobiz.com", ["FR"], { type: "annee", annee: 2025 })] });
+  for (const d of ["France", "BELUX (Belgique + Luxembourg)", "Septembre", "T3", "Année complète"]) await expect(page.getByText(d, { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("2026", { exact: true })).toHaveCount(2);                               // France > 2026 et BELUX > 2026
+  await expect(page.getByText("Revue sept FR")).toBeVisible();
+  await expect(page.getByText(/^e2e · /).first()).toBeVisible();
+  await expect(page.getByText("Tous (", { exact: false })).toHaveCount(0);                            // pas de filtre par utilisateur pour un utilisateur simple
+  await page.getByText("France", { exact: true }).click();                                           // plie le dossier
+  await expect(page.getByText("Revue sept FR")).toHaveCount(0);
+  await expect(page.getByText("Reporting T3 BELUX")).toBeVisible();
+  expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("Mes présentations : l'administrateur voit un niveau utilisateur et filtre par utilisateur", async ({ page }) => {
+  await ouvreListe(page, { admin: true, briefs: [
+    unBrief("B-1", "De Mohand", "mohand.k@autobiz.com", ["FR"], { type: "mois", annee: 2026, indice: 9 }),
+    unBrief("B-2", "De Brahim", "b.moumni@autobiz.com", ["BE", "LU"], { type: "trimestre", annee: 2026, indice: 3 })] });
+  await expect(page.getByText("Tous (2)", { exact: true })).toBeVisible();
+  await expect(page.getByText("Mohand K", { exact: true }).first()).toBeVisible();                    // dossier utilisateur
+  await expect(page.getByText("B Moumni", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("De Mohand")).toBeVisible();
+  await expect(page.getByText("De Brahim")).toBeVisible();
+  await page.getByText("Mohand K (1)", { exact: true }).click();
+  await expect(page.getByText("De Brahim")).toHaveCount(0);
+  await expect(page.getByText("De Mohand")).toBeVisible();
+});
+
+test("Nouveau brief : le plan de la présentation a la même hauteur que la colonne des étapes", async ({ page }) => {
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await ouvre(page);
+  const h = await page.evaluate(() => {
+    const titre = [...document.querySelectorAll("div")].find((d) => d.textContent === "Plan de la présentation");
+    const droite = titre.parentElement.parentElement, grille = droite.parentElement;
+    const gauche = [...grille.children].find((c) => c !== droite);
+    return [Math.round(gauche.getBoundingClientRect().height), Math.round(droite.getBoundingClientRect().height), Math.round(titre.parentElement.getBoundingClientRect().height)];
+  });
+  expect(Math.abs(h[0] - h[1])).toBeLessThanOrEqual(1);          // colonnes de même hauteur
+  expect(Math.abs(h[0] - h[2])).toBeLessThanOrEqual(1);          // et la carte remplit sa colonne
+});
