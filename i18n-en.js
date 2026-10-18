@@ -1432,6 +1432,7 @@ window.I18N_EN = {
 "sites classés": "sites ranked",
 "sites ·": "sites ·",
 "source ACEA · UE + AELE + Royaume-Uni": "ACEA source · EU + EFTA + United Kingdom",
+"statuts non saisis dans C1ST": "statuses not entered in C1ST",
 "sur la page d'accueil": "on the home page",
 "sélectionné": "selected",
 "série incomplète": "incomplete series",
