@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Converge — Analytics</title>
+<title>Converge</title>
 <link rel="icon" type="image/png" href="./favicon.png">
 <script>
 /* Ancienne adresse du projet : redirection vers l'adresse officielle (chemin, paramètres et ancre conservés). */
@@ -108,52 +108,55 @@ if (location.hostname === "psa-site-factory-dashboard.vercel.app") location.repl
      middleware.js). Retire par wireLogin() des qu'un cookie psf_user_email
      valide est present. -->
 <div class="login-screen" id="loginScreen">
+  <div class="login-bg" aria-hidden="true"><span class="lb lb1"></span><span class="lb lb2"></span><span class="lb lb3"></span></div>
   <div class="login-shell">
-    <div class="login-brand">
-      <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp" data-keep alt="Converge" width="40" height="40" style="display:block;flex:none;width:40px;height:40px;object-fit:contain">
-      <span class="login-brand-txt">Converge</span>
-    </div>
-
     <div class="login-card">
-      <div class="login-eyebrow">Accès collaborateur</div>
-      <div class="login-title">Portail de performance digitale</div>
-      <div class="login-sub">Reporting Analytics et Search Console du réseau PSA Factory — identifiez-vous avec un compte Google de l'équipe pour accéder aux tableaux de bord.</div>
-
+      <div class="login-emblem"><span class="login-halo"></span><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp" data-keep alt="Converge" width="88" height="88"></div>
+      <div class="login-brand-txt">Converge</div>
+      <div class="login-label">Connexion</div>
       <div id="loginGoogleTarget" class="login-google-target"></div>
       <p class="login-err" id="loginErr" hidden></p>
-
       <div class="login-help">Besoin d'un accès ? <a href="#">Contacter l'administrateur</a></div>
     </div>
-
-    <div class="login-foot">© 2026 Converge · PSA Factory — Données hébergées dans l'UE</div>
+    <div class="login-foot">© 2026 Converge</div>
   </div>
 </div>
 <style>
   .login-screen{
-    position:fixed;inset:0;z-index:1000;overflow:auto;background:#f4f4f6;
+    position:fixed;inset:0;z-index:1000;overflow:auto;
+    background:radial-gradient(60% 55% at 18% 8%,#ebe4ff 0%,rgba(235,228,255,0) 62%),radial-gradient(52% 48% at 88% 18%,#dcebff 0%,rgba(220,235,255,0) 62%),radial-gradient(60% 55% at 62% 100%,#f4e6ff 0%,rgba(244,230,255,0) 66%),#f7f6fc;
     display:flex;align-items:center;justify-content:center;
     font-family:'Poppins',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
     padding:32px 16px;box-sizing:border-box;
   }
-  .login-screen a{color:#7c63ee;text-decoration:none}
-  .login-screen a:hover{color:#5f45d4}
-  @keyframes loginRiseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
-  @keyframes loginSpin{to{transform:rotate(360deg)}}
+  .login-screen a{color:#6f55e8;text-decoration:none}
+  .login-screen a:hover{color:#5b43d6}
+  @keyframes loginRiseIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+  @keyframes loginFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes loginHalo{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.12)}}
+  @keyframes loginDrift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,28px)}}
+  @keyframes loginDrift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-46px,34px)}}
+  .login-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .lb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55}
+  .lb1{width:360px;height:360px;left:-80px;top:-60px;background:#c9b9ff;animation:loginDrift1 19s ease-in-out infinite}
+  .lb2{width:320px;height:320px;right:-60px;top:18%;background:#a9d3ff;animation:loginDrift2 23s ease-in-out infinite}
+  .lb3{width:340px;height:340px;left:34%;bottom:-120px;background:#f0c8ff;animation:loginDrift1 27s ease-in-out infinite reverse}
 
-  .login-shell{width:100%;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:22px;animation:loginRiseIn .5s cubic-bezier(.2,.7,.3,1) both}
-  .login-brand{display:flex;align-items:center;gap:9px}
-  .login-brand-txt{font-size:19px;font-weight:600;letter-spacing:-.02em;color:#121214}
-
-  .login-card{width:100%;background:#fff;border:1px solid #efeff1;border-radius:16px;padding:32px 30px;box-sizing:border-box;box-shadow:0 4px 24px rgba(17,17,26,.06)}
-  .login-eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6}
-  .login-title{margin-top:10px;font-size:24px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25}
-  .login-sub{margin-top:8px;font-size:14px;line-height:1.5;color:#6d727a}
-  .login-google-target{display:flex;justify-content:center;margin-top:24px;min-height:38px}
-  .login-err{margin:12px 0 0;font:600 13px/1.4 inherit;color:#a33c39;text-align:center}
-  .login-help{margin-top:20px;padding-top:20px;border-top:1px solid #f2f2f4;font-size:13px;color:#9a9fa6;text-align:center}
+  .login-shell{position:relative;width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:20px;animation:loginRiseIn .6s cubic-bezier(.2,.7,.3,1) both}
+  .login-card{width:100%;box-sizing:border-box;padding:40px 36px 30px;border-radius:28px;display:flex;flex-direction:column;align-items:center;
+    background:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(20px) saturate(1.3);backdrop-filter:blur(20px) saturate(1.3);
+    border:1px solid rgba(255,255,255,.95);box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 34px 80px -34px rgba(90,70,200,.4),0 2px 8px rgba(17,17,26,.04)}
+  .login-emblem{position:relative;width:88px;height:88px;display:flex;align-items:center;justify-content:center;animation:loginFloat 6.5s ease-in-out infinite}
+  .login-emblem img{position:relative;display:block;width:88px;height:88px;object-fit:contain}
+  .login-halo{position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(124,99,238,.35) 0%,rgba(124,99,238,0) 68%);animation:loginHalo 5s ease-in-out infinite}
+  .login-brand-txt{margin-top:14px;font-size:26px;font-weight:700;letter-spacing:-.03em;color:#121214}
+  .login-label{margin-top:26px;font-size:11.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#a3a7ae}
+  .login-google-target{display:flex;justify-content:center;margin-top:14px;min-height:44px}
+  .login-err{margin:14px 0 0;font:600 13px/1.4 inherit;color:#a33c39;text-align:center}
+  .login-help{margin-top:22px;font-size:12.5px;color:#9a9fa6;text-align:center}
   .login-help a{font-weight:600}
-
-  .login-foot{font-size:12.5px;font-weight:500;color:#9a9fa6}
+  .login-foot{font-size:12px;font-weight:500;color:#a3a7ae}
+  @media (prefers-reduced-motion:reduce){.login-shell,.login-emblem,.login-halo,.lb{animation:none!important}}
 /* Onglet Présentations : transitions douces sur les puces, cases et boutons (classes dédiées : un style modifié en JS ne casse plus les sélecteurs) */
 .ga-view{transition:background-color .3s cubic-bezier(.22,.9,.3,1),color .3s cubic-bezier(.22,.9,.3,1)}
 .ga-view:hover{color:#5b43d6}
