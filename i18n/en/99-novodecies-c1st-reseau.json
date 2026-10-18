@@ -126,5 +126,15 @@
  "Activer / désactiver les captures d'image des modules": "Turn module image captures on / off",
  "Mode capture : exporter toute la vue en images (ZIP ou une seule image)": "Capture mode: export the whole view as images (ZIP or a single image)",
  "Règles automatiques sur les données affichées · {0}": "Automatic rules on the displayed data · {0}",
- "Règles automatiques sur les données affichées": "Automatic rules on the displayed data"
+ "Règles automatiques sur les données affichées": "Automatic rules on the displayed data",
+ "ALERTE": "ALERT",
+ "CAUSE": "CAUSE",
+ "OPPORTUNITÉ": "OPPORTUNITY",
+ "leads potentiels": "potential leads",
+ "Calculés sur les données affichées": "Computed on the displayed data",
+ "vs période précédente": "vs previous period",
+ "Voir le détail →": "See details →",
+ "Creuser avec KamIA": "Dig deeper with KamIA",
+ "Rien d'anormal sur la période : pas de variation significative du trafic, de la conversion ou du tunnel à signaler.": "Nothing unusual over the period: no significant change in traffic, conversion or funnel to report.",
+ "Explique les causes probables avec les données du dashboard et propose deux actions concrètes.": "Explain the likely causes using the dashboard data and suggest two concrete actions."
 }

@@ -99,6 +99,7 @@ if (location.hostname === "psa-site-factory-dashboard.vercel.app") location.repl
 <script src="./i18n.js"></script>
 <script src="./support.js"></script>
 <script src="./capture.js" defer></script>
+<script src="./insights.js"></script>
 </head>
 <body>
 
@@ -611,48 +612,33 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:12px;align-self:stretch;min-height:0;overflow:hidden">
-            <div class="psf-card" style="flex:1 1 auto;min-height:0;border-radius:16px;padding:16px 18px 12px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:1px solid #efeff1;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="flex:1 1 auto;min-height:0;border-radius:16px;padding:16px 18px 12px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:1px solid #efeff1">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-                <span style="width:26px;height:26px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
-                    <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
-                    <span style="position:absolute;inset:8%;border-radius:50%;background:conic-gradient(from 140deg,rgba(142,231,255,.95),rgba(124,58,237,.1),rgba(244,114,182,.9),rgba(91,124,255,.15),rgba(142,231,255,.95));animation:orbSpinRev 11s linear infinite;filter:blur(1px);mix-blend-mode:screen"></span>
-                    <span style="position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.9),rgba(255,255,255,0) 62%);animation:orbBreath 4.5s ease-in-out infinite"></span>
-                    <span style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 5px rgba(12,17,32,.65)"></span>
-                  </span>
+                <span style="{{ insHeadChip }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="#7c63ee"><path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2zM19 15l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9.9-2.6z"/></svg></span>
                 <div style="min-width:0;flex:1">
-                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:15px;font-weight:600;color:#121214">KamIA</span><span style="font-size:10px;font-weight:600;letter-spacing:.06em;color:#7c63ee;background:#f1eefe;border-radius:999px;padding:2px 8px">BÊTA</span></div>
-                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9a9fa6"><span style="width:6px;height:6px;border-radius:3px;background:#2b8f62"></span>{{ kamiaStamp }}</div>
+                  <div style="font-size:15px;font-weight:700;color:#121214">Insights</div>
+                  <div style="font-size:12px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ insStamp }}</div>
                 </div>
               </div>
-              <div style="flex:1;min-height:0;display:flex;flex-direction:column">
-                <div style="flex:1;min-height:0;display:flex;align-items:center;gap:11px;border-top:1px solid #f2f2f4;padding:10px 0">
-                  <span style="width:26px;height:26px;flex:none;border-radius:8px;background:#fdf1f0;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c24a44" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 21.5 19.5H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
-                  <span style="min-width:0">
-                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#c24a44;margin-bottom:2px">POINT DE VIGILANCE</span>
-                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ kamiaVigilance }}</span>
-                  </span>
-                </div>
-                <div style="flex:1;min-height:0;display:flex;align-items:center;gap:11px;border-top:1px solid #f2f2f4;padding:10px 0">
-                  <span style="width:26px;height:26px;flex:none;border-radius:8px;background:#fdf3e3;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4842a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17 10 9.5l4 4L20 6"/><path d="M15 6h5v5"/></svg></span>
-                  <span style="min-width:0">
-                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#c4842a;margin-bottom:2px">RUPTURE DÉTECTÉE</span>
-                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ kamiaRupture }}</span>
-                  </span>
-                </div>
-                <div style="flex:1;min-height:0;display:flex;align-items:center;gap:11px;border-top:1px solid #f2f2f4;padding:10px 0">
-                  <span style="width:26px;height:26px;flex:none;border-radius:8px;background:#eaf6ef;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2b8f62" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4l2.6 1.6"/></svg></span>
-                  <span style="min-width:0">
-                    <span style="display:block;font-size:10.5px;font-weight:600;letter-spacing:.07em;color:#2b8f62;margin-bottom:2px">OPPORTUNITÉ</span>
-                    <span style="display:block;font-size:13.5px;line-height:1.5;color:#2f2f33">{{ kamiaOpportunite }}</span>
-                  </span>
-                </div>
+              <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column">
+                <sc-for list="{{ insRows }}" as="r" hint-placeholder-count="3">
+                  <div style="border-top:1px solid #f2f2f4;padding:11px 0;display:flex;gap:11px;align-items:flex-start">
+                    <span style="{{ r.chip }}">{{ r.icon }}</span>
+                    <div style="min-width:0;flex:1">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px"><span style="{{ r.tagStyle }}">{{ r.tag }}</span><span style="{{ r.impactStyle }}">{{ r.impact }}</span></div>
+                      <div style="font-size:13.5px;font-weight:600;color:#121214;line-height:1.35">{{ r.titre }}</div>
+                      <div style="font-size:12.5px;line-height:1.55;color:#555a63;margin-top:2px">{{ r.texte }}</div>
+                      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">
+                        <sc-if value="{{ r.hasLien }}" hint-placeholder-val="{{ false }}"><span onClick="{{ r.voir }}" style="font-size:12.5px;font-weight:600;color:#3b76e8;cursor:pointer" style-hover="text-decoration:underline">Voir le détail →</span></sc-if>
+                        <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}"><span onClick="{{ r.creuser }}" style="font-size:12.5px;font-weight:600;color:#6f55e8;cursor:pointer" style-hover="text-decoration:underline">Creuser avec KamIA</span></sc-if>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ insVide }}" hint-placeholder-val="{{ false }}">
+                  <div style="border-top:1px solid #f2f2f4;padding:16px 0;display:flex;gap:11px;align-items:flex-start;color:#555a63;font-size:13px;line-height:1.55"><span style="{{ insHeadChip }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2b8f62" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span>Rien d'anormal sur la période : pas de variation significative du trafic, de la conversion ou du tunnel à signaler.</span></div>
+                </sc-if>
               </div>
-              <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #f2f2f4;padding-top:10px">
-                <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#3b76e8;cursor:pointer" style-hover="text-decoration:underline">Voir le détail<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-                <span style="font-size:12.5px;color:#9a9fa6;cursor:pointer" style-hover="color:#6d727a">Régénérer</span>
-              </div>
-              </sc-if>
             </div>
           </div>
         </div>
@@ -4676,12 +4662,14 @@ class Component extends DCLogic {
 
     // classement reel sur le taux de conversion, parmi tout le parc --
     // couteux (82 agregations), uniquement recalcule pour l'onglet GA4.
+    let parcInfo=null;      // position du site vs parc (insights)
     let convRankLabel='Classement indisponible', convMedianLabel='', convMedianTunnel='', hasConvDelta=false, convDeltaLabel='', convDeltaStyle='';
     if (this._allSites && this._allSites.length) {
       const ranked = this.rankSites(debut, fin);
       const currentIsSingle = st.sites.length === 1;
       const rang = currentIsSingle ? ranked.findIndex(x=>x.site===st.sites[0])+1 : 0;
       if (currentIsSingle && rang>0) convRankLabel = rang+'e sur '+ranked.length+' du parc';
+      if (currentIsSingle && rang>0 && ranked.length>2) { const m3=Math.floor(ranked.length/2); parcInfo={ rate:rateGlobal, mediane:ranked.length%2?ranked[m3].taux:(ranked[m3-1].taux+ranked[m3].taux)/2, rang, total:ranked.length }; }
       else convRankLabel = ranked.length+' sites classés';
       if (ranked.length) {
         const mid=Math.floor(ranked.length/2);
@@ -5334,6 +5322,31 @@ class Component extends DCLogic {
         kamiaOpportunite = `${meilleur.canal} × ${meilleur.device} convertit à ${dec(meilleur.taux,2)} %, soit ${dec(meilleur.taux/moyenneConv,1)}× la moyenne du site (${dec(moyenneConv,2)} %).`;
       }
     }
+
+    // ---------- Insights : constats calculés (insights.js), classés par impact en leads ; rien n'est affiché s'il n'y a rien de significatif
+    const sommeCanal=a=>{ const o={}; for (const jour of Object.values((a&&a.canalRep)||{})) for (const [ch,v] of Object.entries(jour)) o[ch]=(o[ch]||0)+v; return o; };
+    const sessRep=a=>a? (a.convSessTot>0?a.convSessTot:a.reprise):0, leadsGA=a=>a? (a.convEv>0?a.convEv:(a.funnelSteps&&a.funnelSteps.length?a.funnelSteps[a.funnelSteps.length-1].users:0)):0;
+    const stepsDe=a=>a&&a.funnelSteps&&a.funnelSteps.length===6?a.funnelSteps.map(x=>x.users):null;
+    const insBrut=window.psfInsights?window.psfInsights.calculeInsights({
+      en:((window.i18n&&window.i18n.lang)||'fr')==='en', hasCmp:!!cmp, L1:leadsGA(agg), L0:leadsGA(cmp), S1:sessRep(agg), S0:sessRep(cmp),
+      canal1:sommeCanal(agg), canal0:sommeCanal(cmp),
+      combos:Array.from(agg.convCanalDevice.values()).map(r=>({canal:r.canal,device:r.device,sessions:r.sessions,conversions:r.conversions})),
+      steps1:stepsDe(agg), steps0:stepsDe(cmp), etapes:(agg.funnelSteps||[]).map(x=>x.step),
+      entree:(agg.funnelEntree&&agg.funnelEntree.mois>0&&!agg.funnelEntree.manque)?{immat:agg.funnelEntree.immat,mm:agg.funnelEntree.mm}:null,
+      semaine:moyenneSem>=50?{actuelle:semaineActuelle,moyenne:moyenneSem,ecartType}:null, parc:parcInfo, singleSite:st.sites.length===1 }):[];
+    const INS_META={ alerte:[T('ALERTE'),'#c24a44','#fdf1f0','M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'],
+      cause:[T('CAUSE'),'#6f55e8','#f1eefe','M3 17l6-6 4 4 8-8M15 7h6v6'], opportunite:[T('OPPORTUNITÉ'),'#2b8f62','#eaf6ef','M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z'] };
+    const insAsk=q=>{ const vide=kam.convs.find(c=>!c.msgs.length&&c.loaded); const cv=vide||this.kamNouvelle(); if(!vide) kam.convs.unshift(cv); set({chatOpen:true,chatClosing:false,convId:cv.id}); this.kamChargeListe(); this.kamEnvoie(cv,q,kamCtx()); };
+    const insRows=insBrut.slice(0,3).map(x=>{ const m=INS_META[x.type]||INS_META.cause; const pot=x.type==='opportunite';
+      const impact=(pot?'≈ +':(x.leads<0?'−':'+'))+this.fmt(Math.abs(x.leads))+' '+T(pot?'leads potentiels':'leads');
+      return { tag:m[0], tagStyle:`font-size:10.5px;font-weight:700;letter-spacing:.07em;color:${m[1]}`, titre:x.titre, texte:x.texte, impact,
+        impactStyle:`font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap;background:${m[2]};color:${m[1]}`,
+        chip:`width:30px;height:30px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${m[2]};box-shadow:inset 0 0 0 1px ${m[1]}22`,
+        icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:m[1],strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},[h('path',{key:'p',d:m[3]})]),
+        hasLien:!!x.lien, voir:()=>set({tab:x.lien}),
+        creuser:()=>insAsk(x.titre+' — '+x.texte+' '+T("Explique les causes probables avec les données du dashboard et propose deux actions concrètes.")) }; });
+    const insVide=insRows.length===0;
+    const insStamp=T('Calculés sur les données affichées')+(cmp?' · '+T('vs période précédente'):'')+' · '+String(fin).slice(8,10)+'/'+String(fin).slice(5,7);
 
     // ---------- Search Console (reel : searchMonth, mensuel -- jamais de
     // resolution jour interpolee, cf. api/gsc-compare.js) ----------
@@ -7991,7 +8004,7 @@ class Component extends DCLogic {
       channelCount:allChannels.length,
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
-      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, isLimited:this.estLimite(),
+      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, insRows, insVide, insStamp, insHeadChip:kPuce('#7c63ee'), isLimited:this.estLimite(),
       isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isAlerts:gaCur==='alerts',
       alHas, alRows, alEmpty, alSubtitle, alSeuils, alFormOpen, alFields, alToggle, alToggleLabel, alNotifLabel, alNotifPick, alNotifStyle, alMsg, alMsgOn, alSaveLabel, alSaveStyle, alSave, insAlerts, alIcon, alChip, alCanWrite, isEvents:gaCur==='events',
       glHas, glRows, glEmpty, glSubtitle, glToggleEdit, glEditLabel, glEditing, glMsg, glMsgOn, glSaveLabel, glSaveStyle, glSave, insGoals, glIcon, glChip, isHist:gaCur==='hist',
