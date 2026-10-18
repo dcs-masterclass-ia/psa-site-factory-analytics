@@ -75,6 +75,5 @@
  "Confirmer : tout le monde devra ressaisir le nouveau code": "Confirm: everyone will have to re-enter the new code",
  "Accès révoqués : voici le nouveau code, à communiquer à l'équipe.": "Access revoked: here is the new code, to share with the team.",
  "Ces données viennent du CRM Salesforce. Saisis le code du mois : il change le 1er de chaque mois et te sera communiqué par l'administrateur.": "This data comes from the Salesforce CRM. Enter this month's code: it changes on the 1st of each month and is given to you by the administrator.",
- "Verrouiller maintenant": "Lock now",
- "Verrouillage automatique après 5 minutes sans activité.": "Automatic lock after 5 minutes of inactivity."
+ "Verrouiller": "Lock"
 }

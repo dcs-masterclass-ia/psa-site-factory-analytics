@@ -187,7 +187,7 @@ test("C1ST : l'administrateur voit le code du mois et peut révoquer les accès 
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
 
-test("C1ST : verrouillage automatique après 5 minutes sans activité, et bouton « Verrouiller maintenant »", async ({ context, page }) => {
+test("C1ST : verrouillage automatique après 5 minutes sans activité, et bouton « Verrouiller »", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
   await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
@@ -207,4 +207,17 @@ test("C1ST : verrouillage automatique après 5 minutes sans activité, et bouton
   await expect(page.getByText("Évolution mensuelle")).toHaveCount(0);
   expect(appels).toContain("DELETE");
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
+});
+
+test("C1ST : le bouton « Verrouiller » ferme tout de suite, sans mention de durée", async ({ context, page }) => {
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
+  await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/api/c1st-acces", async (r) => { await new Promise((x) => setTimeout(x, 1500)); await r.fulfill({ json: { ouvert: true, admin: false } }); });   // réseau lent : l'écran ne doit pas attendre
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.evaluate((s) => sessionStorage.setItem("psf_ui_state", JSON.stringify(s)), { source: "c1st", sites: ["PEUGEOT FR"], from: DEBUT, to: FIN, cmpMode: "none" });
+  await page.reload({ waitUntil: "networkidle" });
+  await expect(page.getByText(/5 minutes/)).toHaveCount(0);
+  await page.getByText("Verrouiller", { exact: true }).click();
+  await expect(page.getByText("Code d'accès C1ST")).toBeVisible({ timeout: 700 });
 });
