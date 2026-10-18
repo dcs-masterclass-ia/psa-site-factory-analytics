@@ -289,16 +289,19 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column">
 
-    <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:16px;padding:12px 24px;background:#fff;border-bottom:1px solid #ececee;flex-wrap:wrap">
-      <div style="flex:1 1 150px;min-width:0">
-        <div style="font-size:17px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
-        <div style="font-size:13px;color:#9a9fa6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ rangeLabel }}</div>
-        <sc-if value="{{ provNote }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#b7791f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ provNote }}</div></sc-if>
+    <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 24px;background:linear-gradient(180deg,#ffffff 0%,#fbfaff 100%);border-bottom:1px solid #ececf2;flex-wrap:wrap">
+      <div style="flex:1 1 260px;min-width:0;display:flex;align-items:center;gap:14px">
+        <div style="width:48px;height:48px;flex:none;border-radius:16px;background:#fff;border:1px solid #ececf2;box-shadow:0 8px 20px -12px rgba(124,99,238,.55);display:flex;align-items:center;justify-content:center"><img src="{{ headLogo }}" data-keep alt="" width="26" height="26" style="display:block;object-fit:contain"></div>
+        <div style="min-width:0">
+          <div style="font-size:19px;font-weight:700;letter-spacing:-.025em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap"><sc-for list="{{ rangeChips }}" as="c" hint-placeholder-count="3"><span style="{{ c.style }}">{{ c.t }}</span></sc-for>
+            <sc-if value="{{ provNote }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;border-radius:999px;padding:3px 11px;background:#fff6e0;color:#a56a00;white-space:nowrap"><span style="width:7px;height:7px;border-radius:50%;background:#f2a93b;animation:orbBreath 1.8s ease-in-out infinite"></span>{{ provNote }}</span></sc-if></div>
+        </div>
       </div>
 
       <div style="position:relative" data-popover="scope">
-        <div data-testid="scope-picker-toggle" onClick="{{ toggleBrand }}" style="{{ brandBtn }}">
-          <span style="width:9px;height:9px;border-radius:5px;background:#7c63ee;flex:none"></span>
+        <div data-testid="scope-picker-toggle" onClick="{{ toggleBrand }}" style="{{ brandBtn }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
+          <span style="width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#a58cf7,#6f55e8);flex:none;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.6 4.2 5.6 4.2 9S14.8 18.4 12 21M12 3C9.2 5.6 7.8 8.6 7.8 12s1.4 6.4 4.2 9"/></svg></span>
           {{ brandLabel }}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </div>
@@ -373,8 +376,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
 
       <div style="position:relative" data-popover="cal">
-        <div data-testid="period-picker-toggle" onClick="{{ toggleCal }}" style="{{ calBtn }}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6d727a" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+        <div data-testid="period-picker-toggle" onClick="{{ toggleCal }}" style="{{ calBtn }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
+          <span style="width:26px;height:26px;border-radius:50%;background:#eef3fe;flex:none;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>
           {{ dateLabel }}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a8f98" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </div>
@@ -436,19 +439,19 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
       </div>
 
-      <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;background:#f2f2f5;color:#4b4f57;font-size:13.5px;font-weight:500;cursor:pointer;white-space:nowrap" style-hover="background:#e8e8ee">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg>
+      <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 8px;border-radius:999px;background:linear-gradient(135deg,#f1edff,#e8f0ff);color:#4b35c8;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .15s,box-shadow .15s" style-hover="transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(124,99,238,.6)">
+        <span style="width:26px;height:26px;border-radius:50%;background:#fff;flex:none;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(124,99,238,.25)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6f55e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg></span>
         Ticket
         <sc-if value="{{ tkNewCount }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#e8544a;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;animation:tabFadeIn .2s ease">{{ tkNewCount }}</span></sc-if>
       </div>
 
-      <div role="group" aria-label="Langue" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
+      <div role="group" aria-label="Langue" style="display:flex;align-items:center;gap:2px;height:40px;padding:4px;border-radius:999px;background:#f1f1f6;box-sizing:border-box">
         <sc-for list="{{ langOpts }}" as="l" hint-placeholder-count="2">
           <span onClick="{{ l.pick }}" title="{{ l.title }}" aria-label="{{ l.title }}" style="{{ l.style }}">{{ l.label }}</span>
         </sc-for>
       </div>
 
-      <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:34px;padding:3px;border-radius:12px;background:#f2f2f5;box-sizing:border-box">
+      <div role="group" aria-label="Thème" style="display:flex;align-items:center;gap:2px;height:40px;padding:4px;border-radius:999px;background:#f1f1f6;box-sizing:border-box">
         <sc-for list="{{ themeOpts }}" as="t" hint-placeholder-count="3">
           <span onClick="{{ t.pick }}" title="{{ t.title }}" aria-label="{{ t.title }}" style="{{ t.style }}">{{ t.icon }}</span>
         </sc-for>
@@ -4493,7 +4496,7 @@ class Component extends DCLogic {
     // (?embed=1&sites=...), avec la meme periode et la meme source.
     const compareEligible = st.sites.length>=2 && st.sites.length<=4;
     const compareActive = compareEligible && st.compareOpen;
-    const compareBtnStyle = `display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;${compareActive?'background:#7c63ee;color:#fff':'background:#fff;border:1px solid #ececee;color:#121214'}`;
+    const compareBtnStyle = `display:flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;${compareActive?'background:#7c63ee;color:#fff':'background:#fff;border:1px solid #e9e9ee;color:#121214'}`;
     const toggleCompare = ()=>set({compareOpen:!st.compareOpen});
     const compareFrames = compareActive ? st.sites.map(n=>{
       const q = new URLSearchParams({ embed:'1', sites:n, source:st.source||'ga', from:debut, to:fin, cmp:st.cmpMode||'previous' });
@@ -7167,7 +7170,7 @@ class Component extends DCLogic {
         scopeLabel = `${st.sites.length} sites sélectionnés`;
       }
     }
-    const ctrl=open=>`display:flex;align-items:center;gap:9px;height:34px;padding:0 14px;border:1px solid ${open?'#b6a5f8':'#ececee'};border-radius:12px;font-size:14.5px;color:#121214;cursor:pointer;white-space:nowrap;background:${open?'#f7f6fe':'#fff'}`;
+    const ctrl=open=>`display:flex;align-items:center;gap:9px;height:40px;padding:0 14px 0 7px;border:1px solid ${open?'#b6a5f8':'#e9e9ee'};border-radius:999px;font-size:14px;font-weight:500;color:#121214;cursor:pointer;white-space:nowrap;background:${open?'#f7f6fe':'#fff'};box-shadow:${open?'0 8px 18px -10px rgba(124,99,238,.55)':'0 1px 2px rgba(18,18,20,.04)'};transition:border-color .15s,box-shadow .15s,transform .15s`;
     const weekDays=['L','M','M','J','V','S','D'].map((l,i)=>({l,key:i}));
     // vraie grille mensuelle navigable (corrige le calendrier bloque du
     // 13/09/2026 : les jours 1..30 etaient toujours les memes 30 jours,
@@ -7808,9 +7811,9 @@ class Component extends DCLogic {
       tbGridAlign:(countryRows.length>=4?'stretch':'start'),
       ps2Has, ps2Tiles, ps2Bands, ps2Metrics, ps2Opp, ps2Brands, ps2SlowList:ps2Lists.slow, ps2FastList:ps2Lists.fast, ps2RelLabel, ps2Insight, ps2Devs, ps2DevLabel:(ps2Dev==='mobile'?'mobile':'desktop'), ps2Chip1:kPuce('#7c63ee'), ps2Icon1:kIcone('#7c63ee',h('rect',{x:3,y:12,width:4,height:9,rx:1}),h('rect',{x:10,y:6,width:4,height:15,rx:1}),h('rect',{x:17,y:9,width:4,height:12,rx:1})), ps2Chip2:kPuce('#e08a33'), ps2Icon2:kIcone('#e08a33',h('path',{d:'M13 2L4 14h7l-1 8 9-12h-7z'})), ps2Chip3:kPuce('#3b76e8'), ps2Icon3:kIcone('#3b76e8',h('path',{d:'M5 17h14l-1.5-6h-11z'}),h('circle',{cx:8,cy:17.5,r:1.5}),h('circle',{cx:16,cy:17.5,r:1.5})), ps2Chip4:kPuce('#e8544a'), ps2Icon4:kIcone('#e8544a',h('path',{d:'M4 17l5-5 4 4 7-8'})), ps2Chip5:kPuce('#3fae7a'), ps2Icon5:kIcone('#3fae7a',h('path',{d:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'}),h('path',{d:'M9 12l2 2 4-4'})),
       langOpts:['fr','en'].map(k=>({ label:k.toUpperCase(), title:k==='fr'?'Français':'English', pick:()=>{ if (window.i18n) window.i18n.set(k); this.setState({ langTick:Date.now() }); },
-        style:'min-width:30px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;cursor:pointer;'+(((window.i18n&&window.i18n.lang)||'fr')===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98') })),
-      themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#121214':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
-        style:'width:30px;height:28px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;'+(cur===k?'background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)':'') }; }),
+        style:'min-width:36px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;letter-spacing:.02em;cursor:pointer;transition:background .15s,color .15s;'+(((window.i18n&&window.i18n.lang)||'fr')===k?'background:#fff;color:#5b43d6;box-shadow:0 2px 6px rgba(18,18,20,.1)':'color:#8a8f98') })),
+      themeOpts:[['system','Automatique (suit l\'appareil)',h('rect',{x:3,y:4,width:18,height:12,rx:2}),h('path',{d:'M8 20h8M12 16v4'})],['light','Clair',h('circle',{cx:12,cy:12,r:4}),h('path',{d:'M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8'})],['dark','Sombre',h('path',{d:'M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z'})]].map(([k,title,...ic])=>{ const cur=(typeof window!=='undefined'&&window.__getTheme)?window.__getTheme():'system'; return { title, pick:()=>this.setTheme(k), icon:h('svg',{width:15,height:15,viewBox:'0 0 24 24',fill:'none',stroke:cur===k?'#5b43d6':'#8a8f98',strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},ic),
+        style:'width:34px;height:32px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s;'+(cur===k?'background:#fff;box-shadow:0 2px 6px rgba(18,18,20,.1)':'') }; }),
       nvOpen:nvCtl.isOpen, nvBackdrop:nvSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:95', nvPanel:nvSt.panel, nvClose,
       tkNewCount:tkNews.length, tkAlertOpen:tkAlertCtl.isOpen, tkAlertBackdrop:tkAlertSt.backdrop+';backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:90', tkAlertPanel:tkAlertSt.panel, tkAlertTitle:tkNews.length>1?tkNews.length+' tickets mis à jour':'Ton ticket a été mis à jour', tkAlertRows, tkAlertClose:()=>tkAlertDismiss(), tkAlertView:()=>{ const onglet=tkNews.some(x=>x.t.statut!=='resolu'&&x.t.statut!=='refuse')?'suivi':'termines'; tkAlertDismiss(()=>{ tkCtl.openIt(); set({tkTab:onglet}); tkCharge(); }); },
       tkModal:tkCtl.isOpen, tkBackdropStyle:tkStyles.backdrop, tkPanelStyle:tkStyles.panel, openTickets:()=>{ tkCtl.openIt(); tkCharge(); }, closeTickets:()=>{ tkMarkSeen(); tkCtl.closeIt(); },
@@ -7893,6 +7896,8 @@ class Component extends DCLogic {
       apiStatus:st.apiState==='done'?`Réponse API · ${cmpRows.length} ligne${cmpRows.length>1?'s':''} · ${this._gscCompareMs||0} ms`:st.apiState==='loading'?'searchanalytics.query en cours…':st.apiState==='error'?'Échec de l’appel':'Aucun appel lancé — la donnée stockée est mensuelle',
       cmpReady:st.apiState==='done', cmpRows,
       rangeLabel:`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`,
+      rangeChips:(t=>t.split(' · ').map((c,i)=>({ t:c, style:'font-size:12px;font-weight:500;border-radius:999px;padding:3px 11px;white-space:nowrap;'+(i===0?'background:#f1edff;color:#5b43d6;font-weight:600':'background:#f4f4f8;color:#6d727a') })))(`${scopeLabel} · ${st.sites.length} site${st.sites.length>1?'s':''} · ${rangeDays} j (${fmtFr(debut)}→${fmtFr(fin)})${cmpMode==='none'?'':' vs '+{previous:'période préc.',year:'N-1',custom:'période perso.'}[cmpMode]}`),
+      headLogo:({ga:'https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-analytics-logo_svgstack_com_7431786095294.png',sc:'https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png',ads:'https://img.icons8.com/color/512/google-ads.png',ps:'https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png',tb:'https://img.icons8.com/color/512/tableau-software.png',pr:'https://img.icons8.com/color/512/microsoft-powerpoint-2019.png',c1st:c1LogoMini})[st.source]||'https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp',
       sourceName:srcNames[st.source],
       pageTitle:{ga:'Analytics — GA4',sc:'Search Console',ps:'PageSpeed — parc',tb:'Pilotage des leads',gcp:'GCP — leads back-office',pr:'Présentations clients',aaa:'AAA Data — marché',ads:'Google Ads',prefs:'Paramètres'}[st.source],
       sourceShort:{ga:'GA4',sc:'Search Console',ps:'PageSpeed',tb:'Pilotage des leads',gcp:'GCP'}[st.source],
