@@ -26,7 +26,7 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
-from pipeline import channel, detect, discover, funnel, funnel_daily, funnel_weekly, ga4, hist_month, insights, leads_extract, search_console, v2_report
+from pipeline import channel, detect, discover, funnel, funnel_daily, funnel_entree, funnel_weekly, ga4, hist_month, insights, leads_extract, search_console, v2_report
 from pipeline.controls import affiche, controle
 from pipeline.sites import SITES, site as trouve_site
 
@@ -661,6 +661,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
             journal.append(f"funnel par appareil/canal : {len(seg.get('device', {}))} mois")
     except Exception as e:
         journal.append(f"funnel par appareil/canal en erreur ({type(e).__name__}: {e})")
+
+    # funnel par mode de saisie du vehicule (immatriculation / marque-modele) : 2 rapports d'entonnoir par mois recalcule (mois en cours, precedent, + rattrapage de 3 mois manquants)
+    try:
+        fe = funnel_entree.mettre_a_jour(s.propriete, hote_reprise, d.get("funnelEntree"), mois_liste, jour_fiable())
+        if fe:
+            d["funnelEntree"] = fe
+            journal.append(f"funnel par mode de saisie : {len(fe)} mois")
+    except Exception as e:
+        journal.append(f"funnel par mode de saisie en erreur ({type(e).__name__}: {e})")
 
     # historique mensuel derive de data/history (annees passees, records) : sans donnee personnelle.
     try:

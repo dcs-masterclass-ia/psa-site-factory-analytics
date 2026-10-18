@@ -533,11 +533,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ funChip }}">{{ funIcon }}</span>
               <div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
-                <div style="font-size:12.5px;color:#9a9fa6">Accueil → Leads GA · 6 étapes</div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Immatriculation / marque-modèle : GA4 ne connaît pas le mode de saisie. Le parcours marque / modèle = visiteurs passés par une étape que la plaque saute (date de mise en circulation, énergie, puissance) ; immatriculation = tous les autres. Mensuel, mois entiers qui chevauchent la période, à partir de « Version » (l’accueil ne dit rien du mode). Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
+                <div style="font-size:12.5px;color:#9a9fa6">{{ funSub }}</div>
               </div></div>
               <span style="font-size:12.5px;color:#6d727a;background:#f6f6f8;border-radius:999px;padding:5px 12px;text-align:right;max-width:260px">{{ stepLabel }}</span>
             </div>
+            <sc-if value="{{ funHasEntree }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-4px 0 12px"><sc-for list="{{ funPills }}" as="p" hint-placeholder-count="3"><span onClick="{{ p.pick }}" style="{{ p.style }}">{{ p.label }}</span></sc-for><span style="font-size:12.5px;color:#6d727a;margin-left:4px">{{ funCmp }}</span></div></sc-if>
             <sc-for list="{{ steps }}" as="step" hint-placeholder-count="6">
               <div onMouseEnter="{{ step.enter }}" style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,2.6fr) 78px 92px;align-items:center;gap:11px;padding:9px 8px;border-radius:12px" style-hover="background:#f6f7fb">
                 <span style="font-size:15px;color:#2f2f33;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ step.name }}</span>
@@ -3964,7 +3965,7 @@ class Component extends DCLogic {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, canalRep:{}, v2Steps:null, v2Meta:null,
-                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
+                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, funnelEntree:{tous:[0,0,0,0,0,0],mm:[0,0,0,0,0,0],mois:0}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
                   convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false,
                   entree:{canaux:new Map(), total:0, marque:0, mois:[]}, ij:0, ijHas:false, ijManque:false, ijApprox:false };
@@ -4143,6 +4144,15 @@ class Component extends DCLogic {
               out.funnelSeg[dim].set(seg, cur);
             }
           }
+        }
+      }
+      // entonnoir par mode de saisie du véhicule (immatriculation / marque-modèle), mensuel : mois entiers qui chevauchent la période, comme funnelSeg
+      for (const mois of Object.keys(d.funnelEntree || {})) {
+        const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
+        if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
+          const e = d.funnelEntree[mois];
+          for (let i = 0; i < 6; i++) { out.funnelEntree.tous[i] += (e.tous||[])[i] || 0; out.funnelEntree.mm[i] += (e.marque_modele||[])[i] || 0; }
+          out.funnelEntree.mois++;
         }
       }
       // historique mensuel profond (années passées) : indépendant de la période
@@ -4587,9 +4597,20 @@ class Component extends DCLogic {
       }
     }
 
-    const raw = (agg.funnelSteps||[]).map(s=>[s.step, funnelFirst? s.users/funnelFirst : 0]);
+    // modes de saisie du véhicule : pastilles Tous / Immatriculation / Marque-modèle (le parcours manuel = visiteurs passés par « registration date », « fuel type » ou « engine power »)
+    const fe=agg.funnelEntree, feOk=!!(fe&&fe.mois>0&&fe.tous[1]>0&&agg.funnelSteps&&agg.funnelSteps.length===6);
+    const funMode=feOk&&['immat','mm'].includes(st.funMode)?st.funMode:'tous';
+    const feImmat=feOk?fe.tous.map((v,i)=>Math.max(0,v-fe.mm[i])):null;
+    const feArr=funMode==='immat'?feImmat:funMode==='mm'?fe.mm:null;
+    const fnList=feArr?feArr.slice(1).map((u,i)=>({step:agg.funnelSteps[i+1].step,users:u})):(agg.funnelSteps||[]);
+    const fnFirst=feArr?feArr[1]:funnelFirst;
+    const funPills=feOk?[['tous','Tous les parcours'],['immat','Immatriculation'],['mm','Marque / modèle']].map(([v,l])=>({label:T(l),pick:()=>set({funMode:v,step:null}),style:this.prChipLite(funMode===v)})):[];
+    const feConv=a=>a&&a[1]>0?dec(a[5]/a[1]*100,1)+' %':'–';
+    const funCmp=feOk?T("De « Version » à l'estimation")+' : '+T('Tous')+' '+feConv(fe.tous)+' · '+T('Immatriculation')+' '+feConv(feImmat)+' · '+T('Marque / modèle')+' '+feConv(fe.mm)+(fe.mm[1]<100?' ('+T('faible volume')+')':''):'';
+    const funSub=funMode==='tous'?T('Accueil → Leads GA · 6 étapes'):T('Version → Leads GA · 5 étapes')+' · '+T(funMode==='immat'?'visiteurs du parcours immatriculation':'visiteurs du parcours marque / modèle');
+    const raw = fnList.map(s=>[s.step, fnFirst? s.users/fnFirst : 0]);
     const steps=raw.map((r,i)=>({
-      name:r[0],pct:dec(r[1]*100,1)+' %',value:this.fmt((agg.funnelSteps[i]||{}).users||0),
+      name:r[0],pct:dec(r[1]*100,1)+' %',value:this.fmt((fnList[i]||{}).users||0),
       bar:`width:${Math.max(r[1]*100,3)}%;height:100%;border-radius:13px;background:${st.step===i?'#7c63ee':'#b6a5f8'};transition:background .15s`,
       enter:()=>set({step:i})
     }));
@@ -7812,7 +7833,7 @@ class Component extends DCLogic {
       convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
       convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel, ijShow, ij1, ij2, ij3, ijRate1, ijRate2, ijNote, funnelDelta, globalRateLabel, globalRateSub,
-      steps, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
+      steps, funPills, funHasEntree:feOk, funCmp, funSub, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
       tChipC:kPuce('#3fae7a'), tIconC:kIcone('#3fae7a',h('path',{d:'M19 5L5 19'}),h('circle',{cx:7,cy:7,r:2.5}),h('circle',{cx:17,cy:17,r:2.5})),
       tChipV:kPuce('#d78b35'), tIconV:kIcone('#d78b35',h('path',{d:'M7 4L3 8l4 4'}),h('path',{d:'M3 8h14'}),h('path',{d:'M17 20l4-4-4-4'}),h('path',{d:'M21 16H7'})),

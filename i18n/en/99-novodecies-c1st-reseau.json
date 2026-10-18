@@ -80,5 +80,13 @@
  "conversion": "conversion",
  "Adresses suspendues :": "Suspended addresses:",
  "Réactiver": "Reactivate",
- "réactiver": "reactivate"
+ "réactiver": "reactivate",
+ "Tous les parcours": "All journeys",
+ "Immatriculation": "Registration plate",
+ "Marque / modèle": "Make / model",
+ "De « Version » à l'estimation": "From “Version” to the estimate",
+ "faible volume": "low volume",
+ "Version → Leads GA · 5 étapes": "Version → GA leads · 5 steps",
+ "visiteurs du parcours immatriculation": "visitors of the plate journey",
+ "visiteurs du parcours marque / modèle": "visitors of the make / model journey"
 }
