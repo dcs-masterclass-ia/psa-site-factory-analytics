@@ -2366,9 +2366,9 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ yoyChip }}">{{ yoyIcon }}</span>
-                <div><div style="font-size:15px;font-weight:600;color:#121214">Leads par mois</div><div style="font-size:12.5px;color:#9a9fa6">Mois complets : écart de l'année en cours vs la précédente</div></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><sc-for list="{{ yoyLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="{{ l.dot }}"></span>{{ l.label }}</span></sc-for></div>
+                <div><div style="font-size:15px;font-weight:600;color:#121214">Leads par mois</div><div style="font-size:12.5px;color:#9a9fa6">Évolution mensuelle sur trois ans · écart du dernier mois complet vs l'an dernier</div></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><sc-for list="{{ yoyLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="{{ l.dot }}"></span>{{ l.label }}</span></sc-for></div>
             </div>
-            <div style="flex:1;display:flex;align-items:center"><div style="width:100%">{{ tbYoyChart }}</div></div>
+            <div style="flex:1;display:flex;align-items:center"><div id="tbYoy" data-hov style="width:100%;position:relative">{{ tbYoyChart }}</div></div>
           </div>
           <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
@@ -7032,25 +7032,43 @@ class Component extends DCLogic {
     const yoyYears = tb_lastDay ? [parseInt(tb_lastDay.slice(0,4),10)-2, parseInt(tb_lastDay.slice(0,4),10)-1, parseInt(tb_lastDay.slice(0,4),10)] : [];
     const yearTot = y=>{ let t=0; for (let m=1;m<=12;m++) t+=ym[y+'-'+tb_pad2(m)]||0; return t; };
     const lastMonthI = tb_lastDay ? parseInt(tb_lastDay.slice(5,7),10) : 12;
+    const YOY_COLS=['#cbbffb','#a18bf1','#5b3fd6'];
     const tbYoyChart = (()=>{
       if (!tb_lastDay) return '';
-      const W=860,H=330,GL=48,GR=10,GT=22,GB=26, pw=W-GL-GR, ph=H-GT-GB, cols=['#d9d2fb','#a996f4','#6c4fe0'];
-      let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); }); ymax*=1.3;   // marge en haut : valeurs (verticales) + écart en %
-      const el=[]; const bw=pw/12;
-      for (let k=0;k<=4;k++){ const v=ymax/1.3*k/4, yy=GT+ph-(v/ymax)*ph; el.push(h('line',{key:'g'+k,x1:GL,y1:yy,x2:GL+pw,y2:yy,stroke:'#f0f0f3'}), h('text',{key:'gt'+k,x:GL-8,y:yy+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
-      for (let m=1;m<=12;m++){ const x0=GL+(m-1)*bw+bw*0.14, w=bw*0.72/3;
-        yoyYears.forEach((y,j)=>{ const v=ym[y+'-'+tb_pad2(m)]||0; if(!v) return; const partial=(y===yoyYears[2]&&m===lastMonthI); const hh=v/ymax*ph;
-          el.push(h('rect',{key:'b'+m+'_'+j,x:x0+j*w,y:GT+ph-hh,width:w-2,height:hh,rx:2.5,fill:cols[j],opacity:partial?.55:1}));
-          // valeur du mois (leads), écrite à la verticale au-dessus de chaque barre
-          const cx=x0+j*w+(w-2)/2, cy=GT+ph-hh-4;
-          el.push(h('text',{key:'v'+m+'_'+j,x:cx,y:cy,fontSize:9,fill:j===2?'#4b43a8':'#8a8f98',fontWeight:j===2?600:400,fontFamily:F,transform:`rotate(-90 ${cx} ${cy})`,textAnchor:'start'},this.fmt(v))); });
-        el.push(h('text',{key:'mx'+m,x:GL+(m-1)*bw+bw/2,y:H-8,textAnchor:'middle',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_MOIS_C[m-1]));
-        const a=ym[yoyYears[2]+'-'+tb_pad2(m)], b=ym[yoyYears[1]+'-'+tb_pad2(m)];
-        if (a && b && m<lastMonthI) el.push(h('text',{key:'dl'+m,x:GL+(m-1)*bw+bw/2,y:GT+ph-Math.max(a,b)/ymax*ph-this.fmt(Math.max(a,b)).length*5.1-14,textAnchor:'middle',fontSize:10,fontWeight:600,fill:a>=b?'#2b8f62':'#a33c39',fontFamily:F},(a>=b?'+':'−')+Math.round(Math.abs(a/b-1)*100)+'%'));
-      }
+      // courbes année sur année : une ligne par année (3 ans), mois en abscisse ; le mois en cours (incomplet) est en pointillé, marqueur creux
+      const W=860,H=330,GL=52,GR=24,GT=26,GB=30, pw=W-GL-GR, ph=H-GT-GB;
+      let ymax=1; yoyYears.forEach(y=>{ for(let m=1;m<=12;m++) ymax=Math.max(ymax,ym[y+'-'+tb_pad2(m)]||0); });
+      const pas=Math.pow(10,Math.floor(Math.log10(ymax/3))), niceStep=[1,2,2.5,5,10].map(k=>k*pas).find(v=>ymax/v<=4.4)||5*pas; ymax=niceStep*Math.ceil(ymax*1.04/niceStep);
+      const X=m=>GL+(m-0.5)*pw/12, Y=v=>GT+ph-(v/ymax)*ph, el=[];
+      for (let v=0;v<=ymax+1e-6;v+=niceStep){ el.push(h('line',{key:'g'+v,x1:GL,y1:Y(v),x2:GL+pw,y2:Y(v),stroke:v===0?'#e3e3e8':'#f0f0f3'}), h('text',{key:'gt'+v,x:GL-8,y:Y(v)+4,textAnchor:'end',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_fmtK(v))); }
+      for (let m=1;m<=12;m++) el.push(h('text',{key:'mx'+m,x:X(m),y:H-9,textAnchor:'middle',fontSize:10.5,fill:'#8a8f98',fontFamily:F},tb_MOIS_C[m-1]));
+      const cour=yoyYears[2];
+      // courbe lissée (interpolation monotone : aucun dépassement entre deux points)
+      const lisse=pts=>{ if(pts.length<2) return ''; const n=pts.length, dx=[], dy=[], mm=[], t=[];
+        for(let i=0;i<n-1;i++){ dx[i]=pts[i+1][0]-pts[i][0]; dy[i]=pts[i+1][1]-pts[i][1]; mm[i]=dy[i]/dx[i]; }
+        t[0]=mm[0]; t[n-1]=mm[n-2]; for(let i=1;i<n-1;i++) t[i]=mm[i-1]*mm[i]<=0?0:(mm[i-1]+mm[i])/2;
+        for(let i=0;i<n-1;i++){ if(mm[i]===0){ t[i]=0; t[i+1]=0; continue; } const a2=t[i]/mm[i], b2=t[i+1]/mm[i], s2=a2*a2+b2*b2; if(s2>9){ const k=3/Math.sqrt(s2); t[i]=k*a2*mm[i]; t[i+1]=k*b2*mm[i]; } }
+        let d='M'+pts[0][0]+','+pts[0][1]; for(let i=0;i<n-1;i++){ const h3=dx[i]/3; d+=' C'+(pts[i][0]+h3)+','+(pts[i][1]+t[i]*h3)+' '+(pts[i+1][0]-h3)+','+(pts[i+1][1]-t[i+1]*h3)+' '+pts[i+1][0]+','+pts[i+1][1]; } return d; };
+      yoyYears.forEach((y,j)=>{
+        const complets=[], partiel=[]; for(let m=1;m<=12;m++){ const v=ym[y+'-'+tb_pad2(m)]; if(!v) continue; if(y===cour&&m===lastMonthI) partiel.push([X(m),Y(v)]); else if(!(y===cour&&m>lastMonthI)) complets.push([X(m),Y(v)]); }
+        const col=YOY_COLS[j], sw=j===2?3:2.2;
+        if (j===2 && complets.length>1) el.push(h('path',{key:'area',d:lisse(complets)+' L'+complets[complets.length-1][0]+','+Y(0)+' L'+complets[0][0]+','+Y(0)+' Z',fill:col,opacity:.08}));
+        if (complets.length>1) el.push(h('path',{key:'l'+j,d:lisse(complets),fill:'none',stroke:col,strokeWidth:sw,strokeLinecap:'round'}));
+        complets.forEach((pt,i)=>{ if (j===2 || i===complets.length-1) el.push(h('circle',{key:'c'+j+'_'+i,cx:pt[0],cy:pt[1],r:j===2?3.6:3,fill:'#fff',stroke:col,strokeWidth:2})); });
+        if (partiel.length) el.push(h('circle',{key:'cp'+j,cx:partiel[0][0],cy:partiel[0][1],r:3.6,fill:'#fff',stroke:col,strokeWidth:2,strokeDasharray:'2 2'}));
+        if (partiel.length && y===cour) el.push(h('text',{key:'cpt'+j,x:partiel[0][0],y:partiel[0][1]-11,textAnchor:'middle',fontSize:10,fontWeight:600,fill:'#8a8f98',fontFamily:F},'en cours'));
+      });
+      // dernier mois complet de l'année en cours : valeur et écart vs la même période de l'année précédente
+      const ml=lastMonthI-1>=1?lastMonthI-1:null;
+      if (ml && ym[cour+'-'+tb_pad2(ml)] && ym[yoyYears[1]+'-'+tb_pad2(ml)]) { const a=ym[cour+'-'+tb_pad2(ml)], b=ym[yoyYears[1]+'-'+tb_pad2(ml)], d=(a/b-1)*100;
+        el.push(h('text',{key:'last',x:X(ml),y:Math.max(14,Y(a)-12),textAnchor:'middle',fontSize:11,fontWeight:700,fill:d>=0?'#2b8f62':'#a33c39',fontFamily:F},(d>=0?'+':'−')+Math.round(Math.abs(d))+' % vs '+yoyYears[1])); }
+      this._hov.tbYoy={W,H,top:GT,bottom:GT+ph,xs:Array.from({length:12},(_,i)=>X(i+1)),rows:i=>{ const m=i+1, vc=ym[cour+'-'+tb_pad2(m)], vp=ym[yoyYears[1]+'-'+tb_pad2(m)];
+        const its=yoyYears.map((y,j)=>({n:String(y)+(y===cour&&m===lastMonthI?' (en cours)':''),c:YOY_COLS[j],v:ym[y+'-'+tb_pad2(m)]?this.fmt(ym[y+'-'+tb_pad2(m)]):'—'})).reverse();
+        if (vc && vp && !(m>=lastMonthI)) { const d=(vc/vp-1)*100; its.push({n:'Écart vs '+yoyYears[1],c:d>=0?'#2b8f62':'#a33c39',v:(d>=0?'+':'−')+dec(Math.abs(d),1)+' %'}); }
+        return {title:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'][i],items:its}; }};
       return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},el);
     })();
-    const yoyLegend = yoyYears.map((y,j)=>({ label:String(y)+(j===2?' (en cours)':''), dot:'width:10px;height:10px;border-radius:3px;display:inline-block;background:'+['#d9d2fb','#a996f4','#6c4fe0'][j] }));
+    const yoyLegend = yoyYears.map((y,j)=>({ label:String(y)+(j===2?' (en cours)':''), dot:'width:18px;height:4px;border-radius:2px;display:inline-block;vertical-align:middle;background:'+YOY_COLS[j] }));
     const annualRows = (()=>{
       if (!tb_lastDay) return [];
       const Y=parseInt(tb_lastDay.slice(0,4),10), rows=[]; let prev=null;

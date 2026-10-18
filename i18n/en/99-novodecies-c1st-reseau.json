@@ -136,5 +136,7 @@
  "Voir le détail →": "See details →",
  "Creuser avec KamIA": "Dig deeper with KamIA",
  "Rien d'anormal sur la période : pas de variation significative du trafic, de la conversion ou du tunnel à signaler.": "Nothing unusual over the period: no significant change in traffic, conversion or funnel to report.",
- "Explique les causes probables avec les données du dashboard et propose deux actions concrètes.": "Explain the likely causes using the dashboard data and suggest two concrete actions."
+ "Explique les causes probables avec les données du dashboard et propose deux actions concrètes.": "Explain the likely causes using the dashboard data and suggest two concrete actions.",
+ "Évolution mensuelle sur trois ans · écart du dernier mois complet vs l'an dernier": "Monthly trend over three years · last full month vs last year",
+ "Écart vs {0}": "Gap vs {0}"
 }
