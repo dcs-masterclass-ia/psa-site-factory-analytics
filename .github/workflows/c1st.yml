@@ -21,6 +21,11 @@ on:
         description: "Marchés (ex. DE,PL,AT,GB ; vide = tous)"
         required: false
         default: ""
+      reseau_seul:
+        description: "Ne collecter que « Leads Network Vision » (par contrat), pas les totaux mensuels"
+        type: choice
+        options: ["non", "oui"]
+        default: "non"
 
 permissions:
   contents: read
@@ -53,6 +58,7 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Collecter C1ST
+        if: inputs.reseau_seul != 'oui'
         env:
           C1ST_CLIENT_ID: ${{ secrets.C1ST_CLIENT_ID }}
           C1ST_USERNAME: ${{ secrets.C1ST_USERNAME }}
@@ -71,13 +77,23 @@ jobs:
           if [ "$code" -eq 3 ]; then echo "::notice::C1ST non configuré (secrets C1ST_* absents) : rien collecté"; echo "NON_CONFIGURE=1" >> "$GITHUB_ENV"; exit 0; fi
           exit $code
 
+      - name: Collecter C1ST Leads Network Vision (par contrat)
+        if: always() && env.NON_CONFIGURE != '1'
+        env:
+          C1ST_CLIENT_ID: ${{ secrets.C1ST_CLIENT_ID }}
+          C1ST_USERNAME: ${{ secrets.C1ST_USERNAME }}
+          C1ST_PRIVATE_KEY: ${{ secrets.C1ST_PRIVATE_KEY }}
+          C1ST_LOGIN_URL: ${{ secrets.C1ST_LOGIN_URL }}
+          C1ST_AUDIENCE: ${{ secrets.C1ST_AUDIENCE }}
+        run: python -m pipeline.c1st_reseau
+
       - name: Publier dans le repo de données
         if: always() && env.NON_CONFIGURE != '1'
         run: |
           cd data
           git config user.name "dcs-masterclass-ia"
           git config user.email "m.foureau@autobiz.com"
-          git add c1st/kpi.json
+          git add c1st/kpi.json c1st/reseau.json
           if git diff --cached --quiet; then echo "Aucun changement"; exit 0; fi
           git commit -m "C1ST : collecte quotidienne ($(date -u +%Y-%m-%d))"
           git pull --rebase origin main
