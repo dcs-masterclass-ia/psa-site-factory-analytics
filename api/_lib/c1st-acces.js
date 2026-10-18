@@ -16,7 +16,7 @@ function cle() {
   return s + "|c1st";
 }
 // Révision = variable Vercel C1ST_CODE_REV + compteur du bouton « Révoquer les accès » (c1st/revision.json du repo de données privé, lu avec 15 s de cache).
-const { readJson, writeJson } = require("./store");
+let { readJson, writeJson } = require("./store");
 const FICHIER_REV = "c1st/revision.json";
 let revStore = "0", revLu = 0;
 function rev() { return String(process.env.C1ST_CODE_REV || "0") + ":" + revStore; }
@@ -68,4 +68,50 @@ function cookieValide(email, valeur, mois = moisParis(), now = Date.now()) {
 }
 const admins = () => (process.env.C1ST_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
-module.exports = { charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, INACTIVITE_MS, admins, normalise };
+// ---- Suspension après 3 codes faux : c1st/bans.json du repo de données privé { bans: {adresse: {at, motif}}, essais: {adresse: {n, at}} }.
+// Une adresse suspendue ne peut plus se connecter (api/auth.js) et ses sessions sont refusées partout (middleware.js). Les adresses de C1ST_ADMIN_EMAILS ne sont jamais suspendues.
+const FICHIER_BANS = "c1st/bans.json", MAX_ESSAIS = 3, OUBLI_ESSAIS_MS = 24 * 3600 * 1000;
+let bansCache = {}, bansLu = 0;
+const adresse = (e) => String(e || "").toLowerCase();
+async function chargeBans(force) {
+  if (!force && Date.now() - bansLu < 15000) return bansCache;
+  try { const { data } = await readJson(FICHIER_BANS); bansCache = (data && data.bans) || {}; bansLu = Date.now(); }
+  catch (e) { if (!bansLu) throw e; }
+  return bansCache;
+}
+async function estSuspendu(email) { return !!(await chargeBans())[adresse(email)]; }
+/** Un code faux : -> { restants, suspendu }. */
+async function echec(email) {
+  const e = adresse(email);
+  if (admins().includes(e)) return { restants: MAX_ESSAIS, suspendu: false };
+  const { data, sha } = await readJson(FICHIER_BANS);
+  const d = data || {}; d.bans = d.bans || {}; d.essais = d.essais || {};
+  const now = Date.now(), cur = d.essais[e];
+  const n = (cur && now - cur.at < OUBLI_ESSAIS_MS ? cur.n : 0) + 1;
+  d.essais[e] = { n, at: now };
+  const suspendu = n >= MAX_ESSAIS;
+  if (suspendu) { d.bans[e] = { at: new Date(now).toISOString(), motif: `${MAX_ESSAIS} codes C1ST incorrects` }; delete d.essais[e]; }
+  await writeJson(FICHIER_BANS, d, suspendu ? "chore(c1st): adresse suspendue" : "chore(c1st): code incorrect", sha);
+  bansCache = d.bans; bansLu = now;
+  return { restants: Math.max(0, MAX_ESSAIS - n), suspendu };
+}
+/** Bon code : remet le compteur à zéro (une écriture seulement s'il y en avait un). */
+async function succes(email) {
+  const e = adresse(email);
+  const { data, sha } = await readJson(FICHIER_BANS);
+  if (!data || !data.essais || !data.essais[e]) return;
+  delete data.essais[e];
+  await writeJson(FICHIER_BANS, data, "chore(c1st): compteur remis à zéro", sha);
+}
+async function reactive(email) {
+  const e = adresse(email);
+  const { data, sha } = await readJson(FICHIER_BANS);
+  if (!data || !data.bans || !data.bans[e]) return false;
+  delete data.bans[e]; if (data.essais) delete data.essais[e];
+  await writeJson(FICHIER_BANS, data, "chore(c1st): adresse réactivée", sha);
+  bansCache = data.bans; bansLu = Date.now();
+  return true;
+}
+async function listeBans() { return await chargeBans(true); }
+
+module.exports = { estSuspendu, echec, succes, reactive, listeBans, MAX_ESSAIS, _setStore: (r, w) => { readJson = r; writeJson = w; bansLu = 0; bansCache = {}; }, charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, INACTIVITE_MS, admins, normalise };

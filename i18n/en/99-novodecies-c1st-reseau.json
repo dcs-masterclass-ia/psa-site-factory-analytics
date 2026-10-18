@@ -77,5 +77,8 @@
  "Ces données viennent du CRM Salesforce. Saisis le code du mois : il change le 1er de chaque mois et te sera communiqué par l'administrateur.": "This data comes from the Salesforce CRM. Enter this month's code: it changes on the 1st of each month and is given to you by the administrator.",
  "Verrouiller": "Lock",
  "Suivants": "Next",
- "conversion": "conversion"
+ "conversion": "conversion",
+ "Adresses suspendues :": "Suspended addresses:",
+ "Réactiver": "Reactivate",
+ "réactiver": "reactivate"
 }

@@ -45,3 +45,28 @@ test("verrouillage : 5 min d'inactivité, 4 h au maximum, renouvellement sans pr
   assert.ok(!A.cookieValide("a@b.c", A.valeurCookie("a@b.c", vieux, Date.now(), M), M).ok);                 // 5 h après la saisie du code, même actif
   assert.ok(!A.cookieValide("a@b.c", A.valeurCookie("a@b.c", Date.now(), Date.now() + 3600000, M), M).ok);  // horodatage dans le futur
 });
+
+// ---- suspension après 3 codes faux (magasin simulé)
+function faux() {
+  let fichier = null, sha = 0;
+  return { lis: async () => ({ data: fichier ? JSON.parse(JSON.stringify(fichier)) : null, sha: String(sha) }), ecris: async (_p, d) => { fichier = JSON.parse(JSON.stringify(d)); sha++; }, etat: () => fichier };
+}
+test("3 codes faux : suspension ; un bon code remet le compteur à zéro ; réactivation", async () => {
+  const f = faux(); A._setStore(f.lis, f.ecris);
+  assert.deepStrictEqual(await A.echec("x@b.c"), { restants: 2, suspendu: false });
+  await A.succes("x@b.c");
+  assert.deepStrictEqual(await A.echec("x@b.c"), { restants: 2, suspendu: false });          // compteur reparti de zéro
+  assert.deepStrictEqual(await A.echec("X@b.c"), { restants: 1, suspendu: false });
+  assert.ok(!(await A.estSuspendu("x@b.c")));
+  assert.deepStrictEqual(await A.echec("x@b.c"), { restants: 0, suspendu: true });
+  assert.ok(await A.estSuspendu("x@b.c"));
+  assert.ok(await A.reactive("x@b.c"));
+  assert.ok(!(await A.estSuspendu("x@b.c")));
+});
+test("un administrateur n'est jamais suspendu", async () => {
+  const f = faux(); A._setStore(f.lis, f.ecris);
+  process.env.C1ST_ADMIN_EMAILS = "chef@b.c";
+  for (let i = 0; i < 5; i++) assert.strictEqual((await A.echec("chef@b.c")).suspendu, false);
+  assert.ok(!(await A.estSuspendu("chef@b.c")));
+  delete process.env.C1ST_ADMIN_EMAILS;
+});

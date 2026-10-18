@@ -18,6 +18,7 @@
 
 const { sign, allowedEmails, limitedEmails, roleFor, presentationsAllowed, MAX_SESSION_MS } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
+const C1 = require("./_lib/c1st-acces");
 
 const MAX_AGE_S = MAX_SESSION_MS / 1000; // 1 h, voir _lib/auth.js
 
@@ -71,6 +72,8 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    try { if (await C1.estSuspendu(email)) { res.status(403).json({ error: "Acces suspendu. Contacte l'administrateur." , suspendu: true }); return; } }
+    catch (e) { console.error("[auth] liste de suspensions illisible", e); }       // illisible : on n'empêche pas la connexion, le middleware revérifie
     const token = sign({ email, exp: Date.now() + MAX_AGE_S * 1000 });
     res.setHeader("Set-Cookie", [
       `psf_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,
