@@ -200,6 +200,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 .maint-titre{font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214;margin-bottom:8px}
 .maint-txt{font-size:14.5px;line-height:1.55;color:#4a4f57}
 .maint-sous{margin-top:14px;font-size:12.5px;color:#9a9fa6}
+@media (max-width:1320px){.hd-chips{display:none!important}}
+@media (max-width:1260px){.hd-lbl{display:none}[data-chrome="header"]{gap:8px!important;padding-left:16px!important;padding-right:16px!important}}
 #dc-tipbox{display:none;position:fixed;z-index:9999;width:310px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-family:Poppins,system-ui,sans-serif;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28);pointer-events:none}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#dedee2;border-radius:6px;border:3px solid #f4f4f6}
 @keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -298,12 +300,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
   <div style="flex:1;min-width:0;display:flex;flex-direction:column">
 
-    <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 24px;background:linear-gradient(180deg,#ffffff 0%,#fbfaff 100%);border-bottom:1px solid #ececf2;flex-wrap:wrap">
-      <div style="flex:1 1 260px;min-width:0;display:flex;align-items:center;gap:14px">
+    <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 24px;background:linear-gradient(180deg,#ffffff 0%,#fbfaff 100%);border-bottom:1px solid #ececf2;flex-wrap:nowrap;min-width:0">
+      <div style="flex:1 1 120px;min-width:0;display:flex;align-items:center;gap:14px">
         <div style="width:48px;height:48px;flex:none;border-radius:16px;background:#fff;border:1px solid #ececf2;box-shadow:0 8px 20px -12px rgba(124,99,238,.55);display:flex;align-items:center;justify-content:center"><img src="{{ headLogo }}" data-keep alt="" width="26" height="26" style="display:block;object-fit:contain"></div>
         <div style="min-width:0">
           <div style="font-size:19px;font-weight:700;letter-spacing:-.025em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
-          <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap"><sc-for list="{{ rangeChips }}" as="c" hint-placeholder-count="3"><span style="{{ c.style }}">{{ c.t }}</span></sc-for>
+          <div class="hd-chips" style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:nowrap;overflow:hidden"><sc-for list="{{ rangeChips }}" as="c" hint-placeholder-count="3"><span style="{{ c.style }}">{{ c.t }}</span></sc-for>
             <sc-if value="{{ provNote }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;border-radius:999px;padding:3px 11px;background:#fff6e0;color:#a56a00;white-space:nowrap"><span style="width:7px;height:7px;border-radius:50%;background:#f2a93b;animation:orbBreath 1.8s ease-in-out infinite"></span>{{ provNote }}</span></sc-if></div>
         </div>
       </div>
@@ -450,13 +452,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
       <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 8px;border-radius:999px;background:linear-gradient(135deg,#f1edff,#e8f0ff);color:#4b35c8;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .15s,box-shadow .15s" style-hover="transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(124,99,238,.6)">
         <span style="width:26px;height:26px;border-radius:50%;background:#fff;flex:none;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(124,99,238,.25)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6f55e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg></span>
-        Ticket
+        <span class="hd-lbl">Ticket</span>
         <sc-if value="{{ tkNewCount }}" hint-placeholder-val="{{ false }}"><span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#e8544a;color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;animation:tabFadeIn .2s ease">{{ tkNewCount }}</span></sc-if>
       </div>
 
       <div role="switch" aria-checked="{{ capOn }}" onClick="{{ capSwitch }}" title="Activer / désactiver les captures d'image des modules" style="{{ capPill }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
         <span style="width:26px;height:26px;border-radius:50%;background:#eef3fe;flex:none;display:inline-flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b76e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.2l1-1.6A1.5 1.5 0 0 1 10 3.7h4a1.5 1.5 0 0 1 1.3.7l1 1.6h1.2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5v-8Z"/><circle cx="12" cy="12.5" r="3.2"/></svg></span>
-        Capture
+        <span class="hd-lbl">Capture</span>
         <span style="{{ capTrack }}"><span style="{{ capKnob }}"></span></span>
       </div>
       <sc-if value="{{ capOn }}" hint-placeholder-val="{{ false }}">
