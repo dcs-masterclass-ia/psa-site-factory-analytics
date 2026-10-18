@@ -47,3 +47,28 @@ test("insights en anglais : textes calculés en anglais, aucun accent français 
   expect(carte).toMatch(/GA leads [+−]/);
   expect(/[éèêàù]/.test(carte)).toBe(false);
 });
+
+test("« Voir le détail » change de vue d'analyse et amène l'écran dessus (la vue est sous la carte)", async ({ page }) => {
+  await ouvre(page, ["OPEL FR"]);
+  await page.evaluate(() => { const z = document.getElementById("gaAnalyses").closest("div[style*='overflow-y']"); window.__zone = z; z.scrollTop = 0; });
+  const avant = await page.evaluate(() => document.getElementById("gaAnalyses").getBoundingClientRect().top);
+  expect(avant).toBeGreaterThan(400);                                                          // sous la ligne de flottaison
+  await page.getByText("Voir le détail →").first().click();
+  await expect.poll(() => page.evaluate(() => document.getElementById("gaAnalyses").getBoundingClientRect().top), { timeout: 5000 }).toBeLessThan(300);   // l'écran a défilé
+});
+
+test("« Voir le détail » d'un insight de canal ouvre la vue « Évolution du trafic reprise par canal »", async ({ page }) => {
+  await ouvre(page, ["PEUGEOT FR"]);
+  const titre = page.getByText(/trafic (en hausse|en recul)$/).first();
+  test.skip((await titre.count()) === 0, "pas d'insight de canal sur ce jeu de données");
+  await titre.locator("xpath=following::span[contains(.,'Voir le détail')][1]").click();
+  await expect(page.getByText("Évolution du trafic reprise par canal").first()).toBeVisible();
+});
+
+test("« Voir le détail » d'un insight de segment ouvre la vue canal × appareil (marché entier)", async ({ page }) => {
+  await page.goto("/", { waitUntil: "networkidle" });
+  const titre = page.getByText(/à développer$/).first();
+  test.skip((await titre.count()) === 0, "pas d'insight de segment sur ce jeu de données");
+  await titre.locator("xpath=following::span[contains(.,'Voir le détail')][1]").click();
+  await expect(page.getByText(/^Conversion par canal et appareil/).first()).toBeVisible();
+});
