@@ -6178,7 +6178,7 @@ class Component extends DCLogic {
     const RS_TR=[[0,10,'moins de 10 %'],[10,25,'10 à 25 %'],[25,50,'25 à 50 %'],[50,75,'50 à 75 %'],[75,101,'75 % et plus']];
     const c1RsDistrib=c1RsEligibles.length?RS_TR.map(([a,b,l])=>{ const g=c1RsEligibles.filter(r=>{ const p=r.c/r.clients*100; return p>=a&&p<b; }); const cl=g.reduce((x,r)=>x+r.clients,0), tot=c1RsEligibles.reduce((x,r)=>x+r.clients,0);
       return {nom:T(l),n:g.length+' '+T(g.length>1?'contrats':'contrat'),pct:Math.round(cl/tot*100)+' % '+T('des leads'),bar:`width:${Math.max(g.length?2:0,cl/tot*100).toFixed(1)}%;height:100%;border-radius:4px;background:${a<25?'#e8544a':a<50?'#f2b36b':'#3fae7a'}`}; }):[];
-    const rsListe=(arr,asc)=>arr.slice(0,8).map(r=>({nom:r.nom,code:r.code,det:c1Nf(r.clients)+' '+T('leads')+' · '+rsPc(rsP(r.c,r.clients),0)+' '+T('contactés')+' · '+rsPc(rsP(r.fca,r.clients),0)+' '+T('1er appel')}));
+    const rsListe=(arr,asc)=>arr.slice(0,8).map(r=>({nom:r.nom,code:r.code,det:c1Nf(r.clients)+' '+T('leads')+' · '+rsPc(rsP(r.c,r.clients),0)+' '+T('contactés')+' · '+rsPc(rsP(r.fca,r.clients),0)+' '+T('1er appel')+' · '+c1Nf(r.o)+' '+T('commandes')+' ('+rsPc(rsP(r.o,r.clients),1)+' '+T('de conversion')+')'}));
     const c1RsSilence=rsListe(c1RsEligibles.filter(r=>r.clients>=50&&r.c/r.clients<0.1).sort((a,b)=>b.clients-a.clients));
     const c1RsMeilleurs=rsListe(c1RsEligibles.filter(r=>r.clients>=50).sort((a,b)=>(b.tot/b.clients)-(a.tot/a.clients)||b.clients-a.clients));
     const c1RsDate=c1ReseauOk&&c1Reseau.collecte&&c1Reseau.collecte.date?String(c1Reseau.collecte.date).slice(8,10)+'/'+String(c1Reseau.collecte.date).slice(5,7)+'/'+String(c1Reseau.collecte.date).slice(0,4):'—';
