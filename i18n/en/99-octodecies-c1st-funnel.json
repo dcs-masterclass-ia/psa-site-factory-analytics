@@ -23,5 +23,13 @@
  "Qualifié": "Qualified",
  "Écarté": "Discarded",
  "Archivé": "Archived",
- "Suivi en cours": "On Going"
+ "Suivi en cours": "On Going",
+ "Clients envoyés": "Customers sent",
+ "vs mois précédent": "vs previous month",
+ "Statuts non saisis par les concessionnaires ce mois-là": "Statuses not entered by dealers that month",
+ "1ers appels dans les délais": "First calls on time",
+ "Clients contactés": "Customers contacted",
+ "dont dans les délais": "of which on time",
+ "Clients avec devis": "Customers with quotes",
+ "Clients uniques": "Unique customers"
 }

@@ -79,6 +79,14 @@ test("C1ST : onglet « Leads Funnel » avec les six graphiques de C1ST et les ta
     await expect(page.locator("div", { hasText: new RegExp("^" + titre + "i") }).first()).toBeVisible();      // le titre porte une pastille « i » (+ son infobulle)
   }
   await expect(page.getByText("Taux clés face à la comparaison")).toBeVisible();
+  // survol : chaque graphique donne le détail du mois sous la souris (barres des leads, 4 courbes de taux)
+  for (const [id, texte] of [["c1h_b", "Clients envoyés"], ["c1h_p", "Clients envoyés"], ["c1h_c", "Clients contactés"], ["c1h_d", "Clients avec devis"], ["c1h_o", "Commandes NSC"]]) {
+    const boite = page.locator("#" + id);
+    await boite.scrollIntoViewIfNeeded();
+    const b = await boite.boundingBox();
+    await page.mouse.move(b.x + b.width * 0.86, b.y + b.height * 0.55);
+    await expect(page.locator("#chartHovTip")).toContainText(texte);
+  }
   expect(erreurs, erreurs.join(" | ")).toEqual([]);
 });
 
