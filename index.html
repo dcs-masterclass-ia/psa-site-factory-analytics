@@ -533,7 +533,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ funChip }}">{{ funIcon }}</span>
               <div>
-                <div style="font-size:15px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Immatriculation / marque-modèle : GA4 ne connaît pas le mode de saisie. Le parcours marque / modèle = visiteurs passés par une étape que la plaque saute (date de mise en circulation, énergie, puissance) ; immatriculation = tous les autres. Mensuel, mois entiers qui chevauchent la période, à partir de « Version » (l’accueil ne dit rien du mode). Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
+                <div style="font-size:15px;font-weight:600;color:#121214">Tunnel de conversion<span class="dc-info" tabindex="0">i<span class="dc-tip">Immatriculation / marque-modèle : parcours lu dans l’URL virtuelle des évènements du formulaire (/form/plate/… = plaque, /form/brand/… = marque et modèle), en visiteurs uniques du mois, mois entiers qui chevauchent la période. Les barres partent de « Version » : l’accueil précède le choix du mode. Six étapes, en utilisateurs actifs GA4 par jour, additionnés sur la période : accueil (page_category = home page), version, kilométrage, coordonnées, point de vente (paramètre step_name) puis estimation (événement tradein_request). Les pourcentages sont rapportés aux visiteurs de l'accueil.</span></span></div>
                 <div style="font-size:12.5px;color:#9a9fa6">{{ funSub }}</div>
               </div></div>
               <span style="font-size:12.5px;color:#6d727a;background:#f6f6f8;border-radius:999px;padding:5px 12px;text-align:right;max-width:260px">{{ stepLabel }}</span>
@@ -3983,7 +3983,7 @@ class Component extends DCLogic {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, canalRep:{}, v2Steps:null, v2Meta:null,
-                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, funnelEntree:{tous:[0,0,0,0,0,0],mm:[0,0,0,0,0,0],mois:0}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
+                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, funnelEntree:{immat:[0,0,0,0,0],mm:[0,0,0,0,0],mois:0}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
                   convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false,
                   entree:{canaux:new Map(), total:0, marque:0, mois:[]}, ij:0, ijHas:false, ijManque:false, ijApprox:false };
@@ -4169,7 +4169,7 @@ class Component extends DCLogic {
         const joursMois = d.daily.d.filter(x => x.slice(0,7) === mois);
         if (joursMois.length && joursMois[0] <= finIso && joursMois[joursMois.length-1] >= debutIso) {
           const e = d.funnelEntree[mois];
-          for (let i = 0; i < 6; i++) { out.funnelEntree.tous[i] += (e.tous||[])[i] || 0; out.funnelEntree.mm[i] += (e.marque_modele||[])[i] || 0; }
+          for (let i = 0; i < 5; i++) { out.funnelEntree.immat[i] += (e.immat||[])[i] || 0; out.funnelEntree.mm[i] += (e.marque_modele||[])[i] || 0; }
           out.funnelEntree.mois++;
         }
       }
@@ -4616,15 +4616,15 @@ class Component extends DCLogic {
     }
 
     // modes de saisie du véhicule : pastilles Tous / Immatriculation / Marque-modèle (le parcours manuel = visiteurs passés par « registration date », « fuel type » ou « engine power »)
-    const fe=agg.funnelEntree, feOk=!!(fe&&fe.mois>0&&fe.tous[1]>0&&agg.funnelSteps&&agg.funnelSteps.length===6);
+    const fe=agg.funnelEntree, feOk=!!(fe&&fe.mois>0&&(fe.immat[0]+fe.mm[0])>0&&agg.funnelSteps&&agg.funnelSteps.length===6);
     const funMode=feOk&&['immat','mm'].includes(st.funMode)?st.funMode:'tous';
-    const feImmat=feOk?fe.tous.map((v,i)=>Math.max(0,v-fe.mm[i])):null;
-    const feArr=funMode==='immat'?feImmat:funMode==='mm'?fe.mm:null;
-    const fnList=feArr?feArr.slice(1).map((u,i)=>({step:agg.funnelSteps[i+1].step,users:u})):(agg.funnelSteps||[]);
-    const fnFirst=feArr?feArr[1]:funnelFirst;
+    const feTous=feOk?agg.funnelSteps.slice(1).map(x=>x.users):null;                       // « Tous » = le tunnel général (step_name), de Version à l'estimation
+    const feArr=funMode==='immat'?fe.immat:funMode==='mm'?fe.mm:null;                        // [Version, Kilométrage, Coordonnées, Point de vente, Estimation]
+    const fnList=feArr?feArr.map((u,i)=>({step:agg.funnelSteps[i+1].step,users:u})):(agg.funnelSteps||[]);
+    const fnFirst=feArr?feArr[0]:funnelFirst;
     const funPills=feOk?[['tous','Tous les parcours'],['immat','Immatriculation'],['mm','Marque / modèle']].map(([v,l])=>({label:T(l),pick:()=>set({funMode:v,step:null}),style:this.prChipLite(funMode===v)})):[];
-    const feConv=a=>a&&a[1]>0?dec(a[5]/a[1]*100,1)+' %':'–';
-    const funCmp=feOk?T("De « Version » à l'estimation")+' : '+T('Tous')+' '+feConv(fe.tous)+' · '+T('Immatriculation')+' '+feConv(feImmat)+' · '+T('Marque / modèle')+' '+feConv(fe.mm)+(fe.mm[1]<100?' ('+T('faible volume')+')':''):'';
+    const feConv=a=>a&&a[0]>0?dec(a[4]/a[0]*100,1)+' %':'–';
+    const funCmp=feOk?T("De « Version » à l'estimation")+' : '+T('Tous')+' '+feConv(feTous)+' · '+T('Immatriculation')+' '+feConv(fe.immat)+' · '+T('Marque / modèle')+' '+feConv(fe.mm)+(fe.mm[0]<100?' ('+T('faible volume')+')':''):'';
     const funSub=funMode==='tous'?T('Accueil → Leads GA · 6 étapes'):T('Version → Leads GA · 5 étapes')+' · '+T(funMode==='immat'?'visiteurs du parcours immatriculation':'visiteurs du parcours marque / modèle');
     const raw = fnList.map(s=>[s.step, fnFirst? s.users/fnFirst : 0]);
     const steps=raw.map((r,i)=>({
@@ -4637,7 +4637,7 @@ class Component extends DCLogic {
       :raw[st.step-1] && raw[st.step-1][1] ? `Passage ${dec(raw[st.step][1]/raw[st.step-1][1]*100,1)} % · abandon ${dec(100-raw[st.step][1]/raw[st.step-1][1]*100,1)} %`
       :'Donnée non disponible';
 
-    const compPct = feArr ? (feArr[1] ? feArr[5]/feArr[1]*100 : 0) : (funnelFirst ? funnelLast/funnelFirst*100 : 0);
+    const compPct = feArr ? (feArr[0] ? feArr[4]/feArr[0]*100 : 0) : (funnelFirst ? funnelLast/funnelFirst*100 : 0);
     const compPctLabel = dec(compPct,1)+' %';
     const abandonLabel = dec(100-compPct,1)+' %';
     // « Parcours comme Looker » : Sessions de la reprise -> In Journey -> Leads GA (affiché seulement quand In Journey est mesuré pour tous les sites choisis)
@@ -4653,8 +4653,8 @@ class Component extends DCLogic {
     const ijNote = ijShow ? (agg.ijApprox ? 'Période en jours : somme des jours (jusqu\'à ~1 % de plus que les totaux mensuels de Looker)' : 'Mois entiers : totaux mensuels GA4') : '';
 
     const cfe = cmp && cmp.funnelEntree && cmp.funnelEntree.mois>0 ? cmp.funnelEntree : null;
-    const cfeArr = !feArr ? null : !cfe ? null : funMode==='immat' ? cfe.tous.map((v,i)=>Math.max(0,v-cfe.mm[i])) : cfe.mm;
-    const cmpCompPct = feArr ? (cfeArr && cfeArr[1]>0 ? cfeArr[5]/cfeArr[1]*100 : null) : (cmpFirst ? cmpFunnelLast/cmpFirst*100 : null);
+    const cfeArr = !feArr ? null : !cfe ? null : funMode==='immat' ? cfe.immat : cfe.mm;
+    const cmpCompPct = feArr ? (cfeArr && cfeArr[0]>0 ? cfeArr[4]/cfeArr[0]*100 : null) : (cmpFirst ? cmpFunnelLast/cmpFirst*100 : null);
     const funnelDelta = cmpCompPct==null ? {text:'',style:'display:none'} : ptDeltaBadge(compPct, cmpCompPct);
     const globalRateLabel = rateGlobal==null ? '—' : dec(rateGlobal,1)+' %';
     const globalRateSub = (feArr ? T('Tous parcours confondus')+' · ' : '') + (agg.convSessTot>0 ? `${this.fmt(agg.convEv)} leads GA ÷ ${this.fmt(agg.convSessTot)} sessions du site de reprise` : 'leads GA ÷ visiteurs de l\'accueil (sessions du site de reprise indisponibles sur la période)');

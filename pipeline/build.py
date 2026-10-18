@@ -662,12 +662,14 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     except Exception as e:
         journal.append(f"funnel par appareil/canal en erreur ({type(e).__name__}: {e})")
 
-    # funnel par mode de saisie du vehicule (immatriculation / marque-modele) : 2 rapports d'entonnoir par mois recalcule (mois en cours, precedent, + rattrapage de 3 mois manquants)
+    # funnel par mode de saisie du vehicule (immatriculation / marque-modele, virtualpage_url /form/plate | /form/brand) : 2 requetes GA4 par site pour toute la fenetre
     try:
-        fe = funnel_entree.mettre_a_jour(s.propriete, hote_reprise, d.get("funnelEntree"), mois_liste, jour_fiable())
+        fe = funnel_entree.funnel_entree(cli, s.propriete, hote_reprise, date.fromisoformat(mois_liste[0] + "-01"), date.fromisoformat(jour_fiable()))
         if fe:
             d["funnelEntree"] = fe
             journal.append(f"funnel par mode de saisie : {len(fe)} mois")
+        else:
+            d.pop("funnelEntree", None)
     except Exception as e:
         journal.append(f"funnel par mode de saisie en erreur ({type(e).__name__}: {e})")
 

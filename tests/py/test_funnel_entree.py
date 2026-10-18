@@ -1,46 +1,41 @@
-"""Funnel par mode de saisie : sélection des mois à (re)calculer, jamais de valeur inventée."""
+"""Funnel par mode de saisie : lecture de virtualpage_url (/form/plate/…, /form/brand/…), jamais de valeur inventée."""
+import datetime
 import unittest
 from unittest import mock
 
 from pipeline import funnel_entree as fe
 
+D, F = datetime.date(2026, 9, 1), datetime.date(2026, 9, 30)
 
-class MettreAJour(unittest.TestCase):
-    def _lance(self, existant, mois, resultats):
-        appels = []
 
-        def faux(cli, pid, hote, m, dernier):
-            appels.append(m)
-            return resultats.get(m)
-        with mock.patch.object(fe, "AlphaAnalyticsDataClient", lambda: None), mock.patch.object(fe, "mois_entree", faux):
-            out = fe.mettre_a_jour("1", "h", existant, mois, "2026-10-16")
-        return out, appels
+def faux_rapport(pages, estimations):
+    """1er appel = pages vues par parcours, 2e = évènement d'estimation."""
+    return mock.patch.object(fe.ga4, "_rapport", side_effect=[pages, estimations])
 
-    def test_recalcule_les_deux_derniers_mois_et_rattrape_au_plus_trois_manquants(self):
-        mois = [f"2026-{m:02d}" for m in range(1, 11)]
-        res = {m: {"tous": [1] * 6, "marque_modele": [0] * 6} for m in mois}
-        out, appels = self._lance({}, mois, res)
-        self.assertEqual(sorted(appels), ["2026-07", "2026-08", "2026-09", "2026-10"][:0] + sorted(["2026-09", "2026-10", "2026-08", "2026-07", "2026-06"]))
-        self.assertEqual(len(out), 5)
 
-    def test_mois_deja_connu_non_recalcule_sauf_les_deux_derniers(self):
-        mois = ["2026-07", "2026-08", "2026-09", "2026-10"]
-        ancien = {"2026-07": {"tous": [9] * 6, "marque_modele": [1] * 6}}
-        res = {m: {"tous": [2] * 6, "marque_modele": [1] * 6} for m in mois}
-        out, appels = self._lance(ancien, mois, res)
-        self.assertNotIn("2026-07", appels)
-        self.assertEqual(out["2026-07"]["tous"], [9] * 6)          # conservé tel quel
+class FunnelEntree(unittest.TestCase):
+    def test_parcours_plaque_et_marque_modele_separes(self):
+        pages = [("202609", "/form/plate/version", "100"), ("202609", "/form/plate/mileage", "90"), ("202609", "/form/plate/contact", "85"), ("202609", "/form/plate/map", "50"),
+                 ("202609", "/form/brand/version", "10"), ("202609", "/form/brand/mileage", "8"), ("202609", "/form/brand/contact", "7"), ("202609", "/form/brand/map", "4"),
+                 ("202609", "/home", "999"), ("202609", "/form/plate/offer", "45")]                   # accueil et page d'offre ignorés (l'estimation vient de l'évènement)
+        est = [("202609", "/form/plate/offer", "44"), ("202609", "/form/brand/offer", "3")]
+        with faux_rapport(pages, est):
+            r = fe.funnel_entree(None, "1", "h", D, F)
+        self.assertEqual(r["2026-09"]["immat"], [100, 90, 85, 50, 44])
+        self.assertEqual(r["2026-09"]["marque_modele"], [10, 8, 7, 4, 3])
 
-    def test_mois_sans_visiteurs_non_enregistre(self):
-        out, _ = self._lance({}, ["2026-09", "2026-10"], {})
-        self.assertEqual(out, {})
+    def test_sans_parcours_reconnu_rien_n_est_ecrit(self):
+        with faux_rapport([("202609", "/home", "10"), ("202609", "(not set)", "5")], []):
+            self.assertEqual(fe.funnel_entree(None, "1", "h", D, F), {})
 
-    def test_marque_modele_jamais_superieur_au_total(self):
-        class R:  # rapport simulé : le segment dépasse le total (arrondis de GA4)
-            pass
-        with mock.patch.object(fe, "_rapport", side_effect=[[10, 8, 7, 6, 4, 3], [12, 9, 7, 6, 4, 3]]):
-            r = fe.mois_entree(None, "1", "h", "2026-09", "2026-10-16")
-        self.assertEqual(r["marque_modele"], [10, 8, 7, 6, 4, 3])
+    def test_url_avec_prefixe_de_langue_reconnue(self):
+        with faux_rapport([("202609", "/nl/form/brand/version?x=1", "12")], []):
+            r = fe.funnel_entree(None, "1", "h", D, F)
+        self.assertEqual(r["2026-09"]["marque_modele"][0], 12)
+
+    def test_erreur_ga4_donne_vide(self):
+        with mock.patch.object(fe.ga4, "_rapport", side_effect=RuntimeError("quota")):
+            self.assertEqual(fe.funnel_entree(None, "1", "h", D, F), {})
 
 
 if __name__ == "__main__":

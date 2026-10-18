@@ -7,7 +7,7 @@ test.beforeEach(async ({ context }) => {
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
 });
 
-const TOUS = [1000, 400, 380, 370, 200, 160], MM = [50, 40, 38, 36, 14, 8];       // Version -> estimation : tous 40 %, marque/modèle 20 %, immatriculation (160-8)/(400-40) = 42,2 %
+const IMMAT = [360, 342, 334, 186, 152], MM = [40, 38, 36, 14, 8];       // Version -> estimation : immatriculation 152/360 = 42,2 %, marque/modèle 8/40 = 20,0 %
 
 test("tunnel : pastilles par mode de saisie, barres à partir de « Version », comparaison des trois", async ({ page }) => {
   const erreurs = [];
@@ -16,7 +16,7 @@ test("tunnel : pastilles par mode de saisie, barres à partir de « Version », 
   await page.route("**/data/peugeot-fr.json", async (route) => {
     const d = await (await route.fetch()).json();
     d.funnelEntree = {};
-    for (const m of d.months || []) d.funnelEntree[m] = { tous: TOUS, marque_modele: MM };
+    for (const m of d.months || []) d.funnelEntree[m] = { immat: IMMAT, marque_modele: MM };
     await route.fulfill({ json: d });
   });
   await page.goto("/", { waitUntil: "networkidle" });
