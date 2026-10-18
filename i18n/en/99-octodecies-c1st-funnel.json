@@ -1,0 +1,11 @@
+{
+ "Barres foncées : la période sélectionnée. Taux de suivi : part des clients envoyés (statuts saisis par les concessionnaires, déployés progressivement : un mois sans statut n'est pas tracé). % With Quotes et % NSC Orders : part des clients uniques ; cercle creux = commandes encore provisoires (moins de 90 jours).": "Dark bars: the selected period. Follow-up rates: share of customers sent (statuses entered by dealers, rolled out gradually: a month without statuses is not plotted). % With Quotes and % NSC Orders: share of unique customers; hollow circle = orders still provisional (less than 90 days).",
+ "Les statuts ne sont pas encore collectés pour cette période.": "Statuses are not yet collected for this period.",
+ "Taux clés face à la comparaison": "Key rates vs comparison",
+ "Période sélectionnée, comparaison et écart en points. Les taux de suivi sont indicatifs : ils reflètent des statuts saisis progressivement par les concessionnaires. Le taux de commande n'est comparé que quand les deux périodes ont plus de 90 jours.": "Selected period, comparison and difference in points. Follow-up rates are indicative: they reflect statuses entered gradually by dealers. The order rate is only compared when both periods are more than 90 days old.",
+ "Comparaison": "Comparison",
+ "1° appel dans les délais": "1st call on time",
+ "Avec devis": "With quotes",
+ "Taux de commande": "Order rate",
+ "indicatif": "indicative"
+}
