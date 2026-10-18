@@ -1144,16 +1144,59 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="display:flex;gap:12px;margin-top:2px">
                   <div style="flex:1;border-radius:14px;background:#f7f6fe;padding:12px 14px">
                     <div style="font-size:12.5px;color:#8a8f98;margin-bottom:2px">Nouveaux</div>
-                    <div style="font-size:19px;font-weight:600;color:#121214">68 %</div>
+                    <div style="font-size:19px;font-weight:600;color:#121214">{{ nvNewPct }}</div>
                   </div>
                   <div style="flex:1;border-radius:14px;background:#f7f7f9;padding:12px 14px">
                     <div style="font-size:12.5px;color:#8a8f98;margin-bottom:2px">Récurrents</div>
-                    <div style="font-size:19px;font-weight:600;color:#121214">32 %</div>
+                    <div style="font-size:19px;font-weight:600;color:#121214">{{ nvRetPct }}</div>
                   </div>
                 </div>
               </div>
             </div>
           <sc-if value="{{ insAudience }}" hint-placeholder-val="{{ true }}"><div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">{{ insAudience }}</div></sc-if>
+          </div>
+          </sc-if>
+          <sc-if value="{{ isGeo }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span style="{{ tChipA }}">{{ tIconA }}</span><div>
+            <div style="font-size:15px;font-weight:600;color:#121214">Où sont les visiteurs ?</div>
+            <div style="font-size:12.5px;color:#9a9fa6">Sessions de l'outil de reprise, par pays, ville et langue du navigateur</div>
+            </div></div>
+            <sc-if value="{{ geoHas }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px;align-items:start">
+                <div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#6d727a;margin-bottom:10px">Pays</div>
+                  <sc-for list="{{ geoPays }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14.5px;color:#2f2f33;text-transform:capitalize">{{ g.name }}</span><span style="font-size:14.5px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+                </div>
+                <div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#6d727a;margin-bottom:10px">Villes</div>
+                  <sc-for list="{{ geoVilles }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14.5px;color:#2f2f33;text-transform:capitalize">{{ g.name }}</span><span style="font-size:14.5px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+                </div>
+                <div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#6d727a;margin-bottom:10px">Langues</div>
+                  <sc-for list="{{ geoLangues }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14.5px;color:#2f2f33;text-transform:capitalize">{{ g.name }}</span><span style="font-size:14.5px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+                </div>
+            </div>
+            </sc-if>
+            <sc-if value="{{ !geoHas }}" hint-placeholder-val="{{ false }}"><div style="flex:1;font-size:14px;color:#9a9fa6;line-height:1.6">La provenance géographique est en cours de collecte pour ces sites : elle apparaît dès le prochain rafraîchissement de nuit.</div></sc-if>
+            <div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">L'âge, le sexe et les centres d'intérêt ne sont pas disponibles : Google Signals n'est pas activé et le consentement est limité en Europe.</div>
+          </div>
+          </sc-if>
+          <sc-if value="{{ isProfil }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><span style="{{ tChipA }}">{{ tIconA }}</span><div>
+            <div style="font-size:15px;font-weight:600;color:#121214">Quel véhicule veulent-ils reprendre ?</div>
+            <div style="font-size:12.5px;color:#9a9fa6">Demandes de reprise de la période (back-office) : marque et carburant du véhicule actuel</div>
+            </div></div>
+            <sc-if value="{{ profHas }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px;align-items:start">
+                <div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#6d727a;margin-bottom:10px">Marque du véhicule repris</div>
+                  <sc-for list="{{ profMarques }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14.5px;color:#2f2f33;text-transform:capitalize">{{ g.name }}</span><span style="font-size:14.5px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+                </div>
+                <div style="min-width:0"><div style="font-size:13px;font-weight:600;color:#6d727a;margin-bottom:10px">Carburant</div>
+                  <sc-for list="{{ profCarbu }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14.5px;color:#2f2f33;text-transform:capitalize">{{ g.name }}</span><span style="font-size:14.5px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
+                </div>
+            </div>
+            </sc-if>
+            <sc-if value="{{ !profHas }}" hint-placeholder-val="{{ false }}"><div style="flex:1;font-size:14px;color:#9a9fa6;line-height:1.6">Aucune demande de reprise sur la sélection et la période.</div></sc-if>
+            <div style="margin-top:12px;flex:none;font-size:13px;color:#6d727a;background:#f6f6f8;border-radius:10px;padding:8px 12px">Comptages seulement, aucune donnée personnelle. Mois entiers qui touchent la période.</div>
           </div>
           </sc-if>
         </div>
@@ -3711,7 +3754,7 @@ class Component extends DCLogic {
     const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, canalRep:{}, v2Steps:null, v2Meta:null,
-                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(),
+                  convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
                   trafficDaily:{}, repriseDaily:{}, leadsDaily:{}, convDaily:{}, funnelApprox:false, convSess:false, convUsers:false,
                   convEv:0, convSessTot:0, propTotal:0, propApprox:false, exactMois:false,
                   entree:{canaux:new Map(), total:0, marque:0, mois:[]}, ij:0, ijHas:false, ijManque:false, ijApprox:false };
@@ -3904,6 +3947,13 @@ class Component extends DCLogic {
         const am = d.audienceMonth[mois];
         const cumule = (map, src) => { for (const [k,v] of Object.entries(src||{})) { const cur = map.get(k)||{sessions:0,users:0}; cur.sessions += v.sessions||0; cur.users += v.users||0; map.set(k,cur); } };
         cumule(out.browser, am.browser); cumule(out.newVsReturning, am.newVsReturning);
+      }
+      for (const mois of Object.keys(d.geoMonth || {})) {      // provenance géographique et langue (mois qui touchent la période)
+        const joursG = d.daily.d.filter(x => x.slice(0,7) === mois);
+        if (!joursG.length || joursG[0] > finIso || joursG[joursG.length-1] < debutIso) continue;
+        const gm = d.geoMonth[mois];
+        out.geo.total += gm.total || 0;
+        for (const k of ['pays','regions','villes','langues']) (gm[k]||[]).forEach(([n,c]) => out.geo[k].set(n, (out.geo[k].get(n)||0)+c));
       }
     }
     return out;
@@ -4601,6 +4651,17 @@ class Component extends DCLogic {
       return { name, pct:pct+' %', bar:`width:${pct}%;height:100%;border-radius:4px;background:#b6a5f8` };
     });
 
+    // nouveaux / récurrents (sessions de la reprise, hors « (not set) »)
+    const nvN=(agg.newVsReturning.get('new')||{sessions:0}).sessions, nvR=(agg.newVsReturning.get('returning')||{sessions:0}).sessions;
+    const nvOk=nvN+nvR>0, nvNewPct=nvOk?Math.round(nvN/(nvN+nvR)*100)+' %':'—', nvRetPct=nvOk?Math.round(nvR/(nvN+nvR)*100)+' %':'—';
+    // provenance géographique et langue (GA4 : pays, villes, langues ; âge, sexe et centres d'intérêt ne sont pas disponibles)
+    const GEO_FR={'France':'France','Belgium':'Belgique','Luxembourg':'Luxembourg','Netherlands':'Pays-Bas','Germany':'Allemagne','Spain':'Espagne','Italy':'Italie','Portugal':'Portugal','Switzerland':'Suisse','United Kingdom':'Royaume-Uni','Poland':'Pologne','Austria':'Autriche','Andorra':'Andorre','Morocco':'Maroc','Algeria':'Algérie','Tunisia':'Tunisie','Indonesia':'Indonésie','United States':'États-Unis','Brazil':'Brésil','Turkey':'Turquie','Romania':'Roumanie','Ireland':'Irlande','Monaco':'Monaco',
+      'French':'français','English':'anglais','Dutch':'néerlandais','German':'allemand','Spanish':'espagnol','Italian':'italien','Portuguese':'portugais','Polish':'polonais','Turkish':'turc','Russian':'russe','Arabic':'arabe','Romanian':'roumain','Chinese':'chinois',
+      'Flanders':'Flandre','Wallonia':'Wallonie','Brussels':'Bruxelles','Brussels Region':'Bruxelles','Île-de-France':'Île-de-France','Catalonia':'Catalogne','Lombardy':'Lombardie'};
+    const geoLigne=(map,couleur)=>{ const tot=agg.geo.total||[...map.values()].reduce((a,b)=>a+b,0)||1;
+      return [...map.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>{ const pc=c/tot*100; return {name:T(GEO_FR[n]||n), pct:(pc>=1?Math.round(pc):'<1')+' %', bar:`width:${Math.min(100,pc).toFixed(1)}%;height:100%;border-radius:4px;background:${couleur}`}; }); };
+    const geoPays=geoLigne(agg.geo.pays,'#b6a5f8'), geoVilles=geoLigne(agg.geo.villes,'#7fd1b9'), geoLangues=geoLigne(agg.geo.langues,'#f2b36b');
+    const geoHas=geoPays.length>0;
     // ---- Contribution à l'évolution des estimations (tunnel, deux périodes) : décomposition logarithmique audience + 5 étapes
     const FACT_NOMS=["Audience","Accueil → Version","Version → Km","Km → Coordonnées","Coordonnées → PDV","PDV → Leads GA"];
     const stepsU=a=>a&&a.funnelSteps&&a.funnelSteps.length===6?a.funnelSteps.map(x=>x.users):null;
@@ -4852,10 +4913,10 @@ class Component extends DCLogic {
     const GA_THEMES=[['evolution','Évolution','Pourquoi ça bouge ?',['contrib','trend','hist','events']],
                      ['acquisition','Acquisition',"D'où vient le trafic ?",['sources','entree','utm','quality']],
                      ['conversion','Conversion','Où et chez qui convertit-on ?',['conv','leaks','device','v2']],
-                     ['audience','Audience','Qui sont les visiteurs ?',['audience']],
+                     ['audience','Audience','Qui sont les visiteurs ?',['audience','geo','profil']],
                      ['pilotage','Pilotage','Où va-t-on ?',['alerts','goals']]];
-    const GA_LABELS={contrib:'Ce qui fait bouger les leads',trend:'Évolution du trafic reprise par canal',hist:'Comparaison avec les années passées',events:'Campagnes et changements',sources:'Trafic parent par canal',entree:'Trafic reprise par canal',utm:'Campagnes reprise',quality:'Qualité des visites reprise',conv:'Taux de conversion par jour',leaks:'Où les visiteurs abandonnent',device:'Conversion par canal et appareil',v2:'Avant / après la V2',audience:'Qui sont les visiteurs',goals:'Objectifs',alerts:'Alertes'};
-    const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'));
+    const GA_LABELS={contrib:'Ce qui fait bouger les leads',trend:'Évolution du trafic reprise par canal',hist:'Comparaison avec les années passées',events:'Campagnes et changements',sources:'Trafic parent par canal',entree:'Trafic reprise par canal',utm:'Campagnes reprise',quality:'Qualité des visites reprise',conv:'Taux de conversion par jour',leaks:'Où les visiteurs abandonnent',device:'Conversion par canal et appareil',v2:'Avant / après la V2',audience:'Qui sont les visiteurs',geo:'Où sont les visiteurs',profil:'Véhicule repris',goals:'Objectifs',alerts:'Alertes'};
+    const gaOk=v=>!(this.estLimite()&&(v==='v2'||v==='goals'||v==='profil'));
     const gaCur=GA_THEMES.some(t=>t[3].includes(st.tab)&&gaOk(st.tab))?st.tab:'contrib';
     const gaTheme=GA_THEMES.find(t=>t[3].includes(gaCur));
     const gaThemes=GA_THEMES.filter(t=>t[3].some(gaOk)).map(t=>({name:t[1],style:this.tabStyle(t===gaTheme),
@@ -6126,6 +6187,10 @@ class Component extends DCLogic {
         delta:same?'—':(dl>=0?'+':'−')+dec(Math.abs(dl),1)+' pt',deltaStyle:`font-size:12.5px;text-align:right;color:${same?'#9a9fa6':(Math.abs(dl)<1?'#9a9fa6':'#6d727a')};font-weight:${Math.abs(dl)>=3?600:400}`};
     });
     const fuelSubLabel=pdvScopeLabel;
+    const profTotM=Array.from(boAgg.brand.values()).reduce((a,b)=>a+b,0)||1;
+    const profMarques=Array.from(boAgg.brand.entries()).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>{ const pc=c/profTotM*100; return {name:titleCase(String(n)), pct:Math.round(pc)+' %', bar:`width:${Math.min(100,pc).toFixed(1)}%;height:100%;border-radius:4px;background:#b6a5f8`}; });
+    const profCarbu=[...fuelSel.entries()].sort((a,b)=>b[1]-a[1]).slice(0,6).map(([n,c])=>{ const pc=fuelTotS?c/fuelTotS*100:0; return {name:n, pct:Math.round(pc)+' %', bar:`width:${Math.min(100,pc).toFixed(1)}%;height:100%;border-radius:4px;background:${FUEL_COL[n]||'#c8c8ce'}`}; });
+    const profHas=!this.estLimite() && profMarques.length>0;
     let fuelInsight='Aucune donnée de carburant sur la période.';
     if(fuelPerf.length){ const t=fuelPerf[0]; const el=fuelPerf.find(x=>x.name==='Électrique'); fuelInsight=`${t.name} : ${t.share} des véhicules repris (${t.leads} leads)`+(el&&el!==t?` ; électrique ${el.share}`:'')+(t.delta&&t.delta!=='—'?`, ${t.delta} vs marché entier`:'')+'.'; }
     // ---------- Leads heure par heure + Leads par jour (comme dans UAS Monitor) ----------
@@ -7424,7 +7489,8 @@ class Component extends DCLogic {
       evHas, evRows, evEmpty, evSubtitle, evFormOpen, evToggleForm, evFormLabel, evTypeChips, evScopeChips, evMsg, evMsgOn, evSaveLabel, evSaveStyle, evSave, insEvents, evIcon, evChip, evCanWrite,
       evFDate:evF.date, evFFin:evF.fin, evFTitre:evF.titre, onEvDate:e=>evSet({date:e.target.value}), onEvFin:e=>evSet({fin:e.target.value}), onEvTitre:e=>evSet({titre:e.target.value.slice(0,120)}), isUtm:gaCur==='utm', isQuality:gaCur==='quality', isLeaks:gaCur==='leaks',
       tqHas, tqRows, insQuality, tqIcon, tqChip, utmHas, utmRows, insUtm, utmGroupChips, utmSortChips, uIcon, uChip, leakHas, leakRows, insLeaks, leakChips, lIcon, lChip, ...leakAvgO,
-      histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isSources:gaCur==='sources', isEntree:gaCur==='entree', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', v2ModeChips, v2PreChips, v2IsBascule:v2Mode==='bascule', v2Warn, v2WarnOn:!!v2Warn, v2WarnAction, v2WarnPick:()=>set({v2Mode:'bascule'}), gaThemes, gaViews, gaThemeQuestion,
+      histHas, histChart, histLegend, insHist, histChips, hIcon, hChip, isGeo:gaCur==='geo', isProfil:gaCur==='profil', isSources:gaCur==='sources', isEntree:gaCur==='entree', isTrend:gaCur==='trend', isConv:gaCur==='conv', isV2:gaCur==='v2', isDevice:gaCur==='device', isAudience:gaCur==='audience', v2ModeChips, v2PreChips, v2IsBascule:v2Mode==='bascule', v2Warn, v2WarnOn:!!v2Warn, v2WarnAction, v2WarnPick:()=>set({v2Mode:'bascule'}), gaThemes, gaViews, gaThemeQuestion,
+      nvNewPct, nvRetPct, geoHas, geoPays, geoVilles, geoLangues, profHas, profMarques, profCarbu,
       contribHas, contribChart, contribRange, contribEmpty, contribInsight, contribSimple:contribSimple||{avant:'',apres:'',delta:'',dStyle:'',lignes:[],resume:''}, contribVueSimple:!st.contribGraph, contribVueGraph:!!st.contribGraph, contribSwitch:()=>set({contribGraph:!st.contribGraph}), contribSwitchLabel:st.contribGraph?'Vue simple':'Vue graphique', insTrend, insConv, insDevice, insAudience,
       sortByName:()=>set({sort:'name'}), sortBySessions:()=>set({sort:'sessions'}), sortByLeads:()=>set({sort:'leads'})
     };

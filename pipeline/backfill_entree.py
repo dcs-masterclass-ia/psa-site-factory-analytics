@@ -28,6 +28,7 @@ def rattrape_site(cli, s, dry_run=False):
         return None
     d = json.loads(chemin.read_text(encoding="utf-8"))
     d.setdefault("entreeMonth", {})
+    d.setdefault("geoMonth", {})
     hotes = d.get("_hotes") or {}
     reprise = hotes.get("reprise") or s.hote_reprise
     parent = hotes.get("parent") or s.hote_parent
@@ -50,6 +51,24 @@ def rattrape_site(cli, s, dry_run=False):
         d["entreeMonth"][m] = ed
         ecrit += 1
         print(f"  {s.nom} {m} : entrée directe {ed['total']} (depuis le site marque {ed['marque']})")
+    # provenance géographique et langue (vue « Qui sont les visiteurs ? »), même fenêtre
+    geo_ecrit = 0
+    for m in [m for m in d.get("months", []) if m not in d["geoMonth"]]:
+        deb, fin, _ = ga4.bornes(m)
+        if deb.replace("-", "") > limite:
+            continue
+        f_num = min(fin.replace("-", ""), limite)
+        f_iso = f"{f_num[:4]}-{f_num[4:6]}-{f_num[6:]}"
+        try:
+            gm = ga4.geo_par_mois(cli, s.propriete, reprise, deb, f_iso)
+        except Exception as e:
+            print(f"  {s.nom} {m} : géographie en échec ({type(e).__name__}: {e})")
+            continue
+        if gm and gm["total"]:
+            d["geoMonth"][m] = gm
+            geo_ecrit += 1
+    if geo_ecrit:
+        print(f"  {s.nom} : géographie {geo_ecrit} mois")
     # In Journey (alignement Looker) : une série par jour et par mois sur toute la fenêtre du site, si elle manque
     ij_ecrit = 0
     if not d.get("inJourney") and d.get("months"):
@@ -65,9 +84,9 @@ def rattrape_site(cli, s, dry_run=False):
                 print(f"  {s.nom} : In Journey {len(jour)} jours")
         except Exception as e:
             print(f"  {s.nom} : In Journey indisponible ({type(e).__name__})")
-    if not ecrit and not ij_ecrit:
+    if not ecrit and not ij_ecrit and not geo_ecrit:
         return None
-    ecrit = ecrit or ij_ecrit
+    ecrit = ecrit or ij_ecrit or geo_ecrit
     if dry_run:
         return ecrit
     chemin.write_text(json.dumps(d, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

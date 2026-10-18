@@ -233,6 +233,26 @@ def entree_directe_par_canal(cli, pid, hote_reprise, hote_parent, debut, fin):
             "domaine": domaine_marque(hote_parent)}
 
 
+def geo_par_mois(cli, pid, hote_reprise, debut, fin):
+    """Provenance géographique et langue des sessions de la reprise sur la période : pays, régions, villes, langues (sessions, tops seulement, jamais de donnée personnelle).
+    Age, sexe et centres d'intérêt ne sont PAS disponibles (GA4 renvoie zéro ligne : Google Signals absent et consentement limité en Europe).
+    Retourne {"total": sessions, "pays": [[nom, n]], "regions": [...], "villes": [...], "langues": [...]} ; None si pas d'hôte de reprise."""
+    if not hote_reprise:
+        return None
+    filtre = _egal("hostName", hote_reprise)
+
+    def liste(dim, n):
+        lignes = _rapport(cli, pid, debut, fin, [dim], ["sessions"], filtre)
+        total = sum(int(float(r[1])) for r in lignes)
+        items = sorted(((r[0], int(float(r[1]))) for r in lignes if r[0] and r[0] not in ("(not set)", "(data not available)")), key=lambda x: -x[1])
+        return [[k, v] for k, v in items[:n]], total
+    pays, total = liste("country", 10)
+    regions, _ = liste("region", 15)
+    villes, _ = liste("city", 20)
+    langues, _ = liste("language", 8)
+    return {"total": total, "pays": pays, "regions": regions, "villes": villes, "langues": langues}
+
+
 def domaine_marque(hote_parent):
     """Domaine du site marque à partir de son hôte (« www.opel.fr » -> « opel.fr »)."""
     h = (hote_parent or "").split("|")[0].strip().lower()

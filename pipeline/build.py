@@ -196,6 +196,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     d.setdefault("convCanalDevice", {})
     d.setdefault("utmMonth", {})
     d.setdefault("inJourney", {})
+    d.setdefault("geoMonth", {})      # provenance géographique et langue des sessions de la reprise (vue « Qui sont les visiteurs ? »)
     d.setdefault("entreeMonth", {})   # entrée directe sur la reprise par canal (tableau « Traffic landing on Trade In » de Looker)
     d.setdefault("canalQuotidien", {})   # toujours present, meme vide : cle
                                           # attendue par structure_identique,
@@ -234,6 +235,8 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
         rattrapage = set(sorted(rattrapage, reverse=True)[:3])
         rattrapage_entree = {m for m in reversed(mois_liste) if m not in d["entreeMonth"]}
         rattrapage |= set(sorted(rattrapage_entree, reverse=True)[:3])
+        rattrapage_geo = {m for m in reversed(mois_liste) if m not in d["geoMonth"]}
+        rattrapage |= set(sorted(rattrapage_geo, reverse=True)[:3])
         # idem pour les analyses SEO (6 derniers mois), 3 par passage et par site
         rattrapage_seo = {m for m in mois_liste[-6:] if "positions" not in (d["searchMonth"].get(m) or {})}
         rattrapage_seo = set(sorted(rattrapage_seo, reverse=True)[:3])
@@ -303,6 +306,15 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
                 d["entreeMonth"][mois] = ed
         except Exception as e:
             journal.append(f"{mois} : entrée directe par canal en erreur ({type(e).__name__})")
+
+        # provenance géographique et langue (vue « Qui sont les visiteurs ? ») : les 2 mois récents et le rattrapage de l'historique
+        if mois in mois_liste[-2:] or mois not in d["geoMonth"]:
+            try:
+                gm = ga4.geo_par_mois(cli, s.propriete, hote_reprise, deb, f_iso)
+                if gm and gm["total"]:
+                    d["geoMonth"][mois] = gm
+            except Exception as e:
+                journal.append(f"{mois} : géographie/langue en erreur ({type(e).__name__})")
 
         # funnel : reconstruit chaque mois, bascule automatique alpha -> repli.
         # on n'ecrase jamais un funnel existant par un echec : si les deux
@@ -495,7 +507,7 @@ def assemble(cli, gsc_cli, gsc_sites, s, mois_liste, existant):
     # qui sortent de la fenetre glissante, contrairement au comportement
     # d'avant (reset complet chaque jour).
     fenetre = set(mois_liste)
-    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice", "utmMonth", "entreeMonth"):
+    for cle in ("trafficMonth", "repriseMonth", "rebondMonth", "landingMonth", "convCanalDevice", "utmMonth", "entreeMonth", "geoMonth"):
         d[cle] = {m: v for m, v in d[cle].items() if m in fenetre or m == "total"}
     anomalies = {m: v for m, v in anomalies.items() if m in fenetre}
 
