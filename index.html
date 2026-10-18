@@ -7548,8 +7548,6 @@ class Component extends DCLogic {
         config:{format:'revue_trim',client:'Stellantis',langue:'en',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','conquete','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
       {id:'base-bilan-annuel',base:true,nom:'Bilan annuel et plan d\'action',description:'Bilan de l\'année : vue globale, suivi C1ST, projets, trafic, sources, CTA, conquête, tendance annuelle, SEO, objectifs, analyse, points ouverts, prochaines étapes',
         config:{client:'Stellantis',langue:'en',periodicite:'annee',perimetre:{pays:['FR'],marques:[]},comparaisons:{precedente:false,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','objectifs','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}},
-      {id:'base-vide',base:true,nom:'Présentation personnalisée',description:'Base libre : période, pays et modules au choix (vue globale, projets d\'achat, trafic et leads par marque, sources, analyse, points ouverts, prochaines étapes)',
-        config:{client:'Stellantis',langue:'fr',periodicite:'trimestre',perimetre:{pays:['BE','LU'],marques:[]},comparaisons:{precedente:true,n1:true},modules:['global','crm','projets','trafic_marque','sources','cta','conquete','ytd','seo','analyse','points_ouverts','prochaines_etapes'],contact:{},commentaire:''}}
     ];
     const prTplAll = PR_TPL_BASE.concat(((this._pr&&this._pr.templates)||[]).map(t=>Object.assign({base:false},t)));
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
@@ -7602,7 +7600,7 @@ class Component extends DCLogic {
     const prStepUiFlat={}; Object.keys(prStepUi).forEach(k=>{ Object.keys(prStepUi[k]).forEach(f=>{ prStepUiFlat[k+'_'+f]=prStepUi[k][f]; }); });
     // étape 1 : cartes de modèles
     const prTplCards=prTplAll.map(t=>{ const c=t.config||{}; const per2=(PR_TYPES.find(x=>x[0]===c.periodicite)||['','—'])[1]; const sel=pr.tplId===t.id;
-      return { nom:({'Présentation personnalisée':'Personnalisée'})[t.nom]||t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
+      return { nom:t.nom, desc:t.description||'', meta:per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), sel, badge:t.base?'Modèle de base':'Modèle perso.',
         pick:()=>prApplyTpl(t), tip:(t.description?t.description+' — ':'')+per2+' · '+((c.modules||[]).length)+' modules'+(t.base?'':' · modèle de '+String(t.auteur||'').split('@')[0]), style:`position:relative;cursor:pointer;border-radius:12px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:1.5px solid ${sel?'#7c63ee':'#ececee'};background:${sel?'#f7f5ff':'#fff'};transition:border-color .3s ease,background-color .3s ease,transform .25s ease,box-shadow .3s ease${sel?';box-shadow:0 6px 18px rgba(124,99,238,.12)':''}`,
         check:sel }; });
     // étape 2 : erreurs de champ

@@ -18,6 +18,9 @@ test("verrouillé : sans l'autorisation, l'onglet Présentations n'apparaît pas
   await ctx.close();
 });
 
+// Modèle enregistré qui reproduit l'ancienne « base libre » (retirée de l'interface) : sert de point de départ neutre aux scénarios ci-dessous.
+const MODELE_TEST = [{ id: "tpl-test", nom: "Personnalisée", description: "", auteur: "e2e@autobiz.com", config: { client: "Stellantis", langue: "fr", periodicite: "trimestre", perimetre: { pays: ["BE", "LU"], marques: [] }, comparaisons: { precedente: true, n1: true }, modules: ["global", "crm", "projets", "trafic_marque", "sources", "cta", "conquete", "ytd", "seo", "analyse", "points_ouverts", "prochaines_etapes"], contact: {}, commentaire: "" } }];
+
 const ouvre = async (page) => {
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Présentations"]').click();
@@ -31,7 +34,7 @@ const choisitModele = async (page, nom = "Personnalisée") => {
 test("parcours : les étapes se débloquent une à une, erreurs près des champs", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await ouvre(page);
   await expect(page.getByText("Termine l'étape précédente pour la débloquer").first()).toBeVisible();   // Cadrage, Contenu… verrouillés
   await expect(page.getByText("0 / 3 étapes obligatoires")).toBeVisible();
@@ -48,7 +51,7 @@ test("parcours : les étapes se débloquent une à une, erreurs près des champs
 });
 
 test("contenu : verrouillé par défaut, déverrouillage confirmé, retour au contenu recommandé", async ({ page }) => {
-  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await ouvre(page);
   await choisitModele(page);
   await continuer(page);
@@ -71,7 +74,7 @@ test("brouillon et modèle : libellés explicites, enregistrement du brouillon, 
   const posts = [];
   await page.route("**/api/presentations", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } });
     const body = req.postDataJSON();
     posts.push(body);
     return route.fulfill({ json: { ok: true, brief: { ...body.brief, id: "B-test1", statut: "brouillon", auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() } } });
@@ -95,7 +98,7 @@ test("points ouverts et prochaines étapes : explications, exemples cliquables, 
   const posts = [];
   await page.route("**/api/presentations", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } });
     const body = req.postDataJSON(); posts.push(body);
     return route.fulfill({ json: { ok: true, brief: { ...body.brief, id: "B-t2", statut: "brouillon", auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() } } });
   });
@@ -136,7 +139,7 @@ test("mes présentations : liste, ouverture dans le parcours, duplication", asyn
 });
 
 test("périodicité : mensuel, semestre, annuel adaptent la période et les comparaisons", async ({ page }) => {
-  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "x" } }));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "x" } }));
   await ouvre(page);
   await choisitModele(page);
   await page.getByText("Mensuelle", { exact: true }).click();
@@ -183,7 +186,7 @@ test("génération : le bouton se remplit avec le temps, puis propose le téléc
   const brief = () => ({ id: "B-gen1", titre: "Brief test", client: "Stellantis", langue: "fr", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { type: "trimestre", annee: 2026, indice: 3 },
     comparaisons: { precedente: true, n1: true }, modules: ["global"], contact: {}, pointsOuverts: [], prochainesEtapes: [], statut: etat, demandeeLe: Date.now() - 20000,
     ...(etat === "generee" ? { fichier: "presentations/out/B-gen1.pptx", diapositives: 54 } : {}), auteur: "e2e@autobiz.com", updatedAt: Date.now() });
-  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Présentations"]').click();
   await page.getByText(/^Mes présentations/).click();
@@ -204,7 +207,7 @@ test("contrôle qualité : le résultat du contrôle des chiffres s'affiche sur 
   const brief = () => ({ id: "B-qa1", titre: "Brief QA", client: "Stellantis", langue: "en", perimetre: { pays: ["BE", "LU"], marques: [] }, periode: { type: "trimestre", annee: 2026, indice: 3 },
     comparaisons: { precedente: true, n1: true }, modules: ["global"], contact: {}, pointsOuverts: [], prochainesEtapes: [], statut: "generee", fichier: "presentations/out/B-qa1.pptx", diapositives: 63, qa,
     auteur: "e2e@autobiz.com", updatedAt: Date.now() });
-  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [brief()], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Présentations"]').click();
   await page.getByText(/^Mes présentations/).click();
@@ -222,7 +225,7 @@ test("contrôle qualité : le résultat du contrôle des chiffres s'affiche sur 
 test("périmètre : un clic sélectionne une seule entrée, Cmd/Maj + clic en ajoute", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (route) => route.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('div[title="Présentations"]').click();
   await choisitModele(page);
@@ -246,7 +249,7 @@ test("commentaires et actions : étape dédiée, saisie envoyée dans le brief",
   const posts = [];
   await page.route("**/api/presentations", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } });
     const body = req.postDataJSON(); posts.push(body);
     return route.fulfill({ json: { ok: true, brief: { ...body.brief, id: "B-t3", statut: "brouillon", auteur: "e2e@autobiz.com", createdAt: Date.now(), updatedAt: Date.now() } } });
   });
@@ -265,7 +268,7 @@ test("commentaires et actions : étape dédiée, saisie envoyée dans le brief",
 test("modèle « Revue mensuelle » : contenu fixe (carte d'information), éditeur d'actions en cours", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await ouvre(page);
   await choisitModele(page, "Revue mensuelle");
   await continuer(page);
@@ -285,7 +288,7 @@ test("modèle « Revue mensuelle » : contenu fixe (carte d'information), édite
 test("cadrage : aperçu du nom de fichier selon la taxonomie REPORTING-année-période-pays-marques-langue", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: [], moi: "e2e@autobiz.com" } }));
+  await page.route("**/api/presentations", (r) => r.fulfill({ json: { briefs: [], templates: MODELE_TEST, moi: "e2e@autobiz.com" } }));
   await ouvre(page);
   await choisitModele(page, "Reporting trimestriel");
   await expect(page.getByText("Nom du fichier téléchargé")).toBeVisible();
