@@ -1392,7 +1392,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="{{ qChip }}">{{ qIcon }}</span>
                 <div>
                   <div style="font-size:15px;font-weight:600;color:#121214">Requêtes<span class="dc-info" tabindex="0">i<span class="dc-tip">Top des requêtes Search Console par clics sur la période. Les pastilles comparent chaque ligne aux autres lignes affichées : clics et impressions (vert au-dessus de la médiane, orange entre le premier quartile et la médiane, rouge en dessous), CTR comparé au CTR attendu à cette position, position (1 à 3 vert, 4 à 10 orange, au-delà rouge).</span></span></div>
-                  <div style="font-size:12.5px;color:#9a9fa6">Top 6 par clics</div>
+                  <div style="font-size:12.5px;color:#9a9fa6">Top 10 par clics</div>
                 </div>
               </div>
               <span onClick="{{ openQueries }}" style="font-size:13px;font-weight:500;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:6px 12px;cursor:pointer;white-space:nowrap" style-hover="background:#e1eafc">Voir les {{ queryCount }} requêtes</span>
@@ -5314,7 +5314,7 @@ class Component extends DCLogic {
         posDot:dotStyle(indicPos(posVal)),
       };
     };
-    const scQueries=queriesSorted.slice(0,6).map(mkRow);
+    const scQueries=queriesSorted.slice(0,10).map(mkRow);   // 10 lignes : la carte a une hauteur commune, 6 laissaient un grand vide dessous
     const allQueries=queriesSorted.map(mkRow);
     // insight reel : requete a fort volume d'impressions mais faible CTR
     // (opportunite de retravailler titre/meta) -- seuil de volume pour
@@ -5430,7 +5430,7 @@ class Component extends DCLogic {
       style:'font-size:12.5px;font-weight:500;border-radius:9px;padding:4px 12px;cursor:pointer;white-space:nowrap;'+(pagesCanal===k?'background:#fff;color:#121214;box-shadow:0 1px 3px rgba(0,0,0,.08)':'color:#8a8f98'),
     }));
     const allPages = pagesSorted.map(mkPageRow);
-    const scPages = allPages.slice(0,6);
+    const scPages = allPages.slice(0,10);    // idem : 10 lignes remplissent la carte (le reste : « Voir les 20 pages »)
 
     // ---- Search Console : analyses détaillées organisées en 5 questions (visibilité, requêtes, pages, technique, comparaison)
     const SX_THEMES=[['vis','Visibilité','Où apparaît-on ?',['pos','dev','brand']],

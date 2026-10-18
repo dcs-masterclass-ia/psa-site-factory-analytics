@@ -1090,6 +1090,7 @@ window.I18N_EN = {
 "Ton ticket est bien reçu.": "Your ticket has been received.",
 "Ton ticket est pris en charge : on travaille dessus.": "Your ticket is being handled: we're working on it.",
 "Ton ticket n'a pas été retenu.": "Your ticket was not accepted.",
+"Top 10 par clics": "Top 10 by clicks",
 "Top 20 des couples source / médium × campagne de chaque mois, avec sessions, engagement et estimations déclenchées (événement tradein_request). « Campagne » regroupe par nom de campagne extrait du balisage (CN~…).": "Top 20 source / medium × campaign pairs for each month, with sessions, engagement and valuations triggered (tradein_request event). “Campaign” groups by the campaign name extracted from the tagging (CN~…).",
 "Top 3 (positions 1 à 3)": "Top 3 (positions 1 to 3)",
 "Top 6 par clics": "Top 6 by clicks",
