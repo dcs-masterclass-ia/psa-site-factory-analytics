@@ -5337,7 +5337,8 @@ class Component extends DCLogic {
     const INS_META={ alerte:[T('ALERTE'),'#c24a44','#fdf1f0','M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z'],
       cause:[T('CAUSE'),'#6f55e8','#f1eefe','M3 17l6-6 4 4 8-8M15 7h6v6'], opportunite:[T('OPPORTUNITÉ'),'#2b8f62','#eaf6ef','M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4L12 2z'] };
     const insAsk=q=>{ const vide=kam.convs.find(c=>!c.msgs.length&&c.loaded); const cv=vide||this.kamNouvelle(); if(!vide) kam.convs.unshift(cv); set({chatOpen:true,chatClosing:false,convId:cv.id}); this.kamChargeListe(); this.kamEnvoie(cv,q,kamCtx()); };
-    const insRows=insBrut.slice(0,3).map(x=>{ const m=INS_META[x.type]||INS_META.cause; const pot=x.type==='opportunite';
+    const insMax=(agg.funnelEntree&&agg.funnelEntree.mois>0&&!agg.funnelEntree.manque)?5:3;   // le tunnel est plus haut quand les pills par mode d'entrée sont affichées : on remplit la carte
+    const insRows=insBrut.slice(0,insMax).map(x=>{ const m=INS_META[x.type]||INS_META.cause; const pot=x.type==='opportunite';
       const impact=(pot?'≈ +':(x.leads<0?'−':'+'))+this.fmt(Math.abs(x.leads))+' '+T(pot?'leads potentiels':'leads');
       return { tag:m[0], tagStyle:`font-size:10.5px;font-weight:700;letter-spacing:.07em;color:${m[1]}`, titre:x.titre, texte:x.texte, impact,
         impactStyle:`font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap;background:${m[2]};color:${m[1]}`,
