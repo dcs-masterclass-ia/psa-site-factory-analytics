@@ -205,6 +205,12 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 .maint-sous{margin-top:14px;font-size:12.5px;color:#9a9fa6}
 @media (max-width:1320px){.hd-chips{display:none!important}}
 @media (max-width:1260px){.hd-lbl{display:none}[data-chrome="header"]{gap:8px!important;padding-left:16px!important;padding-right:16px!important}}
+/* Cartes (modules) : surface commune — ombre douce, bordure un ton plus chaude, survol qui teinte la bordure en violet (cohérent avec les boutons de l'en-tête et du menu) */
+.psf-card{border-color:#ececf2!important;box-shadow:0 1px 2px rgba(18,18,20,.04),0 14px 30px -24px rgba(60,45,140,.3);transition:box-shadow .2s ease,border-color .2s ease,transform .18s ease}
+.psf-card:hover{border-color:#e1daf9!important;box-shadow:0 1px 2px rgba(18,18,20,.04),0 20px 38px -22px rgba(124,99,238,.42)}
+.psf-card .psf-card{box-shadow:none}
+.psf-card .psf-card:hover{box-shadow:none}
+@media (prefers-reduced-motion:reduce){.psf-card{transition:none}}
 #dc-tipbox{display:none;position:fixed;z-index:9999;width:310px;max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px 13px;border-radius:12px;background:#1b1636;color:#f3f0ff;font-family:Poppins,system-ui,sans-serif;font-size:12.5px;font-weight:400;line-height:1.5;text-align:left;white-space:normal;box-shadow:0 12px 28px rgba(27,22,54,.28);pointer-events:none}
 ::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#dedee2;border-radius:6px;border:3px solid #f4f4f6}
 @keyframes orbSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -511,8 +517,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
-            <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px;flex-wrap:wrap"><span style="{{ convChip }}">{{ convIcon }}</span>Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Demandes d'estimation (événement GA4 tradein_request) ÷ sessions du site de reprise, sur les jours exacts choisis (somme des jours) : c'est la mesure de Looker. Même taux dans le classement du parc et la courbe Conversion. Le tunnel ci-dessous compte, lui, des utilisateurs distincts à partir de la page d'accueil. La variation est un écart en points de pourcentage.</span></span></div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;color:#2a2a31;margin-bottom:8px;flex-wrap:wrap"><span style="{{ convChip }}">{{ convIcon }}</span>Taux de conversion <span style="font-size:12.5px;color:#9a9fa6">· {{ convDefLabel }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Demandes d'estimation (événement GA4 tradein_request) ÷ sessions du site de reprise, sur les jours exacts choisis (somme des jours) : c'est la mesure de Looker. Même taux dans le classement du parc et la courbe Conversion. Le tunnel ci-dessous compte, lui, des utilisateurs distincts à partir de la page d'accueil. La variation est un écart en points de pourcentage.</span></span></div>
             <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
               <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ kpiRate }}</span>
               <span style="{{ kpiRateDelta.style }}">{{ kpiRateDelta.text }}</span>
@@ -531,10 +537,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
             <sc-for list="{{ kpis }}" as="kpi" hint-placeholder-count="3">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
                 <span style="{{ kpi.chip }}">{{ kpi.icon }}</span>
                 <div style="flex:1 1 auto;min-width:120px">
-                  <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
+                  <div style="display:flex;align-items:center"><span style="font-size:14px;font-weight:500;color:#3f434b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
                   <div style="font-size:23px;font-weight:600;letter-spacing:-.02em;color:#121214;line-height:1.25;white-space:nowrap">{{ kpi.value }}</div>
                 </div>
                 <div style="flex:0 1 90px;min-width:0">{{ kpi.spark }}</div>
@@ -553,7 +559,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:15px;align-items:stretch">
 
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ funChip }}">{{ funIcon }}</span>
               <div>
@@ -605,7 +611,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:12px;align-self:stretch;min-height:0;overflow:hidden">
-            <div style="flex:1 1 auto;min-height:0;border-radius:16px;padding:16px 18px 12px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:1px solid #efeff1;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="flex:1 1 auto;min-height:0;border-radius:16px;padding:16px 18px 12px;overflow:hidden;display:flex;flex-direction:column;background:#fff;border:1px solid #efeff1;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
                 <span style="width:26px;height:26px;flex:none;border-radius:50%;position:relative;overflow:hidden;background:#0c1120;box-shadow:0 4px 10px -4px rgba(109,92,246,.55)">
                     <span style="position:absolute;inset:-30%;border-radius:50%;background:conic-gradient(from 0deg,#5b7cff,#8ee7ff,#7c3aed,#f472b6,#5b7cff);animation:orbSpin 7s linear infinite,orbHue 9s ease-in-out infinite;filter:blur(1px)"></span>
@@ -668,7 +674,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-for>
         </div>
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
 
           <sc-if value="{{ isContrib }}" hint-placeholder-val="{{ true }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
@@ -1240,7 +1246,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:15px">
             <sc-for list="{{ scKpis }}" as="kpi" hint-placeholder-count="4">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px 14px;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:4px;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px 14px;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:4px;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
                   <span style="{{ kpi.chip }}">{{ kpi.icon }}</span>
                   <span style="font-size:14.5px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span>
@@ -1262,7 +1268,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="font-size:12.5px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;color:#9a9fa6">Performances de recherche</span><span class="dc-info" tabindex="0">i<span class="dc-tip">Données Search Console de la propriété du site. CTR = clics ÷ impressions ; position moyenne pondérée par les impressions. Le détail par mois est exact ; le jour par jour (clics, impressions) n'est tracé que sur 60 jours ou moins, la position n'étant stockée qu'au mois.</span></span>
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:8px">
               <div>
                 <div style="font-size:16px;font-weight:600;color:#121214">Clics, impressions &amp; position</div>
@@ -1278,7 +1284,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <sc-if value="{{ pageQueriesOpen }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:11px;margin-bottom:8px">
             <div style="min-width:0">
               <div style="font-size:16px;font-weight:600;color:#121214">Requêtes de la page</div>
@@ -1321,7 +1327,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="display:flex;align-items:center;gap:4px;margin:0 0 12px 2px;flex-wrap:wrap">
             <sc-for list="{{ sxViews }}" as="v" hint-placeholder-count="4"><span class="ga-view" onClick="{{ v.pick }}" style="{{ v.style }}">{{ v.name }}</span></sc-for>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;min-height:{{ tabMinH }}px;display:flex;flex-direction:column;box-sizing:border-box;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
           <sc-if value="{{ isSxPos }}" hint-placeholder-val="{{ false }}">
           <div style="animation:tabFadeIn .22s ease;flex:1;display:flex;flex-direction:column;min-height:0">
             <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:10px">
@@ -2053,7 +2059,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-bottom:15px">
             <sc-for list="{{ ps2Tiles }}" as="k" hint-placeholder-count="4">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
                 <span style="{{ k.chip }}">{{ k.icon }}</span>
                 <div style="min-width:0;flex:1">
                   <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ k.tip }}</span></span></div>
@@ -2064,7 +2070,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-for>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:15px;align-items:stretch">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip1 }}">{{ ps2Icon1 }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Répartition et seuils</div><div style="font-size:12.5px;color:#9a9fa6">Scores par palier, puis métriques moyennes face aux seuils Lighthouse</div></div></div><div style="display:inline-flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ ps2Devs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
@@ -2087,7 +2093,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip2 }}">{{ ps2Icon2 }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">À optimiser en priorité</div><div style="font-size:12.5px;color:#9a9fa6">Problèmes les plus répandus, classés par gain total estimé</div></div></div>
@@ -2107,7 +2113,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip3 }}">{{ ps2Icon3 }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Par marque</div><div style="font-size:12.5px;color:#9a9fa6">Score moyen, des plus lentes aux plus rapides</div></div></div>
@@ -2119,7 +2125,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ ps2Chip4 }}">{{ ps2Icon4 }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Sites les plus lents</div><div style="font-size:12.5px;color:#9a9fa6">Les 5 plus bas scores du périmètre, avec leur LCP</div></div></div>
@@ -2146,7 +2152,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
             <span style="font-size:13px;color:#9a9fa6">{{ psReleveLabel }}</span>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:21px;align-items:center">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:21px;align-items:center">
             <div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
                 <span style="font-size:19px;font-weight:600;color:#121214">{{ psSiteLabel }}</span>
@@ -2197,7 +2203,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="flex:1;height:1px;background:#e8e8ec"></span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:15px;align-items:start">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
               <div style="font-size:16px;font-weight:600;color:#121214">Grille des sites</div>
               <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:12px">{{ psGridSubtitle }}</div>
               <sc-if value="{{ psMarcheHasData }}" hint-placeholder-val="{{ false }}">
@@ -2222,7 +2228,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </sc-for>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
               <div style="font-size:16px;font-weight:600;color:#121214">Historique des relevés</div>
               <div style="font-size:13.5px;color:#9a9fa6;margin-bottom:8px">{{ psHistorySubtitle }}</div>
               <div>{{ psHistory }}</div>
@@ -2246,7 +2252,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="font-size:13px;color:#9a9fa6">{{ rangeLabel }} · toutes marques</span>
           </div>
           <div style="display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:15px;align-items:stretch">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column;justify-content:space-between;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;font-size:14.5px;color:#6d727a;margin-bottom:8px"><span style="{{ tbChip }}">{{ tbIcon }}</span>Leads</div>
               <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
                 <span style="font-size:43px;font-weight:600;letter-spacing:-.03em;color:#121214;line-height:1">{{ tbLeads }}</span>
@@ -2262,7 +2268,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             <div style="display:grid;grid-template-rows:repeat(3,1fr);gap:12px;min-width:0">
               <sc-for list="{{ tbKpis }}" as="kpi" hint-placeholder-count="3">
-                <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+                <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
                   <span style="{{ kpi.chip }}">{{ kpi.icon }}</span>
                   <div style="flex:1 1 auto;min-width:120px">
                     <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ kpi.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ kpi.info }}</span></span></div>
@@ -2277,7 +2283,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:15px;align-items:stretch">
         <sc-if value="{{ hhHas }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <span style="font-size:15px;font-weight:600;color:#121214">Leads par heure</span>
@@ -2300,7 +2306,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         </sc-if>
         <sc-if value="{{ trHas }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;min-width:0">
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
             <span style="width:30px;height:30px;border-radius:10px;background:#eef0fe;display:flex;align-items:center;justify-content:center;flex:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5b43d6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
             <span style="font-size:15px;font-weight:600;color:#121214">Leads par jour</span><span style="font-size:13px;color:#9a9fa6">{{ trScope }}</span>
@@ -2330,7 +2336,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         <sc-if value="{{ fcOk }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ fcChip }}">{{ fcIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Cumul de leads sur l'année</div><div style="font-size:12.5px;color:#9a9fa6">Réel, projection et fourchette, comparés à l'an dernier</div></div></div><div style="display:flex;gap:14px;flex-wrap:wrap"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #7c63ee"></span>Réel</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px dashed #7c63ee"></span>Projection</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="width:16px;height:0;border-top:2.5px solid #b3b7bd"></span>Année précédente</span></div>
@@ -2339,7 +2345,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
             <sc-for list="{{ fcKpis }}" as="k" hint-placeholder-count="2">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;flex:1;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:12px;min-width:0;flex:1;transition:transform .18s ease,box-shadow .18s ease" style-hover="transform:translateY(-2px);box-shadow:0 10px 24px rgba(30,30,60,.07)">
                 <span style="{{ k.chip }}">{{ k.icon }}</span>
                 <div style="min-width:0;flex:1">
                   <div style="display:flex;align-items:center"><span style="font-size:14px;color:#6d727a">{{ k.label }}</span><span class="dc-info" tabindex="0">i<span class="dc-tip">{{ k.tip }}</span></span></div>
@@ -2348,7 +2354,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 </div>
               </div>
             </sc-for>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;flex:1.15">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 18px;flex:1.15">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px">
                 <div style="display:flex;align-items:center;gap:10px"><span style="{{ capChip }}">{{ capIcon }}</span><span style="font-size:14px;color:#6d727a">{{ capTitle }}</span><span class="dc-info" tabindex="0" style="margin-left:0">i<span class="dc-tip">{{ capTip }}</span></span></div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap"><sc-for list="{{ tbCaps }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
@@ -2361,7 +2367,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         </sc-if>
         <sc-if value="{{ !fcOk }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)"><div style="font-size:14px;color:#9a9fa6;text-align:center;padding:22px 0">{{ fcNote }}</div></div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)"><div style="font-size:14px;color:#9a9fa6;text-align:center;padding:22px 0">{{ fcNote }}</div></div>
         </sc-if>
         </div>
         <div>
@@ -2371,14 +2377,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <span style="font-size:13px;color:#9a9fa6">historique depuis 2021</span>
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ yoyChip }}">{{ yoyIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Leads par mois</div><div style="font-size:12.5px;color:#9a9fa6">Mois complets : écart de l'année en cours vs la précédente</div></div></div><div style="display:flex;gap:12px;flex-wrap:wrap"><sc-for list="{{ yoyLegend }}" as="l" hint-placeholder-count="3"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#6d727a"><span style="{{ l.dot }}"></span>{{ l.label }}</span></sc-for></div>
             </div>
             <div style="flex:1;display:flex;align-items:center"><div style="width:100%">{{ tbYoyChart }}</div></div>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ annChip }}">{{ annIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Totaux annuels</div><div style="font-size:12.5px;color:#9a9fa6">Leads valides, évolution vs l'année précédente</div></div></div>
@@ -2404,7 +2410,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,560px),1fr));gap:15px;align-items:{{ tbGridAlign }}">
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
                   <span style="{{ cBrandChip }}">{{ cBrandIcon }}</span>
@@ -2450,7 +2456,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </div>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
                   <span style="{{ cFuelChip }}">{{ cFuelIcon }}</span>
@@ -2493,7 +2499,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
 
             <sc-if value="{{ pdvHas }}" hint-placeholder-val="{{ true }}">
-            <div style="grid-column:1 / -1;background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
+            <div class="psf-card" style="grid-column:1 / -1;background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column">
               <div style="font-size:15px;font-weight:600;color:#121214">Meilleur point de vente</div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-bottom:14px">Point de vente choisi par le plus de parcours · mois touchés par la période</div>
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px">
@@ -2521,7 +2527,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             </sc-if>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
                   <span style="{{ cProjChip }}">{{ cProjIcon }}</span>
@@ -2569,7 +2575,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </div>
 
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:14px">
                 <div style="display:flex;align-items:center;gap:10px;min-width:0">
                   <span style="{{ cDevChip }}">{{ cDevIcon }}</span>
@@ -2613,7 +2619,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <span style="font-size:13px;color:#9a9fa6">{{ ruptNote }}</span>
         </div>
         <div class="tb-tend" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px;align-items:stretch">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ seaChip }}">{{ seaIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Saisonnalité</div><div style="font-size:12.5px;color:#9a9fa6">Écart de chaque jour à la moyenne, 12 derniers mois</div></div></div>
@@ -2636,7 +2642,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             </sc-if>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ rupChip }}">{{ rupIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Ruptures de tendance</div><div style="font-size:12.5px;color:#9a9fa6">Croissance vs N-1 : 30 derniers jours contre 90 jours</div></div></div><div style="display:flex;align-items:center;gap:3px;background:#f2f2f5;border-radius:11px;padding:3px"><sc-for list="{{ ruptTabs }}" as="t" hint-placeholder-count="2"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</span></sc-for></div>
@@ -2656,7 +2662,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
               </div>
             </sc-for>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
             <div style="display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-bottom:12px">
               <div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="{{ quaChip }}">{{ quaIcon }}</span>
                 <div><div style="font-size:15px;font-weight:600;color:#121214">Qualité des leads</div><div style="font-size:12.5px;color:#9a9fa6">Doublons et tests écartés, 3 derniers mois</div></div></div>
@@ -2692,14 +2698,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ c1Ouvert }}" hint-placeholder-val="{{ false }}"><div onClick="{{ c1Verrouiller }}" title="Verrouiller" style="margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:14px;font-weight:600;color:#fff;background:#121214;border-radius:12px;padding:11px 20px;box-shadow:0 2px 8px rgba(18,18,20,.18)" style-hover="background:#7c63ee"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Verrouiller</div></sc-if>
         </div>
         <div style="font-size:13.5px;color:#6d727a">Ce que deviennent les leads de reprise une fois envoyés aux concessionnaires : contact, traitement, opportunité, devis et commandes. Totaux par marché et par marque, mis à jour chaque nuit (dernière collecte le {{ c1Date }}).</div>
-        <sc-if value="{{ c1Verrou }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:12px;max-width:460px">
+        <sc-if value="{{ c1Verrou }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:24px 26px;display:flex;flex-direction:column;gap:12px;max-width:460px">
           <div style="font-size:15px;font-weight:600;color:#121214">Code d'accès C1ST</div>
           <div style="font-size:13px;color:#6d727a;line-height:1.5">Ces données viennent du CRM Salesforce. Saisis le code du mois : il change le 1er de chaque mois et te sera communiqué par l'administrateur.</div>
           <input type="password" autocomplete="off" value="{{ c1Code }}" onInput="{{ c1CodeInput }}" onKeyDown="{{ c1CodeKey }}" placeholder="XXXXX-XXXXX" style="border:1px solid #e8e8ec;border-radius:10px;padding:10px 12px;font-family:Poppins,sans-serif;font-size:15px;letter-spacing:.12em;color:#121214;outline:none">
           <div><span onClick="{{ c1CodeOk }}" style="display:inline-block;font-size:13.5px;font-weight:600;color:#fff;background:#7c63ee;border-radius:10px;padding:9px 18px;cursor:pointer">Déverrouiller</span></div>
           <div style="font-size:12.5px;color:#c4413a">{{ c1CodeMsg }}</div>
         </div></sc-if>
-        <sc-if value="{{ c1Admin }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:#6d727a">
+        <sc-if value="{{ c1Admin }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:12px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:#6d727a">
           <span style="font-weight:600;color:#121214">Accès C1ST</span>
           <span onClick="{{ c1AdmCode }}" style="cursor:pointer;color:#3b76e8;background:#eef3fe;border-radius:999px;padding:5px 12px;font-weight:500">Voir le code du mois</span>
           <span onClick="{{ c1AdmRevoque }}" style="cursor:pointer;color:#a33c39;background:#fbe1df;border-radius:999px;padding:5px 12px;font-weight:500">{{ c1AdmRevoqueLabel }}</span>
@@ -2708,49 +2714,49 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-if value="{{ c1HasAlertes }}" hint-placeholder-val="{{ false }}"><span style="flex-basis:100%;font-size:12.5px;color:#9a9fa6"><b style="color:#6d727a">Tentatives d'inspection récentes :</b> {{ c1AlertesTxt }}</span></sc-if>
           <sc-if value="{{ c1HasSuspendus }}" hint-placeholder-val="{{ false }}"><span style="flex-basis:100%;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-weight:600;color:#a33c39">Adresses suspendues :</span><sc-for list="{{ c1Suspendus }}" as="x" hint-placeholder-count="1"><span onClick="{{ x.pick }}" title="Réactiver" style="cursor:pointer;background:#fbe1df;color:#a33c39;border-radius:999px;padding:4px 12px;font-weight:500">{{ x.email }} · réactiver</span></sc-for></span></sc-if>
         </div></sc-if>
-        <sc-if value="{{ c1Indispo }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données C1ST indisponibles pour le moment.</div></sc-if>
+        <sc-if value="{{ c1Indispo }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données C1ST indisponibles pour le moment.</div></sc-if>
         <sc-if value="{{ c1Ok }}" hint-placeholder-val="{{ true }}">
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:8px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:14px 18px;display:flex;flex-direction:column;gap:8px">
           <div style="font-size:12.5px;color:#9a9fa6;line-height:1.5">Période, comparaison et sites : ceux choisis en haut de page. C1ST étant mensuel, la période est arrondie aux mois entiers terminés. Périmètre : {{ c1Perim }}.</div>
           <sc-if value="{{ c1HasHors }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#9a6b00">{{ c1Hors }}</div></sc-if>
         </div>
 
         <sc-if value="{{ c1HasOnglets }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><sc-for list="{{ c1Onglets }}" as="o" hint-placeholder-count="2"><span onClick="{{ o.pick }}" style="{{ o.style }}">{{ o.label }}</span></sc-for></div></sc-if>
-        <sc-if value="{{ c1VideF }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">{{ c1Pend }}</div></sc-if>
+        <sc-if value="{{ c1VideF }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">{{ c1Pend }}</div></sc-if>
         <sc-if value="{{ !c1VideF }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ c1IsFunnel }}" hint-placeholder-val="{{ true }}">
         <sc-if value="{{ c1HasPanels }}" hint-placeholder-val="{{ true }}">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,430px),1fr));gap:15px">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceA }}">{{ c1IcoLeads }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Leads générés par mois<span class="dc-info" tabindex="0">i<span class="dc-tip">« # Leads Generated by Month » de C1ST : leads de reprise (type 1, VN, campagne Autobiz) créés chaque mois sur le périmètre choisi.</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Leads VN vus par C1ST, barres foncées = période choisie</div></div></div>
               <div id="c1h_b" data-hov style="min-width:0">{{ c1PanLeads }}</div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceB }}">{{ c1IcoStatut }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Leads par statut<span class="dc-info" tabindex="0">i<span class="dc-tip">« # Leads Generated by Status » de C1ST : statut du lead dans le traitement des concessionnaires (New, Nurturing, Qualified…).</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Part de chaque statut sur la période</div></div></div>
               <sc-if value="{{ c1HasStat }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px;margin-top:2px"><sc-for list="{{ c1StatRows }}" as="g" hint-placeholder-count="6"><div><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14px;color:#2f2f33">{{ g.nom }}</span><span style="font-size:14px;font-weight:600;color:#121214">{{ g.pct }}</span></div><div style="height:6px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for></div></sc-if>
               <sc-if value="{{ !c1HasStat }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#9a9fa6;line-height:1.5">Les statuts ne sont pas encore collectés pour cette période.</div></sc-if>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceC }}">{{ c1IcoAppel }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">1er appel dans les délais<span class="dc-info" tabindex="0">i<span class="dc-tip">« % 1° Call Attempt On Time » de C1ST. Les statuts sont saisis par les concessionnaires et déployés progressivement : un mois sans statut n'est pas tracé.</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Part des clients envoyés, par mois</div></div></div>
               <div id="c1h_p" data-hov style="min-width:0">{{ c1PanPremierAppel }}</div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceB }}">{{ c1IcoContact }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Contactés<span class="dc-info" tabindex="0">i<span class="dc-tip">« % Contacted » de C1ST : clients envoyés aux concessionnaires qui ont été contactés. Mêmes réserves de saisie que le 1er appel.</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Part des clients envoyés, par mois</div></div></div>
               <div id="c1h_c" data-hov style="min-width:0">{{ c1PanContactes }}</div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceA }}">{{ c1IcoDevis }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Avec devis<span class="dc-info" tabindex="0">i<span class="dc-tip">« % With Quotes » de C1ST : clients uniques ayant reçu au moins un devis.</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Part des clients uniques, par mois</div></div></div>
               <div id="c1h_d" data-hov style="min-width:0">{{ c1PanDevis }}</div>
             </div>
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px 12px;min-width:0;display:flex;flex-direction:column;transition:box-shadow .18s ease" style-hover="box-shadow:0 10px 24px rgba(30,30,60,.07)">
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span style="{{ c1PuceD }}">{{ c1IcoCmd }}</span><div><div style="font-size:15px;font-weight:600;color:#121214">Commandes NSC<span class="dc-info" tabindex="0">i<span class="dc-tip">« % NSC Orders » de C1ST : commandes rattachées au lead entre 1 et 90 jours après sa création, ramenées aux clients uniques.</span></span></div><div style="font-size:12.5px;color:#9a9fa6">Part des clients uniques ; cercle clair = provisoire (moins de 90 jours)</div></div></div>
               <div id="c1h_o" data-hov style="min-width:0">{{ c1PanCommandes }}</div>
             </div>
         </div>
         </sc-if>
         <sc-if value="{{ c1HasTaux }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">Taux clés face à la comparaison</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px;line-height:1.5">Période sélectionnée, comparaison et écart en points. Les taux de suivi sont indicatifs : ils reflètent des statuts saisis progressivement par les concessionnaires. Le taux de commande n'est comparé que quand les deux périodes ont plus de 90 jours.</div>
           <div style="display:grid;grid-template-columns:minmax(200px,1.6fr) repeat(3,minmax(90px,1fr));font-size:13.5px;max-width:760px">
@@ -2765,7 +2771,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <div style="font-size:13px;color:#9a9fa6;margin-top:2px">{{ c1SubPer }}</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px">
           <sc-for list="{{ c1Cards }}" as="k" hint-placeholder-count="6">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:17px 19px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:17px 19px">
               <div style="font-size:13.5px;color:#6d727a">{{ k.title }}</div>
               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 6px"><span style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ k.big }}</span><sc-if value="{{ k.hasPill }}" hint-placeholder-val="{{ false }}"><span style="{{ k.pillStyle }}">{{ k.pill }}</span></sc-if></div>
               <div style="font-size:12.5px;color:#6d727a;line-height:1.45">{{ k.sub }}</div>
@@ -2774,7 +2780,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:15px">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
             <div style="font-size:15px;font-weight:600;color:#121214">Suivi par les concessionnaires</div>
             <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients envoyés. À comparer entre marques seulement : les statuts sont saisis par les concessionnaires, déployés progressivement selon les marchés.</div>
             <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:9px">
@@ -2787,7 +2793,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-for>
             </div>
           </div>
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;display:flex;flex-direction:column">
             <div style="font-size:15px;font-weight:600;color:#121214">Du lead à la commande</div>
             <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Part des clients uniques. Commandes NSC rattachées au lead entre 1 et 90 jours après sa création.</div>
             <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:9px">
@@ -2802,7 +2808,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">Évolution mensuelle</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 0">Leads VN vus par C1ST, 15 mois. Au-dessus de chaque barre : taux de commande, seulement quand les commandes sont complètes (plus de 90 jours).</div>
           <div style="display:flex;align-items:flex-end;gap:6px;height:230px;margin-top:16px;overflow-x:auto">
@@ -2822,7 +2828,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
 
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div><div style="font-size:15px;font-weight:600;color:#121214">Détail du périmètre</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">Évolution des leads comparée à la période de comparaison. Spoticar : C1ST ne suit pas contact, traitement ni commandes (n.d.).</div></div>
             <div style="display:flex;gap:6px"><sc-for list="{{ c1ChipsVue }}" as="c" hint-placeholder-count="2"><div onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</div></sc-for></div>
@@ -2839,7 +2845,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <sc-if value="{{ c1HasRapp }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">Rapprochement back-office ↔ C1ST</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px;line-height:1.5">{{ c1RappDesc }} Un écart durable au-delà de 5 % signale des leads qui n'arrivent pas dans C1ST (ou l'inverse). Les deux sources n'ont pas exactement le même périmètre : l'écart est un signal à vérifier, pas une erreur. Connu : Opel et Alfa Romeo France, Portugal.</div>
           <div style="overflow-x:auto"><div style="display:grid;grid-template-columns:minmax(150px,1.4fr) repeat(3,minmax(100px,1fr));font-size:13px;min-width:460px">
@@ -2860,14 +2866,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
 
         <sc-if value="{{ c1IsReseau }}" hint-placeholder-val="{{ false }}">
-        <sc-if value="{{ !c1RsHas }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">Aucun contrat de reprise pour cette sélection de marchés et de marques (Spoticar, Leapmotor et Stellantis &amp;You ne sont pas suivis par C1ST).</div></sc-if>
+        <sc-if value="{{ !c1RsHas }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;color:#6d727a">Aucun contrat de reprise pour cette sélection de marchés et de marques (Spoticar, Leapmotor et Stellantis &amp;You ne sont pas suivis par C1ST).</div></sc-if>
         <sc-if value="{{ c1RsHas }}" hint-placeholder-val="{{ true }}">
         <div style="font-size:13px;color:#9a9fa6">Fenêtre glissante : du jour d'il y a un mois au {{ c1RsDate }}, comme le tableau de bord C1ST « Leads Network Vision ». Marchés et marques : ceux choisis en haut de page ; la période du calendrier ne s'applique pas ici.</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
-          <sc-for list="{{ c1RsKpis }}" as="k" hint-placeholder-count="7"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:15px 17px"><div style="font-size:12.5px;color:#6d727a;margin-bottom:6px">{{ k.lib }}</div><div style="{{ k.st }}">{{ k.val }}</div></div></sc-for>
+          <sc-for list="{{ c1RsKpis }}" as="k" hint-placeholder-count="7"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:15px 17px"><div style="font-size:12.5px;color:#6d727a;margin-bottom:6px">{{ k.lib }}</div><div style="{{ k.st }}">{{ k.val }}</div></div></sc-for>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0;display:flex;flex-direction:column"><div style="font-size:15px;font-weight:600;color:#121214">Du lead envoyé à la commande</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Part des clients uniques envoyés aux concessionnaires.</div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0;display:flex;flex-direction:column"><div style="font-size:15px;font-weight:600;color:#121214">Du lead envoyé à la commande</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Part des clients uniques envoyés aux concessionnaires.</div>
             <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:9px">
             <sc-for list="{{ c1RsFun }}" as="b" hint-placeholder-count="6">
               <div style="display:grid;grid-template-columns:minmax(120px,190px) 1fr 92px;align-items:center;gap:10px;font-size:13px"><span style="color:#4a4f57">{{ b.label }}</span><div style="height:14px;background:#f4f4f6;border-radius:6px"><div style="{{ b.barStyle }}"></div></div><span style="text-align:right;font-variant-numeric:tabular-nums;color:#121214"><b>{{ b.pct }}</b> <span style="color:#9a9fa6">· {{ b.val }}</span></span></div>
@@ -2875,14 +2881,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
           </div>
           <sc-if value="{{ c1RsHasDistrib }}" hint-placeholder-val="{{ true }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Où en sont les contrats ?</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats de 20 clients ou plus, répartis selon leur taux de contact.</div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Où en sont les contrats ?</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats de 20 clients ou plus, répartis selon leur taux de contact.</div>
             <sc-for list="{{ c1RsDistrib }}" as="g" hint-placeholder-count="5"><div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span style="font-size:14px;color:#2f2f33">{{ g.nom }}</span><span style="font-size:13px;color:#6d727a"><b style="color:#121214">{{ g.n }}</b> · {{ g.pct }}</span></div><div style="height:7px;border-radius:4px;background:#f2f2f4;overflow:hidden"><div style="{{ g.bar }}"></div></div></div></sc-for>
           </div>
           </sc-if>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:15px">
           <sc-if value="{{ c1RsHasSilence }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">À traiter en priorité</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients qui ont contacté moins de 10 % de leurs leads (0 % peut aussi vouloir dire statuts non saisis dans C1ST).</div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">À traiter en priorité</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients qui ont contacté moins de 10 % de leurs leads (0 % peut aussi vouloir dire statuts non saisis dans C1ST).</div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <sc-for list="{{ c1RsSilenceTop }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:14px;background:#fdf1f0;border-radius:12px;padding:12px 14px">
                 <div style="flex:none;width:30px;height:30px;border-radius:50%;background:#e8544a;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ r.rang }}</div>
@@ -2895,7 +2901,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
           <sc-if value="{{ c1RsHasMeilleurs }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Les mieux suivis</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients, par part de leads traités dans les délais.</div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;min-width:0"><div style="font-size:15px;font-weight:600;color:#121214">Les mieux suivis</div><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px;line-height:1.5">Contrats d'au moins 50 clients, par part de leads traités dans les délais.</div>
             <div style="display:flex;flex-direction:column;gap:8px">
               <sc-for list="{{ c1RsMeilleursTop }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:14px;background:#eff8f3;border-radius:12px;padding:12px 14px">
                 <div style="flex:none;width:30px;height:30px;border-radius:50%;background:#3fae7a;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ r.rang }}</div>
@@ -2908,7 +2914,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           </sc-if>
         </div>
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div><div style="font-size:15px;font-weight:600;color:#121214">Summary Table</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px;max-width:760px;line-height:1.5">Un contrat par ligne ({{ c1RsNb }} contrats), les taux clés d'un coup d'œil. Clique sur une ligne pour le détail complet. Vert / orange / rouge : seuils de C1ST (traités à l'heure : 70 % et 90 % ; commandes : 5 % et 6 %). Les % sont rapportés aux clients uniques envoyés.</div></div>
             <input type="text" value="{{ c1RsQuery }}" onInput="{{ c1RsOnSearch }}" placeholder="Rechercher un contrat ou un code…" style="min-width:230px;border:1px solid #e8e8ec;border-radius:10px;padding:8px 12px;font-family:Poppins,sans-serif;font-size:13.5px;color:#121214;outline:none">
@@ -2948,10 +2954,10 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="font-size:21px;font-weight:600;letter-spacing:-.02em;color:#121214">AAA Data</div>
           <div style="font-size:13.5px;color:#6d727a">Le socle chiffré du marché des sites sélectionnés : immatriculations, mix des énergies, marques, modèles, particuliers et flottes. Données au {{ aaaDate }}.</div>
         </div>
-        <sc-if value="{{ !aaaOk }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données du marché indisponibles pour le moment.</div></sc-if>
+        <sc-if value="{{ !aaaOk }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">Données du marché indisponibles pour le moment.</div></sc-if>
         <sc-if value="{{ aaaOk }}" hint-placeholder-val="{{ true }}">
 
-        <sc-if value="{{ aaaNoSel }}" hint-placeholder-val="{{ false }}"><div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;font-size:14px;color:#6d727a">Aucun site sélectionné : choisis des sites dans le sélecteur général pour voir leur marché.</div></sc-if>
+        <sc-if value="{{ aaaNoSel }}" hint-placeholder-val="{{ false }}"><div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px;font-size:14px;color:#6d727a">Aucun site sélectionné : choisis des sites dans le sélecteur général pour voir leur marché.</div></sc-if>
 
         <sc-for list="{{ aaaFiches }}" as="f" hint-placeholder-count="2">
         <div style="display:flex;flex-direction:column;gap:15px">
@@ -2963,7 +2969,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:15px">
             <sc-for list="{{ f.kpis }}" as="k" hint-placeholder-count="4">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
                 <div style="font-size:13.5px;color:#6d727a">{{ k.title }}</div>
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 8px"><span style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ k.big }}</span><sc-if value="{{ k.pill }}" hint-placeholder-val="{{ true }}"><span style="{{ k.pillStyle }}">{{ k.pill }}</span></sc-if></div>
                 <sc-for list="{{ k.lines }}" as="l" hint-placeholder-count="2"><div style="font-size:12.5px;color:#6d727a;line-height:1.5">{{ l }}</div></sc-for>
@@ -2971,7 +2977,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-for>
           </div>
           <sc-if value="{{ f.hasChart }}" hint-placeholder-val="{{ true }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
               <div><div style="font-size:15px;font-weight:600;color:#121214">Immatriculations par mois</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">{{ f.chartSub }}</div></div>
               <sc-if value="{{ f.trous }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;color:#9a6b00;background:#fdf3d6">série incomplète</span></sc-if>
@@ -2991,7 +2997,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </sc-if>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:15px;align-items:start">
             <sc-if value="{{ f.hasMix }}" hint-placeholder-val="{{ true }}">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
               <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:12px">{{ f.mixTitle }}</div>
               <sc-for list="{{ f.mix }}" as="x" hint-placeholder-count="5">
                 <div style="margin-bottom:12px">
@@ -3002,7 +3008,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             </sc-if>
             <sc-if value="{{ f.hasModels }}" hint-placeholder-val="{{ true }}">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
               <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:8px">{{ f.modelsTitle }}</div>
               <sc-for list="{{ f.models }}" as="m" hint-placeholder-count="5">
                 <div style="display:flex;align-items:center;gap:12px;padding:7px 0;border-top:1px solid #f1f1f3;font-size:14px"><span style="width:22px;color:#9a9fa6">{{ m.rang }}</span><span style="flex:1;min-width:0;color:#121214">{{ m.name }}</span><sc-if value="{{ m.yoy }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:#6d727a">{{ m.yoy }}</span></sc-if><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ m.units }}</span></div>
@@ -3010,7 +3016,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
             </sc-if>
             <sc-if value="{{ f.hasMarques }}" hint-placeholder-val="{{ true }}">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
               <div style="font-size:15px;font-weight:600;color:#121214">{{ f.marquesTitle }}</div>
               <sc-if value="{{ f.hasHi }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 8px">marques Stellantis surlignées</div></sc-if>
               <div style="display:flex;align-items:center;gap:10px;padding:6px 6px 4px"><span style="flex:1"></span><sc-for list="{{ f.marquesHead }}" as="h" hint-placeholder-count="3"><span style="{{ h.style }}">{{ h.v }}</span></sc-for></div>
@@ -3026,7 +3032,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:4px"><span style="font-size:15px;font-weight:600;color:#121214">Historique annuel</span><span style="font-size:12.5px;color:#9a9fa6">{{ f.annualSub }}</span><a href="{{ f.annualSrc }}" target="_blank" rel="noopener noreferrer" style="font-size:12.5px;color:#7c63ee;text-decoration:none">Source ↗</a></div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:15px">
             <sc-for list="{{ f.annual }}" as="a" hint-placeholder-count="4">
-              <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+              <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
                 <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14px;color:#6d727a">{{ a.year }}</span><span style="{{ a.yoyStyle }}">{{ a.yoy }}</span></div>
                 <div style="font-size:30px;font-weight:600;letter-spacing:-.02em;color:#121214;margin:8px 0 0;font-variant-numeric:tabular-nums">{{ a.total }}</div>
                 <div style="font-size:12.5px;color:#9a9fa6">immatriculations</div>
@@ -3042,7 +3048,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-for>
 
         <sc-if value="{{ aaaHasNoData }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 21px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:#6d727a">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:16px 21px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;color:#6d727a">
           <span>Pas de donnée de marché disponible pour :</span>
           <sc-for list="{{ aaaNoData }}" as="n" hint-placeholder-count="2"><b style="color:#121214;font-weight:600;background:#f4f4f6;border-radius:8px;padding:2px 9px">{{ n.name }}</b></sc-for>
         </div>
@@ -3051,7 +3057,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         <sc-if value="{{ aaaShowEu }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:14px"><span style="font-size:17px;font-weight:600;color:#121214">Europe</span><span style="font-size:13px;color:#9a9fa6">source ACEA · UE + AELE + Royaume-Uni</span></div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:15px">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
             <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15px;font-weight:600;color:#121214">Annuel 2022 – 2025</div><span style="font-size:12.5px;color:#9a9fa6">volume &amp; électrique</span></div>
             <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px">
               <sc-for list="{{ aaaEuAnnual }}" as="y" hint-placeholder-count="4">
@@ -3065,7 +3071,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </div>
           </div>
           <sc-if value="{{ aaaHasGroups }}" hint-placeholder-val="{{ true }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
             <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:15px;font-weight:600;color:#121214">{{ aaaGroupsTitle }}</div><span style="font-size:12.5px;color:#9a9fa6">part de marché</span></div>
             <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
               <sc-for list="{{ aaaGroups }}" as="g" hint-placeholder-count="3">
@@ -3085,7 +3091,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:15px">
           <sc-for list="{{ aaaPeriods }}" as="p" hint-placeholder-count="3">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
               <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px">
                 <div><div style="font-size:12.5px;color:#9a9fa6">{{ p.label }}</div><div style="font-size:34px;font-weight:600;letter-spacing:-.02em;color:#121214">{{ p.yoy }}</div></div>
                 <div style="font-size:13px;color:#6d727a;padding-bottom:6px">{{ p.ev }}</div>
@@ -3095,7 +3101,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </div>
 
         <sc-if value="{{ aaaEuHas }}" hint-placeholder-val="{{ false }}">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">{{ aaaEuTitle }}</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">{{ aaaEuHead }}</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px">
@@ -3115,7 +3121,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
         </sc-if>
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
             <div><div style="font-size:15px;font-weight:600;color:#121214">Par pays · 2025</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">{{ aaaCountriesSub }}</div></div>
             <span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;color:#5b43d6;background:#f1eefe">part du volume européen</span>
@@ -3152,7 +3158,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
       </sc-if>
       <sc-if value="{{ isADS }}" hint-placeholder-val="{{ false }}">
       <div style="display:flex;flex-direction:column;gap:18px;animation:tabFadeIn .22s ease;max-width:720px;margin:24px auto 0">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:40px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:40px 28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px">
           <img src="https://img.icons8.com/color/512/google-ads.png" data-keep alt="" width="64" height="64" style="display:block;object-fit:contain">
           <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;color:#121214">Google Ads</div>
           <span style="font-size:12.5px;font-weight:600;border-radius:999px;padding:4px 12px;color:#9a6b00;background:#fdf3d6">En cours de construction</span>
@@ -3167,7 +3173,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <span style="font-size:13px;color:#9a9fa6">{{ prefEtat }}</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:18px;align-items:start">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
           <div style="font-size:15px;font-weight:600;color:#121214">Mon profil</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Lecture seule : ton compte et ce à quoi il donne accès.</div>
           <div style="display:flex;gap:14px;padding:10px 0;border-top:1px solid #f1f1f3"><span style="width:190px;font-size:14px;color:#6d727a">Compte</span><span style="font-size:14px;color:#121214">{{ userEmail }}</span></div>
@@ -3188,7 +3194,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
         </div>
           <div style="display:flex;flex-direction:column;gap:18px;min-width:0">
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
           <div style="font-size:15px;font-weight:600;color:#121214">Affichage</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Appliqué immédiatement et retrouvé à chaque connexion, sur tous tes postes.</div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 0;border-top:1px solid #f1f1f3">
@@ -3208,7 +3214,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <span style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prefComp }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></span>
           </div>
         </div>
-        <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:20px 22px">
           <div style="font-size:15px;font-weight:600;color:#121214">Mes favoris</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">Le périmètre appliqué à l'ouverture d'une nouvelle session (un rafraîchissement de page garde ta sélection du moment).</div>
           <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 0;border-top:1px solid #f1f1f3">
@@ -3432,7 +3438,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           </div>
 
           <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-            <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;flex:1;display:flex;flex-direction:column">
+            <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px;flex:1;display:flex;flex-direction:column">
               <div style="font-size:15px;font-weight:600;color:#121214;margin-bottom:12px">Plan de la présentation</div>
               <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
                 <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:#9a9fa6">Modèle</span><span style="color:#121214;text-align:right">{{ prSumTpl }}</span></div>
@@ -3479,7 +3485,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
 
         <sc-if value="{{ prIsModeles }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div><div style="font-size:15px;font-weight:600;color:#121214">Modèles de présentation</div><div style="font-size:12.5px;color:#9a9fa6">Les modèles de base sont fournis ; enregistre les tiens depuis un brief (« Réutiliser cette configuration »).</div></div></div>
             <sc-for list="{{ prTplRows }}" as="t" hint-placeholder-count="3">
               <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:13px 4px;border-top:1px solid #f2f2f4">
@@ -3492,7 +3498,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
 
         <sc-if value="{{ prIsList }}" hint-placeholder-val="{{ false }}">
-          <div style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
             <sc-if value="{{ prNoRows }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0;text-align:center;font-size:14px;color:#9a9fa6">Aucun brief enregistré pour l'instant.</div></sc-if>
             <div style="font-size:13.5px;color:#c24a44">{{ prErr }}</div>
             <sc-if value="{{ prHasUsers }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><sc-for list="{{ prUsers }}" as="u" hint-placeholder-count="3"><span onClick="{{ u.pick }}" style="{{ u.style }}">{{ u.label }}</span></sc-for></div></sc-if>
@@ -4467,7 +4473,8 @@ class Component extends DCLogic {
     for(let i=0;i<vals.length-1;i++){const x0=x(i),x1=x(i+1),c=(x0+x1)/2;d+=` C${c},${y(vals[i])} ${c},${y(vals[i+1])} ${x1},${y(vals[i+1])}`;}
     return h('svg',{viewBox:`0 0 ${W} ${H}`,width:'100%',style:{display:'block',height:'auto'}},[
       h('path',{key:'a',d:`${d} L${W},${H} L0,${H} Z`,fill:color+'1a'}),
-      h('path',{key:'b',d,fill:'none',stroke:color,strokeWidth:1.8,strokeLinecap:'round'})
+      h('path',{key:'b',d,fill:'none',stroke:color,strokeWidth:1.8,strokeLinecap:'round'}),
+      h('circle',{key:'c',cx:x(vals.length-1),cy:y(vals[vals.length-1]),r:4.8,fill:color,stroke:'#fff',strokeWidth:2})      // point sur la dernière valeur
     ]);
   }
 
@@ -4625,7 +4632,7 @@ class Component extends DCLogic {
     const safeSpark = (vals, color, w, hgt, invert) => { w=w||140; const flat=vals.every(v=>v===vals[0]); return this.spark(flat?vals.map((v,i)=>v+i*0.0001):vals, color, w, hgt, invert); };
 
     const kIcone = (c, ...els) => h('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:c,strokeWidth:2,strokeLinecap:'round',strokeLinejoin:'round'},els);
-    const kPuce = c => `width:30px;height:30px;flex:none;border-radius:10px;display:flex;align-items:center;justify-content:center;background:${c}1a`;
+    const kPuce = c => `width:32px;height:32px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${c}1a;box-shadow:inset 0 0 0 1px ${c}26`;
     const brandSessions = agg.propTotal > 0 ? agg.propTotal : parent;
     const cmpBrandSessions = cmp ? (cmp.propTotal > 0 ? cmp.propTotal : cmp.traffic) : null;
     const leadsEv = convSessMode && agg.convEv > 0 ? agg.convEv : null;      // « Hot leads » de Looker : évènements tradein_request
