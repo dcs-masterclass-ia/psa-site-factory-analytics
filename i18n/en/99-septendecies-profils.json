@@ -49,5 +49,9 @@
  "Demandes de reprise de la période (back-office) : marque et carburant du véhicule actuel": "Trade-in requests of the period (back-office): brand and fuel of the current vehicle",
  "Aucune demande de reprise sur la sélection et la période.": "No trade-in request for the selection and period.",
  "Comptages seulement, aucune donnée personnelle. Mois entiers qui touchent la période.": "Counts only, no personal data. Whole months that touch the period.",
- "Top 10 par clics": "Top 10 by clicks"
+ "Top 10 par clics": "Top 10 by clicks",
+ "Saisie du véhicule": "Vehicle entry",
+ "Par immatriculation": "By license plate",
+ "Par marque et modèle": "By brand and model",
+ "demandes": "requests"
 }
