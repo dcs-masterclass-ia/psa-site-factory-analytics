@@ -100,14 +100,18 @@ async function revisionC1st() {
 async function cookieC1stValide(email, valeur) {
   const s = process.env.C1ST_CODE_SECRET || process.env.AUTH_COOKIE_SECRET;
   const rs = await revisionC1st();
-  if (!s || !valeur || rs === null) return false;
+  const [t0, ts, sig] = String(valeur || "").split(".");
+  if (!s || rs === null || !/^\d+$/.test(t0 || "") || !/^\d+$/.test(ts || "") || !sig) return false;
+  const now = Date.now();
+  // 5 min d'inactivite max (cookie renouvele tant que la personne est active), 4 h au plus apres la saisie du code : memes bornes que api/_lib/c1st-acces.js
+  if (now - Number(ts) > 5 * 60 * 1000 || now - Number(t0) > 4 * 3600 * 1000 || Number(ts) > now + 60000) return false;
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(s + "|c1st"), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(`cookie|${String(email).toLowerCase()}|${moisParis()}|${process.env.C1ST_CODE_REV || "0"}:${rs}`));
+  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(`cookie|${String(email).toLowerCase()}|${moisParis()}|${process.env.C1ST_CODE_REV || "0"}:${rs}|${t0}|${ts}`));
   const attendu = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
-  if (attendu.length !== valeur.length) return false;
+  if (attendu.length !== sig.length) return false;
   let diff = 0;
-  for (let i = 0; i < attendu.length; i++) diff |= attendu.charCodeAt(i) ^ valeur.charCodeAt(i);
+  for (let i = 0; i < attendu.length; i++) diff |= attendu.charCodeAt(i) ^ sig.charCodeAt(i);
   return diff === 0;
 }
 

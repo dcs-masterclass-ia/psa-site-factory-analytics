@@ -53,18 +53,19 @@ function codeValide(saisi, mois = moisParis()) {
   const a = Buffer.from(normalise(saisi)), b = Buffer.from(normalise(codeDuMois(mois)));
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
-function valeurCookie(email, mois = moisParis()) {
-  return hmac(`cookie|${String(email).toLowerCase()}|${mois}|${rev()}`).toString("hex");
+// Cookie « verrouillage automatique » : t0.ts.hmac(adresse, mois, révision, t0, ts). Valide 5 min après le dernier renouvellement (ts, renouvelé tant que la personne est active) et 4 h après la saisie du code (t0).
+const INACTIVITE_MS = 5 * 60 * 1000, DUREE_MAX_MS = 4 * 3600 * 1000;
+function valeurCookie(email, t0 = Date.now(), ts = Date.now(), mois = moisParis()) {
+  return `${t0}.${ts}.` + hmac(`cookie|${String(email).toLowerCase()}|${mois}|${rev()}|${t0}|${ts}`).toString("hex");
 }
-function cookieValide(email, valeur, mois = moisParis()) {
-  const a = Buffer.from(String(valeur || "")), b = Buffer.from(valeurCookie(email, mois));
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-/** Secondes jusqu'au début du mois suivant (Paris, approximé à 1 h près : le HMAC porte le mois, le cookie ne peut pas servir au mois suivant). */
-function secondesJusquaFinDeMois() {
-  const n = new Date(); const fin = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() + 1, 1));
-  return Math.max(60, Math.min(32 * 86400, Math.floor((fin - n) / 1000)));
+/** -> { ok, t0 } */
+function cookieValide(email, valeur, mois = moisParis(), now = Date.now()) {
+  const [t0, ts, sig] = String(valeur || "").split(".");
+  if (!/^\d+$/.test(t0 || "") || !/^\d+$/.test(ts || "") || !sig) return { ok: false };
+  if (now - Number(ts) > INACTIVITE_MS || now - Number(t0) > DUREE_MAX_MS || Number(ts) > now + 60000) return { ok: false };
+  const a = Buffer.from(sig), b = Buffer.from(valeurCookie(email, t0, ts, mois).split(".")[2]);
+  return a.length === b.length && crypto.timingSafeEqual(a, b) ? { ok: true, t0: Number(t0) } : { ok: false };
 }
 const admins = () => (process.env.C1ST_ADMIN_EMAILS || "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
 
-module.exports = { charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, secondesJusquaFinDeMois, admins, normalise };
+module.exports = { charge, revoque, _setRev: (v) => { revStore = v; revLu = Date.now(); }, codeDuMois, codeValide, valeurCookie, cookieValide, moisParis, INACTIVITE_MS, admins, normalise };

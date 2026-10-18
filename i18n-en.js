@@ -1231,6 +1231,8 @@ window.I18N_EN = {
 "VO électriques : {0}": "Electric used cars: {0}",
 "Validation d'un planning de déploiement": "Approval of a rollout schedule",
 "Var. annuelle": "Yearly change",
+"Verrouillage automatique après 5 minutes sans activité.": "Automatic lock after 5 minutes of inactivity.",
+"Verrouiller maintenant": "Lock now",
 "Verrouillée": "Locked",
 "Vers Paid Search Desktop : 2,41 % de conversion contre 0,91 % sur Paid Social. Le transfert vaudrait ≈ 95 leads supplémentaires par mois.": "To Paid Search Desktop: 2.41% conversion against 0.91% on Paid Social. The transfer would be worth ≈ 95 additional leads per month.",
 "Version": "Version",

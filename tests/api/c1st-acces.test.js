@@ -17,22 +17,31 @@ test("saisie tolérante (minuscules, sans tiret) mais exacte", () => {
   assert.ok(!A.codeValide(""));
 });
 test("révision d'urgence : nouveau code, anciens cookies invalides", () => {
-  const avant = A.codeDuMois("2026-11"), ck = A.valeurCookie("a@b.c", "2026-11");
+  const avant = A.codeDuMois("2026-11"), ck = A.valeurCookie("a@b.c", Date.now(), Date.now(), "2026-11");
   process.env.C1ST_CODE_REV = "2";
   assert.notStrictEqual(avant, A.codeDuMois("2026-11"));
-  assert.ok(!A.cookieValide("a@b.c", ck, "2026-11"));
+  assert.ok(!A.cookieValide("a@b.c", ck, "2026-11").ok);
   delete process.env.C1ST_CODE_REV;
 });
 test("révocation (bouton) : même effet qu'une nouvelle révision", () => {
-  const avant = A.codeDuMois("2026-11"), ck = A.valeurCookie("a@b.c", "2026-11");
+  const avant = A.codeDuMois("2026-11"), ck = A.valeurCookie("a@b.c", Date.now(), Date.now(), "2026-11");
   A._setRev("nouvelle");
   assert.notStrictEqual(avant, A.codeDuMois("2026-11"));
-  assert.ok(!A.cookieValide("a@b.c", ck, "2026-11"));
+  assert.ok(!A.cookieValide("a@b.c", ck, "2026-11").ok);
   A._setRev("0");
 });
 test("cookie lié à l'adresse et au mois", () => {
-  const ck = A.valeurCookie("a@b.c", "2026-11");
-  assert.ok(A.cookieValide("A@b.c", ck, "2026-11"));
-  assert.ok(!A.cookieValide("z@b.c", ck, "2026-11"));
-  assert.ok(!A.cookieValide("a@b.c", ck, "2026-12"));
+  const ck = A.valeurCookie("a@b.c", Date.now(), Date.now(), "2026-11");
+  assert.ok(A.cookieValide("A@b.c", ck, "2026-11").ok);
+  assert.ok(!A.cookieValide("z@b.c", ck, "2026-11").ok);
+  assert.ok(!A.cookieValide("a@b.c", ck, "2026-12").ok);
+  assert.ok(!A.cookieValide("a@b.c", ck.slice(0, -2) + "00", "2026-11").ok);
+});
+test("verrouillage : 5 min d'inactivité, 4 h au maximum, renouvellement sans prolonger t0", () => {
+  const t0 = Date.now() - 3600000, M = "2026-11";
+  assert.ok(A.cookieValide("a@b.c", A.valeurCookie("a@b.c", t0, Date.now() - 4 * 60000, M), M).ok);          // actif il y a 4 min
+  assert.ok(!A.cookieValide("a@b.c", A.valeurCookie("a@b.c", t0, Date.now() - 6 * 60000, M), M).ok);         // inactif depuis 6 min
+  const vieux = Date.now() - 5 * 3600000;
+  assert.ok(!A.cookieValide("a@b.c", A.valeurCookie("a@b.c", vieux, Date.now(), M), M).ok);                 // 5 h après la saisie du code, même actif
+  assert.ok(!A.cookieValide("a@b.c", A.valeurCookie("a@b.c", Date.now(), Date.now() + 3600000, M), M).ok);  // horodatage dans le futur
 });

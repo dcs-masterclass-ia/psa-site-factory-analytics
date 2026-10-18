@@ -4,7 +4,8 @@
  *   GET ?code=1      -> { code }                   (adresses de C1ST_ADMIN_EMAILS seulement : pour le communiquer à l'équipe)
  *   POST { code }    -> 200 + cookie psf_c1st      (5 essais / 15 min par adresse et par IP, au mieux : mémoire de l'instance)
  *   POST { action:"revoquer" } -> (admin) nouvelle révision : nouveau code, tous les cookies invalidés ; renvoie le nouveau code
- *   DELETE           -> efface le cookie
+ *   PATCH            -> renouvelle l'inactivité (5 min) tant que la personne est active ; 403 si déjà verrouillé
+ *   DELETE           -> efface le cookie (« Verrouiller maintenant »)
  */
 const { verifySessionFromRequest, parseCookies, presentationsAllowed } = require("./_lib/auth");
 const A = require("./_lib/c1st-acces");
@@ -28,7 +29,7 @@ module.exports = async function handler(req, res) {
   try {
     await A.charge();
     const cookies = parseCookies(req.headers.cookie);
-    const ouvert = A.cookieValide(email, cookies.psf_c1st);
+    const ck = A.cookieValide(email, cookies.psf_c1st), ouvert = ck.ok;
     const admin = A.admins().includes(email);
     if (req.method === "GET") {
       if (req.query && req.query.code && admin) { res.status(200).json({ code: A.codeDuMois(), mois: A.moisParis() }); return; }
@@ -39,7 +40,7 @@ module.exports = async function handler(req, res) {
         if (!admin) { res.status(403).json({ error: "Acces non autorise pour ce profil." }); return; }
         await A.revoque(email);
         console.warn("[c1st-acces] accès révoqués par", email);
-        res.setHeader("Set-Cookie", `psf_c1st=${A.valeurCookie(email)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${A.secondesJusquaFinDeMois()}`);
+        res.setHeader("Set-Cookie", `psf_c1st=${A.valeurCookie(email)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${Math.ceil(A.INACTIVITE_MS / 1000)}`);
         res.status(200).json({ ouvert: true, code: A.codeDuMois() }); return;
       }
       const ip = String((req.headers["x-forwarded-for"] || "").split(",")[0] || "ip").trim();
@@ -51,7 +52,12 @@ module.exports = async function handler(req, res) {
         console.warn("[c1st-acces] code refusé pour", email);
         res.status(403).json({ error: "Code incorrect." }); return;
       }
-      res.setHeader("Set-Cookie", `psf_c1st=${A.valeurCookie(email)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${A.secondesJusquaFinDeMois()}`);
+      res.setHeader("Set-Cookie", `psf_c1st=${A.valeurCookie(email)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${Math.ceil(A.INACTIVITE_MS / 1000)}`);
+      res.status(200).json({ ouvert: true }); return;
+    }
+    if (req.method === "PATCH") {                 // « je suis actif » : renouvelle les 5 minutes (jamais au-delà de 4 h après la saisie du code)
+      if (!ouvert) { res.status(403).json({ error: "Verrouille.", verrouille: true }); return; }
+      res.setHeader("Set-Cookie", `psf_c1st=${A.valeurCookie(email, ck.t0)}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${Math.ceil(A.INACTIVITE_MS / 1000)}`);
       res.status(200).json({ ouvert: true }); return;
     }
     if (req.method === "DELETE") {
