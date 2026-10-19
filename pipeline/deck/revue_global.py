@@ -295,6 +295,17 @@ def _legende_projets(s, x, y):
 
 
 def vue_globale(ctx, rv):
+    """Global Overview mensuel : S&Y (Stellantis &You) COMPTÉ dans les totaux, le split par marque et la tendance de cette diapo (retour DKAM)."""
+    excl, ctx.d.exclus = ctx.d.exclus, set()
+    ajoute, ctx.faits.ajoute = ctx.faits.ajoute, lambda *a, **k: None       # totaux S&Y compris : propres à cette diapo, hors du contrôle de cohérence des autres
+    try:
+        return _vue_globale(ctx, rv)
+    finally:
+        ctx.d.exclus = excl
+        ctx.faits.ajoute = ajoute
+
+
+def _vue_globale(ctx, rv):
     """Diapositive 5 : tableau de bord « EXEC SUMMARY » (chiffres du mois et du cumul, barres par marque, tendance par projet d'achat) + commentaires."""
     f = _faits(ctx, rv)
     if not f:
@@ -320,7 +331,7 @@ def vue_globale(ctx, rv):
             sy = sum(ctx.d.leads_mensuels(an, "STELLANTIS &YOU")[:per.indice])
         finally:
             ctx.d.exclus = excl
-        tot = (f["ytd"] or 1) + sy
+        tot = f["ytd"] or 1                # le total YTD inclut déjà S&Y sur cette diapo
         lignes = [(m.replace(" ", "_"), a, a / tot * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a, _ in ytd_m]
         if sy > 0:
             lignes.append(("S&Y", sy, sy / tot * 100, COULEUR_MARQUE.get("STELLANTIS &YOU", "7F7F7F")))
