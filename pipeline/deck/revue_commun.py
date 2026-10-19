@@ -40,8 +40,7 @@ class Revue:
     def __init__(self, ctx):
         self.per = ctx.per
         self.pays = list(ctx.d.pays)
-        ctx.d.exclus = {"STELLANTIS &YOU"}      # absent des totaux et des marques des decks de référence
-        ctx.d.marques = [m for m in ctx.d.marques if m not in ctx.d.exclus]
+        ctx.d.exclus = set()                    # Stellantis &You (S&Y) est compté partout : totaux, marques, tendances (retour DKAM du 19/10/2026 ; les decks de référence l'excluaient)
         if self.per.type not in ("mois", "trimestre"):
             raise ValueError("Les formats de revue exigent une période mensuelle (revue_fr) ou trimestrielle (revue_trim).")
         self.trim = self.per.type == "trimestre"

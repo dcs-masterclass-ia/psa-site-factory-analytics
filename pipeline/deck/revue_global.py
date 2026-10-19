@@ -295,17 +295,6 @@ def _legende_projets(s, x, y):
 
 
 def vue_globale(ctx, rv):
-    """Global Overview mensuel : S&Y (Stellantis &You) COMPTÉ dans les totaux, le split par marque et la tendance de cette diapo (retour DKAM)."""
-    excl, ctx.d.exclus = ctx.d.exclus, set()
-    ajoute, ctx.faits.ajoute = ctx.faits.ajoute, lambda *a, **k: None       # totaux S&Y compris : propres à cette diapo, hors du contrôle de cohérence des autres
-    try:
-        return _vue_globale(ctx, rv)
-    finally:
-        ctx.d.exclus = excl
-        ctx.faits.ajoute = ajoute
-
-
-def _vue_globale(ctx, rv):
     """Diapositive 5 : tableau de bord « EXEC SUMMARY » (chiffres du mois et du cumul, barres par marque, tendance par projet d'achat) + commentaires."""
     f = _faits(ctx, rv)
     if not f:
@@ -325,17 +314,8 @@ def _vue_globale(ctx, rv):
     _bloc_chiffre(s, 2.58, "REPORTING YTD", f"Total generated leads {an}", f["ytd"], f"Evolution vs last year ( {an - 1} et {an})", f["e_ytd"], 1.75)
     _bandeau(s, 4.38, 1.43, 6.18, 0.27, f"Generated leads YTD {mois_label(per).upper()} : split by brand", GRIS_BANDEAU, taille=8)
     if ytd_m:
-        sy = 0                          # Stellantis &You (S&Y) : absent des totaux, affiché dans le détail par marque (retour DKAM, comme le trimestriel)
-        excl, ctx.d.exclus = ctx.d.exclus, set()
-        try:
-            sy = sum(ctx.d.leads_mensuels(an, "STELLANTIS &YOU")[:per.indice])
-        finally:
-            ctx.d.exclus = excl
-        tot = f["ytd"] or 1                # le total YTD inclut déjà S&Y sur cette diapo
-        lignes = [(m.replace(" ", "_"), a, a / tot * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a, _ in ytd_m]
-        if sy > 0:
-            lignes.append(("S&Y", sy, sy / tot * 100, COULEUR_MARQUE.get("STELLANTIS &YOU", "7F7F7F")))
-            lignes.sort(key=lambda x: -x[1])
+        tot = f["ytd"] or 1
+        lignes = [("S&Y" if m == "STELLANTIS &YOU" else m.replace(" ", "_"), a, a / tot * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a, _ in ytd_m]
         barres_marques(s, 4.38, 1.72, 6.18, 2.12, lignes)
     _bandeau(s, 0.69, 3.87, 9.87, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
     mois = _mois_glissants(per)

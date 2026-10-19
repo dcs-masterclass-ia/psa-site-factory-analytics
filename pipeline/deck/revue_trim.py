@@ -125,17 +125,6 @@ def couverture_trim(ctx, rv):
 
 # ------------------------------------------------------------------ 3. Global overview
 def global_overview(ctx, rv):
-    """Global Overview : S&Y (Stellantis &You) COMPTÉ dans les totaux, le split par marque et la tendance de cette diapo (retour DKAM) ; le reste du deck l'exclut comme les decks de référence."""
-    excl, ctx.d.exclus = ctx.d.exclus, set()
-    ajoute, ctx.faits.ajoute = ctx.faits.ajoute, lambda *a, **k: None       # totaux S&Y compris : propres à cette diapo, hors du contrôle de cohérence des autres
-    try:
-        return _global_overview(ctx, rv)
-    finally:
-        ctx.d.exclus = excl
-        ctx.faits.ajoute = ajoute
-
-
-def _global_overview(ctx, rv):
     d, per = ctx.d, rv.per
     L, Lp, Ln = (_L(d, p) for p in (per, rv.prec, rv.n1))
     if not L:
@@ -160,18 +149,8 @@ def _global_overview(ctx, rv):
         if a > 0:
             ym.append((m, a))
     ym.sort(key=lambda x: -x[1])
-    sy = 0                                  # Stellantis &You (S&Y) : absent des totaux du deck, mais affiché dans le détail par marque (retour DKAM)
-    excl, d.exclus = d.exclus, set()
-    try:
-        sy = sum(d.leads_mensuels(an, "STELLANTIS &YOU")[:fin_m])
-    finally:
-        d.exclus = excl
     if ym:
-        base = ytd                          # le total YTD inclut déjà S&Y sur cette diapo : les barres somment à 100 %
-        lignes = [(ctx.nom(m).replace(" ", "_").upper(), a, a / base * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a in ym]
-        if sy > 0:
-            lignes.append(("S&Y", sy, sy / base * 100, COULEUR_MARQUE.get("STELLANTIS &YOU", "7F7F7F")))
-            lignes.sort(key=lambda x: -x[1])
+        lignes = [("S&Y" if m == "STELLANTIS &YOU" else ctx.nom(m).replace(" ", "_").upper(), a, a / ytd * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a in ym]
         barres_marques(s, 5.2, 1.72 + DY, 7.7, 2.2, lignes)
     _bandeau(s, 0.35, 3.95 + DY, 12.55, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
     qs = _trimestres(per, 8)
