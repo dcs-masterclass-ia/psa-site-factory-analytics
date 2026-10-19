@@ -789,6 +789,8 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
         A(f("canaux"), marque, libelle=f"{marque} — lead deep dive")
         if marque not in MARQUES_SANS_CONQUETE:
             A(f("conquete"), marque, libelle=f"{marque} — conquest vs loyalty")
+        from .revue_v2 import focus_v2
+        A(focus_v2, marque, libelle=f"{marque} — V2 redesign focus")
     if pts:
         agenda(SECTIONS_TRIM[3])
         open_points(ctx, rv)

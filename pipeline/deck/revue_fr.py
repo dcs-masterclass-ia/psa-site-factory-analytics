@@ -237,6 +237,8 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, f(rc, "canaux"), ctx, rv, marque, libelle=f"{marque} — leads by marketing channel")
         _ajoute(ctx, f(rc, "site_principal"), ctx, rv, marque, libelle=f"{marque} — leads from main website")
         _ajoute(ctx, f(rq, "conquete"), ctx, rv, marque, libelle=f"{marque} — conquest & loyalty")
+        from .revue_v2 import focus_v2
+        _ajoute(ctx, focus_v2, ctx, rv, marque, libelle=f"{marque} — V2 redesign focus")
     from .revue_trim import next_steps, open_points
     agenda_revue(ctx, rv, 5, SECTIONS_FR)
     open_points(ctx, rv)
