@@ -345,3 +345,24 @@ def lignes_chart(slide, x, y, w, h, categories, series, taille=10, legende=True,
             dl.font.color.rgb = rgb(coul)
             dl.position = XL_LABEL_POSITION.ABOVE
     return gf
+
+
+def tient_dans_la_diapo(prs, marge=0.1):
+    """Dernier filet avant l'enregistrement : aucune forme ne dépasse de la diapositive (PowerPoint pour Mac l'accepte, pas toutes les versions
+    ni Keynote / Google Slides, qui coupent ou décalent). Texte et formes : on réduit la largeur ; images et graphiques : on décale. Renvoie le nombre de corrections."""
+    W, H, m = prs.slide_width, prs.slide_height, Inches(marge)
+    n = 0
+    for s in prs.slides:
+        for sh in s.shapes:
+            if sh.left is None or sh.width is None:
+                continue
+            if sh.left + sh.width > W - m:
+                if sh.has_text_frame or sh.shape_type == 1:
+                    sh.width = max(Inches(0.3), W - m - sh.left)
+                else:
+                    sh.left = max(0, W - m - sh.width)
+                n += 1
+            if (sh.has_text_frame or sh.shape_type == 1) and sh.top + sh.height > H - m // 2 and sh.top < H:
+                sh.height = max(Inches(0.1), H - m // 2 - sh.top)
+                n += 1
+    return n

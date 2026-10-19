@@ -50,7 +50,7 @@ def couverture_revue(ctx, rv):
     ctx.n += 1
     g.texte(s, 0.62, 2.96, 7.1, 0.79, "Trade In Performance", taille=32, couleur="FFFFFF")
     g.texte(s, 0.62, 3.8, 7.0, 0.7, f"{mois_label(rv.per).split()[0][:3]}. {rv.per.annee}", taille=28, couleur="FFFFFF")
-    boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(6.35), Inches(2.34))
+    boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(5.3), Inches(2.34))
     boite.fill.solid(); boite.fill.fore_color.rgb = g.rgb("FFFFFF"); boite.line.fill.background(); boite.shadow.inherit = False
     rv._image(s, rv.manifeste.get("couverture_stellantis"))
     rv._drapeau_pays(s, rv.manifeste.get("couverture_drapeau"))
@@ -229,5 +229,6 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, f(rq, "conquete"), ctx, rv, marque, libelle=f"{marque} — conquest & loyalty")
     contacts_revue(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
+    g.tient_dans_la_diapo(ctx.prs)
     ctx.prs.save(str(sortie))
     return ctx

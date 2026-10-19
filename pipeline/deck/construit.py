@@ -1495,5 +1495,6 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     from .traductions import traduit_deck
     traduit_deck(ctx.prs, ctx.langue)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
+    g.tient_dans_la_diapo(ctx.prs)
     ctx.prs.save(str(sortie))
     return ctx

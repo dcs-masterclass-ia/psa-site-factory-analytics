@@ -114,7 +114,7 @@ def couverture_trim(ctx, rv):
     ligne2 = f"TRADE-IN WEBSITES PERFORMANCE REVIEW Q{rv.per.indice}-{rv.per.annee} – {pays}"
     g.texte(s, 0.62, 5.1, 7.4, 0.9, ligne2, taille=20 if len(ligne2) <= 62 else 16, gras=True, couleur="FFFFFF")
     g.texte(s, 0.62, 5.95, 5.0, 0.5, ctx.aujourdhui.strftime("%d/%m/%Y"), taille=20, gras=True, couleur="FFFFFF")
-    boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(6.35), Inches(2.34))
+    boite = s.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.79), Inches(2.89), Inches(5.3), Inches(2.34))
     boite.fill.solid(); boite.fill.fore_color.rgb = g.rgb("FFFFFF"); boite.line.fill.background(); boite.shadow.inherit = False
     rv._image(s, rv.manifeste.get("couverture_stellantis"))
     rv._drapeau_pays(s, rv.manifeste.get("couverture_drapeau"))
@@ -791,6 +791,7 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     contacts_revue(ctx, rv)
     ctx.qa = _qa_trim(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
+    g.tient_dans_la_diapo(ctx.prs)
     ctx.prs.save(str(sortie))
     return ctx
 
