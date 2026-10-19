@@ -791,6 +791,8 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
             A(f("conquete"), marque, libelle=f"{marque} — conquest vs loyalty")
         from .revue_v2 import focus_v2
         A(focus_v2, marque, libelle=f"{marque} — V2 redesign focus")
+        from .revue_v2 import focus_v2_entree
+        A(focus_v2_entree, marque, libelle=f"{marque} — V2 redesign focus (entry mode)")
     if pts:
         agenda(SECTIONS_TRIM[3])
         open_points(ctx, rv)

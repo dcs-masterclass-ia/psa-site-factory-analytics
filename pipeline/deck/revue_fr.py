@@ -239,6 +239,8 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, f(rq, "conquete"), ctx, rv, marque, libelle=f"{marque} — conquest & loyalty")
         from .revue_v2 import focus_v2
         _ajoute(ctx, focus_v2, ctx, rv, marque, libelle=f"{marque} — V2 redesign focus")
+        from .revue_v2 import focus_v2_entree
+        _ajoute(ctx, focus_v2_entree, ctx, rv, marque, libelle=f"{marque} — V2 redesign focus (entry mode)")
     from .revue_trim import next_steps, open_points
     agenda_revue(ctx, rv, 5, SECTIONS_FR)
     open_points(ctx, rv)

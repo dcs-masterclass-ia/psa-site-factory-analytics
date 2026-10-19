@@ -82,3 +82,74 @@ def focus_v2(ctx, rv, marque):
             + (" Markets with fewer than 100 visitors are shown as 'low base'." if peu else ""))
     g.texte(s, 0.2, 6.75, 10.8, 0.4, note, taille=7.5, couleur="595959", italique=True)
     return s
+
+
+# ------------------------------------------------------------------ diapo 2 : tunnel par mode d'entrée (immatriculation / marque-modèle), avant / après
+MOIS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+ETAPES_ENTREE = ["Version", "Mileage", "Contact details", "Dealer", "Estimate"]
+
+
+def _mois_lib(ym):
+    return f"{MOIS_EN[int(ym[5:7]) - 1]} {ym[:4]}"
+
+
+def _mois_avant(ym):
+    a, m = int(ym[:4]), int(ym[5:7])
+    return f"{a - 1}-12" if m == 1 else f"{a}-{m - 1:02d}"
+
+
+def focus_v2_entree(ctx, rv, marque):
+    """Tunnel par mode de saisie du véhicule (plaque / marque-modèle), le mois qui précède la bascule contre le mois le plus récent après ; mêmes marchés (PT, FR, ES) que la diapo 1.
+    Un marché sans mois complet avant ET mois après la bascule n'est pas affiché (données du mois : GA4, utilisateurs actifs du mois par parcours)."""
+    d = ctx.d
+    tot = {"immat": [[0] * 5, [0] * 5], "marque_modele": [[0] * 5, [0] * 5]}      # [avant, après] par mode
+    lignes = []
+    parts = [0, 0, 0, 0]                                                          # leads plaque / marque-modèle avant, plaque / marque-modèle après
+    for nom, m, pays in d.sites:
+        if m != marque or pays not in PAYS_V2:
+            continue
+        j = d._site_json(nom) or {}
+        dv, fe = j.get("v2_date"), j.get("funnelEntree") or {}
+        if not dv or not fe:
+            continue
+        pre = _mois_avant(dv[:7])
+        apres = [k for k in sorted(fe) if k > dv[:7]]
+        if pre not in fe or not apres:
+            continue
+        post = apres[-1]
+        if fe[pre]["immat"][0] < BASE_MINI or fe[post]["immat"][0] < BASE_MINI:        # base suffisante sur le parcours plaque, avant et après
+            continue
+        for mode in tot:
+            for k in range(5):
+                tot[mode][0][k] += fe[pre][mode][k]
+                tot[mode][1][k] += fe[post][mode][k]
+        ent = lambda mois: (j.get("leads", {}).get(mois, {}).get("entry") or {})
+        e0, e1 = ent(pre), ent(post)
+        p0, p1 = e0.get("Avec immatriculation", 0), e1.get("Avec immatriculation", 0)
+        q0, q1 = e0.get("Marque / modele", 0), e1.get("Marque / modele", 0)
+        parts = [parts[0] + p0, parts[1] + q0, parts[2] + p1, parts[3] + q1]
+        sh = lambda p, q: (q / (p + q) * 100) if (p + q) else None
+        coherent = lambda v: v[0] >= BASE_MINI and max(v) <= v[0] * 1.005      # un tunnel ne remonte pas : sinon le suivi des étapes a changé, on n'affiche pas
+        c = lambda mode, w: (fe[w][mode][4] / fe[w][mode][0] * 100) if coherent(fe[w][mode]) else None
+        f = lambda a, b: "n/a" if a is None or b is None else f"{a:.0f}% → {b:.0f}%"
+        lignes.append((ORDRE_PAYS.index(pays), PAYS_V2[pays], dv, f"{_mois_lib(pre)} → {_mois_lib(post)}", f(sh(p0, q0), sh(p1, q1)),
+                       f(c("immat", pre), c("immat", post)), f(c("marque_modele", pre), c("marque_modele", post))))
+    if not lignes:
+        return None
+    lignes.sort()
+    s = slide_revue(ctx, rv, "V2 REDESIGN FOCUS", sous_titre=f"{ctx.nom(marque)} – funnel by entry mode (plate / brand & model)", marque=marque, source=None)
+    ent = [{"t": t, "taille": 8, "gras": True, "fond": "1F3864", "couleur": "FFFFFF"} for t in
+           ("Market", "V2 go-live", "Month before → latest month after", "Brand/model share of leads", "Plate: Version → Estimate", "Brand/model: Version → Estimate")]
+    rows = [ent] + [[{"t": r[1], "taille": 9, "gras": True, "align": PP_ALIGN.LEFT}, {"t": _date(r[2]), "taille": 9}, {"t": r[3], "taille": 8.5},
+                     {"t": r[4], "taille": 8.5}, {"t": r[5], "taille": 8.5, "gras": True}, {"t": r[6], "taille": 8.5, "gras": True}] for r in lignes]
+    _table(s, 0.2, 1.3, [1.2, 1.1, 2.6, 1.9, 2.0, 2.3], [0.42] + [0.38] * (len(rows) - 1), rows)
+    y_ch = 1.3 + 0.42 + 0.38 * (len(rows) - 1) + 0.35
+    g.texte(s, 0.2, y_ch - 0.05, 9, 0.28, "Funnel – share of Version-step visitors reaching each step, by entry mode (the home page is common to both)", taille=11, gras=True, couleur="000000")
+    pct_ = lambda v: [x / v[0] * 100 if v[0] else 0 for x in v]
+    series = [("Plate – before V2", pct_(tot["immat"][0]), "A5A5A5"), ("Plate – after V2", pct_(tot["immat"][1]), "4472C4")]
+    if all(v[0] >= BASE_MINI and max(v) <= v[0] * 1.005 for v in tot["marque_modele"]):
+        series += [("Brand/model – before V2", pct_(tot["marque_modele"][0]), "F4B183"), ("Brand/model – after V2", pct_(tot["marque_modele"][1]), "ED7D31")]
+    g.colonnes(s, 0.2, y_ch + 0.25, 10.4, 6.75 - y_ch - 0.25, ETAPES_ENTREE, series, taille=9, etiquettes=True, format_nombre='0"%"', legende=True, largeur_barre=30)
+    g.texte(s, 0.2, 6.75, 10.8, 0.4, "Monthly active users per entry path (GA4). 'Before' = the full month preceding the go-live month; 'after' = the latest month since the go-live (may be partial). "
+            "Brand/model shown only when its steps are consistent before and after (n/a otherwise: tracking of that path may differ). Other factors may have moved at the same time: the gap cannot be attributed to V2 alone.", taille=7.5, couleur="595959", italique=True)
+    return s
