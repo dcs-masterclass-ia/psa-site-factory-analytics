@@ -308,14 +308,23 @@ def vue_globale(ctx, rv):
              f"NC leads: {_k(f['vn_mois'])} leads in {_mois_nom(per)}, {pct(f['e_vn_n1'], 0, signe=True)} YoY and {pct(f['e_vn_prec'], 0, signe=True)} vs {_mois_nom(rv.prec)}.",
              f"YTD performance at {_k(f['ytd'])} leads, {pct(f['e_ytd'], 0, signe=True)} vs {an - 1}" +
              (f", with {_liste(top2)} accounting for {pct(part_top2)} of generated leads." if len(top2) == 2 else ".")]
-    s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Global view", puces=puces, boite_pleine=True)
+    s = slide_revue(ctx, rv, "Global Overview", puces=puces, boite_pleine=True)
     _bandeau(s, 0.69, 1.14, 9.87, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {mois_label(per).upper()}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
     _bloc_chiffre(s, 0.69, "REPORTING MONTHLY", f"Total generated leads {mois_maj}. {an}", f["mois"], "Evolution vs last month", f["e_mois_prec"], 1.83)
     _bloc_chiffre(s, 2.58, "REPORTING YTD", f"Total generated leads {an}", f["ytd"], f"Evolution vs last year ( {an - 1} et {an})", f["e_ytd"], 1.75)
     _bandeau(s, 4.38, 1.43, 6.18, 0.27, f"Generated leads YTD {mois_label(per).upper()} : split by brand", GRIS_BANDEAU, taille=8)
     if ytd_m:
-        tot = f["ytd"] or 1
+        sy = 0                          # Stellantis &You (S&Y) : absent des totaux, affiché dans le détail par marque (retour DKAM, comme le trimestriel)
+        excl, ctx.d.exclus = ctx.d.exclus, set()
+        try:
+            sy = sum(ctx.d.leads_mensuels(an, "STELLANTIS &YOU")[:per.indice])
+        finally:
+            ctx.d.exclus = excl
+        tot = (f["ytd"] or 1) + sy
         lignes = [(m.replace(" ", "_"), a, a / tot * 100, COULEUR_MARQUE.get(m, "BAB0AC")) for m, a, _ in ytd_m]
+        if sy > 0:
+            lignes.append(("S&Y", sy, sy / tot * 100, COULEUR_MARQUE.get("STELLANTIS &YOU", "7F7F7F")))
+            lignes.sort(key=lambda x: -x[1])
         barres_marques(s, 4.38, 1.72, 6.18, 2.12, lignes)
     _bandeau(s, 0.69, 3.87, 9.87, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
     mois = _mois_glissants(per)

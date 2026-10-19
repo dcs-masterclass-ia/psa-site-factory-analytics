@@ -175,7 +175,7 @@ def trafic(ctx, rv, marque):
             p += f" ({pct(e0, 1, True)} YoY)"
         puces.append(p + ".")
 
-    titre, sous = ("Traffic DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Traffic", mois_label(rv.per))
+    titre, sous = "Traffic DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}"      # mêmes noms que le trimestriel
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=puces[:5])
     g.texte(s, 0.25, 1.25, 2.0, 0.3, "Brand website", taille=14, gras=True, couleur="000000")
     g.texte(s, 2.5, 1.25, 3.0, 0.32, "Trade-in website", taille=14, gras=True, couleur="000000")
@@ -194,7 +194,7 @@ def trafic(ctx, rv, marque):
     _ligne(s, 3.5, 2.81, 3.5, 3.13); _ligne(s, 3.5, 3.13, 8.5, 3.13); _ligne(s, 8.5, 3.13, 8.5, 2.87, fleche=True)
     g.texte(s, 5.5, 3.17, 1.0, 0.22, "n/a" if cvr is None else f"{cvr:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
     # part des entrées sur la home de la reprise venant du site de la marque / directes (« Brand Websites » / « Trade In Entry » de Looker)
-    orig = (ctx.d.origines_entree(rv.per, marque) if rv.trim else None) or _entree_origines(ctx, marque, rv.per)
+    orig = ctx.d.origines_entree(rv.per, marque) or _entree_origines(ctx, marque, rv.per)
     if orig:
         g.texte(s, 9.6, 1.25, 1.5, 0.3, "Trade-in entries by origin", taille=8, gras=True, italique=True, couleur="595959")
         g.anneau(s, 9.55, 1.5, 1.55, 1.7, ["Brand Websites", "Trade In Entry"], [orig[0], orig[1]], couleurs=["4472C4", "5BC0BE"], taille=7, legende_bas=True)

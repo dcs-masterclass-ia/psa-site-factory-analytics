@@ -27,6 +27,7 @@ def _module(nom):
         return None
 
 
+SECTIONS_FR = SECTIONS + ["OPEN POINTS", "NEXT STEPS"]      # mêmes diapositives et mêmes noms que le trimestriel
 ORDRE_MARQUES_APERCU = ["PEUGEOT", "CITROEN", "DS", "OPEL", "SPOTICAR", "FIAT", "JEEP", "ALFA ROMEO", "ABARTH", "FIAT PRO", "LANCIA", "LEAPMOTOR"]
 
 
@@ -208,7 +209,7 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
 
     couverture_revue(ctx, rv)
     actions_en_cours(ctx, rv)
-    agenda_revue(ctx, rv, 0)
+    agenda_revue(ctx, rv, 0, SECTIONS_FR)
     _ajoute(ctx, f(rg, "resume_executif"), ctx, rv, libelle="résumé exécutif")
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
     _ajoute(ctx, f(rg, "tendance_leads"), ctx, rv, libelle="Executive summary — lead trend all brands")
@@ -218,14 +219,14 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
             pass
     except Exception as e:
         ctx.avertissements.append(f"Diapositive en échec (leads overview) : {type(e).__name__}: {e}")
-    agenda_revue(ctx, rv, 1)
+    agenda_revue(ctx, rv, 1, SECTIONS_FR)
     from .revue_trim import trafic_leads_apercu      # même diapo que le trimestriel (une seule vue, toutes marques), en MoM ; ordre demandé par les DKAM
     _ajoute(ctx, trafic_leads_apercu, ctx, rv, ORDRE_MARQUES_APERCU, True, libelle="traffic & leads overview")
-    agenda_revue(ctx, rv, 2)
+    agenda_revue(ctx, rv, 2, SECTIONS_FR)
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, libelle="projection du mois")
-    agenda_revue(ctx, rv, 3)
+    agenda_revue(ctx, rv, 3, SECTIONS_FR)
     _ajoute(ctx, f(rg, "conversion_ventes_nc"), ctx, rv, libelle="NC sales conversion")
-    agenda_revue(ctx, rv, 4)
+    agenda_revue(ctx, rv, 4, SECTIONS_FR)
     for marque in MARQUES:
         if marque not in d.marques or d.leads_total(rv.per, marque) == 0:
             ctx.avertissements.append(f"{marque} : aucun lead sur la période, section non générée.")
@@ -236,6 +237,11 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, f(rc, "canaux"), ctx, rv, marque, libelle=f"{marque} — leads by marketing channel")
         _ajoute(ctx, f(rc, "site_principal"), ctx, rv, marque, libelle=f"{marque} — leads from main website")
         _ajoute(ctx, f(rq, "conquete"), ctx, rv, marque, libelle=f"{marque} — conquest & loyalty")
+    from .revue_trim import next_steps, open_points
+    agenda_revue(ctx, rv, 5, SECTIONS_FR)
+    open_points(ctx, rv)
+    agenda_revue(ctx, rv, 6, SECTIONS_FR)
+    next_steps(ctx, rv)
     contacts_revue(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
     g.tient_dans_la_diapo(ctx.prs)

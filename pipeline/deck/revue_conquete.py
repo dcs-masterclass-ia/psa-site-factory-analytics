@@ -93,7 +93,7 @@ def conquete(ctx, rv, marque):
     """Diapositive « Conquest & loyalty – <mois> » de la marque (voir le module). None si aucune donnée de reprise sur le mois."""
     d, per = ctx.d, ctx.per
     libelle_per = mois_label(per)
-    if rv.trim:                                  # retour DKAM : sur le trimestriel, cette diapo porte sur l'année en cours, de janvier à la fin du trimestre
+    if True:                                     # retour DKAM : cette diapo porte sur l'année en cours, de janvier à la fin de la période (trimestriel ET mensuel)
         from datetime import date
         from .periodes import MOIS_COURTS, PeriodeJours
         per = PeriodeJours(date(per.annee, 1, 1), per.fin)
@@ -149,10 +149,7 @@ def conquete(ctx, rv, marque):
             t += f", mostly from {_joli(pa[0][0])} {_joli(pa[0][1])} owners"
         puces.append(t + ".")
 
-    if rv.trim:
-        s = slide_revue(ctx, rv, "LEAD DEEP DIVE", sous_titre=f"Conquest Vs Loyalty {libelle_per}", marque=marque, puces=puces)
-    else:
-        s = slide_revue(ctx, rv, f"Conquest & loyalty – {mois_label(per)}", marque=marque, puces=puces)
+    s = slide_revue(ctx, rv, "LEAD DEEP DIVE", sous_titre=f"Conquest Vs Loyalty {libelle_per}", marque=marque, puces=puces)
 
     # --- panneaux (positions relevées sur la diapositive de référence)
     X1, X2, W1, W2 = 0.6, 5.7, 5.05, 5.05
