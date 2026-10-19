@@ -180,7 +180,7 @@ def global_overview(ctx, rv):
     mot = lambda e: "increasing" if (e or 0) >= 0 else "decreasing"
     nc = f"NC leads {mot(evol(vn, vn_n1))} ({_signe(evol(vn, vn_n1))} YoY)" if evol(vn, vn_n1) is not None else ""
     txt = f"{q}-{an} performance {mot(e_q)} by {_signe(e_q)} QoQ & {mot(e_ytd)} by {_signe(e_ytd)} YoY" + (f", {nc}" if nc else "") + "."
-    g.boite_pointillee(s, 0.35, 6.45, 9.7, 0.38, [txt], taille=11, fond="FFFFFF", bord="000000", espace_apres=0, largeur_trait=0.75)
+    g.boite_pointillee(s, 0.35, 6.45, 8.4, 0.38, [txt], taille=11, fond="FFFFFF", bord="000000", espace_apres=0, largeur_trait=0.75)
     _source(s, "Source: autobiz")
     return s
 
