@@ -27,6 +27,9 @@ def _module(nom):
         return None
 
 
+ORDRE_MARQUES_APERCU = ["PEUGEOT", "CITROEN", "DS", "OPEL", "SPOTICAR", "FIAT", "JEEP", "ALFA ROMEO", "ABARTH", "FIAT PRO", "LANCIA", "LEAPMOTOR"]
+
+
 def _ajoute(ctx, f, *args, libelle=""):
     """Appelle un constructeur de diapositive ; une diapositive absente (module non écrit ou données manquantes) donne un avertissement, jamais une erreur."""
     if f is None:
@@ -210,8 +213,8 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
     _ajoute(ctx, f(rg, "tendance_leads"), ctx, rv, libelle="Executive summary — lead trend all brands")
     agenda_revue(ctx, rv, 1)
-    _ajoute(ctx, f(rg, "trafic_leads_groupe"), ctx, rv, "xP", [m for m in GROUPE_XP + ["SPOTICAR"] if m in d.marques], libelle="traffic and leads xP")   # Spoticar est dans la vue xP (retour DKAM)
-    _ajoute(ctx, f(rg, "trafic_leads_groupe"), ctx, rv, "xF", [m for m in GROUPE_XF if m in d.marques], libelle="traffic and leads xF")
+    from .revue_trim import trafic_leads_apercu      # même diapo que le trimestriel (une seule vue, toutes marques), en MoM ; ordre demandé par les DKAM
+    _ajoute(ctx, trafic_leads_apercu, ctx, rv, ORDRE_MARQUES_APERCU, True, libelle="traffic & leads overview")
     agenda_revue(ctx, rv, 2)
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, libelle="projection du mois")
     agenda_revue(ctx, rv, 3)

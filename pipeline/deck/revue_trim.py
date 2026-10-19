@@ -366,17 +366,22 @@ def projets_groupe(ctx, rv, groupe, marques):
 
 
 # ------------------------------------------------------------------ 13. Traffic & leads overview
-def trafic_leads_apercu(ctx, rv):
+def trafic_leads_apercu(ctx, rv, ordre=None, mensuel=False):
+    """`ordre` : liste de marques imposant l'ordre des colonnes. `mensuel` : revue mensuelle (MoM contre le mois civil précédent, au lieu de QoQ)."""
     d, per = ctx.d, rv.per
     marques = _actives(ctx, rv)
+    if ordre:
+        marques = sorted(marques, key=lambda m: ordre.index(m) if m in ordre else len(ordre))
     if not marques:
         return None
+    prec_ses = rv.prec if mensuel else per.precedente_jours()
+    lib_prec = "MoM" if mensuel else "QoQ"
     # sessions : « période précédente » = les mêmes nombres de jours juste avant (définition de Looker, tableaux de référence) ; leads : trimestre civil précédent
-    trafic = {m: tuple(_sessions(d, p, m) for p in (per, per.precedente_jours(), rv.n1)) for m in marques}
+    trafic = {m: tuple(_sessions(d, p, m) for p in (per, prec_ses, rv.n1)) for m in marques}
     leads = {m: tuple(_L(d, p, m) for p in (per, rv.prec, rv.n1)) for m in marques}
     pays_ses = "+".join(p for p in d.pays if p != "LU") or "+".join(d.pays)
     for m in marques:
-        for p_, v_ in zip((per, per.precedente_jours(), rv.n1), trafic[m]):
+        for p_, v_ in zip((per, prec_ses, rv.n1), trafic[m]):
             ctx.faits.ajoute("sessions", v_ or None, m, p_.etiquette("en"), "traffic_leads_overview", perimetre=pays_ses)
         for p_, v_ in zip((per, rv.prec, rv.n1), leads[m]):
             ctx.faits.ajoute("leads", v_, m, p_.etiquette("en"), "traffic_leads_overview")
@@ -390,7 +395,7 @@ def trafic_leads_apercu(ctx, rv):
         g.texte(s, 0.25, y, 4.0, 0.35, titre, taille=16, gras=True, couleur="000000")
         lignes = [[{"t": "", "taille": 9}] + [{"t": ctx.nom(m), "taille": 9, "gras": True} for m in marques]]
         lignes.append([{"t": mois_label(per), "taille": 8}] + [{"t": nb(vals[m][0]) if vals[m][0] else "", "taille": 13, "gras": False} for m in marques])
-        for nom, k in (("QoQ", 1), ("YoY", 2)):
+        for nom, k in ((lib_prec, 1), ("YoY", 2)):
             row = [{"t": nom, "taille": 8}]
             for m in marques:
                 e = ev(vals[m][0], vals[m][k])
@@ -403,7 +408,7 @@ def trafic_leads_apercu(ctx, rv):
     # commentaires calculés
     def phrases(vals, nom):
         out = []
-        for lib, k in (("QoQ", 1), ("YoY", 2)):
+        for lib, k in ((lib_prec, 1), ("YoY", 2)):
             ups = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) > 0]
             dws = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) < 0]
             if ups and dws:
@@ -426,6 +431,9 @@ def trafic_leads_apercu(ctx, rv):
         p.alignment = PP_ALIGN.LEFT
         r = p.add_run(); r.text = t
         r.font.size = Pt(10); r.font.bold = gras; r.font.underline = gras; r.font.color.rgb = g.rgb("000000")
+    if mensuel:
+        _source(s, "Source: autobiz + GA")
+        return s
     _source(s, f"Source: GA4 / autobiz — sessions QoQ vs the previous {per.jours} days ({per.precedente_jours().debut.strftime('%d/%m')}-{per.precedente_jours().fin.strftime('%d/%m')}), as in Looker")
     return s
 
