@@ -210,7 +210,7 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
     _ajoute(ctx, f(rg, "tendance_leads"), ctx, rv, libelle="Executive summary — lead trend all brands")
     agenda_revue(ctx, rv, 1)
-    _ajoute(ctx, f(rg, "trafic_leads_groupe"), ctx, rv, "xP", [m for m in GROUPE_XP if m in d.marques], libelle="traffic and leads xP")
+    _ajoute(ctx, f(rg, "trafic_leads_groupe"), ctx, rv, "xP", [m for m in GROUPE_XP + ["SPOTICAR"] if m in d.marques], libelle="traffic and leads xP")   # Spoticar est dans la vue xP (retour DKAM)
     _ajoute(ctx, f(rg, "trafic_leads_groupe"), ctx, rv, "xF", [m for m in GROUPE_XF if m in d.marques], libelle="traffic and leads xF")
     agenda_revue(ctx, rv, 2)
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, libelle="projection du mois")
