@@ -212,6 +212,12 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, f(rg, "resume_executif"), ctx, rv, libelle="résumé exécutif")
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
     _ajoute(ctx, f(rg, "tendance_leads"), ctx, rv, libelle="Executive summary — lead trend all brands")
+    from .revue_trim import apercu_marques_trim      # « Leads Overview » du trimestriel (tendance, moteurs, actions recommandées par marque), en MoM (retour DKAM)
+    try:
+        for s_ in apercu_marques_trim(ctx, rv):
+            pass
+    except Exception as e:
+        ctx.avertissements.append(f"Diapositive en échec (leads overview) : {type(e).__name__}: {e}")
     agenda_revue(ctx, rv, 1)
     from .revue_trim import trafic_leads_apercu      # même diapo que le trimestriel (une seule vue, toutes marques), en MoM ; ordre demandé par les DKAM
     _ajoute(ctx, trafic_leads_apercu, ctx, rv, ORDRE_MARQUES_APERCU, True, libelle="traffic & leads overview")
