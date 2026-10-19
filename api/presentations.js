@@ -87,9 +87,11 @@ function nettoieCommun(b) {
 /** Actions en cours (diapositive « Ongoing actions » du format revue_fr) : sujet, détails, date, pilote et statut = lignes de texte. */
 function nettoieActionsEnCours(v) {
   return liste(v, 15, a => {
-    if (!a || typeof a !== "object" || !txt(a.sujet, 80)) return null;
+    if (!a || typeof a !== "object") return null;
     const brut = Array.isArray(a.statut) ? a.statut : String(a.statut == null ? "" : a.statut).split("\n");
-    return { sujet: txt(a.sujet, 80), details: txt(a.details, 200), date: txt(a.date, 30), pilote: txt(a.pilote, 100), statut: liste(brut, 6, x => txt(x, 220) || null) };
+    const l = { sujet: txt(a.sujet, 160), details: txt(a.details, 400), date: txt(a.date, 30), pilote: txt(a.pilote, 100), statut: liste(brut, 6, x => txt(x, 220) || null) };
+    // une ligne est gardée dès qu'une case est remplie (avant : perdue en silence si le sujet était vide, ou coupée à 80 / 200 caractères)
+    return l.sujet || l.details || l.date || l.pilote || l.statut.length ? l : null;
   });
 }
 
