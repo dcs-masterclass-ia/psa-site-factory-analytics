@@ -266,13 +266,13 @@ def barres_marques(slide, x, y, w, h, lignes, taille=8):
     return gf
 
 
-def _bloc_chiffre(s, x, titre, libelle, valeur, lib_evol, evolution, w):
-    _bandeau(s, x, 1.43, w, 0.27, titre, GRIS_BANDEAU, taille=8)
-    g.texte(s, x, 1.78, w, 0.25, libelle, taille=8, couleur="000000")
-    g.texte(s, x, 2.22, w, 0.3, nb(valeur), taille=9, couleur="000000", align=PP_ALIGN.RIGHT)
-    g.texte(s, x, 2.92, w, 0.25, lib_evol, taille=7, couleur="000000")
+def _bloc_chiffre(s, x, titre, libelle, valeur, lib_evol, evolution, w, dy=0.0):
+    _bandeau(s, x, 1.43 + dy, w, 0.27, titre, GRIS_BANDEAU, taille=8)
+    g.texte(s, x, 1.78 + dy, w, 0.25, libelle, taille=8, couleur="000000")
+    g.texte(s, x, 2.22 + dy, w, 0.3, nb(valeur), taille=9, couleur="000000", align=PP_ALIGN.RIGHT)
+    g.texte(s, x, 2.92 + dy, w, 0.25, lib_evol, taille=7, couleur="000000")
     coul = "7F7F7F" if evolution is None else ("C00000" if evolution < 0 else "2E7D32")
-    g.texte(s, x, 3.3, w, 0.3, pct(evolution, 0, signe=True) if evolution is not None else "n/a", taille=9, gras=True, couleur=coul, align=PP_ALIGN.RIGHT)
+    g.texte(s, x, 3.3 + dy, w, 0.3, pct(evolution, 0, signe=True) if evolution is not None else "n/a", taille=9, gras=True, couleur=coul, align=PP_ALIGN.RIGHT)
 
 
 def _mois_glissants(per, k=14):

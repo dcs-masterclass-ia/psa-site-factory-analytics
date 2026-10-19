@@ -138,10 +138,11 @@ def global_overview(ctx, rv):
     q = f"Q{per.indice}"
     ctx.faits.ajoute("leads", L, None, per.etiquette("en"), "global_overview", marques=d.marques)
     s = slide_revue(ctx, rv, "Global Overview", source=None)
-    _bandeau(s, 0.35, 1.14, 12.55, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {q}-{an}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
-    _bloc_chiffre(s, 0.35, "REPORTING QUARTERLY", f"Total generated leads {q}-{an}", L, "Evolution vs last quarter", e_q, 2.3)
-    _bloc_chiffre(s, 2.75, "REPORTING YTD", f"Total generated leads {an}", ytd, f"Evolution vs last year ({an - 1} vs {an})", e_ytd, 2.3)
-    _bandeau(s, 5.2, 1.43, 7.7, 0.27, f"Generated leads YTD {q}-{an}: split by brand", GRIS_BANDEAU, taille=8)
+    DY = 0.22                            # retour DKAM : tout le contenu descend pour ne plus toucher le filet orange du titre
+    _bandeau(s, 0.35, 1.14 + DY, 12.55, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {q}-{an}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
+    _bloc_chiffre(s, 0.35, "REPORTING QUARTERLY", f"Total generated leads {q}-{an}", L, "Evolution vs last quarter", e_q, 2.3, DY)
+    _bloc_chiffre(s, 2.75, "REPORTING YTD", f"Total generated leads {an}", ytd, f"Evolution vs last year ({an - 1} vs {an})", e_ytd, 2.3, DY)
+    _bandeau(s, 5.2, 1.43 + DY, 7.7, 0.27, f"Generated leads YTD {q}-{an}: split by brand", GRIS_BANDEAU, taille=8)
     ym = []
     for m in d.marques:
         a = sum(d.leads_mensuels(an, m)[:fin_m])
@@ -160,8 +161,8 @@ def global_overview(ctx, rv):
         if sy > 0:
             lignes.append(("S&Y", sy, sy / base * 100, COULEUR_MARQUE.get("STELLANTIS &YOU", "7F7F7F")))
             lignes.sort(key=lambda x: -x[1])
-        barres_marques(s, 5.2, 1.72, 7.7, 2.2, lignes)
-    _bandeau(s, 0.35, 3.95, 12.55, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
+        barres_marques(s, 5.2, 1.72 + DY, 7.7, 2.2, lignes)
+    _bandeau(s, 0.35, 3.95 + DY, 12.55, 0.26, "Trend YTD", GRIS_BANDEAU, taille=8)
     qs = _trimestres(per, 8)
     cats = [f"{p.annee} Q{p.indice}" for p in qs]
     for p_ in qs:
@@ -169,17 +170,17 @@ def global_overview(ctx, rv):
         for k_, nom_ in (("VN", "leads_vn"), ("SANS", "leads_sans"), ("VO", "leads_vo")):
             ctx.faits.ajoute(nom_, pj_[k_], None, p_.etiquette("en"), "global_trend")
         ctx.faits.ajoute("leads", sum(pj_.values()), None, p_.etiquette("en"), "global_trend", marques=d.marques)
-    gf = g.lignes_chart(s, 0.35, 4.22, 11.0, 2.2, cats, [("New cars & Demo cars", [d.leads(p)["VN"] for p in qs], C_VN), ("Trade-in only", [d.leads(p)["SANS"] for p in qs], C_SANS),
+    gf = g.lignes_chart(s, 0.35, 4.22 + DY, 11.0, 1.9, cats, [("New cars & Demo cars", [d.leads(p)["VN"] for p in qs], C_VN), ("Trade-in only", [d.leads(p)["SANS"] for p in qs], C_SANS),
                                                        ("Used cars", [d.leads(p)["VO"] for p in qs], C_VO)], taille=8, legende=False, etiquettes=True)
     try:
         gf.chart.plots[0].series[2].data_labels.position = XL_LABEL_POSITION.BELOW
     except Exception:
         pass
-    _legende_projets(s, 11.5, 5.5)
+    _legende_projets(s, 11.5, 5.5 + DY)
     mot = lambda e: "increasing" if (e or 0) >= 0 else "decreasing"
     nc = f"NC leads {mot(evol(vn, vn_n1))} ({_signe(evol(vn, vn_n1))} YoY)" if evol(vn, vn_n1) is not None else ""
     txt = f"{q}-{an} performance {mot(e_q)} by {_signe(e_q)} QoQ & {mot(e_ytd)} by {_signe(e_ytd)} YoY" + (f", {nc}" if nc else "") + "."
-    g.boite_pointillee(s, 0.35, 6.5, 12.55, 0.45, [txt], taille=11, fond="FFFFFF", bord="000000", espace_apres=0, largeur_trait=0.75)
+    g.boite_pointillee(s, 0.35, 6.45, 9.7, 0.38, [txt], taille=11, fond="FFFFFF", bord="000000", espace_apres=0, largeur_trait=0.75)
     _source(s, "Source: autobiz")
     return s
 
