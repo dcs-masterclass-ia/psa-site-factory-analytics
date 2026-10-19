@@ -580,6 +580,57 @@ class Donnees:
                 total["canaux"][c] = total["canaux"].get(c, 0) + n
         return total
 
+    def _ga4_periode(self, cle, appel):
+        """Résultat mis en cache d'une requête GA4 sur une période ; None si GA4 est indisponible (la diapositive se rabat alors sur les valeurs mensuelles)."""
+        v = self._cache_ga4().get(cle)
+        if v is not None:
+            return v
+        try:
+            from pipeline import ga4
+            v = appel(ga4, ga4.client())
+        except (Exception, SystemExit):
+            return None
+        self._cache_ga4()[cle] = v
+        self._sauve_cache()
+        return v
+
+    def sessions_site_marque(self, periode, marque):
+        """Sessions de la propriété GA4 des sites de la marque sur la période, en une requête (comme Looker) ; None si indisponible."""
+        total = None
+        for nom, m, _ in self.sites:
+            if m != marque:
+                continue
+            s = next((x for x in __import__("pipeline.sites", fromlist=["SITES"]).SITES if x.nom == nom), None)
+            if s is None or not s.acces_api:
+                return None
+            d0, d1 = periode.debut.isoformat(), periode.fin.isoformat()
+            v = self._ga4_periode(f"prop1|{nom}|{d0}|{d1}", lambda ga4, cli: ga4.sessions_propriete_periode(cli, s.propriete, d0, d1))
+            if v is None:
+                return None
+            total = (total or 0) + v
+        return total
+
+    def origines_entree(self, periode, marque):
+        """(Brand Websites, Trade In Entry) de l'anneau Looker sur la période, en une requête ; None si indisponible."""
+        marque_n = direct_n = 0
+        vu = False
+        for nom, m, _ in self.sites:
+            if m != marque:
+                continue
+            try:
+                from pipeline import sites as sites_mod
+                from pipeline.history import hote_reprise_ga4
+                s = next((x for x in sites_mod.SITES if x.nom == nom), None)
+                if s is None or not s.acces_api:
+                    return None
+                d0, d1 = periode.debut.isoformat(), periode.fin.isoformat()
+                v = self._ga4_periode(f"orig1|{nom}|{d0}|{d1}", lambda ga4, cli: list(ga4.origines_entree(cli, s.propriete, hote_reprise_ga4(cli, s, d0, d1), d0, d1) or []))
+            except (Exception, SystemExit):
+                return None
+            if v:
+                marque_n += v[0]; direct_n += v[1]; vu = True
+        return (marque_n, direct_n) if vu and (marque_n + direct_n) else None
+
     def _cache_ga4(self):
         if self._ga4 is None:
             try:

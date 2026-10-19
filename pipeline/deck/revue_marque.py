@@ -111,7 +111,9 @@ def _site_principal(ctx, marque, per):
 def trafic(ctx, rv, marque):
     d = ctx.d
     nom = ctx.nom(marque)
-    cur, prec, n1 = (d.utilisateurs(p, marque) for p in (rv.per, rv.prec, rv.n1))
+    # tuiles du haut : « période précédente » = les mêmes nombres de jours juste avant (définition de Looker, comme la diapo Traffic & leads Overview) sur le trimestriel
+    p_ses = rv.per.precedente_jours() if rv.trim else rv.prec
+    cur, prec, n1 = (d.utilisateurs(p, marque) for p in (rv.per, p_ses, rv.n1))
     can, can_p, can_n = (d.canaux(p, marque) or {} for p in (rv.per, rv.prec, rv.n1))
     ses = cur["sessions"] if cur else (sum(can.values()) or None)
     if not ses:
@@ -131,13 +133,16 @@ def trafic(ctx, rv, marque):
     e_ij = (_d(ij, val(prec, "in_journey")), _d(ij, val(n1, "in_journey")))
     e_hl = (_d(hl, val(prec, "hot_leads")), _d(hl, val(n1, "hot_leads")))
     pays_dd = "+".join(ctx.d.pays)
-    for p_, u_ in ((rv.per, cur), (rv.prec, prec), (rv.n1, n1)):
+    for p_, u_ in ((rv.per, cur), (p_ses, prec), (rv.n1, n1)):
         if u_:
             for k_, nom_ in (("sessions", "sessions"), ("in_journey", "in_journey"), ("hot_leads", "ga_leads")):
                 ctx.faits.ajoute(nom_, u_.get(k_), marque, p_.etiquette("en"), "traffic_deep_dive", perimetre=pays_dd)
     site, rep = _site_principal(ctx, marque, rv.per)
     site_p = _site_principal(ctx, marque, rv.prec)[0]
     site_n = _site_principal(ctx, marque, rv.n1)[0]
+    if rv.trim:                      # un trimestre = UNE requête GA4 (Looker) : additionner les trois mois surévalue (GA4 dédoublonne), PEUGEOT PL T3 : 741 323 au lieu de 730 864
+        vivant = [ctx.d.sessions_site_marque(p, marque) for p in (rv.per, p_ses, rv.n1)]
+        site, site_p, site_n = (v if v is not None else r for v, r in zip(vivant, (site, site_p, site_n)))
     e_site = (_d(site, site_p), _d(site, site_n))
     t1, t2, cvr = _taux(ij, ses), _taux(hl, ij), _taux(hl, ses)
     ratio = _taux(rep if rep is not None else ses, site)
@@ -189,7 +194,7 @@ def trafic(ctx, rv, marque):
     _ligne(s, 3.5, 2.81, 3.5, 3.13); _ligne(s, 3.5, 3.13, 8.5, 3.13); _ligne(s, 8.5, 3.13, 8.5, 2.87, fleche=True)
     g.texte(s, 5.5, 3.17, 1.0, 0.22, "n/a" if cvr is None else f"{cvr:.1f} %".replace(".", ","), taille=8, couleur="000000", align=PP_ALIGN.CENTER)
     # part des entrées sur la home de la reprise venant du site de la marque / directes (« Brand Websites » / « Trade In Entry » de Looker)
-    orig = _entree_origines(ctx, marque, rv.per)
+    orig = (ctx.d.origines_entree(rv.per, marque) if rv.trim else None) or _entree_origines(ctx, marque, rv.per)
     if orig:
         g.texte(s, 9.6, 1.25, 1.5, 0.3, "Trade-in entries by origin", taille=8, gras=True, italique=True, couleur="595959")
         g.anneau(s, 9.55, 1.5, 1.55, 1.7, ["Brand Websites", "Trade In Entry"], [orig[0], orig[1]], couleurs=["4472C4", "5BC0BE"], taille=7, legende_bas=True)

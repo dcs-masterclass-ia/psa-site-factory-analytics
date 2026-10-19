@@ -233,6 +233,31 @@ def entree_directe_par_canal(cli, pid, hote_reprise, hote_parent, debut, fin):
             "domaine": domaine_marque(hote_parent)}
 
 
+def origines_entree(cli, pid, hote_reprise, debut, fin):
+    """(Brand Websites, Trade In Entry) des sessions qui atterrissent sur la home de la reprise, sur la période en UNE requête : l'anneau « Trade-in entries by origin » de Looker.
+    Contrairement à entree_directe_par_canal (tableau par canal, qui écarte les retours sur la reprise), l'anneau garde toutes les lignes : constat du 19/10/2026 sur PEUGEOT PL (T3),
+    68,1 % / 31,9 % dans Looker = la formule appliquée sans aucune exclusion. None si pas d'hôte de reprise."""
+    if not hote_reprise:
+        return None
+    filtre = _et(_egal("hostName", hote_reprise),
+                 FilterExpression(filter=Filter(field_name="customEvent:page_category",
+                                                string_filter=Filter.StringFilter(value="home page", match_type=Filter.StringFilter.MatchType.EXACT))))
+    marque = direct = 0
+    for source, provenance, n in _rapport(cli, pid, debut, fin, ["sessionSource", "pageReferrer"], ["sessions"], filtre):
+        if classe_entree(source, provenance) == "Trade In Entry":
+            direct += int(float(n))
+        else:
+            marque += int(float(n))
+    return marque, direct
+
+
+def sessions_propriete_periode(cli, pid, debut, fin):
+    """Sessions de TOUTE la propriété sur la période en UNE requête (« Visites site marque » de Looker). Sur un trimestre ce n'est pas la somme des mois :
+    GA4 dédoublonne (PEUGEOT PL T3-2026 : 730 864 contre 741 323 en additionnant juillet, août et septembre)."""
+    r = _rapport(cli, pid, debut, fin, [], ["sessions"])
+    return int(float(r[0][0])) if r else 0
+
+
 def geo_par_mois(cli, pid, hote_reprise, debut, fin):
     """Provenance géographique et langue des sessions de la reprise sur la période : pays, régions, villes, langues (sessions, tops seulement, jamais de donnée personnelle).
     Age, sexe et centres d'intérêt ne sont PAS disponibles (GA4 renvoie zéro ligne : Google Signals absent et consentement limité en Europe).
