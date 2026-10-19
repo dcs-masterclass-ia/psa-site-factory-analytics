@@ -1,0 +1,58 @@
+name: Veille SEO (trafic Google et soucis techniques)
+
+# Tous les jours : alerte Teams (canal SEO) si la visibilité dans Google baisse (clics, impressions, sessions organiques) ou si un souci
+# technique empêche l'indexation (redirection cassée, 404, noindex, canonique, robots.txt, sitemap) — cf. pipeline/seo_watch.py.
+# Dépôt public : la console ne montre aucun chiffre métier.
+on:
+  schedule:
+    - cron: "30 6 * * *"      # après le rafraîchissement des données (22:00 UTC la veille)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-watch
+  cancel-in-progress: false
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # data/ vit dans un repo privé séparé (cf. refresh.yml) : lecture seule ici.
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install google-api-python-client google-auth requests
+
+      - name: Déposer la clé du compte de service (Search Console)
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$CLE" > "$RUNNER_TEMP/gsc.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gsc.json" >> "$GITHUB_ENV"
+
+      # L'état (sites déjà signalés, problèmes déjà annoncés) survit d'un passage à l'autre grâce au cache.
+      - name: Restaurer l'état
+        uses: actions/cache@v4
+        with:
+          path: seo_state.json
+          key: seo-state-${{ github.run_id }}
+          restore-keys: seo-state-
+
+      - name: Contrôler le SEO
+        env:
+          SEO_TEAMS_WEBHOOK_URL: ${{ secrets.SEO_TEAMS_WEBHOOK_URL }}
+        run: python -m pipeline.seo_watch
