@@ -182,7 +182,11 @@ def conquete(ctx, rv, marque):
         for (a, (mr, mo)), n in paires.items():
             croise[(a, mo)] = croise.get((a, mo), 0) + n
         lignes = [["Purchase Model"] + [_joli(c) for c in cols]]
-        for a, _ in top_a:
+        # lignes = les 5 modèles d'achat qui totalisent le plus SUR LES COLONNES AFFICHÉES (comme la feuille Tableau), pas sur tous les modèles repris
+        # (retour DKAM, Peugeot ES : le 408 devait être 5e)
+        somme = {a: sum(croise.get((a, c), 0) for c in cols) for a in achat}
+        top_tab = sorted(achat, key=lambda a: (-somme[a], -achat[a]))[:5]
+        for a in top_tab:
             lignes.append([_joli(a)[:20]] + [nb(croise.get((a, c), 0)) if croise.get((a, c)) else "" for c in cols])
         lignes.append(["Total"] + [nb(reprise[c]) for c in cols])
         lw = 1.25
