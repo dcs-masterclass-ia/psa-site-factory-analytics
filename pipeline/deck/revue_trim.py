@@ -488,16 +488,21 @@ def apercu_marques_trim(ctx, rv):
             if not rv.trim:
                 # revue mensuelle (comme le deck de MA) : « Total : N | ±x % YoY », « NC : N | ±x % YoY », « NC share : x % » ; pas de MoM
                 g.texte(s, 1.15, y + 0.02, 2.3, 0.26, [runs[0]], taille=10)
-                tot_c, tot_1 = _L(d, per, m), _L(d, rv.n1, m)
-                nc_c, nc_1 = d.leads(per, m)["VN"], d.leads(rv.n1, m)["VN"]
-                for dy, lib, v, v1 in ((0.25, "Total", tot_c, tot_1), (0.43, "NC", nc_c, nc_1)):
-                    e = evol(v, v1) if v1 >= 20 else None
-                    tb = s.shapes.add_textbox(Inches(1.15), Inches(y + dy), Inches(2.3), Inches(0.2))
+                tot_c, tot_1, tot_p = _L(d, per, m), _L(d, rv.n1, m), _L(d, rv.prec, m)
+                nc_c, nc_1, nc_p = d.leads(per, m)["VN"], d.leads(rv.n1, m)["VN"], d.leads(rv.prec, m)["VN"]
+                for dy, lib, v, v1, vp in ((0.25, "Total", tot_c, tot_1, tot_p), (0.43, "NC", nc_c, nc_1, nc_p)):
+                    # volume + évolution vs mois précédent (MoM) et vs même mois N-1 (YoY), pour le total ET les leads New cars (retour DKAM)
+                    tb = s.shapes.add_textbox(Inches(1.15), Inches(y + dy), Inches(2.4), Inches(0.2))
                     tb.text_frame.margin_top = tb.text_frame.margin_bottom = 0
+                    tb.text_frame.margin_left = tb.text_frame.margin_right = 0
                     p = tb.text_frame.paragraphs[0]
-                    r = p.add_run(); r.text = f"{lib}: {nb(v)} | "; r.font.size = Pt(8.5); r.font.bold = True; r.font.color.rgb = g.rgb("000000")
-                    r = p.add_run(); r.text = f"{_signe(e)} YoY" if e is not None else "low base"; r.font.size = Pt(8.5); r.font.bold = True
-                    r.font.color.rgb = g.rgb(_col(e) if e is not None else "6B7280")
+                    r = p.add_run(); r.text = f"{lib}: {nb(v)}  "; r.font.size = Pt(8); r.font.bold = True; r.font.color.rgb = g.rgb("000000")
+                    for k, (ref, nom) in enumerate(((vp, rv.vs_prec), (v1, "YoY"))):
+                        e = evol(v, ref) if ref >= 20 else None
+                        if k:
+                            r = p.add_run(); r.text = " | "; r.font.size = Pt(8); r.font.bold = True; r.font.color.rgb = g.rgb("000000")
+                        r = p.add_run(); r.text = f"{_signe(e)} {nom}" if e is not None else f"low base {nom}"; r.font.size = Pt(8); r.font.bold = True
+                        r.font.color.rgb = g.rgb(_col(e) if e is not None else "6B7280")
                 if a["nc"]:
                     g.texte(s, 1.15, y + 0.6, 2.3, 0.2, a["nc"][0].replace("New cars leads share", "NC share:"), taille=8, couleur="595959")
                 acts = perso.get(m) or a["actions"]
