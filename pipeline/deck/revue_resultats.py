@@ -273,7 +273,7 @@ def conversion_ventes_nc(ctx, rv):
     fin_m = per.indice
     a, a1 = per.annee, per.annee - 1
     jours_fin = calendar.monthrange(a, fin_m)[1]
-    ordre = [("xP", ["CITROEN", "PEUGEOT", "DS", "OPEL"]), ("Xf", ["ALFA ROMEO", "FIAT PRO", "FIAT", "JEEP", "LANCIA"])]
+    ordre = [("xP", ["PEUGEOT", "CITROEN", "DS", "OPEL"]), ("Xf", ["FIAT", "JEEP", "ALFA ROMEO", "ABARTH", "FIAT PRO", "LANCIA"])]      # ordre des DKAM ; Abarth ajouté
     infos = {}
     for _, ms in ordre:
         for m in ms:

@@ -485,8 +485,8 @@ def apercu_marques_trim(ctx, rv):
             _logo_petit(rv, s, m, 0.3, y + 0.14, h_max=0.58, w_max=0.8)
             runs = [(ctx.nom(m), {"taille": 10, "gras": True, "couleur": "000000", "apres": 0})]
             tend = []
-            if not rv.trim:
-                # revue mensuelle (comme le deck de MA) : « Total : N | ±x % YoY », « NC : N | ±x % YoY », « NC share : x % » ; pas de MoM
+            if True:
+                # mensuel ET trimestriel (retour DKAM) : volumes total et NC avec évolution vs période précédente et vs N-1 : « Total : N | ±x % YoY », « NC : N | ±x % YoY », « NC share : x % » ; pas de MoM
                 g.texte(s, 1.15, y + 0.02, 2.3, 0.26, [runs[0]], taille=10)
                 tot_c, tot_1, tot_p = _L(d, per, m), _L(d, rv.n1, m), _L(d, rv.prec, m)
                 nc_c, nc_1, nc_p = d.leads(per, m)["VN"], d.leads(rv.n1, m)["VN"], d.leads(rv.prec, m)["VN"]
