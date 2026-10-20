@@ -205,10 +205,10 @@ def trafic(ctx, rv, marque):
         g.texte(s, 3.25, 3.67, 0.8, 0.25, rv.vs_prec, taille=10, italique=True, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
         g.texte(s, 4.45, 3.67, 0.8, 0.25, "YoY", taille=10, italique=True, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
         lignes = [["Channel group", "Sessions", "% Δ", "% Δ"]]
-        for i, c in enumerate(ordre[:10], 1):
+        for i, c in enumerate(ordre[:12], 1):                 # tous les canaux jusqu'à 12 (le deck de référence liste CRM Email, 11e)
             em, ey = _d(can[c], can_p.get(c)) if can_p else None, _d(can[c], can_n.get(c)) if can_n else None
             lignes.append([f"{i}. {c}", nb(can[c]), _txt_evol(em), _txt_evol(ey)])
-        g.tableau(s, 0.75, 3.95, 4.6, lignes, largeurs=[1.9, 0.9, 0.9, 0.9], taille=8, hauteur_ligne=0.25)
+        g.tableau(s, 0.75, 3.95, 4.6, lignes, largeurs=[1.9, 0.9, 0.9, 0.9], taille=8, hauteur_ligne=0.25 if len(lignes) <= 11 else 0.235)
         top = ordre[:9]
         reste = sum(can[c] for c in ordre[9:])
         g.anneau(s, 5.6, 3.6, 5.4, 3.35, top + (["Other"] if reste else []), [can[c] for c in top] + ([reste] if reste else []), taille=9)

@@ -128,7 +128,8 @@ def _sources(ctx, per, marque):
 # ------------------------------------------------------------------ 1. Leads by marketing channel
 def canaux(ctx, rv, marque):
     """« Leads by marketing channel » : matrice source × projet × (N-1, N) × (M-1, M) + colonnes empilées par projet."""
-    per_list = [rv.prec.n1(), rv.n1, rv.prec, rv.per]            # N-1 M-1, N-1 M, N M-1, N M
+    mensuel = not rv.trim
+    per_list = [rv.n1, rv.per] if mensuel else [rv.prec.n1(), rv.n1, rv.prec, rv.per]        # mensuel : N-1 M, N M ; trimestriel : N-1 T-1, N-1 T, N T-1, N T
     data = [_sources(ctx, p, marque) for p in per_list]
     if all(dd is None for dd in data):
         return None
@@ -147,14 +148,15 @@ def canaux(ctx, rv, marque):
     for b, pj in enumerate(PROJETS):
         for k, dd in enumerate(data):
             vals = [dd[sg][pj] if dd[sg][pj] else None for sg in srcs] + [tp[k][pj]]
-            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_court(per_list[k]), "fond": k >= 2, "couleur": COUL[pj], "bloc_vals": vals[:-1]})
+            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_court(per_list[k]), "fond": k >= (1 if mensuel else 2), "couleur": COUL[pj], "bloc_vals": vals[:-1]})
     titre, sous = ("LEAD DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Leads by marketing channel", mois_label(rv.per))
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=_puces_canaux(data, tp, srcs, rv))
     legende_projets(s)
-    annees = [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)]
+    annees = ([(b * 2 + a, b * 2 + a, str(per_list[a].annee)) for b in range(3) for a in (0, 1)] if mensuel else
+              [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)])
     hl = matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ", hl_max=1.0)
     # colonnes empilées à droite
-    cats = [f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
+    cats = [f"{p.annee}\n{nb(_tot(t))}" if mensuel else f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
     haut = max(_tot(t) for t in tp) or 1
     for pj in ordre:
@@ -166,36 +168,47 @@ def canaux(ctx, rv, marque):
     bas = 1.3 + 0.5 + hl * len(lignes) + 0.22                       # bas de la matrice (libellés des périodes) : les deux graphiques ont les mêmes bords haut et bas
     g.colonnes(s, 7.6, y_haut, 3.4, bas - y_haut, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
                libelles_perso={i: e for i, (_, _, _, e) in enumerate(series)})
-    _t(s, 7.9, 1.45, 1.5, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
-    _t(s, 9.4, 1.45, 1.5, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
+    if not mensuel:
+        _t(s, 7.9, 1.45, 1.5, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
+        _t(s, 9.4, 1.45, 1.5, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
     return s
 
 
 def _puces_canaux(data, tp, srcs, rv):
     """5 puces calculées : total vs M-1 et N-1, NC, sources principales NC, SEA (trade-in only) et Display."""
     out = []
-    cur, prec, n1 = _tot(tp[3]), _tot(tp[2]), _tot(tp[1])
-    em, ey = evol(cur, prec), evol(cur, n1)
+    mensuel = len(tp) == 2                         # mensuel : [N-1 M, N M] ; trimestriel : [N-1 T-1, N-1 T, N T-1, N T]
+    ic, i1 = (1, 0) if mensuel else (3, 1)
+    data_c, tp_c, tp1 = data[ic], tp[ic], tp[i1]
+    cur, n1 = _tot(tp_c), _tot(tp1)
+    prec = None if mensuel else _tot(tp[2])
+    em, ey = (evol(cur, prec) if prec is not None else None), evol(cur, n1)
+    mot = lambda e: "increased" if e > 0 else "decreased"
     if em is not None:
-        mot = lambda e: "increased" if e > 0 else "decreased"
         txt = f"Leads have {mot(em)} by {pct(em, 0, True)} {'Quarter' if rv.trim else 'Month'}-over-{'Quarter' if rv.trim else 'Month'}"
         if ey is not None:
             txt += f" and {mot(ey)} by {pct(ey, 0, True)} Year-over-Year"
         out.append(txt)
-    nc, nc1 = tp[3]["VN"], tp[1]["VN"]
+    elif ey is not None:
+        txt = f"Total leads have {mot(ey)} by {pct(ey, 0, True)} Year-over-Year"
+        e_nc = evol(tp_c["VN"], tp1["VN"])
+        if e_nc is not None:
+            txt += f" and NC leads by {pct(e_nc, 0, True)}"
+        out.append(txt)
+    nc, nc1 = tp_c["VN"], tp1["VN"]
     ey = evol(nc, nc1)
     if nc:
         out.append(f"NC leads at {nc / 1000:.1f}k" + (f" ({pct(ey, 0, True)} YoY)" if ey is not None else "") if nc >= 1000 else
                    f"NC leads at {nb(nc)}" + (f" ({pct(ey, 0, True)} YoY)" if ey is not None else ""))
-        top = sorted(srcs, key=lambda sg: -data[3][sg]["VN"])
-        top = [t for t in top if data[3][t]["VN"]][:3]
+        top = sorted(srcs, key=lambda sg: -data_c[sg]["VN"])
+        top = [t for t in top if data_c[t]["VN"]][:3]
         if top:
-            out.append("Primary sources of NC leads: " + ", ".join(f"{NOM_SOURCE.get(t, t)} ({data[3][t]['VN'] / nc * 100:.0f}%)" for t in top))
-    sw = data[3]["Search"]["SANS"] if "Search" in data[3] else 0
-    if tp[3]["SANS"] and sw:
-        sy = data[1]["Search"]["SANS"] / tp[1]["SANS"] * 100 if tp[1]["SANS"] else None
-        out.append(f"SEA campaigns generate {sw / tp[3]['SANS'] * 100:.0f}% of trade-in only leads" + (f" (vs {sy:.0f}% LY)" if sy is not None else ""))
-    dp, dl = _tot(data[3]["Display"]), _tot(data[1]["Display"])
+            out.append("Primary sources of NC leads: " + ", ".join(f"{NOM_SOURCE.get(t, t)} ({data_c[t]['VN'] / nc * 100:.0f}%)" for t in top))
+    sw = data_c["Search"]["SANS"] if "Search" in data_c else 0
+    if tp_c["SANS"] and sw:
+        sy = data[i1]["Search"]["SANS"] / tp1["SANS"] * 100 if tp1["SANS"] else None
+        out.append(f"SEA campaigns generate {sw / tp_c['SANS'] * 100:.0f}% of trade-in only leads" + (f" (vs {sy:.0f}% LY)" if sy is not None else ""))
+    dp, dl = _tot(data_c["Display"]), _tot(data[i1]["Display"])
     if dp or dl:
         e = evol(dp, dl)
         out.append("Display " + (f"{'up' if e > 0 else 'down'} {pct(e, 0, True)} vs LY" if e is not None else "no leads LY") + f" ({nb(dp)} leads)")
@@ -241,7 +254,7 @@ def _leads_site_principal(ctx, per, marque):
 def site_principal(ctx, rv, marque):
     """« Leads from main website » : emplacements des CTA du site principal × projet × (M-1, M) de l'année N."""
     try:
-        cur, prec = _groupe_cta(_leads_site_principal(ctx, rv.per, marque)), _groupe_cta(_leads_site_principal(ctx, rv.prec, marque))
+        cur, prec = _groupe_cta(_leads_site_principal(ctx, rv.per, marque)), _groupe_cta(_leads_site_principal(ctx, rv.n1, marque))      # prec = même mois N-1 (YoY)
     except Exception:
         return None
     if not cur and not prec:
@@ -255,11 +268,11 @@ def site_principal(ctx, rv, marque):
         for k, dd in enumerate((prec, cur)):
             vals = [dd.get(sp, z)[pj] or None for sp in supports]
             vals.append(sum(dd.get(sp, z)[pj] for sp in supports))
-            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_label_long(rv.prec if k == 0 else rv.per), "fond": False, "couleur": COUL[pj], "bloc_vals": vals[:-1]})
+            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_label_long(rv.n1 if k == 0 else rv.per), "fond": k == 1, "couleur": COUL[pj], "bloc_vals": vals[:-1]})
     s = slide_revue(ctx, rv, "Leads from main website", marque=marque, puces=_puces_site(cur, prec, supports))
     legende_projets(s)
     matrice(s, 0.15, 1.3, 10.8, 5.65, 1.3, supports + ["Total"], colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)},
-            annees=[(0, 5, str(rv.per.annee))], hauteur_haut=0.55, titre_col0="Support (groupe)", hl_max=0.85)
+            annees=[(b * 2 + a, b * 2 + a, str((rv.n1.annee, rv.per.annee)[a])) for b in range(3) for a in (0, 1)], hauteur_haut=0.55, titre_col0="Support (groupe)", hl_max=0.85)
     return s
 
 
@@ -281,5 +294,5 @@ def _puces_site(cur, prec, supports):
             ch = max(supports, key=lambda k: abs(vn[k] / tot - vp[k] / tp_))
             d = (vn[ch] / tot - vp[ch] / tp_) * 100
             if abs(d) >= 1:
-                out.append(f"Largest share move vs previous month: {ch} ({d:+.0f} pts of NC leads)")
+                out.append(f"Largest share move vs last year: {ch} ({d:+.0f} pts of NC leads)")
     return out

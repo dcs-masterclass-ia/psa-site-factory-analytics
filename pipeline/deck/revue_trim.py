@@ -467,7 +467,8 @@ def apercu_marques_trim(ctx, rv):
             t_ = -(-len(lot) // k)
             morceaux += [lot[i:i + t_] for i in range(0, len(lot), t_)]
     for morceau in morceaux:
-        s = slide_revue(ctx, rv, f"Leads Overview {mois_label(per)}", source=None)
+        titre_lo = f"Leads Overview {mois_label(per)}" if rv.trim or len(rv.pays) != 1 else f"Leads Overview - {mois_label(per)} | {NOMS_PAYS.get(rv.pays[0], rv.pays[0]).title()}"
+        s = slide_revue(ctx, rv, titre_lo, source=None)
         for x, w, t in ((0.2, 3.2, "LEAD TREND & NC SHARE"), (3.5, 4.55, "DRIVERS OF INCREASE / DECREASE"), (8.15, 4.8, "RECOMMENDED ACTION")):
             g.texte(s, x, 1.28, w, 0.25, t, taille=8, gras=True, couleur="2F5597")
         y = 1.55
@@ -484,6 +485,26 @@ def apercu_marques_trim(ctx, rv):
             _logo_petit(rv, s, m, 0.3, y + 0.14, h_max=0.58, w_max=0.8)
             runs = [(ctx.nom(m), {"taille": 10, "gras": True, "couleur": "000000", "apres": 0})]
             tend = []
+            if not rv.trim:
+                # revue mensuelle (comme le deck de MA) : « Total : N | ±x % YoY », « NC : N | ±x % YoY », « NC share : x % » ; pas de MoM
+                g.texte(s, 1.15, y + 0.02, 2.3, 0.26, [runs[0]], taille=10)
+                tot_c, tot_1 = _L(d, per, m), _L(d, rv.n1, m)
+                nc_c, nc_1 = d.leads(per, m)["VN"], d.leads(rv.n1, m)["VN"]
+                for dy, lib, v, v1 in ((0.25, "Total", tot_c, tot_1), (0.43, "NC", nc_c, nc_1)):
+                    e = evol(v, v1) if v1 >= 20 else None
+                    tb = s.shapes.add_textbox(Inches(1.15), Inches(y + dy), Inches(2.3), Inches(0.2))
+                    tb.text_frame.margin_top = tb.text_frame.margin_bottom = 0
+                    p = tb.text_frame.paragraphs[0]
+                    r = p.add_run(); r.text = f"{lib}: {nb(v)} | "; r.font.size = Pt(8.5); r.font.bold = True; r.font.color.rgb = g.rgb("000000")
+                    r = p.add_run(); r.text = f"{_signe(e)} YoY" if e is not None else "low base"; r.font.size = Pt(8.5); r.font.bold = True
+                    r.font.color.rgb = g.rgb(_col(e) if e is not None else "6B7280")
+                if a["nc"]:
+                    g.texte(s, 1.15, y + 0.6, 2.3, 0.2, a["nc"][0].replace("New cars leads share", "NC share:"), taille=8, couleur="595959")
+                acts = perso.get(m) or a["actions"]
+                for (x, w), lignes in (((3.55, 4.45), a["moteurs"]), ((8.2, 4.7), acts)):
+                    g.texte(s, x, y + 0.04, w, h - 0.06, [("• " + l, {"taille": 7.5, "apres": 1}) for l in lignes[:4]], taille=7.5, couleur="000000", ancre=MSO_ANCHOR.MIDDLE)
+                y += h + 0.1
+                continue
             g.texte(s, 1.15, y + 0.04, 2.3, 0.3, [runs[0]], taille=10)
             if base_q and e_q is not None:
                 tend.append((f"{_signe(e_q)} {rv.vs_prec}", _col(e_q)))
