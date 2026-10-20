@@ -154,7 +154,7 @@ def canaux(ctx, rv, marque):
     legende_projets(s)
     annees = ([(b * 2 + a, b * 2 + a, str(per_list[a].annee)) for b in range(3) for a in (0, 1)] if mensuel else
               [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)])
-    hl = matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ", hl_max=1.0)
+    hl = matrice(s, 0.15, 1.3, 8.9, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ", hl_max=1.0)
     # colonnes empilées à droite
     cats = [f"{p.annee}\n{nb(_tot(t))}" if mensuel else f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
@@ -166,11 +166,11 @@ def canaux(ctx, rv, marque):
         series.append((NOMS_PROJETS[pj], vals, COUL[pj], etiq))
     y_haut = 1.3 + 0.5                                              # haut de la première ligne de la matrice
     bas = 1.3 + 0.5 + hl * len(lignes) + 0.22                       # bas de la matrice (libellés des périodes) : les deux graphiques ont les mêmes bords haut et bas
-    g.colonnes(s, 7.6, y_haut, 3.4, bas - y_haut, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
+    g.colonnes(s, 9.1, y_haut, 1.9, bas - y_haut, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
                libelles_perso={i: e for i, (_, _, _, e) in enumerate(series)})
     if not mensuel:
-        _t(s, 7.9, 1.45, 1.5, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
-        _t(s, 9.4, 1.45, 1.5, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
+        _t(s, 9.1, 1.45, 0.95, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
+        _t(s, 10.05, 1.45, 0.95, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
     return s
 
 
