@@ -53,10 +53,16 @@ def _periode(y, m, m0=None):
     return f"dateRange([{y},{m0 or m},1],[{y},{m},{calendar.monthrange(y, m)[1]}])"
 
 
-def _origine(p, y, perim):
-    """Origine Autobiz du lead : 2026 -> campagne (Provider) AUTOBIZ / Autobiz ; avant 2026 -> pour les marques xP la source 315/515/311/511, pour xF la campagne Autobiz."""
+# Marchés dont le tableau C1ST de référence compte les xP 2025 par la campagne Autobiz seule (et non par la source 315/515/311/511, validée sur la France uniquement).
+# Espagne vérifiée le 2026-10-20 : campagne seule = 9 902 leads xP 2025 contre 9 956 dans le tableau (la règle par source en donnait 12 277). Les autres marchés restent à valider contre leur tableau.
+PAYS_XP_CAMPAGNE_AVANT_2026 = ("ES",)
+
+
+def _origine(p, y, perim, pays=None):
+    """Origine Autobiz du lead : 2026 -> campagne (Provider) AUTOBIZ / Autobiz ; avant 2026 -> pour les marques xP la source 315/515/311/511 (France et marchés non validés), pour xF la campagne Autobiz ;
+    marchés de `PAYS_XP_CAMPAGNE_AVANT_2026` : la campagne Autobiz aussi pour les xP."""
     camp = f"'{p}CampaignIDUSER__c' in [\"AUTOBIZ\", \"Autobiz\"]"
-    if y >= 2026 or perim is not PERIMETRES["std"]:
+    if y >= 2026 or perim is not PERIMETRES["std"] or pays in PAYS_XP_CAMPAGNE_AVANT_2026:
         return camp
     return f"(('{p}PSABrand__c' in {_liste(XP)} && '{p}LeadSourceLabelized' in {_liste(SOURCES_XP_AVANT_2026)}) || ('{p}PSABrand__c' not in {_liste(XP)} && {camp}))"
 
@@ -88,7 +94,7 @@ def filtres(v, pays, y, m, perim, prefixe="", m0=None):
         f"{v} = filter {v} by '{p}{type_client}' in [\"B2B\", \"B2C\"];",
         f"{v} = filter {v} by '{p}CentralLocal_lead' in [\"BRAND\", \"Central\"];",
         f"{v} = filter {v} by '{p}Activity__c' in {_liste([perim['activite']])};",
-        f"{v} = filter {v} by {_origine(p, y, perim)};",
+        f"{v} = filter {v} by {_origine(p, y, perim, pays)};",
         *([f"{v} = filter {v} by {_nature(p, y, perim, pays)};"] if _nature(p, y, perim, pays) else []),
         f"{v} = filter {v} by ('{p}LeadQualificationResult__c' not in [\"Black list filtering\"] || '{p}LeadQualificationResult__c' is null);",
         f"{v} = filter {v} by '{p}Test_JustDealer2' in [\"No\"];",

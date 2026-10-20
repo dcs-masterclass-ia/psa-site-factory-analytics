@@ -162,3 +162,10 @@ class PerimetreAvant2026(unittest.TestCase):
         self.assertNotIn("NatureLabelized", avant)          # aucun filtre de nature pour les marques standard
         self.assertNotIn("NatureLabelized", apres)
         self.assertIn("CampaignIDUSER__c", apres)
+
+    def test_espagne_xp_2025_par_campagne(self):
+        es = c.filtres("q", "ES", 2025, 3, c.PERIMETRES["std"])
+        self.assertNotIn("315.Brand Trade-in/ Reprise", es)         # tableau C1ST Espagne : campagne Autobiz seule
+        self.assertIn("CampaignIDUSER__c", es)
+        be = c.filtres("q", "BE", 2025, 3, c.PERIMETRES["std"])
+        self.assertIn("315.Brand Trade-in/ Reprise", be)            # autres marchés inchangés tant qu'ils ne sont pas validés
