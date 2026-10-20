@@ -231,7 +231,7 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     agenda_revue(ctx, rv, 3, SECTIONS_FR)
     _ajoute(ctx, f(rg, "conversion_ventes_nc"), ctx, rv, libelle="NC sales conversion")
     agenda_revue(ctx, rv, 4, SECTIONS_FR)
-    for marque in MARQUES:
+    for marque in [m for m in d.marques if m != "STELLANTIS &YOU"]:      # ordre des DKAM : Peugeot, Citroën, DS, Opel, Spoticar, Fiat, Jeep, Alfa Romeo, Abarth, Fiat Pro, Lancia
         if marque not in d.marques or d.leads_total(rv.per, marque) == 0:
             ctx.avertissements.append(f"{marque} : aucun lead sur la période, section non générée.")
             continue

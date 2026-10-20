@@ -21,8 +21,7 @@ RACINE = Path(__file__).resolve().parent.parent.parent
 HIST = Path(os.environ.get("PSA_HISTORY_DIR") or RACINE / "data" / "history")
 CACHE_GA4 = Path(os.environ.get("PSA_DECK_CACHE") or RACINE / "data" / ".cache_deck_ga4.json")
 
-ORDRE_MARQUES = ["PEUGEOT", "CITROEN", "DS", "OPEL", "ALFA ROMEO", "ABARTH", "FIAT", "FIAT PRO", "JEEP", "LANCIA", "LEAPMOTOR",
-                 "SPOTICAR", "STELLANTIS &YOU"]
+ORDRE_MARQUES = ["PEUGEOT", "CITROEN", "DS", "OPEL", "SPOTICAR", "FIAT", "JEEP", "ALFA ROMEO", "ABARTH", "FIAT PRO", "LANCIA", "LEAPMOTOR", "STELLANTIS &YOU"]      # ordre des DKAM (19/10/2026)
 NOMS_MARQUES = {"PEUGEOT": "Peugeot", "CITROEN": "Citroën", "DS": "DS", "OPEL": "Opel", "ALFA ROMEO": "Alfa Romeo", "ABARTH": "Abarth",
                 "FIAT": "Fiat", "FIAT PRO": "Fiat Professional", "JEEP": "Jeep", "LANCIA": "Lancia", "LEAPMOTOR": "Leapmotor",
                 "SPOTICAR": "Spoticar", "STELLANTIS &YOU": "Stellantis &You"}
