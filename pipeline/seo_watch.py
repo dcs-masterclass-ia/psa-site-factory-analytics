@@ -36,7 +36,7 @@ from pipeline import sites
 DATA = Path(__file__).resolve().parent.parent / "data"
 DRY = os.environ.get("SEO_DRY") == "1"
 CHEMIN_ETAT = os.environ.get("SEO_STATE", "seo_state.json")
-URL_DASHBOARD = "https://psa-site-factory-analytics.vercel.app/"
+URL_DASHBOARD = "https://converge-tradein.vercel.app/"
 
 Z_BAISSE = float(os.environ.get("SEO_Z", "3"))                  # écarts-types sous la normale du site
 Z_FORTE = float(os.environ.get("SEO_Z_FORTE", "5"))
