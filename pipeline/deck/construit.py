@@ -1414,8 +1414,6 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
         sections.append(("marche", ctx.t["contexte_marche"]))
     if avoir_obj:
         sections.append(("objectifs", ctx.t["objectifs"]))
-    if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
-        sections.append(("points", ctx.t["points_ouverts"]))
     if "prochaines_etapes" in m and (brief.get("prochainesEtapes") or []):
         sections.append(("etapes", ctx.t["prochaines_etapes"]))
     if m & {"nps", "utm"}:
@@ -1423,6 +1421,8 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     sections.append(("qa", ctx.t["questions"]))
 
     couverture(ctx)
+    if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
+        points_ouverts(ctx)                              # « Ongoing Actions » / « Points en cours » : 2e diapositive
     sommaire(ctx, sections, sections[0][0])
     if avoir_global:
         synthese(ctx)
@@ -1478,9 +1478,6 @@ def construit(brief, donnees, sortie, gabarit=GABARIT):
     if avoir_obj:
         sommaire(ctx, sections, "objectifs")
         objectifs_vue(ctx)
-    if "points_ouverts" in m and (brief.get("pointsOuverts") or []):
-        sommaire(ctx, sections, "points")
-        points_ouverts(ctx)
     if "prochaines_etapes" in m and (brief.get("prochainesEtapes") or []):
         sommaire(ctx, sections, "etapes")
         prochaines_etapes(ctx)

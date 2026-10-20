@@ -7576,11 +7576,11 @@ class Component extends DCLogic {
       if (prTrim) {
         const rows=[]; let n=0; const add=(t,d,c)=>{ if(c>0){ rows.push({titre:t,detail:d,count:c+' diapo'+(c>1?'s':'')}); n+=c; } };
         const nm = prNbMarquesFr, nPts = Math.max(1,pr.pointsOuverts.length), nEt = 1;      // slides conservées même vides
-        add('Couverture','Page de titre',1); add('Agenda','Sommaire de la revue',3+(nPts?1:0)+(nEt?1:0)+1);
+        add('Couverture','Page de titre',1); add('Ongoing Actions',pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':''),nPts); add('Agenda','Sommaire de la revue',3+(nEt?1:0)+1);
         add('Global overview','Résumé, leads par marque (YoY / QoQ), par mois, NC par marque, projets d\'achat, trafic et leads, vue d\'ensemble par marque',14);
         add('Sales performance','C1ST : suivi des leads, leads VN, ventes additionnelles (si données C1ST)',5);
         add('Traffic & lead deep dive','Trafic, leads par canal et conquête / fidélité : '+nm+' marque'+(nm>1?'s':'')+' × 3',3*nm);
-        add('Open points',pr.pointsOuverts.length+' point'+(pr.pointsOuverts.length>1?'s':''),nPts); add('Next steps','Tableau des prochaines étapes',nEt); add('Q/A et contacts','Questions, page de contacts',2);
+        add('Next steps','Tableau des prochaines étapes',nEt); add('Q/A et contacts','Questions, page de contacts',2);
         return { rows, total:n };
       }
       if (prFr) {

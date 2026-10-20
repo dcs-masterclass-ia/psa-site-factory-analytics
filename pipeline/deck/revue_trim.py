@@ -29,7 +29,7 @@ from .revue_fr import _ajoute, _module, agenda_revue, contacts_revue
 from .revue_global import COULEUR_MARQUE, GRIS_BANDEAU, NAVY_TABLEAU, _bandeau, _bloc_chiffre, _legende_projets, _liste, barres_marques
 from .revue_resultats import VERT_TXT, ROUGE_TXT, _cellule, _sessions, _table
 
-SECTIONS_TRIM = ["GLOBAL OVERVIEW", "SALES PERFORMANCE", "TRAFFIC & LEAD DEEP DIVE", "OPEN POINTS", "NEXT STEPS", "Q/A"]
+SECTIONS_TRIM = ["GLOBAL OVERVIEW", "SALES PERFORMANCE", "TRAFFIC & LEAD DEEP DIVE", "NEXT STEPS", "Q/A"]
 NOMS_PAYS = {"FR": "FRANCE", "BE": "BELUX", "LU": "BELUX", "ES": "SPAIN", "PT": "PORTUGAL", "IT": "ITALY", "DE": "GERMANY", "PL": "POLAND", "AT": "AUSTRIA", "GB": "UNITED KINGDOM"}
 # couleurs des graphiques Tableau du deck : 2024 bleu, 2025 jaune, 2026 vert d'eau ; QoQ : trimestre précédent orange, trimestre bleu
 C24, C25, C26 = "4E79A7", "EDC948", "76B7B2"
@@ -762,7 +762,7 @@ def ventes_additionnelles(ctx, rv):
 def open_points(ctx, rv):
     out = []
     for p in ctx.brief.get("pointsOuverts") or [{}]:        # sans point saisi : diapositive vide à compléter
-        s = slide_revue(ctx, rv, "OPEN POINTS", sous_titre=p.get("titre") or None, source=None)
+        s = slide_revue(ctx, rv, ctx.t["points_ouverts"], sous_titre=p.get("titre") or None, source=None)      # « Ongoing Actions » (EN), « Points en cours » (FR) ; 2e diapo du deck
         if p.get("texte"):
             g.puces(s, 0.5, 1.3, 12.2, 5.4, [l for l in p["texte"].split("\n") if l.strip()], taille=16)
         out.append(s)
@@ -804,10 +804,12 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     if not avoir_c1st:
         ctx.avertissements.append("Aucune donnée C1ST complète sur le trimestre (jeu c1st/kpi.json, marchés suivis : FR, BE, ES, PT, IT) : section « Sales performance » non générée.")
     actives = _actives(ctx, rv)
-    sections = [SECTIONS_TRIM[0]] + ([SECTIONS_TRIM[1]] if avoir_c1st else []) + [SECTIONS_TRIM[2]] + ([SECTIONS_TRIM[3]] if pts else []) + ([SECTIONS_TRIM[4]] if nxt else []) + [SECTIONS_TRIM[5]]
+    sections = [SECTIONS_TRIM[0]] + ([SECTIONS_TRIM[1]] if avoir_c1st else []) + [SECTIONS_TRIM[2]] + ([SECTIONS_TRIM[3]] if nxt else []) + [SECTIONS_TRIM[4]]
     agenda = lambda nom: agenda_revue(ctx, rv, sections.index(nom), sections)
 
     couverture_trim(ctx, rv)
+    if pts:
+        open_points(ctx, rv)                         # « Ongoing Actions » : 2e diapositive
     agenda(SECTIONS_TRIM[0])
     A = lambda fn, *a, libelle="": _ajoute(ctx, fn, ctx, rv, *a, libelle=libelle)
     A(global_overview, libelle="Global overview")
@@ -842,13 +844,10 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
         A(focus_v2, marque, libelle=f"{marque} — V2 redesign focus")
         from .revue_v2 import focus_v2_entree
         A(focus_v2_entree, marque, libelle=f"{marque} — V2 redesign focus (entry mode)")
-    if pts:
-        agenda(SECTIONS_TRIM[3])
-        open_points(ctx, rv)
     if nxt:
-        agenda(SECTIONS_TRIM[4])
+        agenda(SECTIONS_TRIM[3])
         next_steps(ctx, rv)
-    agenda(SECTIONS_TRIM[5])
+    agenda(SECTIONS_TRIM[4])
     questions_trim(ctx, rv)
     contacts_revue(ctx, rv)
     ctx.qa = _qa_trim(ctx, rv)

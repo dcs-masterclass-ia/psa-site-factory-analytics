@@ -27,7 +27,7 @@ def _module(nom):
         return None
 
 
-SECTIONS_FR = SECTIONS + ["OPEN POINTS", "NEXT STEPS"]      # mêmes diapositives et mêmes noms que le trimestriel
+SECTIONS_FR = SECTIONS + ["NEXT STEPS"]      # mêmes diapositives et mêmes noms que le trimestriel
 ORDRE_MARQUES_APERCU = ["PEUGEOT", "CITROEN", "DS", "OPEL", "SPOTICAR", "FIAT", "JEEP", "ALFA ROMEO", "ABARTH", "FIAT PRO", "LANCIA", "LEAPMOTOR"]
 
 
@@ -208,7 +208,11 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     rg = rm = rc = rq = None
 
     couverture_revue(ctx, rv)
-    actions_en_cours(ctx, rv)
+    from .revue_trim import next_steps, open_points
+    if ctx.brief.get("pointsOuverts"):
+        open_points(ctx, rv)                          # « Ongoing Actions » (points saisis à l'étape 4) : 2e diapositive
+    if ctx.brief.get("actionsEnCours") or not ctx.brief.get("pointsOuverts"):
+        actions_en_cours(ctx, rv)                     # tableau d'actions de l'étape 5 (vide à compléter si rien n'est saisi)
     agenda_revue(ctx, rv, 0, SECTIONS_FR)
     _ajoute(ctx, f(rg, "resume_executif"), ctx, rv, libelle="résumé exécutif")
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
@@ -248,10 +252,7 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
         _ajoute(ctx, focus_v2, ctx, rv, marque, libelle=f"{marque} — V2 redesign focus")
         from .revue_v2 import focus_v2_entree
         _ajoute(ctx, focus_v2_entree, ctx, rv, marque, libelle=f"{marque} — V2 redesign focus (entry mode)")
-    from .revue_trim import next_steps, open_points
     agenda_revue(ctx, rv, 5, SECTIONS_FR)
-    open_points(ctx, rv)
-    agenda_revue(ctx, rv, 6, SECTIONS_FR)
     next_steps(ctx, rv)
     contacts_revue(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)

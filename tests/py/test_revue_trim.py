@@ -66,9 +66,10 @@ class RevueTrim(unittest.TestCase):
             t = _titres(prs)
             for attendu in ("Global Overview", "Global Leads by brand / Q3 Vs YoY", "Global Leads by brand / Q3 Vs QoQ", "Global leads by Month", "Global NC leads by Month",
                             "Global NC leads by Month xP brand", "Leads by Purchase Project: Q3-2026 for xP", "Traffic & leads Overview Q3-2026", "Leads Overview Q3-2026",
-                            "SALES PERFORMANCE", "SALES PERFORMANCE: leads VN xP autobiz", "SALES PERFORMANCE: additional business", "OPEN POINTS", "NEXT STEPS", "Q/A"):
+                            "SALES PERFORMANCE", "SALES PERFORMANCE: leads VN xP autobiz", "SALES PERFORMANCE: additional business", "Ongoing Actions", "NEXT STEPS", "Q/A"):
                 self.assertIn(attendu, t, attendu)
-            self.assertEqual(t.count("Agenda"), 6)
+            self.assertEqual(t.count("Agenda"), 5)
+            self.assertEqual(t.index("Ongoing Actions"), 1)           # 2e diapositive, juste après la couverture
             self.assertEqual(len(prs.slides), ctx.n)
             # pas d'annexe CTA ni de contenu statique propre à un pays
             self.assertFalse([x for x in t if "CTA" in x or "POP" in x.upper().split() or "RUN" in x.upper().split()])
@@ -94,7 +95,7 @@ class RevueTrim(unittest.TestCase):
             ctx, prs = self._construit(tmp, c1st=False)
             t = _titres(prs)
             self.assertNotIn("SALES PERFORMANCE", t)
-            self.assertEqual(t.count("Agenda"), 5)                        # pas de section « Sales performance » dans l'agenda
+            self.assertEqual(t.count("Agenda"), 4)                        # pas de section « Sales performance » dans l'agenda
             self.assertTrue([w for w in ctx.avertissements if "C1ST" in w])
 
     def test_ventes_additionnelles_c1st_reel(self):
