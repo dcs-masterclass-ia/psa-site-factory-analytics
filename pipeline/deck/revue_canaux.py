@@ -128,8 +128,7 @@ def _sources(ctx, per, marque):
 # ------------------------------------------------------------------ 1. Leads by marketing channel
 def canaux(ctx, rv, marque):
     """« Leads by marketing channel » : matrice source × projet × (N-1, N) × (M-1, M) + colonnes empilées par projet."""
-    mensuel = not rv.trim
-    per_list = [rv.n1, rv.per] if mensuel else [rv.prec.n1(), rv.n1, rv.prec, rv.per]        # mensuel : N-1 M, N M ; trimestriel : N-1 T-1, N-1 T, N T-1, N T
+    per_list = [rv.prec.n1(), rv.n1, rv.prec, rv.per]        # mensuel : N-1 M-1, N-1 M, N M-1, N M ; trimestriel : N-1 T-1, N-1 T, N T-1, N T
     data = [_sources(ctx, p, marque) for p in per_list]
     if all(dd is None for dd in data):
         return None
@@ -148,15 +147,14 @@ def canaux(ctx, rv, marque):
     for b, pj in enumerate(PROJETS):
         for k, dd in enumerate(data):
             vals = [dd[sg][pj] if dd[sg][pj] else None for sg in srcs] + [tp[k][pj]]
-            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_court(per_list[k]), "fond": k >= (1 if mensuel else 2), "couleur": COUL[pj], "bloc_vals": vals[:-1]})
+            colonnes.append({"bloc": b, "valeurs": vals, "mois": _mois_court(per_list[k]), "fond": k >= 2, "couleur": COUL[pj], "bloc_vals": vals[:-1]})
     titre, sous = ("LEAD DEEP DIVE", f"Trade-in situation {mois_label(rv.per)}") if rv.trim else ("Leads by marketing channel", mois_label(rv.per))
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=_puces_canaux(data, tp, srcs, rv))
     legende_projets(s)
-    annees = ([(b * 2 + a, b * 2 + a, str(per_list[a].annee)) for b in range(3) for a in (0, 1)] if mensuel else
-              [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)])
+    annees = [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)]
     hl = matrice(s, 0.15, 1.3, 8.9, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ", hl_max=1.0)
     # colonnes empilées à droite
-    cats = [f"{_mois_court(p)} {p.annee}\n{nb(_tot(t))}" if mensuel else f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
+    cats = [f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
     haut = max(_tot(t) for t in tp) or 1
     for pj in ordre:
@@ -168,9 +166,8 @@ def canaux(ctx, rv, marque):
     bas = 1.3 + 0.5 + hl * len(lignes) + 0.22                       # bas de la matrice (libellés des périodes) : les deux graphiques ont les mêmes bords haut et bas
     g.colonnes(s, 9.1, y_haut, 1.9, bas - y_haut, cats, [(n, v, c) for n, v, c, _ in series], empile=True, legende=False, taille=8,
                libelles_perso={i: e for i, (_, _, _, e) in enumerate(series)})
-    if not mensuel:
-        _t(s, 9.1, 1.45, 0.95, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
-        _t(s, 10.05, 1.45, 0.95, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
+    _t(s, 9.1, 1.45, 0.95, 0.25, str(per_list[0].annee), taille=9, couleur="595959")
+    _t(s, 10.05, 1.45, 0.95, 0.25, str(per_list[2].annee), taille=9, couleur="595959")
     return s
 
 
