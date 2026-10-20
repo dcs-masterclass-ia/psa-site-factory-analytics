@@ -163,7 +163,8 @@ def trafic_leads_groupe(ctx, rv, groupe, marques):
 ORDRE_PROJECTION = ["CITROEN", "DS", "OPEL", "PEUGEOT", "ALFA ROMEO", "FIAT", "FIAT PRO", "JEEP", "LANCIA", "ABARTH", "STELLANTIS &YOU"]      # Abarth et S&Y ajoutés (retour DKAM, ES)
 
 
-def projection_nc(ctx, rv):
+def projection_nc(ctx, rv, tous=False):
+    """Projection de fin de mois des leads New cars (VN) ; `tous` : tous les projets d'achat, Spoticar compris (retour DKAM)."""
     d = ctx.d
     dernier = d.dernier_jour_leads()
     if not dernier:
@@ -177,23 +178,25 @@ def projection_nc(ctx, rv):
     class _P:
         debut, fin = suiv.debut, date.fromisoformat(dernier)
     n1 = suiv.n1()
-    marques = [m for m in ORDRE_PROJECTION if m in d.marques]
+    ordre = ORDRE_PROJECTION[:4] + ["SPOTICAR"] + ORDRE_PROJECTION[4:] if tous else ORDRE_PROJECTION
+    val = (lambda l: sum(l.values())) if tous else (lambda l: l["VN"])
+    marques = [m for m in ordre if m in d.marques]
     if not marques:
         return None
     # colonnes : M-1 (rv.prec), M (rv.per), projection du mois courant, même mois N-1, variation
     lignes_v, tot = [], [0, 0, 0.0, 0]
     for m in marques:
-        a, b = d.leads(rv.prec, m)["VN"], d.leads(rv.per, m)["VN"]
-        cur = d.leads(_P, m)["VN"]
+        a, b = val(d.leads(rv.prec, m)), val(d.leads(rv.per, m))
+        cur = val(d.leads(_P, m))
         proj = cur / jours_ecoules * jours_mois
-        r1 = d.leads(n1, m)["VN"]
+        r1 = val(d.leads(n1, m))
         lignes_v.append((m, a, b, proj, r1))
         tot = [tot[0] + a, tot[1] + b, tot[2] + proj, tot[3] + r1]
     if not any(v[3] or v[1] or v[2] for v in lignes_v):
         return None
     mois_c = MOIS_NOMS["en"][suiv.indice - 1].capitalize()
-    s = slide_revue(ctx, rv, mois_label(suiv), sous_titre="NC Leads projection", source=None,      # titre = le mois PROJETÉ (la référence affichait un titre périmé)
-                    notes=f"Projection = leads New cars du 1er au {jours_ecoules} {mois_c} ÷ {jours_ecoules} jours × {jours_mois} jours (rythme moyen constant, indicatif).")
+    s = slide_revue(ctx, rv, mois_label(suiv), sous_titre=("Total Leads projection" if tous else "NC Leads projection"), source=None,      # titre = le mois PROJETÉ (la référence affichait un titre périmé)
+                    notes=f"Projection = leads {'tous projets d achat' if tous else 'New cars'} du 1er au {jours_ecoules} {mois_c} ÷ {jours_ecoules} jours × {jours_mois} jours (rythme moyen constant, indicatif).")
     # pied : « Source: autobiz data till <date> » avec la date surlignée en jaune
     tb = g.texte(s, 1.15, 7.12, 7.4, 0.3, "Source: autobiz data till ", taille=12, couleur="000000")
     p = tb.text_frame.paragraphs[0]

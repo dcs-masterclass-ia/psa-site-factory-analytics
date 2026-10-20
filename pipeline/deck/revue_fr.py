@@ -224,6 +224,7 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, trafic_leads_apercu, ctx, rv, ORDRE_MARQUES_APERCU, True, libelle="traffic & leads overview")
     agenda_revue(ctx, rv, 2, SECTIONS_FR)
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, libelle="projection du mois")
+    _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, True, libelle="projection du mois — tous leads")
     agenda_revue(ctx, rv, 3, SECTIONS_FR)
     _ajoute(ctx, f(rg, "conversion_ventes_nc"), ctx, rv, libelle="NC sales conversion")
     agenda_revue(ctx, rv, 4, SECTIONS_FR)
