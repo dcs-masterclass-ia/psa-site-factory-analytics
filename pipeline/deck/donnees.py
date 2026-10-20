@@ -325,6 +325,26 @@ class Donnees:
                         out[r["statut"]] = out.get(r["statut"], 0) + (r.get("leads") or 0)
         return out or None
 
+    def c1st_clients_cumul(self, periode, marque):
+        """Clients uniques C1ST de la marque de janvier à la fin de la période (un client qui revient compte une fois) ; None si la période n'est pas un cumul de janvier ou si le relevé
+        `clients_cumul` n'existe pas pour un des marchés du périmètre (collecté pour l'Espagne seulement : voir c1st_collecte.PAYS_CLIENTS_UNIQUES)."""
+        code = next((c for c, m in self.CODES_C1ST.items() if m == marque), None)
+        cles = sorted({self.PAYS_C1ST.get(p, p) for p in self.pays})
+        data = self._c1st()
+        ms = periode.mois()
+        if not code or not data or not ms or ms[0][1] != 1 or [x[1] for x in ms] != list(range(1, len(ms) + 1)) or any(x[0] != ms[0][0] for x in ms):
+            return None
+        a, mo = ms[-1]
+        if f"{a}-{mo:02d}" == getattr(self, "_c1st_partiel", ""):
+            return None
+        total = 0
+        for pays in cles:
+            m = (data.get(pays) or {}).get(f"{a}-{mo:02d}")
+            if not m or m.get("clients_cumul") is None:
+                return None
+            total += sum(r.get("clients") or 0 for r in m["clients_cumul"] if r.get("marque") == code)
+        return total
+
     def c1st_nsc(self, periode, marque):
         """Commandes NSC (jeu « SUB » de C1ST, 1 à 90 jours après le lead) de la marque sur les mois de la période, pour les marchés du périmètre ; None si un mois manque."""
         code = next((c for c, m in self.CODES_C1ST.items() if m == marque), None)

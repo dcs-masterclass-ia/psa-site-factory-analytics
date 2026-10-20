@@ -56,6 +56,7 @@ def _periode(y, m, m0=None):
 # Marchés dont le tableau C1ST de référence compte les xP 2025 par la campagne Autobiz seule (et non par la source 315/515/311/511, validée sur la France uniquement).
 # Espagne vérifiée le 2026-10-20 : campagne seule = 9 902 leads xP 2025 contre 9 956 dans le tableau (la règle par source en donnait 12 277). Les autres marchés restent à valider contre leur tableau.
 PAYS_XP_CAMPAGNE_AVANT_2026 = ("ES",)
+PAYS_CLIENTS_UNIQUES = ("ES",)      # marchés dont le tableau de référence compte des clients uniques (et non des leads) : voir saql_clients_cumul
 
 
 def _origine(p, y, perim, pays=None):
@@ -133,6 +134,16 @@ quo = filter dea by 'HasQuotes' == "YES";
 ord = filter dea by 'LeadConversionTimeMailPhone' >= 1 && 'LeadConversionTimeMailPhone' <= 90;
 r = group dea by 'ACCLead.PSABrand__c' full, quo by 'ACCLead.PSABrand__c' full, ord by 'ACCLead.PSABrand__c';
 r = foreach r generate coalesce(dea.'ACCLead.PSABrand__c', quo.'ACCLead.PSABrand__c', ord.'ACCLead.PSABrand__c') as 'marque', unique(dea.'ACCLead.LeadUniqueCust') as 'clients_uniques', unique(quo.'ACCLead.LeadUniqueCust') as 'avec_devis', unique(ord.'OrderIdwMailPhone') as 'commandes';
+r = limit r 100;"""
+
+
+def saql_clients_cumul(ds, pays, y, m, perim):
+    """Clients uniques (LeadUniqueCust) par marque de janvier au mois m : le « # Leads Generated » du tableau C1ST « NC Sales Conversion » de l'Espagne (vérifié le 2026-10-20 sur Jan.-Sep. 2026 :
+    Peugeot 15 608 contre 15 598, Citroën 13 014 contre 12 995, Abarth 54 et Fiat Pro 244 à l'unité). Un client qui revient dans deux mois n'est compté qu'une fois : pas la somme des mois."""
+    return f"""q = load "{ds}";
+{filtres("q", pays, y, m, perim, "", 1)}
+r = group q by 'PSABrand__c';
+r = foreach r generate 'PSABrand__c' as 'marque', unique('LeadUniqueCust') as 'clients';
 r = limit r 100;"""
 
 
@@ -226,7 +237,10 @@ def collecte_mois(client, pays, y, m):
     nsc = client.requete(saql_nsc(client.version("sub"), pays, y, m, std))
     statuts = client.requete(saql_statuts(client.version("leads"), pays, y, m, std))
     nsc_cumul = client.requete(saql_nsc(client.version("sub"), pays, y, m, std, m0=1))      # commandes uniques de janvier au mois m (tableau « NC Sales Conversion » cumulé)
-    return {"leads": leads, "commandes": commandes, "nsc": nsc, "statuts": statuts, "nsc_cumul": nsc_cumul}
+    res = {"leads": leads, "commandes": commandes, "nsc": nsc, "statuts": statuts, "nsc_cumul": nsc_cumul}
+    if pays in PAYS_CLIENTS_UNIQUES:
+        res["clients_cumul"] = client.requete(saql_clients_cumul(client.version("leads"), pays, y, m, std))
+    return res
 
 
 def fusionne(existant, pays, cle_mois, nouveau):

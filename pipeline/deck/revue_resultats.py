@@ -285,6 +285,9 @@ def conversion_ventes_nc(ctx, rv):
             e26, e25 = d.leads_envoyes_mensuels(a, m, "VN"), d.leads_envoyes_mensuels(a1, m, "VN")
             l26 = c26["leads"] if c26 else sum((e26 if e26 is not None else d.leads_mensuels(a, m, "VN"))[:fin_m])
             l25 = c25["leads"] if c25 else sum((e25 if e25 is not None else d.leads_mensuels(a1, m, "VN"))[:fin_m])
+            u26, u25 = d.c1st_clients_cumul(_Cumul(a, fin_m), m), d.c1st_clients_cumul(_Cumul(a1, fin_m), m)
+            if u26 is not None and u25 is not None:           # marchés dont le tableau C1ST compte des clients uniques (Espagne) : « # Leads Generated » = clients uniques cumulés
+                l26, l25 = u26, u25
             o26 = d.c1st_nsc(_Cumul(a, fin_m), m)
             o25 = d.c1st_nsc(_Cumul(a1, fin_m), m)
             infos[m] = (l26, l25, o26, o25)
