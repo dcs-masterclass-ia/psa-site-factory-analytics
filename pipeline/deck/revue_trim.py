@@ -307,6 +307,11 @@ def projets_groupe(ctx, rv, groupe, marques):
     x, y, w, h = 0.15, 1.3, 8.7, 4.9
     gf = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_STACKED, Inches(x), Inches(y), Inches(w), Inches(h), cd)
     ch = gf.chart
+    zx, zy, zw, zh = g.zone_fixe(gf)
+    nb_cols = len(marques) * 4
+    fente = zw / nb_cols
+    for i in range(len(marques)):                      # surlignage orangé : les deux trimestres de l'année en cours de chaque marque (sépare aussi les marques)
+        g.bande_derriere(s, gf, zx + (4 * i + 2) * fente, zy, 2 * fente, zh + 0.45)
     ch.has_title = False; ch.has_legend = False
     ch.font.size = Pt(7)
     ch.value_axis.visible = False; ch.value_axis.has_major_gridlines = False
@@ -336,7 +341,9 @@ def projets_groupe(ctx, rv, groupe, marques):
         tt = [sum(t1.values()), sum(t2.values())]
         labels[len(series)] = [f"{nb(a)}\n{a / b * 100:.0f}%" if a and b else None for a, b in zip(v, tt)]
         series.append((nom, v, coul))
-    g.colonnes(s, 8.95, 1.55, 2.1, 4.6, [str(rv.n1.annee), str(per.annee)], series, empile=True, legende=False, taille=8, libelles_perso=labels)
+    gf2 = g.colonnes(s, 8.95, 1.55, 2.1, 4.6, [str(rv.n1.annee), str(per.annee)], series, empile=True, legende=False, taille=8, libelles_perso=labels)
+    z2x, z2y, z2w, z2h = g.zone_fixe(gf2)
+    g.bande_derriere(s, gf2, z2x + z2w / 2, z2y, z2w / 2, z2h + 0.3)
     # légende
     for i, (k, nom, coul) in enumerate(reversed(ordre)):
         yy = 6.3 + i * 0.2

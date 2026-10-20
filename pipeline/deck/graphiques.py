@@ -366,3 +366,43 @@ def tient_dans_la_diapo(prs, marge=0.1):
                 sh.height = max(Inches(0.1), H - m // 2 - sh.top)
                 n += 1
     return n
+
+
+def zone_fixe(gf, x=0.02, y=0.03, w=0.96, h=0.80):
+    """Fixe la zone de tracé d'un graphique (fractions du cadre) et rend ses fonds transparents : on connaît alors la position exacte des colonnes,
+    ce qui permet de poser des bandes de surlignage derrière. Retourne (x, y, largeur, hauteur) de la zone de tracé en pouces."""
+    from lxml import etree
+    from pptx.oxml.ns import qn
+    cs = gf.chart._chartSpace
+    pa = cs.chart.plotArea
+    for anc in pa.findall(qn("c:layout")):
+        pa.remove(anc)
+    lay = etree.SubElement(pa, qn("c:layout"))
+    pa.remove(lay); pa.insert(0, lay)
+    ml = etree.SubElement(lay, qn("c:manualLayout"))
+    for tag, val in (("layoutTarget", "inner"), ("xMode", "edge"), ("yMode", "edge"), ("x", x), ("y", y), ("w", w), ("h", h)):
+        etree.SubElement(ml, qn("c:" + tag)).set("val", str(val))
+    for parent in (cs, pa):                                     # fonds transparents (sinon les bandes derrière sont masquées)
+        for old in parent.findall(qn("c:spPr")):
+            parent.remove(old)
+        sp = etree.SubElement(parent, qn("c:spPr"))
+        etree.SubElement(sp, qn("a:noFill"))
+        ln = etree.SubElement(sp, qn("a:ln")); etree.SubElement(ln, qn("a:noFill"))
+    # ordre des enfants exigé par le schéma : spPr de chartSpace avant txPr / externalData
+    sp_cs = cs.find(qn("c:spPr")); cs.remove(sp_cs)
+    pos = [i for i, e in enumerate(cs) if e.tag in (qn("c:txPr"), qn("c:externalData"), qn("c:printSettings"), qn("c:userShapes"))]
+    cs.insert(pos[0] if pos else len(cs), sp_cs)
+    sp_pa = pa.find(qn("c:spPr")); pa.remove(sp_pa)
+    fin = [i for i, e in enumerate(pa) if e.tag in (qn("c:extLst"),)]
+    pa.insert(fin[0] if fin else len(pa), sp_pa)
+    return (gf.left / 914400 + x * gf.width / 914400, gf.top / 914400 + y * gf.height / 914400, w * gf.width / 914400, h * gf.height / 914400)
+
+
+def bande_derriere(slide, gf, x, y, w, h, couleur="FCE9D6"):
+    """Rectangle de surlignage placé DERRIÈRE le graphique `gf`."""
+    r = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    r.fill.solid(); r.fill.fore_color.rgb = rgb(couleur); r.line.fill.background(); r.shadow.inherit = False
+    tree = slide.shapes._spTree
+    tree.remove(r._element)
+    tree.insert(list(tree).index(gf._element), r._element)
+    return r

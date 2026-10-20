@@ -68,7 +68,7 @@ def matrice(s, x, y, w, h, lib_col0, lignes, colonnes, blocs, annees=None, haute
             _t(s, x + wl + j * wc, ytop + 0.02, wc, 0.2, nb(v), taille=taille + (1 if dernier else 0), gras=dernier, italique=dernier)
             part = f"{v / tot * 100:.0f}%" if tot else "–"
             _t(s, x + wl + j * wc, ytop + 0.2, wc, 0.2, part, taille=taille - 0.5, gras=dernier, italique=dernier, couleur="404040")
-            bh = 0.14 if dernier else max(0.025, 0.2 * (v / vmax if vmax else 0))
+            bh = 0.14 if dernier else max(0.025, min(0.45, 0.2 * hl / 0.62) * (v / vmax if vmax else 0))      # la barre grandit avec la hauteur de ligne
             _rect(s, x + wl + j * wc + wc * 0.1, ytop + hl - bh - 0.03, wc * 0.8, bh, c["couleur"])
     for i, lab in enumerate(lignes):
         dernier = i == nl - 1
@@ -152,7 +152,7 @@ def canaux(ctx, rv, marque):
     s = slide_revue(ctx, rv, titre, sous_titre=sous, marque=marque, puces=_puces_canaux(data, tp, srcs, rv))
     legende_projets(s)
     annees = [(b * 4 + 2 * a, b * 4 + 2 * a + 1, str((per_list[0].annee, per_list[2].annee)[a])) for b in range(3) for a in (0, 1)]
-    hl = matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ")
+    hl = matrice(s, 0.15, 1.3, 7.35, 5.65, 0.75, lignes, colonnes, {i: NOMS_PROJETS[p] for i, p in enumerate(PROJETS)}, annees=annees, titre_col0="SOURCE_ACQ", hl_max=1.0)
     # colonnes empilées à droite
     cats = [f"{_mois_court(p)}\n{nb(_tot(t))}" for p, t in zip(per_list, tp)]
     series, ordre = [], ["VO", "SANS", "VN"]
