@@ -47,6 +47,9 @@ def _trimestres(per, k):
 
 
 def _q(per):
+    if per.type == "mois":
+        from .periodes import MOIS_COURTS
+        return f"{MOIS_COURTS['en'][per.indice - 1]}-{str(per.annee)[2:]}"
     return f"Q{per.indice}-{str(per.annee)[2:]}"
 
 
@@ -341,7 +344,7 @@ def projets_groupe(ctx, rv, groupe, marques):
         tt = [sum(t1.values()), sum(t2.values())]
         labels[len(series)] = [f"{nb(a)}\n{a / b * 100:.0f}%" if a and b else None for a, b in zip(v, tt)]
         series.append((nom, v, coul))
-    gf2 = g.colonnes(s, 8.95, 1.55, 2.1, 4.6, [str(rv.n1.annee), str(per.annee)], series, empile=True, legende=False, taille=8, libelles_perso=labels)
+    gf2 = g.colonnes(s, 8.95, 1.55, 2.1, 4.6, [_q(rv.n1) if per.type == "mois" else str(rv.n1.annee), _q(per) if per.type == "mois" else str(per.annee)], series, empile=True, legende=False, taille=8, libelles_perso=labels)
     z2x, z2y, z2w, z2h = g.zone_fixe(gf2)
     g.bande_derriere(s, gf2, z2x + z2w / 2, z2y, z2w / 2, z2h + 0.3)
     # légende
@@ -774,7 +777,7 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     A(leads_par_mois, libelle="leads by month")
     A(leads_par_mois, "VN", libelle="NC leads by month")
     nc_par_mois_groupes(ctx, rv)
-    A(projets_groupe, "xP", [m for m in GROUPE_XP], libelle="leads by purchase project xP")
+    A(projets_groupe, "xP", GROUPE_XP + ["SPOTICAR"], libelle="leads by purchase project xP")
     A(projets_groupe, "xF", [m for m in GROUPE_XF_TRIM if m != "LEAPMOTOR"], libelle="leads by purchase project xF")
     A(trafic_leads_apercu, libelle="traffic & leads overview")
     for s_ in (apercu_marques_trim(ctx, rv) or [None]):

@@ -213,6 +213,9 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, f(rg, "resume_executif"), ctx, rv, libelle="résumé exécutif")
     _ajoute(ctx, f(rg, "vue_globale"), ctx, rv, libelle="Executive summary — global view")
     _ajoute(ctx, f(rg, "tendance_leads"), ctx, rv, libelle="Executive summary — lead trend all brands")
+    from .revue_trim import GROUPE_XF_TRIM, projets_groupe      # « Leads by Purchase Project » xP (Spoticar compris) et xF, comme les diapositives 11 et 12 du trimestriel
+    _ajoute(ctx, projets_groupe, ctx, rv, "xP", GROUPE_XP + ["SPOTICAR"], libelle="leads by purchase project xP")
+    _ajoute(ctx, projets_groupe, ctx, rv, "xF", [m for m in GROUPE_XF_TRIM if m != "LEAPMOTOR"], libelle="leads by purchase project xF")
     from .revue_trim import apercu_marques_trim      # « Leads Overview » du trimestriel (tendance, moteurs, actions recommandées par marque), en MoM (retour DKAM)
     try:
         for s_ in apercu_marques_trim(ctx, rv):
