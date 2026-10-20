@@ -311,6 +311,12 @@ def projets_groupe(ctx, rv, groupe, marques):
     gf = s.shapes.add_chart(XL_CHART_TYPE.COLUMN_STACKED, Inches(x), Inches(y), Inches(w), Inches(h), cd)
     ch = gf.chart
     zx, zy, zw, zh = g.zone_fixe(gf)
+    haut = max(tot) * 1.12 if tot and max(tot) else 1                       # échelle fixée : on connaît la hauteur de chaque colonne, donc où poser son total
+    gf.chart.value_axis.minimum_scale = 0
+    gf.chart.value_axis.maximum_scale = haut
+    for i_, t_ in enumerate(tot):
+        if t_:
+            g.texte(s, zx + (i_ + 0.5) * zw / len(tot) - 0.4, zy + zh * (1 - t_ / haut) - 0.2, 0.8, 0.2, nb(t_), taille=7.5, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
     nb_cols = len(marques) * 4
     fente = zw / nb_cols
     for i in range(len(marques)):                      # surlignage orangé : les deux trimestres de l'année en cours de chaque marque (sépare aussi les marques)
@@ -346,6 +352,13 @@ def projets_groupe(ctx, rv, groupe, marques):
         series.append((nom, v, coul))
     gf2 = g.colonnes(s, 8.95, 1.55, 2.1, 4.6, [_q(rv.n1) if per.type == "mois" else str(rv.n1.annee), _q(per) if per.type == "mois" else str(per.annee)], series, empile=True, legende=False, taille=8, libelles_perso=labels)
     z2x, z2y, z2w, z2h = g.zone_fixe(gf2)
+    tt2 = [sum(t1.values()), sum(t2.values())]
+    haut2 = max(tt2) * 1.12 if max(tt2) else 1
+    gf2.chart.value_axis.minimum_scale = 0
+    gf2.chart.value_axis.maximum_scale = haut2
+    for i_, t_ in enumerate(tt2):
+        if t_:
+            g.texte(s, z2x + (i_ + 0.5) * z2w / 2 - 0.5, z2y + z2h * (1 - t_ / haut2) - 0.2, 1.0, 0.2, nb(t_), taille=8, gras=True, couleur="000000", align=PP_ALIGN.CENTER)
     g.bande_derriere(s, gf2, z2x + z2w / 2, z2y, z2w / 2, z2h + 0.3)
     # légende
     for i, (k, nom, coul) in enumerate(reversed(ordre)):
