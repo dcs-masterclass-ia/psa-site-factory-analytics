@@ -160,7 +160,7 @@ def trafic_leads_groupe(ctx, rv, groupe, marques):
 
 
 # ------------------------------------------------------------------ 11 : projection du mois en cours
-ORDRE_PROJECTION = ["CITROEN", "DS", "OPEL", "PEUGEOT", "ALFA ROMEO", "FIAT", "FIAT PRO", "JEEP", "LANCIA"]
+ORDRE_PROJECTION = ["CITROEN", "DS", "OPEL", "PEUGEOT", "ALFA ROMEO", "FIAT", "FIAT PRO", "JEEP", "LANCIA", "ABARTH", "STELLANTIS &YOU"]      # Abarth et S&Y ajoutés (retour DKAM, ES)
 
 
 def projection_nc(ctx, rv):
@@ -250,7 +250,7 @@ def projection_nc(ctx, rv):
 
 
 def _nom_projection(m):
-    return m
+    return "S&Y" if m == "STELLANTIS &YOU" else m
 
 
 # ------------------------------------------------------------------ 13 : NC Sales Conversion
