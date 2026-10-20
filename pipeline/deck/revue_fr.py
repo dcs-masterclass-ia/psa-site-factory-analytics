@@ -229,6 +229,9 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, libelle="projection du mois")
     _ajoute(ctx, f(rg, "projection_nc"), ctx, rv, True, libelle="projection du mois — tous leads")
     agenda_revue(ctx, rv, 3, SECTIONS_FR)
+    from .revue_nc_marches import nc_entonnoirs, nc_marches          # vue tous marchés : leads par marché + carte, puis entonnoirs leads / commandes / taux (retour DKAM)
+    _ajoute(ctx, nc_marches, ctx, rv, libelle="NC sales conversion — tous marchés (carte)")
+    _ajoute(ctx, nc_entonnoirs, ctx, rv, libelle="NC sales conversion — tous marchés (entonnoirs)")
     _ajoute(ctx, f(rg, "conversion_ventes_nc"), ctx, rv, libelle="NC sales conversion")
     agenda_revue(ctx, rv, 4, SECTIONS_FR)
     for marque in [m for m in d.marques if m != "STELLANTIS &YOU"]:      # ordre des DKAM : Peugeot, Citroën, DS, Opel, Spoticar, Fiat, Jeep, Alfa Romeo, Abarth, Fiat Pro, Lancia
