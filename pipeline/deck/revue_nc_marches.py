@@ -64,6 +64,30 @@ def donnees(ctx, rv):
     return sorted(out, key=lambda x: -x["leads"]) or None
 
 
+def donnees_bo(ctx, rv):
+    """Leads New cars (projet VN, statut valide) du back-office par marché, de janvier à la fin de la période, hors Spoticar (leads de rachat), pour l'année et N-1 :
+    [{code, nom, leads, leads_n1}] triés par leads décroissants. C'est la source de la diapo « tous marchés » de Mohand (retour du 20/10/2026), pas C1ST."""
+    from datetime import date
+    PAYS_BO = {"FR": ["FR"], "IT": ["IT"], "ES": ["ES"], "BE": ["BE", "LU"], "DE": ["DE"], "PT": ["PT"], "PL": ["PL"], "AT": ["AT"], "GB": ["GB", "UK"]}
+    a, m = rv.per.mois()[-1]
+    fin = calendar.monthrange(a, m)[1]
+    from .periodes import PeriodeJours
+    p26, p25 = PeriodeJours(date(a, 1, 1), date(a, m, fin)), PeriodeJours(date(a - 1, 1, 1), date(a - 1, m, calendar.monthrange(a - 1, m)[1]))
+    out = []
+    for code, nom, _ in MARCHES:
+        try:
+            d = type(ctx.d)(PAYS_BO[code], hist=ctx.d.hist)
+            d.exclus = set()
+            ms = [x for x in d.marques if x != "SPOTICAR"]
+            l26 = sum(d.leads(p26, x)["VN"] for x in ms)
+            l25 = sum(d.leads(p25, x)["VN"] for x in ms)
+        except Exception:
+            continue
+        if l26 or l25:
+            out.append({"code": code, "nom": nom, "leads": l26, "leads_n1": l25})
+    return sorted(out, key=lambda x: -x["leads"]) or None
+
+
 def _fmt_k(v):
     return f"{v / 1000:.0f}K" if v >= 10000 else (f"{v / 1000:.1f}K".replace(".0K", "K") if v >= 1000 else f"{v:,}")
 
@@ -113,7 +137,7 @@ def _carte(s, x0, y0, w, h, par_code):
 
 
 def nc_marches(ctx, rv):
-    marches = donnees(ctx, rv)
+    marches = donnees_bo(ctx, rv)
     if not marches:
         return None
     tot26, tot25 = sum(m["leads"] for m in marches), sum(m["leads_n1"] for m in marches)
@@ -170,7 +194,7 @@ def nc_marches(ctx, rv):
             r.fill.solid(); r.fill.fore_color.rgb = g.rgb(c); r.line.fill.background(); r.shadow.inherit = False
         _t(lx - 0.35, ly + 0.15, 0.7, 0.2, f"{min(crs):+.0f}%", taille=6.5, couleur="404040")
         _t(lx + 1.2, ly + 0.15, 0.7, 0.2, f"{max(crs):+.0f}%", taille=6.5, couleur="404040", align=PP_ALIGN.RIGHT)
-    _t(1.08, 7.12, 11.0, 0.28, _pied(ctx), taille=8, couleur="000000")
+    _t(1.08, 7.12, 11.0, 0.28, "Source: autobiz — back-office leads (New cars projects, valid leads, Spoticar excluded)", taille=8, couleur="000000")
     return s
 
 
