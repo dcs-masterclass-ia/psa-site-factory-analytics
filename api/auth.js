@@ -19,6 +19,7 @@
 const { sign, allowedEmails, limitedEmails, roleFor, presentationsAllowed, MAX_SESSION_MS } = require("./_lib/auth");
 const { fail } = require("./_lib/errors");
 const C1 = require("./_lib/c1st-acces");
+const J = require("./_lib/journal");
 
 const MAX_AGE_S = MAX_SESSION_MS / 1000; // 1 h, voir _lib/auth.js
 
@@ -46,34 +47,41 @@ module.exports = async function handler(req, res) {
     const r = await fetch("https://oauth2.googleapis.com/tokeninfo?id_token=" + encodeURIComponent(credential));
     const info = await r.json();
     if (!r.ok || info.error) {
+      await J.consigne(req, { ok: false, motif: "jeton_invalide" });
       res.status(403).json({ error: "Jeton Google invalide." });
       return;
     }
     if (info.aud !== clientId) {
+      await J.consigne(req, { ok: false, motif: "jeton_audience" });
       res.status(403).json({ error: "Jeton Google invalide (audience)." });
       return;
     }
     if (info.iss !== "accounts.google.com" && info.iss !== "https://accounts.google.com") {
+      await J.consigne(req, { ok: false, motif: "jeton_emetteur" });
       res.status(403).json({ error: "Jeton Google invalide (emetteur)." });
       return;
     }
     if (info.email_verified !== "true") {
+      await J.consigne(req, { ok: false, motif: "email_non_verifie" });
       res.status(403).json({ error: "Email Google non verifie." });
       return;
     }
     const email = String(info.email || "").toLowerCase();
     if (allowList.length) {
       if (!roleFor(email)) {
+        await J.consigne(req, { ok: false, motif: "compte_non_autorise", email });
         res.status(403).json({ error: "Acces reserve aux comptes autorises." });
         return;
       }
     } else if (!email.endsWith("@" + allowedDomain)) {
+      await J.consigne(req, { ok: false, motif: "domaine_non_autorise", email });
       res.status(403).json({ error: `Acces reserve aux comptes @${allowedDomain}.` });
       return;
     }
 
-    try { if (await C1.estSuspendu(email)) { res.status(403).json({ error: "Acces suspendu. Contacte l'administrateur." , suspendu: true }); return; } }
+    try { if (await C1.estSuspendu(email)) { await J.consigne(req, { ok: false, motif: "suspendu", email }); res.status(403).json({ error: "Acces suspendu. Contacte l'administrateur." , suspendu: true }); return; } }
     catch (e) { console.error("[auth] liste de suspensions illisible", e); }       // illisible : on n'empêche pas la connexion, le middleware revérifie
+    await J.consigne(req, { ok: true, email });
     const token = sign({ email, exp: Date.now() + MAX_AGE_S * 1000 });
     res.setHeader("Set-Cookie", [
       `psf_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${MAX_AGE_S}`,

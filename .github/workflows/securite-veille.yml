@@ -1,0 +1,54 @@
+name: Veille de sécurité (connexions)
+
+# Toutes les 30 minutes : carte Teams seulement si une connexion est anormale (échecs répétés, compte inconnu, nouvelle adresse ou nouveau pays).
+# Chaque matin : bilan des dernières 24 h. Voir pipeline/securite_veille.py. Dépôt public : la console n'affiche que des comptages.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+    - cron: "40 5 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "veille ou digest"
+        default: "veille"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: securite-veille
+  cancel-in-progress: false
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Récupérer le journal (repo de données privé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # L'heure du dernier passage survit d'un passage à l'autre grâce au cache (évite de signaler deux fois le même fait).
+      - name: Restaurer l'état
+        uses: actions/cache@v4
+        with:
+          path: securite_state.json
+          key: securite-state-${{ github.run_id }}
+          restore-keys: securite-state-
+      - name: Contrôler les connexions
+        env:
+          SECURITE_WEBHOOK_URL: ${{ secrets.SECURITE_WEBHOOK_URL }}
+          ALERTES_WEBHOOK_URL: ${{ secrets.ALERTES_WEBHOOK_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: prj_MEkEdI4FwBsAs2NkHBwGRG17OFef
+          VERCEL_TEAM_ID: team_7aFIBOaUUuLV2uE72RRptkGD
+          MODE: ${{ github.event_name == 'schedule' && (github.event.schedule == '40 5 * * *' && 'digest' || 'veille') || github.event.inputs.mode }}
+        run: python -m pipeline.securite_veille --mode "$MODE"
