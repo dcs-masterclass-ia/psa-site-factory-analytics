@@ -81,6 +81,7 @@ function nettoieCommun(b) {
     contact: { nom: txt(b.contact && b.contact.nom, 80), fonction: txt(b.contact && b.contact.fonction, 80), email: txt(b.contact && b.contact.email, 120) },
     commentaire: txt(b.commentaire, 2000),
     format: FORMATS.includes(b.format) ? b.format : "standard",
+    design: b.design === "v2" ? "v2" : "v1",          // v1 : design d'origine ; v2 : nouveau design (pipeline/deck/moderne.py)
   };
 }
 

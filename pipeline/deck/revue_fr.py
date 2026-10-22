@@ -36,6 +36,9 @@ def _ajoute(ctx, f, *args, libelle=""):
     if f is None:
         ctx.avertissements.append(f"Diapositive non disponible : {libelle}.")
         return None
+    if getattr(ctx, "design", "v1") == "v2":
+        from .moderne import remplacant                       # nouveau design là où il existe, sinon la diapositive V1
+        f = remplacant(f)
     try:
         ctx.faits.debut(ctx.n + 1, libelle)
         s = f(*args)
@@ -50,6 +53,9 @@ def _ajoute(ctx, f, *args, libelle=""):
 # ------------------------------------------------------------------ pièces propres au format
 def couverture_revue(ctx, rv):
     """Couverture : titre « Trade In Performance », mois, bloc blanc avec logo Stellantis et drapeau."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.couverture(ctx, rv)
     s = ctx.prs.slides.add_slide(ctx.lay["Title Slide"])
     ctx.n += 1
     g.texte(s, 0.62, 2.96, 7.1, 0.79, "Trade In Performance", taille=32, couleur="FFFFFF")
@@ -65,6 +71,9 @@ def couverture_revue(ctx, rv):
 
 def agenda_revue(ctx, rv, actif, sections=None):
     """Sommaire : 5 sections (ou `sections`), la section courante en bleu marine plein (géométrie relevée sur la diapositive 3 du deck de référence)."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.agenda(ctx, rv, actif, list(sections or SECTIONS))
     s = slide_revue(ctx, rv, "Agenda", source=None)
     rv.drapeau(s)
     y = 1.67
@@ -80,6 +89,9 @@ def agenda_revue(ctx, rv, actif, sections=None):
 
 def separateur(ctx, rv, libelle):
     """Séparateur de section : grand rectangle bleu marine arrondi avec le nom en blanc (0,96 / 2,59 / 10,99 x 1,40 po comme dans le deck)."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.separateur(ctx, rv, libelle)
     s = ctx.prs.slides.add_slide(ctx.lay["Title and Subtitle"])
     ctx.n += 1
     for ph in list(s.placeholders):
@@ -98,6 +110,9 @@ def separateur(ctx, rv, libelle):
 
 def actions_en_cours(ctx, rv):
     """« Ongoing actions » : tableau des actions en cours (brief["actionsEnCours"] : sujet, détails, date, pilote, statut = lignes), comme la diapositive 2 du deck."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.actions_en_cours(ctx, rv)
     actions = ctx.brief.get("actionsEnCours") or []      # sans action saisie : diapositive vide à compléter
     s = slide_revue(ctx, rv, "Ongoing actions", source=None, x_titre=0.14)
     entetes = ["#", "Subject", "Details", "Date", "Pilot", "Status"]
@@ -171,6 +186,9 @@ def annexe_cta(ctx, rv):
 
 def contacts_revue(ctx, rv):
     """Contacts : titre blanc en haut à gauche, carte claire centrée avec avatar orange, nom en gras marine, fonction et e-mail (diapositive 73 du deck)."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.contacts(ctx, rv)
     c = ctx.brief.get("contact") or {}
     s = ctx.prs.slides.add_slide(ctx.lay["1_Title and Content"])
     ctx.n += 1
@@ -256,6 +274,9 @@ def construit_revue(brief, donnees, sortie, gabarit=GABARIT):
     next_steps(ctx, rv)
     contacts_revue(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        moderne.habille(ctx, rv)                    # diapositives pas encore refaites : cadre V2, mêmes données
     g.tient_dans_la_diapo(ctx.prs)
     ctx.prs.save(str(sortie))
     return ctx

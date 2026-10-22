@@ -57,7 +57,7 @@ class RevueGlobal(unittest.TestCase):
             self.assertIn("320", txt)                                    # leads de septembre
             self.assertIn("2 880", txt)                                  # cumul : 9 x 320
             self.assertIn("+88%", txt)                                   # cumul vs 2025 : 2 880 / 1 530
-            self.assertIn("Global view", " ".join(p.text for p in s.placeholders if p.placeholder_format.idx == 12))
+            self.assertEqual(s.shapes.title.text, "Global Overview")
             charts = [sh.chart for sh in s.shapes if getattr(sh, "has_chart", False) and sh.has_chart]
             self.assertEqual(len(charts), 2)
             self.assertEqual(len(list(charts[1].plots[0].series)), 3)

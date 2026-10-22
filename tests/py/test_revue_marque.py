@@ -50,7 +50,7 @@ class RevueMarque(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             ctx, rv = self._ctx(tmp)
             s = trafic(ctx, rv, "PEUGEOT")
-            self.assertEqual(s.shapes.title.text, "Traffic")
+            self.assertEqual(s.shapes.title.text, "Traffic DEEP DIVE")
             txt = " ".join(sh.text_frame.text for sh in s.shapes if sh.has_text_frame)
             self.assertIn("September 2026", txt)
             self.assertIn("1 000", txt)

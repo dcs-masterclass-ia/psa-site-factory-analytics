@@ -3259,6 +3259,11 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px;margin-top:18px">Langue de la présentation <span style="color:#e8544a">*</span></div>
                 <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prLangues }}" as="c" hint-placeholder-count="5"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
                 <div style="font-size:12px;color:#9a9fa6;margin-top:6px">Libellés, mois et chiffres sont traduits ; les analyses rédigées restent en français ou en anglais.</div>
+                <sc-if value="{{ prAvecDesign }}" hint-placeholder-val="{{ false }}"><div>
+                  <div style="font-size:12.5px;color:#6d727a;font-weight:500;margin-bottom:6px;margin-top:18px">Design de la présentation</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ prDesigns }}" as="c" hint-placeholder-count="2"><span class="pr-chip" onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</span></sc-for></div>
+                  <div style="font-size:12px;color:#9a9fa6;margin-top:6px;line-height:1.5">{{ prDesignAide }}</div>
+                </div></sc-if>
                 <div style="border-top:1px solid #f2f2f4;margin-top:18px;padding-top:16px">
                   <div style="font-size:13.5px;font-weight:600;color:#121214;margin-bottom:2px">Périmètre et période</div>
                   <div style="font-size:12px;color:#9a9fa6;margin-bottom:8px;line-height:1.5">Un seul périmètre pour toute la présentation.</div>
@@ -7502,7 +7507,7 @@ class Component extends DCLogic {
       {id:'prochaines_etapes',titre:'Prochaines étapes',       desc:'Tableau d\'actions : item, responsable, statut, échéance (saisi ci-dessous)', dispo:'ok', base:1}
     ];
     const prDef = {
-      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null, format:'standard', actionsEnCours:[],
+      id:null, titre:'', client:'Stellantis', langue:'fr', pays:['BE','LU'], marques:[], periode:prDernierePeriode('trimestre'), precedente:true, n1:true, tplId:null, format:'standard', design:'v1', actionsEnCours:[],
       modules:PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id), contact:{nom:'',fonction:'',email:this._userEmail||''}, pointsOuverts:[], prochainesEtapes:[], commentaire:'', commentaires:{}, actionsMarques:{}, reco:null, tplNom:''
     };
     const pr = Object.assign({}, prDef, st.pr||{});  // st.pr null -> formulaire par défaut
@@ -7534,6 +7539,9 @@ class Component extends DCLogic {
     const prIndiceChips = (per.type==='annee'?[]:per.type==='mois'?PR_MOIS.map((m,k)=>[k+1,m.slice(0,3)+'.']):per.type==='trimestre'?[1,2,3,4].map(q=>[q,'T'+q]):[1,2].map(q=>[q,'S'+q]))
       .map(([v,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{indice:v})}),true), style:prChip(per.indice===v) }));
     const prAnneesChips = [prCy-2,prCy-1,prCy].map(a=>({ label:String(a), pick:e=>prPick(e,()=>prSet({periode:Object.assign({},per,{annee:a})}),true), style:prChip(per.annee===a) }));
+    const prAvecDesign = prFr || prTrim;
+    const prDesigns = [['v1','V1 · Design actuel'],['v2','V2 · Nouveau design']].map(([k,l])=>({ label:T(l), pick:e=>prPick(e,()=>prSet({design:k}),true), style:prChip((pr.design||'v1')===k) }));
+    const prDesignAide = T((pr.design||'v1')==='v2' ? "Nouveau design : graphiques redessinés, grands chiffres, mêmes informations. Les diapositives pas encore refaites restent au design V1." : "Design d'origine, identique aux présentations déjà générées.");
     const prLangues = [['fr','Français'],['en','English'],['it','Italiano'],['es','Español'],['de','Deutsch']].map(([k,l])=>({ label:l, pick:e=>prPick(e,()=>prSet({langue:k}),true), style:prChip(pr.langue===k) }));
     const PR_PREC = {mois:'vs mois précédent',trimestre:'vs trimestre précédent',semestre:'vs semestre précédent'};
     const PR_N1 = {mois:'vs même mois N-1',trimestre:'vs même trimestre N-1',semestre:'vs même semestre N-1',annee:'vs année précédente'};
@@ -7653,7 +7661,7 @@ class Component extends DCLogic {
       set({prBusy:true, prMsg:null});
       try {
         const brief = { id:pr.id, titre:prTitreAuto, client:(pr.client||'Stellantis').trim(), langue:pr.langue, perimetre:{pays:pr.pays,marques:pr.marques}, periode:per,
-          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques, format:pr.format||'standard', actionsEnCours:pr.actionsEnCours||[] };
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, pointsOuverts:pr.pointsOuverts, prochainesEtapes:pr.prochainesEtapes, commentaire:pr.commentaire, commentaires:pr.commentaires, actionsMarques:pr.actionsMarques, format:pr.format||'standard', design:pr.design==='v2'?'v2':'v1', actionsEnCours:pr.actionsEnCours||[] };
         const j = await prApi({action:'save',brief});
         const l=(this._pr&&this._pr.list)||[]; this._pr=Object.assign({},this._pr,{list:[j.brief].concat(l.filter(x=>x.id!==j.brief.id))});
         this.setState({prBusy:false, pr:Object.assign({},pr,{id:j.brief.id,titre:j.brief.titre}), prMsg:{ok:true,text:'Brief enregistré : '+j.brief.titre}});
@@ -7684,7 +7692,7 @@ class Component extends DCLogic {
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
     };
     const prFromBrief = b => ({ id:b.id, titre:b.titre, client:b.client, langue:b.langue||'fr', pays:(b.perimetre&&b.perimetre.pays)||[], marques:(b.perimetre&&b.perimetre.marques)||[],
-      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, format:(b.format==='revue_fr'||b.format==='revue_trim')?b.format:'standard', actionsEnCours:Array.isArray(b.actionsEnCours)?b.actionsEnCours:[], modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
+      periode:prNormPeriode(b.periode), precedente:!!(b.comparaisons&&(b.comparaisons.precedente!=null?b.comparaisons.precedente:b.comparaisons.qoq)), n1:!!(b.comparaisons&&(b.comparaisons.n1!=null?b.comparaisons.n1:b.comparaisons.yoy)), tplId:null, format:(b.format==='revue_fr'||b.format==='revue_trim')?b.format:'standard', design:b.design==='v2'?'v2':'v1', actionsEnCours:Array.isArray(b.actionsEnCours)?b.actionsEnCours:[], modules:b.modules||[], contact:b.contact||{nom:'',fonction:'',email:''},
       pointsOuverts:b.pointsOuverts||[], prochainesEtapes:b.prochainesEtapes||[], commentaire:b.commentaire||'', commentaires:b.commentaires||{}, actionsMarques:Object.fromEntries(Object.entries(b.actionsMarques||{}).map(([k,v])=>[k,(Array.isArray(v)?v:[v]).join('\n')])), reco:(b.modules||[]).slice(), tplNom:'' });
     const prFmtDate = ts => { const d=new Date(ts); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
     const prRows = ((this._pr&&this._pr.list)||[]).map(b=>({ titre:b.titre, client:b.client,
@@ -7743,7 +7751,7 @@ class Component extends DCLogic {
     const prApplyTpl = t => { const c=t.config||{}; const dispo=PR_MODULES.filter(m=>m.dispo!=='non').map(m=>m.id);
       set({ prTab:'nouveau', pr:Object.assign({}, prDef, { id:null, titre:'', client:c.client||prDef.client, langue:c.langue||'fr', pays:(c.perimetre&&c.perimetre.pays)||prDef.pays, marques:(c.perimetre&&c.perimetre.marques)||[],
         periode:prDernierePeriode(c.periodicite||'trimestre'), precedente:!!(c.comparaisons&&c.comparaisons.precedente), n1:!!(c.comparaisons&&c.comparaisons.n1), modules:(c.modules||[]).filter(m=>dispo.includes(m)),
-        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], format:(c.format==='revue_fr'||c.format==='revue_trim')?c.format:'standard', actionsEnCours:Array.isArray(c.actionsEnCours)?c.actionsEnCours:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
+        contact:Object.assign({}, prDef.contact, c.contact||{}), commentaire:c.commentaire||'', pointsOuverts:[], prochainesEtapes:[], format:(c.format==='revue_fr'||c.format==='revue_trim')?c.format:'standard', design:c.design==='v2'?'v2':'v1', actionsEnCours:Array.isArray(c.actionsEnCours)?c.actionsEnCours:[], tplId:t.id, tplNom:t.nom, reco:(c.modules||[]).filter(m=>dispo.includes(m)) }),
         prStep:2, prUnlock:false, prConfirm:false, prTried:{}, prMsg:null }); };
     const prTplChips = prTplAll.map(t=>({ label:t.nom, pick:()=>prApplyTpl(t), style:prChip(pr.tplId===t.id) }));
     const prTplNom = st.prTplNom||'';
@@ -7752,7 +7760,7 @@ class Component extends DCLogic {
       set({prBusy:true, prMsg:null});
       try {
         const j = await prApi({action:'save_template', template:{ nom:prTplNom.trim(), description:'', config:{ client:(pr.client||'Stellantis').trim(), langue:pr.langue, periodicite:per.type, perimetre:{pays:pr.pays,marques:pr.marques},
-          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire, format:pr.format||'standard' } }});
+          comparaisons:{precedente:per.type==='annee'?false:pr.precedente,n1:pr.n1}, modules:pr.modules, contact:pr.contact, commentaire:pr.commentaire, format:pr.format||'standard', design:pr.design==='v2'?'v2':'v1' } }});
         const l=(this._pr&&this._pr.templates)||[]; this._pr=Object.assign({},this._pr,{templates:[j.template].concat(l.filter(x=>x.id!==j.template.id))});
         this.setState({prBusy:false, prTplNom:'', prTplForm:false, prMsg:{ok:true,text:'Modèle « '+j.template.nom+' » créé : tu le retrouveras à l\'étape « Choisir un modèle » des prochaines présentations.'}});
       } catch(e) { this.setState({prBusy:false, prMsg:{ok:false,text:e.message}}); }
@@ -7926,7 +7934,7 @@ class Component extends DCLogic {
       prTabs, prIsNew:prTab==='nouveau', prIsList:prTab==='briefs', prMsgOn:!!prMsg, prMsgText:prMsg?prMsg.text:'',
       prMsgStyle:prMsg?'font-size:13px;border-radius:10px;padding:9px 12px;'+(prMsg.ok?'background:#eaf6ef;color:#2b8f62':'background:#fdf1f0;color:#c24a44'):'',
       prNomFichier:prNomFichier+'.pptx', prTitre:pr.titre, onPrTitre:e=>prSet({titre:e.target.value.slice(0,120)}), prTitreAuto, prClient:pr.client, onPrClient:e=>prSet({client:e.target.value.slice(0,80)}),
-      prLangues, prBelux, prPaysChips, prMarquesChips, prTypesChips, prIndiceChips, prAnneesChips, prHasIndice:per.type!=='annee', prCompar, prPeriodeLabel, prPerimetreLabel,
+      prLangues, prAvecDesign, prDesigns, prDesignAide, prBelux, prPaysChips, prMarquesChips, prTypesChips, prIndiceChips, prAnneesChips, prHasIndice:per.type!=='annee', prCompar, prPeriodeLabel, prPerimetreLabel,
       prIsModeles:prTab==='modeles', prTplChips, prTplRows, prTplNom, onPrTplNom:e=>set({prTplNom:e.target.value.slice(0,80)}), prTplSaveFn:prTplSave,
       prCommVues, prCommMarques, prActMarques, prHasCommVues:prCommVues.length>0, prHasCommMarques:prCommMarques.length>0, prHasAct:prActMarques.length>0,
       prModulesRows, prPoints, prAddPoint:()=>{ if (pr.pointsOuverts.length<8) prSet({pointsOuverts:pr.pointsOuverts.concat([{titre:'',texte:''}])}); },

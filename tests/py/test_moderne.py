@@ -32,3 +32,38 @@ class Graphiques(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Correspondance(unittest.TestCase):
+    def test_constructeurs_v2_couvrent_les_diapositives_du_deck(self):
+        try:
+            from pipeline.deck import moderne
+        except Exception:
+            self.skipTest("matplotlib non installé")
+        for nom in ("resume_executif", "vue_globale", "tendance_leads", "projets_groupe", "canaux", "conversion_ventes_nc", "trafic", "ytd", "site_principal", "conquete",
+                    "focus_v2", "focus_v2_entree", "trafic_leads_apercu", "projection_nc", "nc_marches", "nc_entonnoirs", "global_overview", "leads_par_marque", "leads_par_mois",
+                    "nc_par_mois_marque", "lead_management_c1st", "leads_vn_c1st", "ventes_additionnelles"):
+            self.assertIn(nom, moderne.REMPLACANTS, nom)
+
+    def test_remplacant_laisse_passer_une_fonction_inconnue(self):
+        try:
+            from pipeline.deck import moderne
+        except Exception:
+            self.skipTest("matplotlib non installé")
+        f = lambda: None
+        self.assertIs(moderne.remplacant(f), f)
+
+
+class TitresEnPhrase(unittest.TestCase):
+    def test_majuscule_initiale_et_sigles_conserves(self):
+        try:
+            from pipeline.deck.moderne import phrase
+        except Exception:
+            self.skipTest("matplotlib non installé")
+        cas = {"TRAFFIC DEEP DIVE": "Traffic deep dive", "Traffic DEEP DIVE": "Traffic deep dive", "V2 REDESIGN FOCUS": "V2 redesign focus",
+               "SALES PERFORMANCE: additional business": "Sales performance: additional business", "YTD Leads Trends": "YTD leads trends",
+               "Global NC leads by Month xP brand": "Global NC leads by month xP brand", "NC Sales Conversion": "NC sales conversion",
+               "Leads Overview - September 2026 | Spain": "Leads overview - September 2026 | Spain", "Global Leads by brand / Q3 Vs YoY": "Global leads by brand / Q3 vs YoY",
+               "Q/A": "Q/A", "NEXT STEPS": "Next steps", "Executive Summary": "Executive summary", "PEUGEOT": "Peugeot", "Points en cours": "Points en cours"}
+        for a, b in cas.items():
+            self.assertEqual(phrase(a), b, a)

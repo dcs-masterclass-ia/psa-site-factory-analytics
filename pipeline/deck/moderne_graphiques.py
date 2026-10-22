@@ -145,7 +145,7 @@ def barres_annuelles(w, h, mois, ancien, courant, ecoules, couleur=INDIGO, etiq=
     return _png(fig)
 
 
-def barres_marques(w, h, lignes, couleur=INDIGO, taille=10.5):
+def barres_marques(w, h, lignes, couleur=INDIGO, taille=10.5, fmt=None, parts=True):
     """Barres horizontales arrondies : (nom, valeur, part %, valeur N-1) ; valeur en gras à droite, part en gris."""
     couleur = _h(couleur)
     fig, ax = _fig(w, h)
@@ -157,8 +157,9 @@ def barres_marques(w, h, lignes, couleur=INDIGO, taille=10.5):
         ax.add_patch(FancyBboxPatch((0, y - 0.19), vmax * 1.0, 0.38, boxstyle="round,pad=0,rounding_size=0.19", fc=PALE, ec="none", mutation_aspect=vmax / n / 1.2))
         ax.add_patch(FancyBboxPatch((0, y - 0.19), max(val, vmax * 0.012), 0.38, boxstyle="round,pad=0,rounding_size=0.19", fc=couleur if i == 0 else "#5C67FF" if i < 3 else "#8E96FF", ec="none", mutation_aspect=vmax / n / 1.2))
         ax.text(-vmax * 0.02, y, nom, ha="right", va="center", fontsize=taille, color=ENCRE, fontweight="medium")
-        ax.text(vmax * 1.04, y, f"{int(round(val)):,}".replace(",", " "), ha="left", va="center", fontsize=taille, color=ENCRE, fontweight="bold")
-        ax.text(vmax * 1.3, y, f"{part:.0f}%", ha="left", va="center", fontsize=taille - 0.5, color=GRIS)
+        ax.text(vmax * 1.04, y, fmt(val) if fmt else f"{int(round(val)):,}".replace(",", " "), ha="left", va="center", fontsize=taille, color=ENCRE, fontweight="bold")
+        if parts:
+            ax.text(vmax * 1.3, y, f"{part:.0f}%", ha="left", va="center", fontsize=taille - 0.5, color=GRIS)
     ax.set_xlim(-vmax * 0.42, vmax * 1.45); ax.set_ylim(-0.6, n - 0.4)
     ax.axis("off")
     return _png(fig)
@@ -299,4 +300,171 @@ def colonnes_empilees(w, h, cats, series, groupes=None, surligne=(), taille=7.5)
         ax.text(i0 + (k - 1) / 2, -top * 0.115, lib, ha="center", va="top", fontsize=taille + 1.2, color=ENCRE, fontweight="bold")
     ax.axhline(0, color=TRAIT, lw=1)
     ax.set_xlim(-0.6, n - 0.4); ax.set_ylim(-top * 0.2, top * 1.05); ax.axis("off")
+    return _png(fig)
+
+
+PALETTE_CANAUX = ["#2F3DFF", "#5C67FF", "#8E96FF", "#FFA23A", "#FF4D6D", "#12B5A6", "#B07AA1", "#9AA3C7", "#C9CEFF", "#E7E9F1"]
+
+
+def anneau_legende(w, h, libelles, valeurs, couleurs=None, centre=None, sous_centre="", taille=8.5):
+    """Anneau à gauche et légende à droite (libellé, part en %) dans la même image : lecture directe, alignement garanti."""
+    couleurs = [_h(c) for c in (couleurs or PALETTE_CANAUX)]
+    fig, ax = _fig(w, h)
+    ax.set_xlim(0, w); ax.set_ylim(0, h)
+    d = min(h, w * 0.5) * 0.92
+    cx, cy = d / 2 + 0.05, h / 2
+    tot = float(sum(valeurs)) or 1.0
+    ang = 90.0
+    from matplotlib.patches import Wedge
+    for i, v in enumerate(valeurs):
+        if v <= 0:
+            continue
+        a = v / tot * 360
+        ax.add_patch(Wedge((cx, cy), d / 2, ang - a, ang, width=d * 0.2, fc=couleurs[i % len(couleurs)], ec="white", lw=1.5))
+        ang -= a
+    if centre:
+        ax.text(cx, cy + 0.06, centre, ha="center", va="center", fontsize=15, fontweight="bold", color=ENCRE)
+        ax.text(cx, cy - 0.2, sous_centre, ha="center", va="center", fontsize=7.5, color=GRIS)
+    n = len(libelles)
+    pas = min(0.3, (h - 0.2) / max(1, n))
+    y0 = h / 2 + pas * (n - 1) / 2
+    for i, (lib, v) in enumerate(zip(libelles, valeurs)):
+        y = y0 - i * pas
+        ax.add_patch(FancyBboxPatch((d + 0.3, y - 0.045), 0.11, 0.11, boxstyle="round,pad=0,rounding_size=0.03", fc=couleurs[i % len(couleurs)], ec="none"))
+        ax.text(d + 0.5, y, lib, ha="left", va="center", fontsize=taille, color=ENCRE)
+        ax.text(w - 0.02, y, f"{v / tot * 100:.0f}%", ha="right", va="center", fontsize=taille, color=GRIS, fontweight="bold")
+    ax.set_aspect("equal"); ax.axis("off")
+    return _png(fig)
+
+
+def colonnes_simples(w, h, cats, vals, couleur=INDIGO, taille=8):
+    """Colonnes arrondies d'une seule série, valeur au-dessus ; première colonne en couleur pleine, les autres en dégradé de teintes."""
+    couleur = _h(couleur)
+    fig, ax = _fig(w, h)
+    n = len(cats)
+    top = max(vals) * 1.25 or 1
+    teintes = [couleur, "#5C67FF", "#8E96FF", "#A9B0FF", "#C0C5FF", "#CFD3FF", "#DDE0FF", "#E8EAFF"]
+    for i, v in enumerate(vals):
+        ax.add_patch(FancyBboxPatch((i - 0.3, 0), 0.6, v, boxstyle="round,pad=0,rounding_size=0.12", fc=teintes[min(i, len(teintes) - 1)], ec="none", mutation_aspect=top / n / 1.2))
+        ax.text(i, v + top * 0.02, f"{int(round(v)):,}".replace(",", " "), ha="center", va="bottom", fontsize=taille, color=ENCRE, fontweight="bold")
+        ax.text(i, -top * 0.04, cats[i][:13], ha="center", va="top", fontsize=taille - 0.8, color=GRIS, rotation=0 if n <= 6 else (90 if n > 10 else 25))
+    ax.axhline(0, color=TRAIT, lw=1)
+    ax.set_xlim(-0.6, n - 0.4); ax.set_ylim(-top * 0.26, top); ax.axis("off")
+    return _png(fig)
+
+
+def colonnes_groupees(w, h, cats, series, taille=8, suffixe="%", evols=None, entiers=False):
+    """Colonnes groupées (N séries par catégorie) avec valeur au-dessus : séries = [(nom, valeurs, couleur)] ; légende en haut."""
+    fig, ax = _fig(w, h)
+    n, k = len(cats), len(series)
+    top = max(max(v) for _, v, _ in series) * 1.22 or 1
+    bw = 0.8 / k
+    for j, (nom, vals, col) in enumerate(series):
+        for i, v in enumerate(vals):
+            x0 = i - 0.4 + j * bw
+            ax.add_patch(FancyBboxPatch((x0 + 0.02, 0), bw - 0.04, v, boxstyle="round,pad=0,rounding_size=0.05", fc=_h(col), ec="none", mutation_aspect=top / n / 1.2))
+            txt = f"{int(round(v)):,}".replace(",", " ") if entiers else f"{v:.0f}{suffixe}"
+            if evols and j == k - 1 and evols[i]:
+                ax.text(x0 + bw / 2, v + top * 0.015, evols[i][0], ha="center", va="bottom", fontsize=taille - 1, color="#0F9D58" if evols[i][1] >= 0 else "#D93025", fontweight="bold")
+                ax.text(x0 + bw / 2, v + top * 0.065, txt, ha="center", va="bottom", fontsize=taille - 0.5, color=ENCRE, fontweight="bold")
+            else:
+                ax.text(x0 + bw / 2, v + top * 0.015, txt, ha="center", va="bottom", fontsize=taille - 0.5, color=ENCRE if j == k - 1 else GRIS, fontweight="bold" if j == k - 1 else "normal")
+    for i, c in enumerate(cats):
+        ax.text(i, -top * 0.04, c, ha="center", va="top", fontsize=taille, color=GRIS)
+    ax.axhline(0, color=TRAIT, lw=1)
+    for j, (nom, _, col) in enumerate(series):
+        xl = (n - 1) / 2 - (k * 1.6) / 2 + j * 1.9
+        ax.add_patch(FancyBboxPatch((xl - 0.35, top * 0.985), 0.28, top * 0.03, boxstyle="round,pad=0,rounding_size=0.04", fc=_h(col), ec="none"))
+        ax.text(xl, top * 1.0, nom, ha="left", va="center", fontsize=taille, color=ENCRE)
+    ax.set_xlim(-0.6, n - 0.4); ax.set_ylim(-top * 0.14, top * 1.06); ax.axis("off")
+    return _png(fig)
+
+
+def entonnoir(w, h, noms, gauche, droite, fmt_g, fmt_d, titre_g, titre_d, couleur_d="#FFA23A"):
+    """Barres opposées autour des noms de marché (au centre) : gauche en indigo, droite en orange ; valeurs au bout des barres."""
+    fig, ax = _fig(w, h)
+    n = len(noms)
+    mg_, md_ = max([v or 0 for v in gauche] + [1]), max([v or 0 for v in droite] + [1])
+    larg = 4.0
+    for i, nom in enumerate(noms):
+        y = n - 1 - i
+        for sens, v, mx, col, fmt in ((-1, gauche[i], mg_, INDIGO, fmt_g), (1, droite[i], md_, _h(couleur_d), fmt_d)):
+            if v is None:
+                ax.text(sens * 0.9, y, "n/a", ha="right" if sens < 0 else "left", va="center", fontsize=8, color=GRIS)
+                continue
+            L = max(0.02, larg * v / mx)
+            x0 = sens * 0.85
+            ax.add_patch(FancyBboxPatch((x0 if sens > 0 else x0 - L, y - 0.3), L, 0.6, boxstyle="round,pad=0,rounding_size=0.1", fc=col, ec="none", mutation_aspect=0.4))
+            ax.text(x0 + sens * (L + 0.08), y, fmt(v), ha="left" if sens > 0 else "right", va="center", fontsize=8.5, color=ENCRE, fontweight="bold")
+        ax.text(0, y, nom, ha="center", va="center", fontsize=8.8, color=ENCRE, fontweight="medium")
+    ax.text(-0.9 - larg, n - 0.2, titre_g, ha="left", va="bottom", fontsize=8.5, color=GRIS, fontweight="bold")
+    ax.text(0.9 + larg, n - 0.2, titre_d, ha="right", va="bottom", fontsize=8.5, color=GRIS, fontweight="bold")
+    ax.set_xlim(-larg - 1.9, larg + 1.9); ax.set_ylim(-0.6, n + 0.4); ax.axis("off")
+    return _png(fig)
+
+
+def colonnes_mois(w, h, series, taille=5.5, legende=True):
+    """12 mois (01..12) × 3 années : barres arrondies en teintes d'indigo, valeur (et évolution vs l'année précédente) en vertical au-dessus de chaque barre.
+    series = [(année, [12 valeurs ou None], couleur)] de la plus ancienne à la plus récente."""
+    fig, ax = _fig(w, h)
+    k = len(series)
+    top = max((v or 0) for _, vals, _ in series for v in vals) * 1.32 or 1
+    bw = 0.8 / k
+    for j, (an, vals, col) in enumerate(series):
+        prev = next((vv for a2, vv, _ in series if a2 == an - 1), None)
+        for i, v in enumerate(vals):
+            if v is None:
+                continue
+            x0 = i - 0.4 + j * bw
+            ax.add_patch(FancyBboxPatch((x0 + 0.01, 0), bw - 0.02, v, boxstyle="round,pad=0,rounding_size=0.03", fc=_h(col), ec="none", mutation_aspect=top / 12 / 1.2))
+            lab = f"{int(round(v)):,}".replace(",", " ")
+            if prev and prev[i]:
+                e = (v - prev[i]) / prev[i] * 100
+                lab += f"  {e:+.0f}%"
+            ax.text(x0 + bw / 2, v + top * 0.01, lab, ha="center", va="bottom", rotation=90, fontsize=taille, color=ENCRE)
+    for i in range(12):
+        ax.text(i, -top * 0.03, f"{i + 1:02d}", ha="center", va="top", fontsize=taille + 2, color=GRIS)
+    ax.axhline(0, color=TRAIT, lw=1)
+    if legende:
+        for j, (an, _, col) in enumerate(series):
+            xl = 0.3 + j * 1.5
+            ax.add_patch(FancyBboxPatch((xl - 0.35, top * 1.02), 0.28, top * 0.03, boxstyle="round,pad=0,rounding_size=0.04", fc=_h(col), ec="none"))
+            ax.text(xl, top * 1.035, str(an), ha="left", va="center", fontsize=taille + 2, color=ENCRE)
+    ax.set_xlim(-0.6, 11.6); ax.set_ylim(-top * 0.12, top * 1.08); ax.axis("off")
+    return _png(fig)
+
+
+def lignes_multi(w, h, cats, series, pct=False, taille=7, etiquettes=True):
+    """Courbes lisses multi-séries (valeurs None = trou), légende en haut, valeurs étiquetées ; pct : valeurs en fraction affichées en %."""
+    fig, ax = _fig(w, h)
+    x = np.arange(len(cats))
+    vmax = max((v for _, vals, _ in series for v in vals if v is not None), default=1) or 1
+    top = vmax * 1.3
+    fmt = (lambda v: f"{v * 100:.0f}%") if pct else (lambda v: f"{int(round(v)):,}".replace(",", " "))
+    for nom, vals, col in series:
+        pts = [(i, v) for i, v in enumerate(vals) if v is not None]
+        if not pts:
+            continue
+        xs_, ys_ = zip(*pts)
+        if len(pts) >= 3:
+            xx, yy = _pchip(np.array(xs_), np.array(ys_))
+            ax.plot(xx, yy, color=_h(col), lw=2, solid_capstyle="round")
+        else:
+            ax.plot(xs_, ys_, color=_h(col), lw=2)
+        ax.scatter(xs_, ys_, s=14, color="white", edgecolor=_h(col), linewidth=1.3, zorder=4)
+        if etiquettes:
+            for xi, v in pts:
+                ax.text(xi, v + top * 0.03, fmt(v), ha="center", va="bottom", fontsize=taille - 1, color=_h(col))
+    rot = 90 if len(cats) > 9 else 0
+    for xi, c in zip(x, cats):
+        ax.text(xi, -top * 0.04, c, ha="center", va="top", fontsize=taille - (1 if rot else 0), color=GRIS, rotation=rot)
+    for v in np.linspace(0, top, 4)[1:-1]:
+        ax.axhline(v, color=TRAIT, lw=0.6, zorder=0)
+    if len(series) > 1:
+        xl = 0.0
+        for nom, _, col in series:
+            ax.add_patch(FancyBboxPatch((xl, top * 1.02), 0.28, top * 0.03, boxstyle="round,pad=0,rounding_size=0.04", fc=_h(col), ec="none"))
+            ax.text(xl + 0.38, top * 1.035, nom, ha="left", va="center", fontsize=taille, color=ENCRE)
+            xl += 0.38 + 0.13 * len(nom) + 0.5
+    ax.set_xlim(-0.5, len(cats) - 0.5); ax.set_ylim(-top * (0.26 if len(cats) > 9 else 0.14), top * 1.08); ax.axis("off")
     return _png(fig)

@@ -28,7 +28,8 @@ def _evol(a, b):
     return None if not a or b is None else (b - a) / a * 100
 
 
-def focus_v2(ctx, rv, marque):
+def _focus_data(ctx, marque):
+    """(lignes par marché, étapes {étape: [avant, après]}, ordre des étapes) de « V2 REDESIGN FOCUS » (partagé V1 / V2) ; None sans site V2."""
     d = ctx.d
     lignes_pays, etapes, ordre = [], {}, []
     for nom, m, pays in d.sites:
@@ -48,6 +49,14 @@ def focus_v2(ctx, rv, marque):
     if not lignes_pays:
         return None
     lignes_pays.sort()
+    return lignes_pays, etapes, ordre
+
+
+def focus_v2(ctx, rv, marque):
+    D = _focus_data(ctx, marque)
+    if D is None:
+        return None
+    lignes_pays, etapes, ordre = D
     s = slide_revue(ctx, rv, "V2 REDESIGN FOCUS", sous_titre=f"{ctx.nom(marque)} – before / after the V2 switch", marque=marque, source=None)
     ent = [{"t": t, "taille": 8, "gras": True, "fond": "1F3864", "couleur": "FFFFFF"} for t in
            ("Market", "V2 go-live", "Before (28 days)", "After (since go-live)", "Sessions / day", "Conversion home → estimate", "Estimates (users)")]
@@ -98,9 +107,8 @@ def _mois_avant(ym):
     return f"{a - 1}-12" if m == 1 else f"{a}-{m - 1:02d}"
 
 
-def focus_v2_entree(ctx, rv, marque):
-    """Tunnel par mode de saisie du véhicule (plaque / marque-modèle), le mois qui précède la bascule contre le mois le plus récent après ; mêmes marchés (PT, FR, ES) que la diapo 1.
-    Un marché sans mois complet avant ET mois après la bascule n'est pas affiché (données du mois : GA4, utilisateurs actifs du mois par parcours)."""
+def _entree_data(ctx, marque):
+    """(lignes par marché, cumul des étapes par mode et par période) de « V2 REDESIGN FOCUS (entry mode) » (partagé V1 / V2) ; None sans marché affichable."""
     d = ctx.d
     tot = {"immat": [[0] * 5, [0] * 5], "marque_modele": [[0] * 5, [0] * 5]}      # [avant, après] par mode
     lignes = []
@@ -137,6 +145,15 @@ def focus_v2_entree(ctx, rv, marque):
     if not lignes:
         return None
     lignes.sort()
+    return lignes, tot
+
+
+def focus_v2_entree(ctx, rv, marque):
+    """Tunnel par mode de saisie du véhicule (plaque / marque-modèle), le mois qui précède la bascule contre le mois le plus récent après ; mêmes marchés (PT, FR, ES) que la diapo 1."""
+    D = _entree_data(ctx, marque)
+    if D is None:
+        return None
+    lignes, tot = D
     s = slide_revue(ctx, rv, "V2 REDESIGN FOCUS", sous_titre=f"{ctx.nom(marque)} – funnel by entry mode (plate / brand & model)", marque=marque, source=None)
     ent = [{"t": t, "taille": 8, "gras": True, "fond": "1F3864", "couleur": "FFFFFF"} for t in
            ("Market", "V2 go-live", "Month before → latest month after", "Brand/model share of leads", "Plate: Version → Estimate", "Brand/model: Version → Estimate")]

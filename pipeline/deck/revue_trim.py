@@ -109,6 +109,9 @@ def _evols(ctx, items, ref_nom, base_min=20):
 # ------------------------------------------------------------------ couverture et agenda
 def couverture_trim(ctx, rv):
     """Couverture du deck BE : « STELLANTIS <pays> », « TRADE-IN WEBSITES PERFORMANCE REVIEW Qx-AAAA – <pays> » et la date, bloc blanc avec logo Stellantis et drapeau."""
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.couverture(ctx, rv)
     s = ctx.prs.slides.add_slide(ctx.lay["Title Slide"])
     ctx.n += 1
     pays = " & ".join(dict.fromkeys(NOMS_PAYS.get(p, p) for p in rv.pays)) or "STELLANTIS"
@@ -390,6 +393,23 @@ def projets_groupe(ctx, rv, groupe, marques):
 
 
 # ------------------------------------------------------------------ 13. Traffic & leads overview
+def _phrases_evol(ctx, marques, vals, nom, lib_prec):
+    """Phrases « Sessions MoM : hausse pour … ; baisse pour les autres » des diapositives Traffic & leads Overview (partagées V1 / V2)."""
+    ev = lambda cur, ref: evol(cur, ref) if cur and ref else None
+    out = []
+    for lib, k in ((lib_prec, 1), ("YoY", 2)):
+        ups = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) > 0]
+        dws = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) < 0]
+        if ups and dws:
+            out.append(f"{nom} {lib}: increase for {_liste(ups)}; decrease for the other brands with data.") if len(ups) <= len(dws) else \
+                out.append(f"{nom} {lib}: decrease for {_liste(dws)}; increase for the other brands with data.")
+        elif ups:
+            out.append(f"{nom} {lib}: increase for all brands ({_liste(ups)}).")
+        elif dws:
+            out.append(f"{nom} {lib}: decrease for all brands ({_liste(dws)}).")
+    return out
+
+
 def trafic_leads_apercu(ctx, rv, ordre=None, mensuel=False):
     """`ordre` : liste de marques imposant l'ordre des colonnes. `mensuel` : revue mensuelle (MoM contre le mois civil précédent, au lieu de QoQ)."""
     d, per = ctx.d, rv.per
@@ -430,19 +450,7 @@ def trafic_leads_apercu(ctx, rv, ordre=None, mensuel=False):
     tableau(1.3, "Traffic (Sessions)", trafic, 1)
     tableau(3.2, "Leads", leads, 0)
     # commentaires calculés
-    def phrases(vals, nom):
-        out = []
-        for lib, k in ((lib_prec, 1), ("YoY", 2)):
-            ups = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) > 0]
-            dws = [ctx.nom(m) for m in marques if ev(vals[m][0], vals[m][k]) is not None and ev(vals[m][0], vals[m][k]) < 0]
-            if ups and dws:
-                out.append(f"{nom} {lib}: increase for {_liste(ups)}; decrease for the other brands with data.") if len(ups) <= len(dws) else \
-                    out.append(f"{nom} {lib}: decrease for {_liste(dws)}; increase for the other brands with data.")
-            elif ups:
-                out.append(f"{nom} {lib}: increase for all brands ({_liste(ups)}).")
-            elif dws:
-                out.append(f"{nom} {lib}: decrease for all brands ({_liste(dws)}).")
-        return out
+    phrases = lambda vals, nom: _phrases_evol(ctx, marques, vals, nom, lib_prec)
     haut = [("Traffic:", True)] + [(p, False) for p in phrases(trafic, "Sessions")] + [("Leads:", True)] + [(p, False) for p in phrases(leads, "Leads")]
     boite = s.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.25), Inches(5.3), Inches(8.5), Inches(1.65))
     boite.fill.background(); boite.shadow.inherit = False
@@ -464,6 +472,9 @@ def trafic_leads_apercu(ctx, rv, ordre=None, mensuel=False):
 
 # ------------------------------------------------------------------ 14-15. Leads overview par marque : tendance, moteurs, actions
 def apercu_marques_trim(ctx, rv):
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.apercu_marques(ctx, rv)
     from . import analyse as an
     d, per = ctx.d, rv.per
     marques = _actives(ctx, rv)
@@ -760,6 +771,9 @@ def ventes_additionnelles(ctx, rv):
 
 # ------------------------------------------------------------------ Open points / Next steps / Q&A
 def open_points(ctx, rv):
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.open_points(ctx, rv)
     out = []
     for p in ctx.brief.get("pointsOuverts") or [{}]:        # sans point saisi : diapositive vide à compléter
         s = slide_revue(ctx, rv, ctx.t["points_ouverts"], sous_titre=p.get("titre") or None, source=None)      # « Ongoing Actions » (EN), « Points en cours » (FR) ; 2e diapo du deck
@@ -770,6 +784,9 @@ def open_points(ctx, rv):
 
 
 def next_steps(ctx, rv):
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.next_steps(ctx, rv)
     et = ctx.brief.get("prochainesEtapes") or []        # sans étape saisie : tableau vide à compléter
     t = ctx.t
     s = slide_revue(ctx, rv, "NEXT STEPS", source=None)
@@ -781,6 +798,9 @@ def next_steps(ctx, rv):
 
 
 def questions_trim(ctx, rv):
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        return moderne.questions(ctx, rv)
     return slide_revue(ctx, rv, "Q/A", source=None)
 
 
@@ -852,6 +872,9 @@ def construit_revue_trim(brief, donnees, sortie, gabarit=GABARIT):
     contacts_revue(ctx, rv)
     ctx.qa = _qa_trim(ctx, rv)
     Path(sortie).parent.mkdir(parents=True, exist_ok=True)
+    if getattr(ctx, "design", "v1") == "v2":
+        from . import moderne
+        moderne.habille(ctx, rv)                    # diapositives pas encore refaites : cadre V2, mêmes données
     g.tient_dans_la_diapo(ctx.prs)
     ctx.prs.save(str(sortie))
     return ctx

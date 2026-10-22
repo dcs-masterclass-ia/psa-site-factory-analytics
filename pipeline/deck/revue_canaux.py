@@ -248,8 +248,8 @@ def _leads_site_principal(ctx, per, marque):
     return out
 
 
-def site_principal(ctx, rv, marque):
-    """« Leads from main website » : emplacements des CTA du site principal × projet × (M-1, M) de l'année N."""
+def _site_data(ctx, rv, marque):
+    """(leads du mois par support, leads du même mois N-1, supports triés) de « Leads from main website » (partagé V1 / V2) ; None sans donnée."""
     try:
         cur, prec = _groupe_cta(_leads_site_principal(ctx, rv.per, marque)), _groupe_cta(_leads_site_principal(ctx, rv.n1, marque))      # prec = même mois N-1 (YoY)
     except Exception:
@@ -259,6 +259,15 @@ def site_principal(ctx, rv, marque):
     supports = sorted(set(cur) | set(prec), key=lambda k: (ORDRE_SUPPORTS.index(k) if k in ORDRE_SUPPORTS else 99, -(_tot(cur.get(k, {})) + _tot(prec.get(k, {})))))
     if not supports:
         return None
+    return cur, prec, supports
+
+
+def site_principal(ctx, rv, marque):
+    """« Leads from main website » : emplacements des CTA du site principal × projet × (M-1, M) de l'année N."""
+    D = _site_data(ctx, rv, marque)
+    if D is None:
+        return None
+    cur, prec, supports = D
     z = {p: 0 for p in PROJETS}
     colonnes = []
     for b, pj in enumerate(PROJETS):

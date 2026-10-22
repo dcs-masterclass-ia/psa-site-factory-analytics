@@ -354,7 +354,7 @@ def tient_dans_la_diapo(prs, marge=0.1):
     n = 0
     for s in prs.slides:
         for sh in s.shapes:
-            if sh.left is None or sh.width is None:
+            if sh.left is None or sh.width is None or sh.name == "Fond V2":      # le fond plein du design V2 déborde exprès pour couvrir les décors du gabarit
                 continue
             if sh.left + sh.width > W - m:
                 if sh.has_text_frame or sh.shape_type == 1:

@@ -46,6 +46,13 @@ class Ctx:
         pays = [p.upper() for p in brief["perimetre"]["pays"]]
         self.perimetre = "BELUX" if sorted(pays) == ["BE", "LU"] else " + ".join(pays)
         self.client = brief.get("client") or ""
+        self.design = "v2" if brief.get("design") == "v2" else "v1"       # v1 : design d'origine ; v2 : nouveau design (moderne.py), diapositive par diapositive là où il existe
+        if self.design == "v2":
+            try:
+                from . import moderne                                       # noqa: F401  (matplotlib requis : sinon on reste en V1 et on le dit)
+            except Exception as e:
+                self.design = "v1"
+                self.avertissements.append(f"Design V2 indisponible ({type(e).__name__}) : présentation générée au design V1.")
 
     def et(self, p):
         return p.etiquette(self.langue)

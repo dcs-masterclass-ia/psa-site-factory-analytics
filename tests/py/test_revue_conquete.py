@@ -29,7 +29,7 @@ class Conquete(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             ctx, rv = _ctx(tmp, {"PEUGEOT": 50, "CITROEN": 14, "RENAULT": 36}, MODS)
             s = conquete(ctx, rv, "PEUGEOT")
-            self.assertEqual(s.shapes.title.text, "Conquest & loyalty – September 2026")
+            self.assertEqual(s.shapes.title.text, "LEAD DEEP DIVE")           # le mois figure dans le sous-titre « Conquest Vs Loyalty … »
             txt = " ".join(sh.text_frame.text for sh in s.shapes if sh.has_text_frame)
             self.assertIn("50% of trade-in website customers are loyalty", txt)
             self.assertIn("14% are Stellantis", txt)

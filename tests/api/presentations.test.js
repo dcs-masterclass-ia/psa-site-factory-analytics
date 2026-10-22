@@ -230,3 +230,14 @@ test("téléchargement : le fichier suit la taxonomie REPORTING-année-période-
   assert.match((await telecharge("B-abc4")).h["content-disposition"], /filename\*=UTF-8''presentation-B-abc4\.pptx/);
   global.__binPptx = null;
 });
+
+test("design : V1 par défaut, V2 conservé, valeur inconnue ramenée à V1 (brief et modèle)", async () => {
+  const r1 = await appelle("POST", { action: "save", brief });
+  assert.equal(r1.body.brief.design, "v1");
+  const r2 = await appelle("POST", { action: "save", brief: { ...brief, design: "v2" } });
+  assert.equal(r2.body.brief.design, "v2");
+  const r3 = await appelle("POST", { action: "save", brief: { ...brief, design: "v3<script>" } });
+  assert.equal(r3.body.brief.design, "v1");
+  const t = await appelle("POST", { action: "save_template", template: { nom: "Modèle V2", config: { ...brief, design: "v2", periodicite: "trimestre" } } });
+  assert.equal(t.body.template.config.design, "v2");
+});

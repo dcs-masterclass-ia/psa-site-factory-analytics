@@ -163,8 +163,8 @@ def trafic_leads_groupe(ctx, rv, groupe, marques):
 ORDRE_PROJECTION = ["CITROEN", "DS", "OPEL", "PEUGEOT", "ALFA ROMEO", "FIAT", "FIAT PRO", "JEEP", "LANCIA", "ABARTH", "STELLANTIS &YOU"]      # Abarth et S&Y ajoutés (retour DKAM, ES)
 
 
-def projection_nc(ctx, rv, tous=False):
-    """Projection de fin de mois des leads New cars (VN) ; `tous` : tous les projets d'achat, Spoticar compris (retour DKAM)."""
+def _projection_data(ctx, rv, tous=False):
+    """Chiffres de « projection du mois » (partagés par le design V1 et le design V2) ; None sans leads du mois en cours."""
     d = ctx.d
     dernier = d.dernier_jour_leads()
     if not dernier:
@@ -195,6 +195,15 @@ def projection_nc(ctx, rv, tous=False):
     if not any(v[3] or v[1] or v[2] for v in lignes_v):
         return None
     mois_c = MOIS_NOMS["en"][suiv.indice - 1].capitalize()
+    return {"suiv": suiv, "n1": n1, "jours_ecoules": jours_ecoules, "jours_mois": jours_mois, "lignes_v": lignes_v, "tot": tot, "mois_c": mois_c}
+
+
+def projection_nc(ctx, rv, tous=False):
+    """Projection de fin de mois des leads New cars (VN) ; `tous` : tous les projets d'achat, Spoticar compris (retour DKAM)."""
+    D = _projection_data(ctx, rv, tous)
+    if D is None:
+        return None
+    suiv, n1, jours_ecoules, jours_mois, lignes_v, tot, mois_c = (D[k] for k in ("suiv", "n1", "jours_ecoules", "jours_mois", "lignes_v", "tot", "mois_c"))
     s = slide_revue(ctx, rv, mois_label(suiv), sous_titre=("Total Leads projection" if tous else "NC Leads projection"), source=None,      # titre = le mois PROJETÉ (la référence affichait un titre périmé)
                     notes=f"Projection = leads {'tous projets d achat' if tous else 'New cars'} du 1er au {jours_ecoules} {mois_c} ÷ {jours_ecoules} jours × {jours_mois} jours (rythme moyen constant, indicatif).")
     # pied : « Source: autobiz data till <date> » avec la date surlignée en jaune

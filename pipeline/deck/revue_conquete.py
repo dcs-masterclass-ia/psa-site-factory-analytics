@@ -89,8 +89,8 @@ def _joli(brut):
 PROPRES = {"DS": {"DS", "DS AUTOMOBILES"}}
 
 
-def conquete(ctx, rv, marque):
-    """Diapositive « Conquest & loyalty – <mois> » de la marque (voir le module). None si aucune donnée de reprise sur le mois."""
+def _conquete_data(ctx, rv, marque):
+    """Chiffres et commentaires de « Conquest & loyalty » (partagés par le design V1 et le design V2) ; None si aucune donnée de reprise sur la période."""
     d, per = ctx.d, ctx.per
     libelle_per = mois_label(per)
     if True:                                     # retour DKAM : cette diapo porte sur l'année en cours, de janvier à la fin de la période (trimestriel ET mensuel)
@@ -149,6 +149,19 @@ def conquete(ctx, rv, marque):
             t += f", mostly from {_joli(pa[0][0])} {_joli(pa[0][1])} owners"
         puces.append(t + ".")
 
+    top_a = sorted(achat.items(), key=lambda kv: -kv[1])[:5]
+    return {k: v for k, v in locals().items() if k not in ("ctx", "rv", "marque", "d")}
+
+
+CLES_CONQ = ("rep", "total", "propres", "nom", "fideles", "autres", "conq", "mods_vn", "achat", "paires", "top_s", "top_h", "puces", "libelle_per", "top_a")
+
+
+def conquete(ctx, rv, marque):
+    """Diapositive « Conquest & loyalty – <mois> » de la marque (voir le module). None si aucune donnée de reprise sur le mois."""
+    D = _conquete_data(ctx, rv, marque)
+    if D is None:
+        return None
+    rep, total, propres, nom, fideles, autres, conq, mods_vn, achat, paires, top_s, top_h, puces, libelle_per, top_a = (D[k] for k in CLES_CONQ)
     s = slide_revue(ctx, rv, "LEAD DEEP DIVE", sous_titre=f"Conquest Vs Loyalty {libelle_per}", marque=marque, puces=puces)
 
     # --- panneaux (positions relevées sur la diapositive de référence)

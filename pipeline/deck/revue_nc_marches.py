@@ -136,7 +136,8 @@ def _carte(s, x0, y0, w, h, par_code):
     return pt
 
 
-def nc_marches(ctx, rv):
+def _marches_data(ctx, rv):
+    """Marchés (volume, part, croissance), commentaires et totaux de « NC Sales Conversion — tous marchés » (partagés V1 / V2) ; None sans donnée."""
     marches = donnees_bo(ctx, rv)
     if not marches:
         return None
@@ -157,6 +158,14 @@ def nc_marches(ctx, rv):
             puces.append(f"Year-to-date lead volume in {rv.per.annee} {'rose' if m['croiss'] >= 0 else 'fell'} {abs(m['croiss']):.0f}% compared with the same period last year.")
     baisse = [m["nom"] for m in marches if m["croiss"] is not None and m["croiss"] < 0]
     puces.append("NC lead volumes increased in every market" + (f" except {', '.join(baisse[:-1]) + (' and ' if len(baisse) > 1 else '') + baisse[-1]}." if baisse else "."))
+    return marches, par_code, puces, tot26, tot25
+
+
+def nc_marches(ctx, rv):
+    D = _marches_data(ctx, rv)
+    if D is None:
+        return None
+    marches, par_code, puces, tot26, tot25 = D
     s = slide_revue(ctx, rv, "NC Sales Conversion", sous_titre=_sous_titre(ctx, rv), source=None, puces=puces)
     _t = lambda x, y, w, h, t, **k: g.texte(s, x, y, w, h, t, **k)
     # chiffre clé
