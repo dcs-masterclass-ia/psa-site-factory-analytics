@@ -294,6 +294,18 @@ def _legende_projets(s, x, y):
         g.texte(s, x + 0.2, yy - 0.02, 1.25, 0.2, nom, taille=8, couleur="000000")
 
 
+def _puces_global(ctx, rv, f, ytd_m):
+    """Les trois commentaires de la vue « Global Overview » (réutilisés tels quels par moderne.py)."""
+    per, an = rv.per, rv.per.annee
+    top2 = [ctx.nom(m) for m, _, _ in ytd_m[:2]]
+    part_top2 = sum(a for _, a, _ in ytd_m[:2]) / f["ytd"] * 100 if f["ytd"] else None
+    puces = [f"{_mois_nom(per)} reached {_k(f['mois'])} total leads, {pct(f['e_mois_prec'], 0, signe=True)} MoM and {pct(f['e_mois_n1'], 0, signe=True)} YoY.",
+             f"NC leads: {_k(f['vn_mois'])} leads in {_mois_nom(per)}, {pct(f['e_vn_n1'], 0, signe=True)} YoY and {pct(f['e_vn_prec'], 0, signe=True)} vs {_mois_nom(rv.prec)}.",
+             f"YTD performance at {_k(f['ytd'])} leads, {pct(f['e_ytd'], 0, signe=True)} vs {an - 1}" +
+             (f", with {_liste(top2)} accounting for {pct(part_top2)} of generated leads." if len(top2) == 2 else ".")]
+    return puces
+
+
 def vue_globale(ctx, rv):
     """Diapositive 5 : tableau de bord « EXEC SUMMARY » (chiffres du mois et du cumul, barres par marque, tendance par projet d'achat) + commentaires."""
     f = _faits(ctx, rv)
@@ -302,12 +314,7 @@ def vue_globale(ctx, rv):
     per, an = rv.per, rv.per.annee
     mois_maj = MOIS_COURTS["en"][per.indice - 1].upper()
     ytd_m = _ytd_marques(ctx, rv)
-    top2 = [ctx.nom(m) for m, _, _ in ytd_m[:2]]
-    part_top2 = sum(a for _, a, _ in ytd_m[:2]) / f["ytd"] * 100 if f["ytd"] else None
-    puces = [f"{_mois_nom(per)} reached {_k(f['mois'])} total leads, {pct(f['e_mois_prec'], 0, signe=True)} MoM and {pct(f['e_mois_n1'], 0, signe=True)} YoY.",
-             f"NC leads: {_k(f['vn_mois'])} leads in {_mois_nom(per)}, {pct(f['e_vn_n1'], 0, signe=True)} YoY and {pct(f['e_vn_prec'], 0, signe=True)} vs {_mois_nom(rv.prec)}.",
-             f"YTD performance at {_k(f['ytd'])} leads, {pct(f['e_ytd'], 0, signe=True)} vs {an - 1}" +
-             (f", with {_liste(top2)} accounting for {pct(part_top2)} of generated leads." if len(top2) == 2 else ".")]
+    puces = _puces_global(ctx, rv, f, ytd_m)
     s = slide_revue(ctx, rv, "Global Overview", puces=puces, boite_pleine=True)
     _bandeau(s, 0.69, 1.14, 9.87, 0.26, f"EXEC SUMMARY - TRADE IN SITUATION {mois_label(per).upper()}", NAVY_TABLEAU, couleur="FFFFFF", taille=9)
     _bloc_chiffre(s, 0.69, "REPORTING MONTHLY", f"Total generated leads {mois_maj}. {an}", f["mois"], "Evolution vs last month", f["e_mois_prec"], 1.83)
@@ -339,14 +346,9 @@ def vue_globale(ctx, rv):
 
 
 # ------------------------------------------------------------------ tendance des leads (diapositive 6)
-def tendance_leads(ctx, rv):
-    """Diapositive 6 : barres mensuelles N-1 / N, total des leads puis leads New cars, toutes marques du périmètre."""
-    f = _faits(ctx, rv)
-    if not f:
-        return None
+def _puces_tendance(ctx, rv, f):
+    """Les trois commentaires de la diapositive « Lead trend » (réutilisés tels quels par la présentation au nouveau design, moderne.py)."""
     per, an, n = rv.per, rv.per.annee, rv.per.indice
-    ld = ctx.d.dernier_jour_leads()
-    ecoules = n if (ld and ld >= per.debut.isoformat()) else n - 1
     audessus = sum(1 for i in range(n) if f["cur_m"][i] > f["old_m"][i])
     mois, prec = _mois_nom(per), _mois_nom(rv.prec)
     e_prec_n1 = evol(f["cur_m"][rv.prec.indice - 1], f["old_m"][rv.prec.indice - 1]) if n > 1 else None
@@ -359,6 +361,18 @@ def tendance_leads(ctx, rv):
     p2 = f"NC leads {'remain the main growth driver, ' if (f['e_vn_n1'] or 0) > (f['e_mois_n1'] or 0) else ''}{pct(f['e_vn_n1'], 0, signe=True)} YoY in {mois}" + \
          (f", with {'an' if sens[0] == 'a' else 'a'} {sens} vs {prec} ({pct(e_vn_prec_n1, 0, signe=True)})." if e_vn_prec_n1 is not None else ".")
     p3 = f"{mois} volumes: {nb(f['mois'])} total leads ({pct(f['e_mois_prec'], 0, signe=True)} vs {prec}) and {nb(f['vn_mois'])} NC leads ({pct(f['e_vn_prec'], 0, signe=True)} vs {prec})."
+    return [p1, p2, p3]
+
+
+def tendance_leads(ctx, rv):
+    """Diapositive 6 : barres mensuelles N-1 / N, total des leads puis leads New cars, toutes marques du périmètre."""
+    f = _faits(ctx, rv)
+    if not f:
+        return None
+    per, an, n = rv.per, rv.per.annee, rv.per.indice
+    ld = ctx.d.dernier_jour_leads()
+    ecoules = n if (ld and ld >= per.debut.isoformat()) else n - 1
+    p1, p2, p3 = _puces_tendance(ctx, rv, f)
     s = slide_revue(ctx, rv, "Executive Summary", sous_titre="Lead trend – all brands", puces=[p1, p2, p3], boite_pleine=True)
     graphique_annuel(s, 0.72, 1.22, 9.67, 2.75, "Total leads year trend", f["old_m"], f["cur_m"], ecoules, an)
     graphique_annuel(s, 0.72, 4.05, 9.67, 2.85, "NC leads year trend", f["old_vn"], f["cur_vn"], ecoules, an)
