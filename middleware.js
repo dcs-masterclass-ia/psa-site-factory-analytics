@@ -9,12 +9,55 @@
  * cf. api/_lib/auth.js pour l'equivalent Node qui signe le meme cookie.
  */
 
-// Protection par defaut : TOUTE route /api/* exige une session, sauf les trois
-// points d'entree publics (connexion, config OAuth, deconnexion). Une future
-// route oubliee ici reste donc fermee. /data/* (JSON business) idem.
+// Le middleware voit TOUTES les requetes (page, scripts, donnees, API) : le filtre par adresse IP
+// (ALLOWED_IPS, plus bas) doit pouvoir fermer meme la page. Ensuite, comme avant : TOUTE route /api/*
+// exige une session, sauf les points d'entree publics (connexion, config OAuth, deconnexion, decision
+// de ticket) ; /data/* (JSON business) idem. Une future route /api oubliee reste donc fermee.
 export const config = {
-  matcher: ["/data/:path*", "/api/((?!auth$|config$|logout$|ticket-decision$).*)"],
+  matcher: ["/((?!_vercel/).*)"],
 };
+
+function estProtege(pathname) {
+  if (/^\/data(\/|$)/.test(pathname)) return true;
+  return /^\/api\//.test(pathname) && !/^\/api\/(auth|config|logout|ticket-decision)$/.test(pathname);
+}
+
+// ---- Filtre par adresse IP : variable Vercel ALLOWED_IPS (adresses separees par des virgules, IPv4 avec ou sans /masque, IPv6 exacte).
+// Variable absente ou vide = filtre inactif. Renseignee : toute requete d'une autre adresse recoit 403 (page comprise).
+// Vercel ecrase x-forwarded-for : la premiere valeur est l'adresse reelle du visiteur, pas modifiable par lui.
+function ipClient(request) {
+  const xff = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim();
+  return (xff || (request.headers.get("x-real-ip") || "").trim()).replace(/^::ffff:/i, "");
+}
+function ipv4Entier(ip) {
+  const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip);
+  if (!m || m.slice(1).some(o => Number(o) > 255)) return null;
+  return ((Number(m[1]) << 24) | (Number(m[2]) << 16) | (Number(m[3]) << 8) | Number(m[4])) >>> 0;
+}
+function ipAutorisee(ip, liste) {
+  if (!ip) return false;
+  const cible = ip.toLowerCase();
+  const n = ipv4Entier(ip);
+  for (const e of liste) {
+    const [base, bits] = e.split("/");
+    if (bits === undefined) { if (base.toLowerCase().replace(/^::ffff:/, "") === cible) return true; continue; }
+    const b = ipv4Entier(base), k = Number(bits);
+    if (n === null || b === null || !Number.isInteger(k) || k < 0 || k > 32) continue;
+    const masque = k === 0 ? 0 : (~0 << (32 - k)) >>> 0;
+    if (((n & masque) >>> 0) === ((b & masque) >>> 0)) return true;
+  }
+  return false;
+}
+function refuseIp(pathname, ip) {
+  if (!/^\/(api|data)(\/|$)/.test(pathname)) {
+    const page = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acces restreint</title>`
+      + `<body style="margin:0;min-height:100vh;display:grid;place-items:center;font:16px system-ui,sans-serif;background:#0b1020;color:#e8eaf6"><div style="text-align:center;padding:24px">`
+      + `<div style="font-size:20px;font-weight:600">Acces restreint</div><p style="color:#9aa3c7">Ce tableau de bord n'est pas accessible depuis cette adresse.</p>`
+      + `<p style="color:#6c7390;font-size:13px">Adresse detectee : ${String(ip || "inconnue").replace(/[^0-9a-fA-F:.]/g, "")}</p></div>`;
+    return new Response(page, { status: 403, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+  }
+  return new Response(JSON.stringify({ error: "Acces restreint." }), { status: 403, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+}
 
 // Meme valeur que MAX_SESSION_MS dans api/_lib/auth.js (1 h absolue).
 const MAX_SESSION_MS = 60 * 60 * 1000;
@@ -135,6 +178,13 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 });
 
 export default async function middleware(request) {
+  const chemin = new URL(request.url).pathname;
+  const ipsOk = (process.env.ALLOWED_IPS || "").split(",").map(x => x.trim()).filter(Boolean);
+  if (ipsOk.length) {
+    const ip = ipClient(request);
+    if (!ipAutorisee(ip, ipsOk)) return refuseIp(chemin, ip);
+  }
+  if (!estProtege(chemin)) return;           // page et fichiers statiques : seul le filtre par adresse IP s'applique
   // Defense en profondeur : l'historique profond et les conversations KamIA ne
   // sont jamais servis en statique (scripts/fetch-data.sh les retire deja du
   // deploiement) ; 404 quoi qu'il arrive, meme avec une session valide.

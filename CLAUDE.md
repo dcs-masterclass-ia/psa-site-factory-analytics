@@ -309,6 +309,9 @@ Automatique / Clair / Sombre dans l'en-tête, mémorisé dans
 `localStorage.psf_theme` ; l'amorce dans `<head>` applique le thème avant le
 premier rendu et suit `prefers-color-scheme` en direct.
 
+## Filtre par adresse IP (2026-10-22)
+Variable Vercel `ALLOWED_IPS` (adresses séparées par des virgules : IPv4 avec ou sans masque `/24`, IPv6 exacte). **Absente ou vide : filtre inactif.** Renseignée : `middleware.js` répond 403 à toute requête d'une autre adresse, page et scripts compris (le matcher couvre désormais toutes les requêtes ; les règles de session `/api` et `/data` restent celles d'avant, voir `estProtege`). L'adresse est la première valeur de `x-forwarded-for`, que Vercel écrase côté serveur. Conséquences à connaître : les liens de décision de ticket reçus dans Teams (`/api/ticket-decision`) sont aussi bloqués hors de ces adresses ; une adresse qui change (box, 4G, télétravail) ferme l'accès jusqu'à mise à jour de la variable + redéploiement (`vercel env`, puis `vercel redeploy`). Test : `node --test tests/api/ip.test.js`.
+
 ## Tickets (2026-10-11)
 
 Bouton « Ticket » dans l'en-tête : bug de données, optimisation, question,
