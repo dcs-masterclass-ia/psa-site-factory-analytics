@@ -239,7 +239,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 <div style="display:flex;width:100%;height:100vh;background:#f4f4f6;overflow:hidden">
 
   <div data-chrome="rail" style="width:96px;flex:none;background:#fff;border-right:1px solid #ececee;display:flex;flex-direction:column;align-items:center;padding:12px 0 10px;gap:8px;overflow:hidden">
-    <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp" data-keep alt="Converge" width="42" height="42" style="display:block;flex:none;width:42px;height:42px;object-fit:contain;margin-bottom:2px">
+    <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp" data-keep alt="Converge" width="42" height="42" onClick="{{ changeEspace }}" title="Changer d'espace (STLA / OEM)" style="{{ logoRailStyle }}" style-hover="transform:scale(1.08)">
     <div style="flex:1;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:6px">
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.1vh,12px)">
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(3px,.5vh,6px);margin-top:0"><span style="width:44px;height:1px;background:#ececee"></span><span style="font-size:9.5px;font-weight:600;letter-spacing:.09em;color:#a9aeb6;white-space:nowrap">TRAFIC</span></div>
@@ -325,7 +325,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
 
     <div data-chrome="header" style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 24px;background:linear-gradient(180deg,#ffffff 0%,#fbfaff 100%);border-bottom:1px solid #ececf2;flex-wrap:nowrap;min-width:0">
       <div style="flex:1 1 120px;min-width:0;display:flex;align-items:center;gap:14px">
-        <div onClick="{{ changeEspace }}" title="Changer d'espace (STLA / OEM)" aria-label="Changer d'espace" style="{{ logoStyle }}" style-hover="transform:translateY(-1px)"><img src="{{ headLogo }}" data-keep alt="" width="26" height="26" style="display:block;object-fit:contain"></div>
+        <div style="width:48px;height:48px;flex:none;border-radius:16px;background:#fff;border:1px solid #ececf2;box-shadow:0 8px 20px -12px rgba(124,99,238,.55);display:flex;align-items:center;justify-content:center"><img src="{{ headLogo }}" data-keep alt="" width="26" height="26" style="display:block;object-fit:contain"></div>
         <div style="min-width:0">
           <div style="font-size:19px;font-weight:700;letter-spacing:-.025em;color:#121214;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ pageTitle }}</div>
           <div class="hd-chips" style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:nowrap;overflow:hidden"><sc-for list="{{ rangeChips }}" as="c" hint-placeholder-count="3"><span style="{{ c.style }}">{{ c.t }}</span></sc-for>
@@ -8126,7 +8126,7 @@ class Component extends DCLogic {
       channelCount:allChannels.length,
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
-      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, insRows, insVide, insStamp, insHeadChip:kPuce('#7c63ee'), isLimited:this.estLimite() || this._espace === 'oem', isOem:this._espace === 'oem', peutChangerEspace:!this.estLimite(), changeEspace:() => { if (!this.estLimite()) this.changeEspace(); }, logoStyle:'width:48px;height:48px;flex:none;border-radius:16px;background:#fff;border:1px solid #ececf2;box-shadow:0 8px 20px -12px rgba(124,99,238,.55);display:flex;align-items:center;justify-content:center;transition:transform .15s ease'+(this.estLimite()?'':';cursor:pointer'),
+      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, insRows, insVide, insStamp, insHeadChip:kPuce('#7c63ee'), isLimited:this.estLimite() || this._espace === 'oem', isOem:this._espace === 'oem', peutChangerEspace:!this.estLimite(), changeEspace:() => { if (!this.estLimite()) this.changeEspace(); }, logoRailStyle:'display:block;flex:none;width:42px;height:42px;object-fit:contain;margin-bottom:2px;transition:transform .15s ease'+(this.estLimite()?'':';cursor:pointer'),
       espaceLabel:this._espace === 'oem' ? 'OEM' : 'STLA', espaceDot:'width:9px;height:9px;border-radius:50%;flex:none;background:' + (this._espace === 'oem' ? '#1f6fd1' : '#7c63ee'),
       espacePill:'display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;border:1px solid #e3dcfd;background:#f6f3ff;color:#5b43d6;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .15s ease,border-color .15s ease',
       isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isAlerts:gaCur==='alerts',
