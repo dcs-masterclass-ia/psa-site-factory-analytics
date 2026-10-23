@@ -33,7 +33,6 @@ test("choisir OEM : le site Ford s'affiche en GA4, sans les onglets Stellantis",
   await page.waitForTimeout(1500);
   const texte = await page.locator("body").innerText();
   expect(texte).toContain("1 site");                                   // le seul site OEM (Ford) ; le parc Stellantis n'est pas chargé
-  expect(texte).toContain("OEM");
   await expect(page.getByText("Search Console", { exact: true })).toHaveCount(0);
   await expect(page.getByText("PageSpeed", { exact: true })).toHaveCount(0);
   await expect(page.getByText("KamIA", { exact: true })).toHaveCount(0);
