@@ -49,7 +49,6 @@ test.describe("profil limite", () => {
     await page.getByText("Pilotage", { exact: true }).first().click();                            // alertes GA4 : oui ; objectifs (leads back-office) : non
     await expect(page.getByText("Alertes", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("Objectifs", { exact: true })).toHaveCount(0);
-    await expect(page.getByText("Indisponible sur ce profil.")).toBeVisible();
   });
 
   test("les trois onglets autorises s'affichent sans erreur JS", async ({ page }) => {

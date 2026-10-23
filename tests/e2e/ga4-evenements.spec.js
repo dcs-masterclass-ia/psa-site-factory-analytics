@@ -9,7 +9,10 @@ test.beforeEach(async ({ context }) => {
 test("calendrier d'événements : liste, ajout, repère sur la courbe de sessions", async ({ page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  const events = [{ id: "E-1", date: "2026-09-20", type: "campagne", titre: "Lancement campagne Search Q3", sites: [] }];
+  // la période par défaut (30 derniers jours) glisse chaque jour : l'événement est daté de quelques jours avant le dernier jour publié, jamais d'une date fixe
+  const pipeline = await (await page.request.get("/data/pipeline.json")).json();
+  const jourEvt = new Date(new Date((pipeline.jour_ga4_fiable || new Date().toISOString().slice(0, 10)) + "T00:00:00Z").getTime() - 5 * 86400000).toISOString().slice(0, 10);
+  const events = [{ id: "E-1", date: jourEvt, type: "campagne", titre: "Lancement campagne Search Q3", sites: [] }];
   const posts = [];
   await page.route("**/api/events", async (route) => {
     const req = route.request();

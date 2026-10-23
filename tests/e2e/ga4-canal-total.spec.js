@@ -17,7 +17,7 @@ test("canal × device : colonne Total ; fuites par canal avec effectifs", async 
   await expect(page.getByText("Total", { exact: true }).first()).toBeVisible();
   await page.getByText("Où les visiteurs abandonnent", { exact: true }).first().click();
   await page.getByText("Par canal d'acquisition", { exact: true }).click();
-  await expect(page.getByText("Moyenne du site").first()).toBeVisible();
+  await expect(page.getByText("Moyenne du site").locator("visible=true").first()).toBeVisible();      // pas l'info-bulle (cachée), qui contient la même expression
   await page.screenshot({ path: process.env.TMPDIR + "/leaks.png" });
   expect(erreurs).toEqual([]);
 });
