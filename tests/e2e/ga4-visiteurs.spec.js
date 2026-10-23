@@ -63,6 +63,11 @@ test("visiteurs : vue « Quel véhicule veulent-ils reprendre ? » (marque et ca
 
 test("visiteurs : sans donnée géographique, un message dit qu'elle est en cours de collecte (jamais de zéro trompeur)", async ({ page }) => {
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
+  await page.route("**/data/peugeot-fr.json", async (route) => {                 // les vrais fichiers contiennent désormais geoMonth : on le retire pour tester l'état « pas encore collecté »
+    const d = await (await route.fetch()).json();
+    delete d.geoMonth;
+    await route.fulfill({ json: d });
+  });
   await ouvre(page, "geo");
   await expect(page.getByText(/en cours de collecte/)).toBeVisible();
 });

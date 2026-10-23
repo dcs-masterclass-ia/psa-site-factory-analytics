@@ -493,6 +493,7 @@ window.I18N_EN = {
 "Fuite dominante de {0} % entre « {1} » et « {2} ».": "Dominant leak of {0}% between “{1}” and “{2}”.",
 "Fuites du tunnel": "Funnel leaks",
 "Fuites du tunnel par segment": "Funnel leaks by segment",
+"GA4 provisoire jusqu'au {0} : les derniers jours sont affinés chaque nuit": "GA4 provisional until {0}: the latest days are refined each night",
 "GCP — leads back-office": "GCP — back-office leads",
 "GNV": "CNG",
 "GPL": "LPG",
