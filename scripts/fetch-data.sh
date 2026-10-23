@@ -50,6 +50,6 @@ rm -rf data/history data/kamia data/presentations data/tickets data/events data/
 rm -rf public
 mkdir -p public
 cp index.html support.js i18n.js i18n-en.js style.css script.js hermes-agui.js capture.js html-to-image.js capture-fonts.js insights.js \
-   favicon.png favicon-preprod.png logo-blanc.png logo-noir.png public/
+   favicon.png favicon-preprod.png logo-blanc.png logo-noir.png logo-espace-stla.png logo-espace-ford.png public/
 cp -R mascottes public/mascottes
 cp -R data public/data

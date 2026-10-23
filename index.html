@@ -123,6 +123,15 @@ if (location.hostname === "psa-site-factory-dashboard.vercel.app") location.repl
   </div>
 </div>
 <style>
+  .espace-cartes{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;margin:22px 0 10px}
+  .espace-carte{all:unset;box-sizing:border-box;cursor:pointer;width:340px;max-width:100%;min-height:210px;padding:26px 26px 22px;border-radius:24px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);
+    box-shadow:0 10px 40px rgba(111,85,232,.12);backdrop-filter:blur(14px);display:flex;flex-direction:column;gap:8px;text-align:left;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;font-family:'Poppins',system-ui,sans-serif}
+  .espace-carte:hover,.espace-carte:focus-visible{transform:translateY(-4px);box-shadow:0 18px 50px rgba(111,85,232,.22);border-color:#cdbffb}
+  .espace-logo{height:38px;width:auto;max-width:200px;object-fit:contain;align-self:flex-start;margin-bottom:6px}
+  .espace-titre{font-size:22px;font-weight:600;color:#121214;margin-top:2px}
+  .espace-desc{font-size:13px;line-height:1.55;color:#6d727a;flex:1}
+  .espace-go{font-size:13.5px;font-weight:600;color:#6f55e8;margin-top:6px}
+  .espace-go::after{content:" →"}
   .login-screen{
     position:fixed;inset:0;z-index:1000;overflow:auto;
     background:radial-gradient(60% 55% at 18% 8%,#ebe4ff 0%,rgba(235,228,255,0) 62%),radial-gradient(52% 48% at 88% 18%,#dcebff 0%,rgba(220,235,255,0) 62%),radial-gradient(60% 55% at 62% 100%,#f4e6ff 0%,rgba(244,230,255,0) 66%),#f7f6fc;
@@ -241,12 +250,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     <span style="{{ lblGA }}">GA4</span>
     </div>
+    <sc-if value="{{ !isOem }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickSC }}" title="Search Console" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
     <div style="{{ srcSC }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
       <img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/google-search-console-logo_svgstack_com_54051786095216.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <span style="{{ lblSC }}">Search Console</span>
     </div>
+    </sc-if>
     <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickADS }}" title="Google Ads" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
     <div style="{{ srcADS }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
@@ -255,12 +266,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     <span style="{{ lblADS }}">Google Ads</span>
     </div>
     </sc-if>
+    <sc-if value="{{ !isOem }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickPS }}" title="PageSpeed Insights" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
     <div style="{{ srcPS }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
       <img src="https://images.seeklogo.com/logo-png/42/2/google-pagespeed-insights-logo-png_seeklogo-427227.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
     </div>
     <span style="{{ lblPS }}">PageSpeed</span>
     </div>
+    </sc-if>
     </div>
     <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.1vh,12px)">
@@ -460,6 +473,13 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
         </sc-if>
       </div>
 
+      <sc-if value="{{ peutChangerEspace }}" hint-placeholder-val="{{ true }}">
+      <div onClick="{{ changeEspace }}" title="Changer d'espace (STLA / OEM)" aria-label="Changer d'espace" style="{{ espacePill }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
+        <span style="{{ espaceDot }}"></span>
+        <span class="hd-lbl">{{ espaceLabel }}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg>
+      </div>
+      </sc-if>
       <div onClick="{{ openTickets }}" title="Signaler un bug, demander une optimisation" aria-label="Tickets" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 8px;border-radius:999px;background:linear-gradient(135deg,#f1edff,#e8f0ff);color:#4b35c8;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .15s,box-shadow .15s" style-hover="transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(124,99,238,.6)">
         <span style="width:26px;height:26px;border-radius:50%;background:#fff;flex:none;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(124,99,238,.25)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6f55e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 5h13l-2 4 2 4H4"/></svg></span>
         <span class="hd-lbl">Ticket</span>
@@ -527,8 +547,8 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             <div style="margin:16px 0 4px">{{ rateSpark }}</div>
             <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#6d727a;flex-wrap:wrap">
               <span>{{ convRankLabel }}<span class="dc-info" tabindex="0">i<span class="dc-tip">Rang du taux de conversion du site parmi tous les sites du parc, sur la même période et avec la même définition. La médiane est le taux du site situé au milieu du classement.</span></span></span>
-              <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
-              <span>{{ convMedianLabel }}</span>
+              <sc-if value="{{ hasMedianLabel }}" hint-placeholder-val="{{ true }}"><span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
+              <span>{{ convMedianLabel }}</span></sc-if>
               <sc-if value="{{ hasConvDelta }}" hint-placeholder-val="{{ false }}">
               <span style="width:4px;height:4px;border-radius:2px;background:#d2d4d8"></span>
               <span style="{{ convDeltaStyle }}">{{ convDeltaLabel }}</span>
@@ -3944,28 +3964,108 @@ class Component extends DCLogic {
       } catch (e) { this.setState({ prefEtat: 'erreur' }); }
     }, 400);
   }
+  // ---- espaces : STLA (sites Stellantis) et OEM (constructeurs hors Stellantis, ex. Ford). Dernier choix mémorisé dans le navigateur (localStorage) ; profil limité = STLA seulement.
+  espaceChoisi() {
+    if (this.estLimite()) return 'stla';
+    let e = null;
+    try { e = new URLSearchParams(location.search).get('espace') || localStorage.getItem('psf_espace'); } catch (x) {}
+    return e === 'stla' || e === 'oem' ? e : null;
+  }
+  montreChoixEspace() {
+    // l'écran est créé à la demande (jamais présent dans la page tant qu'on n'en a pas besoin : il ne doit pas polluer le DOM du tableau de bord)
+    if (document.getElementById('espaceScreen')) return;
+    const ecran = document.createElement('div');
+    ecran.innerHTML = `<div class="login-screen" id="espaceScreen">
+  <div class="login-bg" aria-hidden="true"><span class="lb lb1"></span><span class="lb lb2"></span><span class="lb lb3"></span></div>
+  <div class="login-shell" style="max-width:760px;width:100%">
+    <div class="login-emblem" style="margin-bottom:6px"><span class="login-halo"></span><img src="https://usine-a-sites.s3.eu-west-1.amazonaws.com/psa-factorly-analytics/Emble%CC%80me+floral+futuriste+en+verre+colore%CC%81.webp" data-keep alt="" aria-hidden="true" width="72" height="72"></div>
+    <div class="login-brand-txt">Converge</div>
+    <div class="login-label">Choisis ton espace</div>
+    <div class="espace-cartes">
+      <button type="button" class="espace-carte" data-espace="stla">
+        <img class="espace-logo" src="/logo-espace-stla.png" alt="Stellantis" width="178" height="38">
+        <span class="espace-titre">Stellantis</span>
+        <span class="espace-desc">Les sites de reprise Peugeot, Citroën, DS, Opel, Fiat, Jeep, Alfa Romeo, Abarth, Lancia et Spoticar : trafic, leads, tunnel, Search Console, présentations.</span>
+        <span class="espace-go">Ouvrir l'espace STLA</span>
+      </button>
+      <button type="button" class="espace-carte" data-espace="oem">
+        <img class="espace-logo" src="/logo-espace-ford.png" alt="Ford" width="106" height="38">
+        <span class="espace-titre">Constructeurs</span>
+        <span class="espace-desc">Les sites de reprise des constructeurs hors Stellantis, à commencer par Ford : trafic, canaux, appareils et tunnel de conversion.</span>
+        <span class="espace-go" style="color:#1f6fd1">Ouvrir l'espace OEM</span>
+      </button>
+    </div>
+    <div class="login-foot">© 2026 Converge</div>
+  </div>
+</div>`;
+    const racine = ecran.firstElementChild;
+    document.body.appendChild(racine);
+    if (window.i18n && window.i18n.apply) { try { window.i18n.apply(racine); } catch (x) {} }
+    racine.querySelectorAll('[data-espace]').forEach(b => b.addEventListener('click', () => this.choisirEspace(b.getAttribute('data-espace'))));
+  }
+  choisirEspace(e) {
+    try { localStorage.setItem('psf_espace', e); sessionStorage.removeItem('psf_ui_state'); } catch (x) {}
+    const ecran = document.getElementById('espaceScreen');
+    if (ecran) ecran.remove();
+    this._espace = e;
+    this.boot();
+  }
+  changeEspace() {
+    try { localStorage.removeItem('psf_espace'); sessionStorage.removeItem('psf_ui_state'); } catch (x) {}
+    location.href = location.pathname;
+  }
+  // Fichier OEM (data/oem/<slug>.json) -> clés attendues par les écrans GA4 ; ce qui n'existe pas pour l'OEM (leads BO, Search Console…) reste vide, jamais inventé.
+  normaliseOem(d) {
+    const o = Object.assign({ leads: {}, months: [], meta: {}, v2: null, v2steps: [], pagespeed: null, searchMonth: {}, funnelWeekly: {}, funnelMonth: {}, evDaily: {}, utmMonth: {}, convCanalDevice: [] }, d);
+    o.daily = Object.assign({ d: [], u: [], rep: [], sc: [], si: [] }, d.daily || {});
+    const n = o.daily.d.length;
+    if (!o.daily.sc || o.daily.sc.length !== n) o.daily.sc = new Array(n).fill(0);
+    if (!o.daily.si || o.daily.si.length !== n) o.daily.si = new Array(n).fill(0);
+    const mois = {}; Object.keys(o.repriseMonth || {}).forEach(m => { const v = o.repriseMonth[m]; mois[m] = { sessions: v.sessions, rdays: new Date(+m.slice(0,4), +m.slice(5,7), 0).getDate() }; });
+    o.repriseMonth = mois;
+    return o;
+  }
   async boot() {
     if (!this._userEmail) return;
     try {
+      const qp0 = new URLSearchParams(location.search);
+      const esp = this.espaceChoisi();
+      this._espace = esp || 'stla';
+      if (!esp && qp0.get('embed') !== '1') { this.montreChoixEspace(); return; }
       // data/pipeline.json existe deja (rapport de la pipeline, ecrit a
       // chaque execution) -- sa cle "sites" liste les 82 vrais noms de site
       // ("OPEL FR", etc.), pas besoin d'un fichier dedie.
       const limite = this.estLimite();
-      const urlData = nom => limite ? "/api/data?f=" + encodeURIComponent(nom) : "/data/" + nom + ".json";
-      const pipeline = await (await fetch(urlData("pipeline"))).json();
+      let urlData = nom => limite ? "/api/data?f=" + encodeURIComponent(nom) : "/data/" + nom + ".json";
+      const oem = this._espace === 'oem';
+      let pipeline, slug = n => n.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-");
+      if (oem) {
+        const idx = await (await fetch("/data/oem/index.json")).json();
+        pipeline = { sites: Object.fromEntries(Object.entries(idx.sites || {}).filter(([, v]) => v.statut === "ok")) };
+        const slugs = pipeline.sites;
+        slug = n => (slugs[n] && slugs[n].slug) || n.toLowerCase().replace(/\s+/g, "-");
+        urlData = nom => "/data/oem/" + nom + ".json";
+      } else pipeline = await (await fetch(urlData("pipeline"))).json();
       this._allSites = Object.keys(pipeline.sites || {}).sort();
       this._pipelineToday = pipeline.jour_ga4_fiable || new Date().toISOString().slice(0, 10);
       this._ga4Consolide = pipeline.jour_ga4_consolide || null;   // J-2 : au-delà, les jours GA4 sont provisoires (affinés chaque nuit)
-      const slug = n => n.toLowerCase().replace(/&/g, "").replace(/\s+/g, "-");
       const loaded = {};
       await Promise.all(this._allSites.map(async s => {
         try { loaded[s] = await (await fetch(urlData(slug(s)))).json(); } catch (e) {}
       }));
+      if (oem) {
+        this._allSites = this._allSites.filter(n => loaded[n]);
+        for (const n of this._allSites) loaded[n] = this.normaliseOem(loaded[n]);
+        const derniers = this._allSites.map(n => (loaded[n].daily.d || []).slice(-1)[0]).filter(Boolean).sort();
+        if (derniers.length) { this._pipelineToday = derniers[derniers.length - 1]; this._ga4Consolide = this.decale(this._pipelineToday, -1); }
+        const modele = loaded[this._allSites[0]];
+        this._etapesOem = modele && modele.funnelEtapes || null;
+      }
       this.data = loaded;
-      if (!limite) { try { this._market = await (await fetch('/data/market.json')).json(); } catch (e) {} }
-      if (!limite) { await this.chargeC1st(); }
-      if (!limite) { this.chargeHoraire(true); if (!this._hhTimer) this._hhTimer = setInterval(() => { if (this.state && this.state.source === 'tb') this.chargeHoraire(); }, 120000); }
-      if (!limite) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
+      if (!limite && !oem) { try { this._market = await (await fetch('/data/market.json')).json(); } catch (e) {} }
+      if (!limite && !oem) { await this.chargeC1st(); }
+      if (!limite && !oem) { this.chargeHoraire(true); if (!this._hhTimer) this._hhTimer = setInterval(() => { if (this.state && this.state.source === 'tb') this.chargeHoraire(); }, 120000); }
+      if (!limite && !oem) { try { this._leadsMensuel = await (await fetch('/data/leads_mensuel.json')).json(); } catch (e) {} }
       // préférences du compte (page Paramètres) : serveur, sinon dernier réglage local
       let prefsCompte = {};
       try { const r = await fetch('/api/preferences'); if (r.ok) prefsCompte = ((await r.json()).prefs) || {}; } catch (e) {}
@@ -4011,10 +4111,11 @@ class Component extends DCLogic {
           if (pf.perimetre && pf.perimetre.mode === 'sites') { const ok = (pf.perimetre.sites || []).filter(n => this._allSites.includes(n)); if (ok.length) initial.sites = ok; }
         }
       }
+      if (this._espace === 'oem') initial.source = 'ga';          // espace OEM : GA4 seulement pour l'instant
       this.setState(initial);
     } catch (e) {
       this.data = {};
-      this.setState({ booted: true, error: "Chargement des données impossible." });
+      this.setState({ booted: true, error: this._espace === 'oem' ? (window.i18n ? window.i18n.t("L'espace OEM n'a pas encore de données : la première collecte de nuit est à venir.") : "L'espace OEM n'a pas encore de données : la première collecte de nuit est à venir.") : "Chargement des données impossible." });
     }
   }
   /* aggregation reelle sur this.state.sites (identique dans l'esprit a
@@ -4034,7 +4135,7 @@ class Component extends DCLogic {
     return r;
   }
   _aggregateImpl(debutIso, finIso) {
-    const STEPS_FUNNEL = ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
+    const STEPS_FUNNEL = (this._espace === 'oem' && this._etapesOem && this._etapesOem.length === 6) ? this._etapesOem : ["Page d'accueil","Version","Kilométrage","Coordonnées","Point de vente","Leads GA"];
     const nomEtape = n => n === "Estimation" ? "Leads GA" : n;   // « Estimation » = événement tradein_request = « Leads GA » (vocabulaire de l'équipe)
     const out = { traffic:0, reprise:0, leads:0, funnelSteps:null, canal:{}, canalRep:{}, v2Steps:null, v2Meta:null,
                   convCanalDevice:new Map(), utm:new Map(), funnelSeg:{device:new Map(),canal:new Map()}, funnelEntree:{immat:[0,0,0,0,0],mm:[0,0,0,0,0],mois:0}, histMonth:new Map(), browser:new Map(), newVsReturning:new Map(), geo:{pays:new Map(),regions:new Map(),villes:new Map(),langues:new Map(),total:0},
@@ -4633,6 +4734,7 @@ class Component extends DCLogic {
       {label:'Sessions site reprise',chip:kPuce('#3fae7a'),icon:kIcone('#3fae7a',h('path',{d:'M3 12a9 9 0 019-9 9 9 0 016.4 2.6L21 8'}),h('path',{d:'M21 3v5h-5'}),h('path',{d:'M21 12a9 9 0 01-9 9 9 9 0 01-6.4-2.6L3 16'}),h('path',{d:'M3 21v-5h5'})),info:"TOUTES les sessions GA4 du site de reprise (son nom d'hôte) sur la période, sans filtre sur la provenance : y compris celles qui arrivent depuis le site de la marque. Pour le seul trafic qui arrive directement sur la reprise, voir Acquisition > Arrivées directes.",value:this.fmt(reprise),...deltaBadgeAsKpi(deltaBadge(reprise, cmp&&cmp.reprise)),spark:safeSpark(repriseBuckets,'#3fae7a')},
       {label:'Leads GA',chip:kPuce('#d78b35'),icon:kIcone('#d78b35',h('path',{d:'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2'}),h('circle',{cx:9,cy:7,r:4}),h('path',{d:'M19 8v6M22 11h-6'})),info:"Leads GA (demandes d'estimation) sur la période : évènements GA4 tradein_request (les « Hot leads » de Looker), somme des jours exacts. Le tunnel compte, lui, des utilisateurs distincts, donc un chiffre un peu plus bas. Donnée GA4, distincte des leads du back-office.",value:this.fmt(leadsEv!=null?leadsEv:leads),...deltaBadgeAsKpi(deltaBadge(leadsEv!=null?leadsEv:leads, leadsEv!=null?cmpLeadsEv:(cmpFunnelLast||null))),spark:funnelQuotidien?safeSpark(estBuckets,'#d78b35'):''}
     ];
+    if (this._espace === 'oem') kpis.shift();          // « Sessions site de la marque » : propriété de la marque entière, non mesurée pour l'espace OEM (seul le site de reprise l'est)
     function deltaBadgeAsKpi(b){ return { delta:b.text, deltaStyle:b.style }; }
     const rateBuckets = homeBuckets.map((hb,i)=> hb ? estBuckets[i]/hb*100 : 0);
     // la carte "hero" est ~4x plus large que les mini-cartes KPI (140) mais
@@ -4675,18 +4777,18 @@ class Component extends DCLogic {
       const rang = currentIsSingle ? ranked.findIndex(x=>x.site===st.sites[0])+1 : 0;
       if (currentIsSingle && rang>0) convRankLabel = rang+'e sur '+ranked.length+' du parc';
       if (currentIsSingle && rang>0 && ranked.length>2) { const m3=Math.floor(ranked.length/2); parcInfo={ rate:rateGlobal, mediane:ranked.length%2?ranked[m3].taux:(ranked[m3-1].taux+ranked[m3].taux)/2, rang, total:ranked.length }; }
-      else convRankLabel = ranked.length+' sites classés';
+      else convRankLabel = (this._espace === 'oem' && ranked.length < 2) ? T('Un seul site dans cet espace') : ranked.length+' sites classés';
       if (ranked.length) {
         const mid=Math.floor(ranked.length/2);
         const med = ranked.length%2 ? ranked[mid].taux : (ranked[mid-1].taux+ranked[mid].taux)/2;
-        convMedianLabel = T('médiane')+' '+dec(med,1)+' %';
+        convMedianLabel = (this._espace === 'oem' && ranked.length < 2) ? '' : T('médiane')+' '+dec(med,1)+' %';
         const tun = ranked.map(x=>x.tauxTunnel).filter(v=>v!=null).sort((a,b)=>b-a);
         if (tun.length) { const m2=Math.floor(tun.length/2); convMedianTunnel = T('médiane')+' '+dec(tun.length%2?tun[m2]:(tun[m2-1]+tun[m2])/2,1)+' %'; }
       }
       if (currentIsSingle && rang>0 && cmpRange) {
         const rankedPrev = this.rankSites(cmpRange.debut, cmpRange.fin);
         const rangPrev = rankedPrev.findIndex(x=>x.site===st.sites[0])+1;
-        if (rangPrev>0) {
+        if (rangPrev>0 && !(this._espace === 'oem' && ranked.length < 2)) {
           const gain = rangPrev-rang;
           hasConvDelta = true;
           convDeltaLabel = gain===0?'= place':(gain>0?'+'+gain+' place'+(gain>1?'s':''):gain+' place'+(gain<-1?'s':''));
@@ -8016,7 +8118,7 @@ class Component extends DCLogic {
       srcTB:srcStyle(st.source==='tb'), srcAAA:srcStyle(st.source==='aaa'), srcC1ST:srcStyle(st.source==='c1st'), srcADS:srcStyle(st.source==='ads'), srcPR:srcStyle(st.source==='pr'), srcGCP:srcStyle(st.source==='gcp'),
       kpis, kpiRate:dec(rateGlobal,1)+' %', rateSpark, kpiRateDelta,
       convDefLabel: convSessMode ? 'leads GA ÷ sessions du site de reprise · jours exacts' : (agg.funnelApprox ? 'leads GA ÷ visiteurs accueil · période approchée (semaines/mois entiers)' : 'leads GA ÷ visiteurs accueil · jours exacts'),
-      convRankLabel, convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
+      convRankLabel, convMedianLabel, hasMedianLabel:!!convMedianLabel, hasConvDelta, convDeltaLabel, convDeltaStyle,
       compPctLabel, compMedianLabel, abandonLabel, ijShow, ij1, ij2, ij3, ijRate1, ijRate2, ijNote, funnelDelta, globalRateLabel, globalRateSub,
       steps, funPills, funHasEntree:feOk, funCmp, funSub, compDesc, stepLabel, gauge, channels, allChannels, topChannelInsight, channelToggles, multiChart, convChart, v2Has, v2Kpis, v2Subtitle, v2LowVolume, convHasData, tabMinH:620, tChipS:kPuce('#7c63ee'), tIconS:kIcone('#7c63ee',h('path',{d:'M3 3v18h18'}),h('path',{d:'M7 15l4-4 3 3 5-6'})),
       tChipT:kPuce('#3b76e8'), tIconT:kIcone('#3b76e8',h('path',{d:'M3 17l5-5 4 4 8-9'})),
@@ -8031,7 +8133,9 @@ class Component extends DCLogic {
       channelCount:allChannels.length,
       openChannels:channelsCtl.openIt, closeChannels:channelsCtl.closeIt, channelsModal:channelsCtl.isOpen,
       channelsBackdropStyle:channelsStyles.backdrop, channelsPanelStyle:channelsStyles.panel,
-      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, insRows, insVide, insStamp, insHeadChip:kPuce('#7c63ee'), isLimited:this.estLimite(),
+      kamiaVigilance, kamiaRupture, kamiaOpportunite, kamiaStamp, insRows, insVide, insStamp, insHeadChip:kPuce('#7c63ee'), isLimited:this.estLimite() || this._espace === 'oem', isOem:this._espace === 'oem', peutChangerEspace:!this.estLimite(), changeEspace:() => this.changeEspace(),
+      espaceLabel:this._espace === 'oem' ? 'OEM' : 'STLA', espaceDot:'width:9px;height:9px;border-radius:50%;flex:none;background:' + (this._espace === 'oem' ? '#1f6fd1' : '#7c63ee'),
+      espacePill:'display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;border:1px solid #e3dcfd;background:#f6f3ff;color:#5b43d6;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .15s ease,border-color .15s ease',
       isContrib:gaCur==='contrib', isGoals:gaCur==='goals', isAlerts:gaCur==='alerts',
       alHas, alRows, alEmpty, alSubtitle, alSeuils, alFormOpen, alFields, alToggle, alToggleLabel, alNotifLabel, alNotifPick, alNotifStyle, alMsg, alMsgOn, alSaveLabel, alSaveStyle, alSave, insAlerts, alIcon, alChip, alCanWrite, isEvents:gaCur==='events',
       glHas, glRows, glEmpty, glSubtitle, glToggleEdit, glEditLabel, glEditing, glMsg, glMsgOn, glSaveLabel, glSaveStyle, glSave, insGoals, glIcon, glChip, isHist:gaCur==='hist',

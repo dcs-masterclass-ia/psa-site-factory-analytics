@@ -16,6 +16,8 @@ module.exports = defineConfig({
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // les specs existantes testent l'espace STLA : le dernier choix d'espace (page de choix STLA / OEM) est préchargé ; tests/e2e/oem.spec.js repart d'un navigateur vierge
+    storageState: { cookies: [], origins: [{ origin: `http://localhost:${PORT}`, localStorage: [{ name: "psf_espace", value: "stla" }] }] },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
