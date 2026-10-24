@@ -117,12 +117,23 @@ def collecte(cli, s, debut, fin):
     return {"daily": daily, "canalQuotidien": canal, "appareilQuotidien": appareil, "funnelDaily": funnel, "landingMonth": landing, "repriseMonth": mois, "trafficMonth": {m: v["sessions"] for m, v in mois.items()}}
 
 
+def leads_bo(s):
+    """Leads back-office du site (data/oem/<slug>-leads.json, écrit par pipeline.oem_leads) ; absents = pas de clé `leads` : jamais de valeur inventée."""
+    f = DATA / f"{s.slug}-leads.json"
+    try:
+        return json.loads(f.read_text(encoding="utf-8")).get("leads")
+    except (OSError, ValueError):
+        return None
+
+
 def fichier(s, series, debut, fin):
+    leads = leads_bo(s)
     return {
         "site": s.nom, "espace": "oem", "constructeur": s.constructeur, "pays": s.pays, "propriete": s.propriete, "hotes": list(s.hotes),
         "generee": datetime.now(PARIS).isoformat(timespec="seconds"), "periode": [debut, fin],
         "funnelEtapes": [e for e, _ in s.etapes], "funnelEvenements": [v for _, v in s.etapes],
         "sources": "GA4 (compte de service OEM) — aucun lead back-office ni C1ST pour cet espace",
+        **({"leads": leads} if leads else {}),
         **series,
     }
 

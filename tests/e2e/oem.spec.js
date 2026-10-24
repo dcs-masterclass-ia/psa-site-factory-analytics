@@ -62,6 +62,19 @@ test("choisir STLA : le parc Stellantis est inchangé", async ({ context, page }
 });
 
 
+test("leads Ford : l'onglet Leads s'ouvre avec les leads du back-office (si le fichier existe)", async ({ context, page }) => {
+  const erreurs = await ouvre(context, page);
+  await page.locator('#espaceScreen [data-espace="oem"]').click();
+  await page.waitForTimeout(1500);
+  const fichier = await (await page.request.get("/data/oem/ford-fr.json")).json();
+  test.skip(!fichier.leads || !fichier.leads.total, "pas de leads back-office dans les données de test");
+  await page.getByText("Leads", { exact: true }).first().click();
+  await expect(page.getByText("Pilotage des leads").first()).toBeVisible();
+  await expect(page.getByText("Leads par jour")).toBeVisible();
+  await expect(page.getByText("Search Console", { exact: true })).toHaveCount(0);
+  expect(erreurs).toEqual([]);
+});
+
 // Captures du rendu clair / sombre (OEM_CAPTURES=<dossier>) : page de choix avec les logos, puis écran Ford.
 for (const theme of ["light", "dark"]) {
   test(`rendu ${theme} : page de choix (logos) et espace OEM`, async ({ context, page }) => {
