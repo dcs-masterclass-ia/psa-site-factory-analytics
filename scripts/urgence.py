@@ -7,7 +7,7 @@
     python3 scripts/urgence.py deverrouiller --executer    # rouvre (demande de taper ROUVRIR)
 
 VERROUILLER (dans l'ordre, chaque étape est indépendante : un échec n'arrête pas les suivantes, le bilan final dit ce qui est fait) :
-  1. pare-feu Vercel : la liste blanche d'adresses est remplacée par une adresse non routable (plus personne ne passe, toi compris) + mode Attack Challenge ;
+  1. pare-feu Vercel : la liste blanche d'adresses est remplacée par une adresse non routable (plus personne ne passe, toi compris) ;
   2. dépôt de code GitHub passé en PRIVÉ ;
   3. variables Vercel : ALLOWED_IPS = adresse non routable, AUTH_COOKIE_SECRET renouvelé (toutes les sessions ouvertes sont invalidées), puis redéploiement ;
   4. projet Vercel MIS EN PAUSE (la production ne répond plus du tout) ;
@@ -15,7 +15,7 @@ VERROUILLER (dans l'ordre, chaque étape est indépendante : un échec n'arrête
 Le dépôt de DONNÉES est déjà privé. Rien n'est supprimé : tout se rouvre avec `deverrouiller`.
 
 DEVERROUILLER : relance le projet, rétablit la liste d'adresses (sauvegardée localement dans ~/.claude/secrets/converge-verrouillage.json, chmod 600, jamais dans le dépôt),
-coupe le mode Attack Challenge, réactive Actions, redéploie. Le dépôt reste PRIVÉ (--republier pour le repasser en public). Les sessions ne reviennent pas (nouveau secret).
+réactive Actions, redéploie. Le dépôt reste PRIVÉ (--republier pour le repasser en public). Les sessions ne reviennent pas (nouveau secret).
 NE PAS OUBLIER après un vrai incident : renouveler les jetons (docs/urgence-securite.md, section 4) et chercher ce qui s'est passé.
 
 Prérequis : `vercel` et `gh` connectés (c'est le cas sur le poste de M.). Aucune adresse ni aucun jeton dans ce fichier (dépôt public)."""
@@ -107,9 +107,6 @@ def verrouiller(sim):
         sh(["vercel", "firewall", "rules", "edit", REGLE, "--condition", condition_regle([ADRESSE_MORTE]), "--yes"], simulation=sim)
         sh(["vercel", "firewall", "publish", "--yes"], simulation=sim)
 
-    def attaque():
-        mode_attaque("enable", sim)
-
     def prive():
         sh(["gh", "api", "-X", "PATCH", f"repos/{DEPOT}", "-F", "private=true"], simulation=sim)
 
@@ -127,7 +124,6 @@ def verrouiller(sim):
 
     print("VERROUILLAGE" + (" (SIMULATION, rien n'est modifié)" if sim else ""))
     etape(bilan, "1. pare-feu : liste blanche vidée (plus personne ne passe)", pare_feu)
-    etape(bilan, "1 bis. mode Attack Challenge (facultatif)", attaque)
     etape(bilan, "2. dépôt de code en privé", prive)
     etape(bilan, "3. variables Vercel (adresses, secret de session) + redéploiement", variables)
     etape(bilan, "4. projet Vercel en pause", pause)
@@ -151,9 +147,6 @@ def deverrouiller(sim, republier):
         sh(["vercel", "firewall", "rules", "edit", REGLE, "--condition", condition_regle(adresses), "--yes"], simulation=sim)
         sh(["vercel", "firewall", "publish", "--yes"], simulation=sim)
 
-    def attaque():
-        mode_attaque("disable", sim)
-
     def variables():
         sh(["vercel", "env", "rm", "ALLOWED_IPS", "production", "--yes"], simulation=sim, tolere=True)
         sh(["vercel", "env", "add", "ALLOWED_IPS", "production", "--sensitive"], entree=",".join(adresses), simulation=sim)
@@ -169,7 +162,6 @@ def deverrouiller(sim, republier):
     print("DÉVERROUILLAGE" + (" (SIMULATION, rien n'est modifié)" if sim else ""))
     etape(bilan, "1. projet Vercel relancé", relance)
     etape(bilan, "2. pare-feu : liste d'adresses rétablie", pare_feu)
-    etape(bilan, "2 bis. mode Attack Challenge coupé", attaque)
     etape(bilan, "3. variable ALLOWED_IPS + redéploiement", variables)
     etape(bilan, "4. GitHub Actions réactivé", actions)
     if republier:
