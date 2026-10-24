@@ -4,6 +4,8 @@
         · 3 échecs ou plus depuis la même adresse ;
         · un compte non autorisé qui tente de se connecter ;
         · une connexion réussie d'un compte jamais vu, d'une adresse nouvelle pour ce compte, ou d'un pays nouveau ;
+        · SONDE (même passage) : depuis Internet, hors liste blanche, le site doit répondre 403 (ou 429 / challenge Vercel) ; une réponse 200 / 401 sur la page ou les données = liste d'adresses
+          inefficace (alerte) ; 5xx ou aucune réponse deux passages de suite = Converge injoignable (alerte) ; carte de retour à la normale ;
   --mode digest  (chaque matin) : résumé des dernières 24 h (connexions, refus, comptes, adresses, pays) + refus du pare-feu Vercel si VERCEL_TOKEN existe.
 
 Dépôt public : la console n'affiche que des comptages, jamais d'adresse ni de compte (ils ne figurent que dans la carte Teams).
@@ -14,6 +16,7 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -94,6 +97,49 @@ def pare_feu_vercel(depuis_ms, maintenant_ms):
         return None
 
 
+URL_SONDE = os.environ.get("SONDE_URL", "https://converge-tradein.vercel.app")
+CHEMINS_SONDE = ("/", "/data/peugeot-fr.json", "/api/data?f=peugeot-fr")
+REFUS_ATTENDUS = (403, 429)       # 403 = liste blanche d'adresses, 429 = challenge anti-bots Vercel : dans les deux cas rien n'est servi
+
+
+def sonde():
+    """Interroge le site depuis un réseau NON autorisé : [(chemin, statut)] ; statut 0 = aucune réponse. Aucun contenu n'est lu ni conservé."""
+    out = []
+    for ch in CHEMINS_SONDE:
+        try:
+            req = urllib.request.Request(URL_SONDE + ch, headers={"User-Agent": "converge-sonde/1"})
+            try:
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    out.append((ch, r.status))
+            except urllib.error.HTTPError as e:
+                out.append((ch, e.code))
+        except Exception:
+            out.append((ch, 0))
+    return out
+
+
+def etat_sonde(resultats, precedent):
+    """Compare au passage précédent : retourne (nouvel état, constats). États : ok | ouvert (liste blanche inefficace) | injoignable. L'alerte n'est envoyée qu'au changement d'état (pas toutes les 30 min)."""
+    ouvert = [ch for ch, st in resultats if st in (200, 401, 304) or (200 <= st < 300)]
+    panne = [ch for ch, st in resultats if st == 0 or st >= 500]
+    constats = []
+    if ouvert:
+        etat = "ouvert"
+        if precedent.get("etat") != "ouvert":
+            constats.append(("liste_blanche", "ALERTE : la liste d'adresses ne protège plus Converge", "réponse servie à une adresse non autorisée sur : " + ", ".join(ouvert)))
+    elif panne:
+        n = precedent.get("pannes", 0) + 1
+        etat = "injoignable" if n >= 2 else precedent.get("etat", "ok")
+        if n == 2:
+            constats.append(("injoignable", "Converge ne répond pas (2 contrôles de suite)", "erreur ou délai sur : " + ", ".join(panne) + " (panne, attaque par volume ou déploiement raté ?)"))
+        return etat, constats, n
+    else:
+        etat = "ok"
+        if precedent.get("etat") in ("ouvert", "injoignable"):
+            constats.append(("retour", "Converge de nouveau protégé et joignable", "retour à la normale (sonde externe)"))
+    return etat, constats, 0
+
+
 def carte(titre, faits, lignes=()):
     corps = [{"type": "TextBlock", "size": "Medium", "weight": "Bolder", "wrap": True, "text": titre}]
     corps += [{"type": "TextBlock", "wrap": True, "text": t} for t in lignes]
@@ -139,12 +185,17 @@ def main():
         print(f"digest : {r['connexions']} connexions, {r['refus']} refus")
         return 0
     try:
-        dernier = json.loads(ETAT.read_text(encoding="utf-8")).get("dernier", 0)
+        etat_prec = json.loads(ETAT.read_text(encoding="utf-8"))
     except Exception:
-        dernier = 0
+        etat_prec = {}
+    dernier = etat_prec.get("dernier", 0)
     depuis = max(dernier, now - 2 * 3600 * 1000) if dernier else now - 35 * 60 * 1000
     constats = analyse(evts, depuis)
-    ETAT.write_text(json.dumps({"dernier": now}), encoding="utf-8")
+    res = sonde()
+    nouvel, c_sonde, pannes = etat_sonde(res, etat_prec.get("sonde", {}))
+    constats = c_sonde + constats
+    print("sonde : " + ", ".join(f"{ch.split('?')[0]} {st}" for ch, st in res) + f" -> {nouvel}")
+    ETAT.write_text(json.dumps({"dernier": now, "sonde": {"etat": nouvel, "pannes": pannes}}), encoding="utf-8")
     if not constats:
         print("RAS")
         return 0

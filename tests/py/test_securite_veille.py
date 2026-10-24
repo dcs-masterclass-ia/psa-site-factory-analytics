@@ -46,5 +46,25 @@ class Analyse(unittest.TestCase):
         self.assertEqual((r["connexions"], r["refus"], r["adresses"]), (2, 1, 2))
 
 
+class Sonde(unittest.TestCase):
+    """Sonde externe : hors liste blanche, le site ne doit rien servir."""
+
+    def test_refus_normaux(self):
+        self.assertEqual(sv.etat_sonde([("/", 403), ("/data/x.json", 403), ("/api/data", 429)], {}), ("ok", [], 0))
+
+    def test_liste_blanche_inefficace_alerte_une_fois(self):
+        etat, c, _ = sv.etat_sonde([("/", 200), ("/data/x.json", 401), ("/api/data", 403)], {"etat": "ok"})
+        self.assertEqual((etat, [x[0] for x in c]), ("ouvert", ["liste_blanche"]))
+        self.assertEqual(sv.etat_sonde([("/", 200)], {"etat": "ouvert"})[1], [])          # pas de répétition toutes les 30 min
+
+    def test_panne_confirmee_au_deuxieme_passage(self):
+        self.assertEqual(sv.etat_sonde([("/", 0)], {"etat": "ok", "pannes": 0}), ("ok", [], 1))
+        etat, c, n = sv.etat_sonde([("/", 503)], {"etat": "ok", "pannes": 1})
+        self.assertEqual((etat, [x[0] for x in c], n), ("injoignable", ["injoignable"], 2))
+
+    def test_retour_a_la_normale(self):
+        self.assertEqual([x[0] for x in sv.etat_sonde([("/", 403)], {"etat": "injoignable"})[1]], ["retour"])
+
+
 if __name__ == "__main__":
     unittest.main()
