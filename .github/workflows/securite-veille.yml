@@ -48,6 +48,7 @@ jobs:
           SECURITE_WEBHOOK_URL: ${{ secrets.SECURITE_WEBHOOK_URL }}
           ALERTES_WEBHOOK_URL: ${{ secrets.ALERTES_WEBHOOK_URL }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          SONDE: "0"
           VERCEL_PROJECT_ID: prj_MEkEdI4FwBsAs2NkHBwGRG17OFef
           VERCEL_TEAM_ID: team_7aFIBOaUUuLV2uE72RRptkGD
           MODE: ${{ github.event_name == 'schedule' && (github.event.schedule == '40 5 * * *' && 'digest' || 'veille') || github.event.inputs.mode }}

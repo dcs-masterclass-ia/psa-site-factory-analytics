@@ -66,5 +66,19 @@ class Sonde(unittest.TestCase):
         self.assertEqual([x[0] for x in sv.etat_sonde([("/", 403)], {"etat": "injoignable"})[1]], ["retour"])
 
 
+class Sentinelle(unittest.TestCase):
+    def test_commit_direct_et_fusion(self):
+        from pipeline import sentinelle as st
+        commits = [{"sha": "c3", "parents": [1]}, {"sha": "c2", "parents": [1, 2]}, {"sha": "c1", "parents": [1]}]
+        self.assertEqual(st.commits_directs(commits, "c1"), [("c3", True), ("c2", False)])
+        self.assertEqual(st.commits_directs(commits, "c3"), [])
+
+    def test_sonde_ouverte_confirmee_en_deux_passages(self):
+        e1, _, _ = sv.etat_sonde([("/", 200)], {})
+        self.assertEqual(e1, "ouvert")
+        e2, c, _ = sv.etat_sonde([("/", 200)], {"etat": e1})
+        self.assertEqual((e2, c), ("ouvert", []))        # la sentinelle ne coupe qu'au 2e passage consécutif (état précédent déjà « ouvert »)
+
+
 if __name__ == "__main__":
     unittest.main()
