@@ -72,6 +72,10 @@ test("leads Ford : l'onglet Leads s'ouvre avec les leads du back-office (si le f
   await expect(page.getByText("Pilotage des leads").first()).toBeVisible();
   await expect(page.getByText("Leads par jour")).toBeVisible();
   await expect(page.getByText("Search Console", { exact: true })).toHaveCount(0);
+  await page.getByText("Mois", { exact: true }).first().click();                                    // « Année » est grisé tant qu'il n'y a qu'une année de leads : le clic ne change rien
+  await page.getByText("Année", { exact: true }).first().click();
+  await expect(page.locator("svg path").first()).toBeVisible();
+  await expect(page.getByText("Leads par jour")).toBeVisible();
   expect(erreurs).toEqual([]);
 });
 

@@ -6842,7 +6842,7 @@ class Component extends DCLogic {
     const hhBtn=a=>`display:inline-flex;align-items:center;height:32px;padding:0 14px;border-radius:9px;font-size:13.5px;cursor:pointer;white-space:nowrap;font-weight:${a?600:500};${a?'background:#f1eefe;color:#5b43d6':'background:transparent;color:#6d727a'}`;
 
     // leads par jour, tous sites : jours (14), semaines (26), mois, années
-    const trVue = ['jour','semaine','mois','annee'].includes(st.trVue)?st.trVue:'jour';
+    let trVue = ['jour','semaine','mois','annee'].includes(st.trVue)?st.trVue:'jour';
     const trJours = {};
     for(const sn of this.state.sites){ const dd=this.data&&this.data[sn]; if(!dd||!dd.leads) continue;
       for(const mo of Object.keys(dd.leads)){ if(mo==='total') continue; const arr=(dd.leads[mo]&&dd.leads[mo].daily)||[];
@@ -6854,6 +6854,8 @@ class Component extends DCLogic {
     const JS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
     const dnb=(mo)=>new Date(Date.UTC(+mo.slice(0,4),+mo.slice(5,7),0)).getUTCDate();
     let trPts=[];   // {label, total, jours, we}
+    const trAnnees=new Set([...Object.keys(trMens),...trKeys].map(x=>x.slice(0,4))).size;       // « Année » n'a de sens qu'avec au moins deux années de données (sinon un seul point : pas de courbe)
+    if(trVue==='annee'&&trAnnees<2) trVue='mois';
     if(trVue==='jour'){ trPts=trKeys.slice(-14).map(j=>{ const d0=new Date(j+'T12:00:00Z'); return {label:JS[d0.getUTCDay()]+' '+j.slice(8,10)+'/'+j.slice(5,7),total:trJours[j],jours:1,we:[0,6].includes(d0.getUTCDay())}; }); }
     else if(trVue==='semaine'){ const sm=new Map(); for(const j of trKeys){ const d0=new Date(j+'T12:00:00Z'); const lun=new Date(d0); lun.setUTCDate(d0.getUTCDate()-((d0.getUTCDay()+6)%7)); const k=lun.toISOString().slice(0,10); const c=sm.get(k)||{t:0,n:0}; c.t+=trJours[j]; c.n++; sm.set(k,c); }
       trPts=[...sm.entries()].sort().slice(-26).filter(([k,c])=>c.n>=7).map(([k,c])=>({label:k.slice(8,10)+'/'+k.slice(5,7),total:c.t/c.n,jours:1,we:false})); }
@@ -6885,7 +6887,7 @@ class Component extends DCLogic {
       trMoy=this.fmt(trPts.reduce((a,p)=>a+p.total,0)/n);
       const last=trPts[n-1]; trDer=`${last.label} : ${this.fmt(last.total)} leads`;
     }
-    const trVues=[['jour','Jour'],['semaine','Semaine'],['mois','Mois'],['annee','Année']].map(([v,l])=>({label:l,style:hhBtn(trVue===v),pick:()=>set({trVue:v})}));
+    const trVues=[['jour','Jour'],['semaine','Semaine'],['mois','Mois'],['annee','Année']].map(([v,l])=>({label:l,style:(v==='annee'&&trAnnees<2)?hhBtn(false)+';opacity:.38;cursor:not-allowed':hhBtn(trVue===v),pick:()=>{ if(v==='annee'&&trAnnees<2) return; set({trVue:v}); }}));
     const trAide={jour:'Total des leads de chaque jour, 14 derniers jours.',semaine:'Moyenne de leads par jour, semaine par semaine (lundi → dimanche), 26 dernières semaines.',mois:'Moyenne de leads par jour, mois par mois, depuis le début de l\'historique.',annee:'Moyenne de leads par jour, année par année.'}[trVue];
     // ---------- Paramètres (clic sur l'avatar) ----------
     const prefs0 = this._prefs || {};
