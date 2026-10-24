@@ -58,6 +58,17 @@ def condition_regle(adresses):
     return json.dumps({"type": "ip_address", "op": "ninc", "value": list(adresses)})
 
 
+def mode_attaque(action, sim):
+    """Vercel exige que le mode Attack Challenge soit activé par un humain dans un terminal (refusé aux agents) : la commande garde le terminal
+    (pas de capture) pour que la confirmation de Vercel s'affiche. Facultatif : le confinement tient sans lui (pare-feu + pause)."""
+    if sim:
+        print(f"   [simulation] vercel firewall attack-mode {action}")
+        return
+    r = subprocess.run(["vercel", "firewall", "attack-mode", action], cwd=RACINE, timeout=300)
+    if r.returncode != 0:
+        raise RuntimeError(f"Vercel a refusé (à lancer toi-même dans un terminal : vercel firewall attack-mode {action}) — le reste du confinement n'en dépend pas")
+
+
 def etape(bilan, nom, fonction):
     print(f"-> {nom}")
     try:
@@ -95,7 +106,9 @@ def verrouiller(sim):
     def pare_feu():
         sh(["vercel", "firewall", "rules", "edit", REGLE, "--condition", condition_regle([ADRESSE_MORTE]), "--yes"], simulation=sim)
         sh(["vercel", "firewall", "publish", "--yes"], simulation=sim)
-        sh(["vercel", "firewall", "attack-mode", "enable", "--yes"], simulation=sim)
+
+    def attaque():
+        mode_attaque("enable", sim)
 
     def prive():
         sh(["gh", "api", "-X", "PATCH", f"repos/{DEPOT}", "-F", "private=true"], simulation=sim)
@@ -113,7 +126,8 @@ def verrouiller(sim):
         sh(["gh", "api", "-X", "PUT", f"repos/{DEPOT}/actions/permissions", "-F", "enabled=false"], simulation=sim)
 
     print("VERROUILLAGE" + (" (SIMULATION, rien n'est modifié)" if sim else ""))
-    etape(bilan, "1. pare-feu : liste blanche vidée + Attack Challenge", pare_feu)
+    etape(bilan, "1. pare-feu : liste blanche vidée (plus personne ne passe)", pare_feu)
+    etape(bilan, "1 bis. mode Attack Challenge (facultatif)", attaque)
     etape(bilan, "2. dépôt de code en privé", prive)
     etape(bilan, "3. variables Vercel (adresses, secret de session) + redéploiement", variables)
     etape(bilan, "4. projet Vercel en pause", pause)
@@ -136,7 +150,9 @@ def deverrouiller(sim, republier):
     def pare_feu():
         sh(["vercel", "firewall", "rules", "edit", REGLE, "--condition", condition_regle(adresses), "--yes"], simulation=sim)
         sh(["vercel", "firewall", "publish", "--yes"], simulation=sim)
-        sh(["vercel", "firewall", "attack-mode", "disable", "--yes"], simulation=sim)
+
+    def attaque():
+        mode_attaque("disable", sim)
 
     def variables():
         sh(["vercel", "env", "rm", "ALLOWED_IPS", "production", "--yes"], simulation=sim, tolere=True)
@@ -152,7 +168,8 @@ def deverrouiller(sim, republier):
 
     print("DÉVERROUILLAGE" + (" (SIMULATION, rien n'est modifié)" if sim else ""))
     etape(bilan, "1. projet Vercel relancé", relance)
-    etape(bilan, "2. pare-feu : liste d'adresses rétablie, Attack Challenge coupé", pare_feu)
+    etape(bilan, "2. pare-feu : liste d'adresses rétablie", pare_feu)
+    etape(bilan, "2 bis. mode Attack Challenge coupé", attaque)
     etape(bilan, "3. variable ALLOWED_IPS + redéploiement", variables)
     etape(bilan, "4. GitHub Actions réactivé", actions)
     if republier:
@@ -166,14 +183,14 @@ def deverrouiller(sim, republier):
 def redeployer(sim):
     """Redéploie la dernière production EXISTANTE (jamais le dossier local : il peut contenir du code non validé) pour que les variables changées soient prises en compte."""
     if sim:
-        sh(["vercel", "redeploy", "<dernière production>", "--yes"], simulation=True)
+        sh(["vercel", "redeploy", "<dernière production>"], simulation=True)
         return
     sortie = sh(["vercel", "ls", "--prod", "--yes"])
     ligne = next((l for l in sortie.splitlines() if "Ready" in l and "Production" in l), "")
     m = re.search(r"https://\S+\.vercel\.app", ligne)
     if not m:
         raise RuntimeError("aucune production prête trouvée (vercel ls --prod)")
-    sh(["vercel", "redeploy", m.group(0), "--yes"])
+    sh(["vercel", "redeploy", m.group(0)])
 
 
 def projet_id():
