@@ -7,8 +7,11 @@
 - Vercel > projet `psa-site-factory-dashboard` > Firewall : refus de la liste blanche, limites de débit, challenges (l'API ne remonte pas l'historique : regarder l'onglet).
 - Vercel > Observability / Logs : erreurs et pics de requêtes.
 
+## 0 bis. Bouton rouge : tout couper
+`python3 scripts/urgence.py verrouiller --executer` (taper VERROUILLER) : liste d'adresses vidée (personne ne passe, toi compris) + Attack Challenge, dépôt de code en privé, sessions invalidées, projet Vercel en pause, GitHub Actions désactivé. Rien n'est supprimé. Simulation sans risque : `python3 scripts/urgence.py verrouiller` (sans `--executer`). État : `python3 scripts/urgence.py etat`. Réouverture : `python3 scripts/urgence.py deverrouiller --executer` (taper ROUVRIR ; le dépôt de code reste privé, `--republier` pour le repasser en public). Les adresses autorisées sont sauvegardées dans `~/.claude/secrets/converge-verrouillage.json` (hors dépôt) : ne pas perdre ce fichier tant que c'est verrouillé.
+
 ## 1. Attaque par volume ou site instable
-1. Mode « Attack Challenge » (Vercel > Firewall > Bot Management > Attack Challenge Mode) : tous les visiteurs non autorisés passent un challenge. En ligne de commande : `vercel api /v1/security/attack-mode -X POST -F projectId=<id> -F attackModeEnabled=true -F attackModeActiveUntil=<timestamp ms>` (à tester une première fois en dehors d'une crise).
+1. Mode « Attack Challenge » (Vercel > Firewall > Bot Management > Attack Challenge Mode) : tous les visiteurs non autorisés passent un challenge. En ligne de commande : `vercel firewall attack-mode enable` (effet immédiat) puis `vercel firewall attack-mode disable`.
 2. Vérifier que `liste-blanche-ip` est active : `vercel firewall rules list`.
 3. Plafond de dépenses : Vercel > Settings > Billing > Spend Management (alerte + coupure), pour qu'une attaque ne devienne pas une facture.
 
