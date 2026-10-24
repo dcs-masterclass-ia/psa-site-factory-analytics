@@ -5,7 +5,7 @@ const path = require("path");
 const racine = path.resolve(__dirname, "../..");
 const storePath = require.resolve(path.join(racine, "api/_lib/store.js"));
 const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
-let fichier = null, sha = 0, session = { email: "m.foureau@autobiz.com", role: "full" };
+let fichier = null, sha = 0, session = { email: "admin@exemple.test", role: "full" };
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async () => ({ data: fichier ? JSON.parse(JSON.stringify(fichier)) : null, sha: String(sha) }),
   writeJson: async (p, d) => { fichier = JSON.parse(JSON.stringify(d)); sha++; return { sha: String(sha) }; } } };
@@ -43,9 +43,9 @@ test("validation et droits : profil limité en lecture seule", async () => {
   assert.equal((await appelle("POST", { action: "save", event: { date: "pas-une-date", titre: "xxx" } })).code, 400);
   assert.equal((await appelle("POST", { action: "save", event: { date: "2026-09-02", titre: "x" } })).code, 400);
   assert.equal((await appelle("POST", { action: "delete", id: "E-nope" })).code, 404);
-  session = { email: "limite@autobiz.com", role: "limited" };
+  session = { email: "limite@exemple.test", role: "limited" };
   assert.equal((await appelle("GET")).code, 200);
   assert.equal((await appelle("GET")).body.peutEcrire, false);
   assert.equal((await appelle("POST", { action: "save", event: { date: "2026-09-02", titre: "Interdit" } })).code, 403);
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  session = { email: "admin@exemple.test", role: "full" };
 });

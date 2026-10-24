@@ -10,9 +10,9 @@ test("l'auteur est alerté quand son ticket change de statut ou reçoit une rép
   const t0 = Date.now() - 3600000;
   const tickets = [
     { id: "T-1", type: "optimisation", priorite: "normale", titre: "Total par canal", description: "Ajouter un total par canal", statut: "resolu", createdAt: t0, updatedAt: t0 + 1000, auteur: moi,
-      commentaires: [{ auteur: "x@autobiz.com", texte: "Statut : en_cours → resolu", at: t0 + 1000, systeme: true }, { auteur: "x@autobiz.com", texte: "Livré, tu peux vérifier sur tous les marchés.", at: t0 + 2000 }] },
+      commentaires: [{ auteur: "x@exemple.test", texte: "Statut : en_cours → resolu", at: t0 + 1000, systeme: true }, { auteur: "x@exemple.test", texte: "Livré, tu peux vérifier sur tous les marchés.", at: t0 + 2000 }] },
     { id: "T-2", type: "bug", priorite: "normale", titre: "Écart de leads", description: "Écart avec le BO sur septembre", statut: "refuse", createdAt: t0, updatedAt: t0 + 1000, auteur: moi,
-      commentaires: [{ auteur: "x@autobiz.com", texte: "Statut : nouveau → refuse", at: t0 + 1000, systeme: true }] },
+      commentaires: [{ auteur: "x@exemple.test", texte: "Statut : nouveau → refuse", at: t0 + 1000, systeme: true }] },
     { id: "T-3", type: "question", priorite: "normale", titre: "Définition de la conversion", description: "Comment est calculée la conversion ?", statut: "nouveau", createdAt: t0, updatedAt: t0, auteur: moi, commentaires: [] },
   ];
   await page.route("**/api/tickets", (r) => r.fulfill({ json: { tickets: tickets, peutGerer: false, moi } }));

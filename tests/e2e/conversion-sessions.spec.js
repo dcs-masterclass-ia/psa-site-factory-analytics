@@ -3,7 +3,7 @@
 const { test, expect } = require("@playwright/test");
 
 test("carte principale : conversion en sessions quand evDaily existe, tunnel inchangé", async ({ page, context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
   // chaque site reçoit un evDaily = 15 % des sessions de reprise du jour -> taux global attendu : 15,0 %
   await page.route(/\/data\/[a-z0-9-]+\.json$/, async (route) => {
@@ -30,7 +30,7 @@ test("mois entier : total mensuel GA4 (comme Looker) pour les sessions et le tau
   const d = JSON.parse(fs.readFileSync(fichier, "utf8"));
   test.skip(!d.repriseMonth || !d.repriseMonth["2026-09"], "données de septembre indisponibles");
   const prop = { daily: {}, month: { "2026-09": 1414658 } };   // total de la propriété (valeur GA4 relevée le 13/10/2026)
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await context.addInitScript(() => {
     sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "ga", from: "2026-09-01", to: "2026-09-30", sites: ["CITROEN FR"], cmpMode: "none" }));
   });

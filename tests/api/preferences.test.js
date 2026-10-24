@@ -23,7 +23,7 @@ test("préférences : refuse sans session", async () => {
 
 test("préférences : ne garde que des valeurs connues et borne le périmètre", async () => {
   fichiers = {};
-  const s = { email: "m@autobiz.com", role: "full" };
+  const s = { email: "m@exemple.test", role: "full" };
   const r = res();
   await handler({ method: "PUT", session: s, body: { prefs: { theme: "dark", lang: "xx", accueil: "tb", periode: "7", comparaison: "year", avatar: "qa",
     perimetre: { mode: "sites", sites: ["OPEL FR", "OPEL FR", "", "PEUGEOT FR"] }, injecte: "<script>" } } }, r);

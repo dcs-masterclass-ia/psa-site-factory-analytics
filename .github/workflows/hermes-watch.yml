@@ -72,8 +72,8 @@ jobs:
         # le repo de code.
         working-directory: data
         run: |
-          git config user.name "dcs-masterclass-ia"
-          git config user.email "m.foureau@autobiz.com"
+          git config user.name "converge-bot"
+          git config user.email "converge-bot@users.noreply.github.com"
           git add hermes_watch.json
           if git diff --cached --quiet; then
             echo "Aucun changement, pas de commit."

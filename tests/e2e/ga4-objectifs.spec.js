@@ -3,7 +3,7 @@
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
 });
 
 test("objectifs annuels : tableau d'avancement et saisie d'une cible", async ({ page }) => {
@@ -15,7 +15,7 @@ test("objectifs annuels : tableau d'avancement et saisie d'une cible", async ({ 
   await page.route("**/api/events", (r) => r.fulfill({ json: { events: [], peutEcrire: false } }));
   await page.route("**/api/objectifs", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { annees: { [annee]: cibles }, moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { annees: { [annee]: cibles }, moi: "e2e@exemple.test" } });
     const body = req.postDataJSON();
     posts.push(body);
     cibles = Object.assign({}, cibles, Object.fromEntries(Object.entries(body.cibles).filter(([, v]) => v)));

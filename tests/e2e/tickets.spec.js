@@ -4,26 +4,26 @@
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
 });
 
 function simule(page, { peutGerer = true, peutStatut = peutGerer, tickets = [] } = {}) {
   const posts = [];
   page.route("**/api/tickets", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { tickets, peutGerer, peutStatut, moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { tickets, peutGerer, peutStatut, moi: "e2e@exemple.test" } });
     const body = req.postDataJSON();
     posts.push(body);
     if (body.action === "create") {
       // la liste du serveur contient le ticket créé (le dashboard la relit périodiquement)
       const ticket = { id: "T-20261011-ab12", type: body.type, priorite: body.priorite, titre: body.titre, description: body.description,
-        statut: "nouveau", createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@autobiz.com", contexte: body.contexte, commentaires: [] };
+        statut: "nouveau", createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@exemple.test", contexte: body.contexte, commentaires: [] };
       tickets.unshift(ticket);
       return route.fulfill({ json: { ok: true, ticket } });
     }
     const t = tickets.find((x) => x.id === body.id) || tickets[0];
     if (body.action === "status") return route.fulfill({ json: { ok: true, ticket: { ...t, statut: body.statut } } });
-    return route.fulfill({ json: { ok: true, ticket: { ...t, commentaires: [{ auteur: "e2e@autobiz.com", texte: body.texte, at: Date.now() }] } } });
+    return route.fulfill({ json: { ok: true, ticket: { ...t, commentaires: [{ auteur: "e2e@exemple.test", texte: body.texte, at: Date.now() }] } } });
   });
   return posts;
 }
@@ -56,7 +56,7 @@ test("créer un ticket : validation, envoi avec contexte, retour dans le suivi",
 
 test("suivi : un gestionnaire change le statut et commente", async ({ page }) => {
   const base = { id: "T-20261001-0001", type: "optimisation", priorite: "haute", titre: "Export CSV des pages", description: "Pouvoir exporter le tableau Pages en CSV.",
-    statut: "nouveau", createdAt: Date.now() - 3600e3, updatedAt: Date.now(), auteur: "b.moumni@autobiz.com", contexte: { onglet: "Search Console", nbSites: 1, sites: ["PEUGEOT FR"] }, commentaires: [] };
+    statut: "nouveau", createdAt: Date.now() - 3600e3, updatedAt: Date.now(), auteur: "b.martin@exemple.test", contexte: { onglet: "Search Console", nbSites: 1, sites: ["PEUGEOT FR"] }, commentaires: [] };
   const posts = simule(page, { tickets: [base] });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Ticket", { exact: true }).first().click();
@@ -74,7 +74,7 @@ test("suivi : un gestionnaire change le statut et commente", async ({ page }) =>
 
 test("profil sans droit de gestion : pas de boutons de statut", async ({ page }) => {
   const base = { id: "T-20261001-0002", type: "bug", priorite: "normale", titre: "Mon ticket", description: "Description suffisante ici.", statut: "nouveau",
-    createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@autobiz.com", contexte: {}, commentaires: [] };
+    createdAt: Date.now(), updatedAt: Date.now(), auteur: "e2e@exemple.test", contexte: {}, commentaires: [] };
   simule(page, { peutGerer: false, tickets: [base] });
   await page.goto("/", { waitUntil: "networkidle" });
   await page.getByText("Ticket", { exact: true }).first().click();
@@ -84,7 +84,7 @@ test("profil sans droit de gestion : pas de boutons de statut", async ({ page })
 });
 
 test("les tickets résolus ou refusés passent dans l'onglet « Terminés », hors du suivi", async ({ page }) => {
-  const base = { type: "bug", priorite: "normale", description: "x", createdAt: Date.now() - 5000, updatedAt: Date.now() - 1000, auteur: "e2e@autobiz.com", contexte: {}, commentaires: [] };
+  const base = { type: "bug", priorite: "normale", description: "x", createdAt: Date.now() - 5000, updatedAt: Date.now() - 1000, auteur: "e2e@exemple.test", contexte: {}, commentaires: [] };
   simule(page, { peutGerer: false, tickets: [
     { ...base, id: "T-1", titre: "Ticket en cours", statut: "en_cours" },
     { ...base, id: "T-2", titre: "Ticket résolu", statut: "resolu" },

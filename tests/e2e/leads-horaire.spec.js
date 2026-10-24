@@ -7,7 +7,7 @@ const arr = (f) => Array.from({ length: 48 }, (_, i) => Math.round(f(i)));
 test("Leads : heure par heure et par jour", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => {
     if (r.request().url().includes("/api/leads-horaire")) {
       const base = arr((i) => Math.max(5, 130 * Math.sin((Math.PI * (i - 10)) / 34)));

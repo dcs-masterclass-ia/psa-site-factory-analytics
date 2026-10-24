@@ -10,7 +10,7 @@ const path = require("path");
   const cfg = JSON.parse(fs.readFileSync(path.join(racine, "ticket-capture.json"), "utf8"));
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 1700 } });
-  await ctx.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await ctx.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   const page = await ctx.newPage();
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("http://localhost:8199/", { waitUntil: "networkidle" });

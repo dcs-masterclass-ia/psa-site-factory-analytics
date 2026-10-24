@@ -16,13 +16,13 @@ def ko(t, ip, motif="jeton_invalide", **k):
 
 
 class Analyse(unittest.TestCase):
-    base = [ok(1 * H, "a@autobiz.com", "1.1.1.1"), ok(2 * H, "b@autobiz.com", "2.2.2.2")]
+    base = [ok(1 * H, "a@exemple.test", "1.1.1.1"), ok(2 * H, "b@exemple.test", "2.2.2.2")]
 
     def codes(self, evts, depuis=10 * H):
         return [c for c, _, _ in sv.analyse(evts, depuis)]
 
     def test_connexion_habituelle_ne_signale_rien(self):
-        self.assertEqual(self.codes(self.base + [ok(11 * H, "a@autobiz.com", "1.1.1.1")]), [])
+        self.assertEqual(self.codes(self.base + [ok(11 * H, "a@exemple.test", "1.1.1.1")]), [])
 
     def test_trois_echecs_meme_adresse(self):
         self.assertEqual(self.codes(self.base + [ko(11 * H + i, "9.9.9.9") for i in range(3)]), ["echecs_repetes"])
@@ -32,11 +32,11 @@ class Analyse(unittest.TestCase):
         self.assertEqual(self.codes(self.base + [ko(11 * H, "9.9.9.9", "compte_non_autorise", email="x@gmail.com")]), ["compte_inconnu"])
 
     def test_nouvelle_adresse_et_nouveau_pays(self):
-        self.assertEqual(self.codes(self.base + [ok(11 * H, "a@autobiz.com", "5.5.5.5")]), ["nouvelle_adresse"])
-        self.assertEqual(sorted(self.codes(self.base + [ok(11 * H, "a@autobiz.com", "5.5.5.5", "RU")])), ["nouveau_pays", "nouvelle_adresse"])
+        self.assertEqual(self.codes(self.base + [ok(11 * H, "a@exemple.test", "5.5.5.5")]), ["nouvelle_adresse"])
+        self.assertEqual(sorted(self.codes(self.base + [ok(11 * H, "a@exemple.test", "5.5.5.5", "RU")])), ["nouveau_pays", "nouvelle_adresse"])
 
     def test_premier_acces_d_un_compte_jamais_vu(self):
-        self.assertEqual(self.codes(self.base + [ok(11 * H, "c@autobiz.com", "1.1.1.1")]), ["premier_acces"])
+        self.assertEqual(self.codes(self.base + [ok(11 * H, "c@exemple.test", "1.1.1.1")]), ["premier_acces"])
 
     def test_les_faits_anciens_ne_sont_pas_resignales(self):
         self.assertEqual(self.codes(self.base + [ko(1 * H + i, "9.9.9.9") for i in range(5)]), [])

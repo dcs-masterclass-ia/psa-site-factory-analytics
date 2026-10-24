@@ -14,9 +14,9 @@ const req = (h) => ({ headers: Object.assign({ "x-forwarded-for": "203.0.113.7, 
 
 test("une connexion réussie est consignée avec adresse, pays et navigateur", async () => {
   fichier = null;
-  await J.consigne(req(), { ok: true, email: "a@autobiz.com" });
+  await J.consigne(req(), { ok: true, email: "a@exemple.test" });
   assert.equal(fichier.evts.length, 1);
-  assert.deepEqual([fichier.evts[0].ok, fichier.evts[0].email, fichier.evts[0].ip, fichier.evts[0].pays], [true, "a@autobiz.com", "203.0.113.7", "FR"]);
+  assert.deepEqual([fichier.evts[0].ok, fichier.evts[0].email, fichier.evts[0].ip, fichier.evts[0].pays], [true, "a@exemple.test", "203.0.113.7", "FR"]);
 });
 
 test("un refus garde son motif, et le journal est plafonné à 2000 lignes", async () => {
@@ -29,6 +29,6 @@ test("un refus garde son motif, et le journal est plafonné à 2000 lignes", asy
 
 test("une panne du magasin ne bloque jamais la connexion", async () => {
   panne = true;
-  await assert.doesNotReject(() => J.consigne(req(), { ok: true, email: "a@autobiz.com" }));
+  await assert.doesNotReject(() => J.consigne(req(), { ok: true, email: "a@exemple.test" }));
   panne = false;
 });
