@@ -18,7 +18,7 @@ test("Paramètres : ouverture par l'avatar et enregistrement d'une préférence"
   await page.goto("/", { waitUntil: "networkidle" });
   await page.locator('[title^="Paramètres"]').first().click();
   await expect(page.getByText("Mon profil")).toBeVisible();
-  await expect(page.getByText("e2e@autobiz.com").first()).toBeVisible();
+  await expect(page.getByText("e2e@exemple.test").first()).toBeVisible();
   await page.getByText("7 jours", { exact: true }).click();
   await expect.poll(() => sauve && sauve.periode).toBe("7");
   await page.getByText("Pilotage des leads", { exact: true }).last().click();

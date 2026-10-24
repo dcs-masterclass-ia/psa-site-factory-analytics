@@ -26,7 +26,7 @@ function appelle(method, body) {
 const valide = { action: "create", type: "bug", titre: "Leads FR faux", description: "Le total FR ne correspond pas au BO sur septembre.", priorite: "haute",
   contexte: { source: "tb", sites: ["PEUGEOT FR"], nbSites: 1, periode: { from: "2026-09-01", to: "2026-09-30" }, onglet: "Tableau" } };
 
-test.beforeEach(() => { fichier = null; sha = 0; session = { email: "m.foureau@autobiz.com", role: "full" }; });
+test.beforeEach(() => { fichier = null; sha = 0; session = { email: "admin@exemple.test", role: "full" }; });
 
 test("sans session : 401", async () => {
   session = null;
@@ -38,7 +38,7 @@ test("création valide : ticket nouveau, auteur = session, contexte nettoyé", a
   assert.equal(r.code, 200);
   assert.match(r.body.ticket.id, /^T-\d{8}-[0-9a-f]{4}$/);
   assert.equal(r.body.ticket.statut, "nouveau");
-  assert.equal(r.body.ticket.auteur, "m.foureau@autobiz.com");
+  assert.equal(r.body.ticket.auteur, "admin@exemple.test");
   assert.equal(fichier.tickets.length, 1);
 });
 
@@ -61,12 +61,12 @@ test("entrées hostiles : champs tronqués, source inconnue ignorée", async () 
 });
 
 test("profil limité : peut créer, ne voit que les siens, ne peut pas changer le statut", async () => {
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   const c = await appelle("POST", valide);
   assert.equal(c.code, 200);
-  session = { email: "autre@autobiz.com", role: "limited" };
+  session = { email: "autre@exemple.test", role: "limited" };
   await appelle("POST", { ...valide, titre: "Autre ticket" });
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   const l = await appelle("GET");
   assert.equal(l.body.tickets.length, 1);
   assert.equal(l.body.peutGerer, false);
@@ -75,15 +75,15 @@ test("profil limité : peut créer, ne voit que les siens, ne peut pas changer l
 
 test("profil limité : ticket d'un autre = introuvable (pas de fuite)", async () => {
   const c = await appelle("POST", valide);
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   assert.equal((await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "coucou" })).code, 404);
 });
 
-process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
+process.env.PRESENTATIONS_EMAILS = "admin@exemple.test";
 test("profil complet : voit tout, change le statut, historique tracé", async () => {
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   const c = await appelle("POST", valide);
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  session = { email: "admin@exemple.test", role: "full" };
   assert.equal((await appelle("GET")).body.tickets.length, 1);
   const s = await appelle("POST", { action: "status", id: c.body.ticket.id, statut: "en_cours" });
   assert.equal(s.body.ticket.statut, "en_cours");
@@ -92,7 +92,7 @@ test("profil complet : voit tout, change le statut, historique tracé", async ()
 });
 
 test("commentaire : l'auteur peut commenter son ticket, texte vide refusé", async () => {
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   const c = await appelle("POST", valide);
   assert.equal((await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "   " })).code, 400);
   const r = await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Précision : septembre uniquement" });
@@ -119,7 +119,7 @@ test("création : le ticket est trié tout de suite (catégorie + commentaire vi
 });
 
 test("précision demandée : la réponse de l'auteur lève l'attente", async () => {
-  session = { email: "auteur@autobiz.com", role: "limited" };
+  session = { email: "auteur@exemple.test", role: "limited" };
   const c = await appelle("POST", valide);
   fichier.tickets[0].attente = "auteur";
   const r = await appelle("POST", { action: "comment", id: c.body.ticket.id, texte: "Sur l'onglet GA4, tableau canal." });
@@ -129,7 +129,7 @@ test("précision demandée : la réponse de l'auteur lève l'attente", async () 
 
 test("profil complet qui n'est pas le propriétaire : voit et commente, mais ne peut pas changer le statut", async () => {
   const c = await appelle("POST", valide);
-  session = { email: "mohand.yahiaoui@autobiz.com", role: "full" };
+  session = { email: "mohand.yahiaoui@exemple.test", role: "full" };
   const g = await appelle("GET");
   assert.equal(g.body.peutGerer, true);
   assert.equal(g.body.peutStatut, false);
@@ -140,17 +140,17 @@ test("profil complet qui n'est pas le propriétaire : voit et commente, mais ne 
 });
 
 test("réponses de nos outils et du propriétaire : toujours signées « équipe-converge » (données réelles inchangées)", async () => {
-  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
-  session = { email: "auteur@autobiz.com", role: "limited" };
+  process.env.PRESENTATIONS_EMAILS = "admin@exemple.test";
+  session = { email: "auteur@exemple.test", role: "limited" };
   const c = await appelle("POST", valide);
   fichier.tickets[0].commentaires.push(
-    { auteur: "asktaprof@gmail.com", texte: "ok", at: 1 }, { auteur: "m.foureau@autobiz.com", texte: "ok2", at: 2 },
+    { auteur: "asktaprof@gmail.com", texte: "ok", at: 1 }, { auteur: "admin@exemple.test", texte: "ok2", at: 2 },
     { auteur: "converge-auto", texte: "auto", at: 3, systeme: true }, { auteur: "decision-teams", texte: "dt", at: 4, systeme: true },
-    { auteur: "mohand@autobiz.com", texte: "moi", at: 5 });
-  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com,asktaprof@gmail.com";
+    { auteur: "mohand@exemple.test", texte: "moi", at: 5 });
+  process.env.PRESENTATIONS_EMAILS = "admin@exemple.test,asktaprof@gmail.com";
   const g = await appelle("GET");
   const auteurs = g.body.tickets[0].commentaires.map(k => k.auteur);
-  assert.deepEqual(auteurs.slice(-5), ["équipe-converge", "équipe-converge", "équipe-converge", "équipe-converge", "mohand@autobiz.com"]);
-  assert.equal(fichier.tickets[0].commentaires.slice(-1)[0].auteur, "mohand@autobiz.com");
+  assert.deepEqual(auteurs.slice(-5), ["équipe-converge", "équipe-converge", "équipe-converge", "équipe-converge", "mohand@exemple.test"]);
+  assert.equal(fichier.tickets[0].commentaires.slice(-1)[0].auteur, "mohand@exemple.test");
   assert.ok(c.body.ticket);
 });

@@ -5,7 +5,7 @@ const path = require("path");
 const racine = path.resolve(__dirname, "../..");
 const storePath = require.resolve(path.join(racine, "api/_lib/store.js"));
 const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
-let fichier = null, sha = 0, session = { email: "m.foureau@autobiz.com", role: "full" };
+let fichier = null, sha = 0, session = { email: "admin@exemple.test", role: "full" };
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async () => ({ data: fichier ? JSON.parse(JSON.stringify(fichier)) : null, sha: String(sha) }),
   writeJson: async (p, d) => { fichier = JSON.parse(JSON.stringify(d)); sha++; return { sha: String(sha) }; } } };
@@ -18,11 +18,11 @@ const appelle = (method, body) => new Promise(resolve => {
 });
 
 test("profil limité : refusé ; session absente : 401", async () => {
-  session = { email: "l@autobiz.com", role: "limited" };
+  session = { email: "l@exemple.test", role: "limited" };
   assert.equal((await appelle("GET")).code, 403);
   session = null;
   assert.equal((await appelle("GET")).code, 401);
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  session = { email: "admin@exemple.test", role: "full" };
 });
 
 test("enregistrement fusionné, suppression d'une cible, validation", async () => {

@@ -733,8 +733,8 @@ def _git(*args):
 
 
 def _configure_git():
-    _git("config", "user.name", "dcs-masterclass-ia")
-    _git("config", "user.email", "m.foureau@autobiz.com")
+    _git("config", "user.name", "converge-bot")
+    _git("config", "user.email", "converge-bot@users.noreply.github.com")
 
 
 def _commit_et_pousse(chemins, message):

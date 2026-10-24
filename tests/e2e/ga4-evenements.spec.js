@@ -16,10 +16,10 @@ test("calendrier d'événements : liste, ajout, repère sur la courbe de session
   const posts = [];
   await page.route("**/api/events", async (route) => {
     const req = route.request();
-    if (req.method() === "GET") return route.fulfill({ json: { events, peutEcrire: true, moi: "e2e@autobiz.com" } });
+    if (req.method() === "GET") return route.fulfill({ json: { events, peutEcrire: true, moi: "e2e@exemple.test" } });
     const body = req.postDataJSON();
     posts.push(body);
-    if (body.action === "save") events.push({ id: "E-2", ...body.event, auteur: "e2e@autobiz.com" });
+    if (body.action === "save") events.push({ id: "E-2", ...body.event, auteur: "e2e@exemple.test" });
     return route.fulfill({ json: { ok: true } });
   });
   await page.goto("/", { waitUntil: "networkidle" });

@@ -12,8 +12,8 @@ async function ouvre(browser, email) {
 const etat = (page) => page.evaluate(() => sessionStorage.getItem("psf_ui_state"));
 
 test("la vue d'un compte n'impacte pas celle d'un autre compte connecté en même temps", async ({ browser }) => {
-  const a = await ouvre(browser, "a@autobiz.com");
-  const b = await ouvre(browser, "b@autobiz.com");
+  const a = await ouvre(browser, "a@exemple.test");
+  const b = await ouvre(browser, "b@exemple.test");
   const avant = await etat(b.page);
   await a.page.evaluate(() => sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "sc", sites: ["PEUGEOT FR"], from: "2026-09-01", to: "2026-09-30", cmpMode: "none" })));
   await a.page.reload({ waitUntil: "networkidle" });

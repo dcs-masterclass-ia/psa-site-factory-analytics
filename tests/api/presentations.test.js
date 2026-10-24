@@ -5,8 +5,8 @@ const path = require("path");
 const racine = path.resolve(__dirname, "../..");
 const storePath = require.resolve(path.join(racine, "api/_lib/store.js"));
 const authPath = require.resolve(path.join(racine, "api/_lib/auth.js"));
-process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com, perso@example.com, autre@autobiz.com, b.moumni@autobiz.com";
-process.env.C1ST_ADMIN_EMAILS = "m.foureau@autobiz.com";       // administrateur : voit et gère toutes les présentations
+process.env.PRESENTATIONS_EMAILS = "admin@exemple.test, perso@example.com, autre@exemple.test, b.martin@exemple.test";
+process.env.C1ST_ADMIN_EMAILS = "admin@exemple.test";       // administrateur : voit et gère toutes les présentations
 let fichier = null, fichierTpl = null, sha = 0, session = null;
 require.cache[storePath] = { id: storePath, filename: storePath, loaded: true, exports: {
   readJson: async p => { const f = p.includes("templates") ? fichierTpl : fichier; return { data: f ? JSON.parse(JSON.stringify(f)) : null, sha: String(sha) }; },
@@ -21,14 +21,14 @@ const appelle = (method, body, query) => new Promise(resolve => {
 });
 const brief = { titre: "Stellantis BELUX T3-2026", client: "Stellantis", langue: "en", perimetre: { pays: ["be", "LU"], marques: ["Peugeot", "Citroën"] },
   periode: { type: "trimestre", annee: 2026, indice: 3 }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "ytd", "seo", "marche", "objectifs", "crm", "inconnu"],
-  contact: { nom: "B. Moumni", fonction: "DKAM", email: "b.moumni@autobiz.com" },
+  contact: { nom: "B. Martin", fonction: "DKAM", email: "b.martin@exemple.test" },
   pointsOuverts: [{ titre: "Pop-in", texte: "À déployer" }, { titre: "", texte: "" }],
   prochainesEtapes: [{ item: "Promo Master", responsable: "autobiz", statut: "en_cours", echeance: "sept-26" }, { item: "", responsable: "x" }], commentaire: "RAS" };
-test.beforeEach(() => { fichier = null; fichierTpl = null; sha = 0; session = { email: "m.foureau@autobiz.com", role: "full" }; });
+test.beforeEach(() => { fichier = null; fichierTpl = null; sha = 0; session = { email: "admin@exemple.test", role: "full" }; });
 
 test("sans session 401, profil limité 403", async () => {
   session = null; assert.equal((await appelle("GET")).code, 401);
-  session = { email: "b.moumni@autobiz.com", role: "limited" };
+  session = { email: "b.martin@exemple.test", role: "limited" };
   assert.equal((await appelle("GET")).code, 403);
   assert.equal((await appelle("POST", { action: "save", brief })).code, 403);
 });
@@ -40,7 +40,7 @@ test("création : nettoyée (pays en majuscules, module inconnu et lignes vides 
   assert.deepEqual(b.perimetre.pays, ["BE", "LU"]);
   assert.deepEqual(b.modules, ["global", "trafic_marque", "ytd", "seo", "marche", "objectifs", "crm"]);
   assert.equal(b.pointsOuverts.length, 1); assert.equal(b.prochainesEtapes.length, 1);
-  assert.equal(b.auteur, "m.foureau@autobiz.com");
+  assert.equal(b.auteur, "admin@exemple.test");
 });
 test("validation : titre, client, pays, période, modules", async () => {
   for (const m of [{ titre: "" }, { client: "" }, { perimetre: { pays: [] } }, { periode: { type: "trimestre", annee: 1999, indice: 9 } }, { modules: ["x"] }])
@@ -48,47 +48,47 @@ test("validation : titre, client, pays, période, modules", async () => {
   assert.equal(fichier, null);
 });
 test("mise à jour par id : l'auteur ou un administrateur ; un autre utilisateur ne voit pas le brief (404)", async () => {
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   const c = await appelle("POST", { action: "save", brief });
   const u = await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id, titre: "Titre modifié" } });
   assert.equal(u.body.brief.titre, "Titre modifié");
-  session = { email: "b.moumni@autobiz.com", role: "full" };                                              // ni auteur ni administrateur
+  session = { email: "b.martin@exemple.test", role: "full" };                                              // ni auteur ni administrateur
   assert.equal((await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id } })).code, 404);
-  session = { email: "m.foureau@autobiz.com", role: "full" };                                            // administrateur
+  session = { email: "admin@exemple.test", role: "full" };                                            // administrateur
   const a = await appelle("POST", { action: "save", brief: { ...brief, id: c.body.brief.id, titre: "Corrigé par l'admin" } });
-  assert.equal(a.body.brief.titre, "Corrigé par l'admin"); assert.equal(a.body.brief.auteur, "autre@autobiz.com");
+  assert.equal(a.body.brief.titre, "Corrigé par l'admin"); assert.equal(a.body.brief.auteur, "autre@exemple.test");
   assert.equal(fichier.briefs.length, 1);
   assert.equal((await appelle("POST", { action: "save", brief: { ...brief, id: "B-nope" } })).code, 404);
 });
 test("suppression : l'auteur ou un administrateur", async () => {
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   const c = await appelle("POST", { action: "save", brief });
-  session = { email: "b.moumni@autobiz.com", role: "full" };
+  session = { email: "b.martin@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "delete", id: c.body.brief.id })).code, 404);
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "delete", id: c.body.brief.id })).code, 200);
   const d = await appelle("POST", { action: "save", brief });
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  session = { email: "admin@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "delete", id: d.body.brief.id })).code, 200);
   assert.equal(fichier.briefs.length, 0);
 });
 test("cloisonnement : la liste ne contient que les briefs de l'appelant, l'administrateur voit tout (et le sait)", async () => {
-  session = { email: "autre@autobiz.com", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De autre" } });
-  session = { email: "b.moumni@autobiz.com", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De Brahim" } });
+  session = { email: "autre@exemple.test", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De autre" } });
+  session = { email: "b.martin@exemple.test", role: "full" }; await appelle("POST", { action: "save", brief: { ...brief, titre: "De Benoit" } });
   const vue = async (email) => { session = { email, role: "full" }; const r = await appelle("GET"); return { admin: r.body.admin, titres: r.body.briefs.map((b) => b.titre).sort() }; };
-  assert.deepEqual(await vue("autre@autobiz.com"), { admin: false, titres: ["De autre"] });
-  assert.deepEqual(await vue("b.moumni@autobiz.com"), { admin: false, titres: ["De Brahim"] });
-  assert.deepEqual(await vue("m.foureau@autobiz.com"), { admin: true, titres: ["De Brahim", "De autre"] });
+  assert.deepEqual(await vue("autre@exemple.test"), { admin: false, titres: ["De autre"] });
+  assert.deepEqual(await vue("b.martin@exemple.test"), { admin: false, titres: ["De Benoit"] });
+  assert.deepEqual(await vue("admin@exemple.test"), { admin: true, titres: ["De Benoit", "De autre"] });
 });
 test("génération et téléchargement : refusés (404) à qui n'est ni l'auteur ni administrateur", async () => {
   process.env.GITHUB_TOKEN = "t"; global.fetch = async () => ({ status: 204 }); global.__binPptx = Buffer.from("pptx");
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   const c = await appelle("POST", { action: "save", brief });
   const id = c.body.brief.id;
-  session = { email: "b.moumni@autobiz.com", role: "full" };
+  session = { email: "b.martin@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "generate", id })).code, 404);
   assert.equal((await appelle("GET", null, { fichier: id })).code, 404);
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "generate", id })).code, 200);
   global.__binPptx = null;
 });
@@ -112,7 +112,7 @@ test("périodicités : mois, semestre, année ; indice hors bornes refusé ; anc
 });
 
 const modele = { nom: "BELUX trimestriel", description: "Reporting trimestriel Stellantis", config: { client: "Stellantis", langue: "en", periodicite: "trimestre",
-  perimetre: { pays: ["be", "lu"], marques: [] }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "x"], contact: { nom: "B. Moumni" }, commentaire: "",
+  perimetre: { pays: ["be", "lu"], marques: [] }, comparaisons: { precedente: true, n1: true }, modules: ["global", "trafic_marque", "x"], contact: { nom: "B. Martin" }, commentaire: "",
   periode: { type: "mois", annee: 2020, indice: 1 }, pointsOuverts: [{ titre: "ne doit pas être gardé", texte: "" }] } };
 
 test("modèles : création nettoyée (sans période ni points ouverts), liste, mise à jour", async () => {
@@ -136,9 +136,9 @@ test("modèles : validation, suppression par l'auteur seulement", async () => {
   assert.equal((await appelle("POST", { action: "save_template", template: { ...modele, config: { ...modele.config, perimetre: { pays: [] } } } })).code, 400);
   assert.equal((await appelle("POST", { action: "save_template", template: { ...modele, config: { ...modele.config, modules: [] } } })).code, 400);
   const c = await appelle("POST", { action: "save_template", template: modele });
-  session = { email: "autre@autobiz.com", role: "full" };
+  session = { email: "autre@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "delete_template", id: c.body.template.id })).code, 403);
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  session = { email: "admin@exemple.test", role: "full" };
   assert.equal((await appelle("POST", { action: "delete_template", id: c.body.template.id })).code, 200);
   assert.equal(fichierTpl.templates.length, 0);
   assert.equal((await appelle("POST", { action: "delete_template", id: "M-nope" })).code, 404);
@@ -167,15 +167,15 @@ test("téléchargement : identifiant invalide refusé, fichier absent = 404", as
 });
 
 test("verrouillé : seules les adresses de PRESENTATIONS_EMAILS accèdent à la route", async () => {
-  session = { email: "intrus@autobiz.com", role: "full" };
+  session = { email: "intrus@exemple.test", role: "full" };
   assert.equal((await appelle("GET")).code, 403);
   assert.equal((await appelle("POST", { action: "save", brief })).code, 403);
   session = { email: "PERSO@example.com", role: "full" };             // casse ignorée
   assert.equal((await appelle("GET")).code, 200);
   delete process.env.PRESENTATIONS_EMAILS;                            // variable absente : personne
   assert.equal((await appelle("GET")).code, 403);
-  process.env.PRESENTATIONS_EMAILS = "m.foureau@autobiz.com";
-  session = { email: "m.foureau@autobiz.com", role: "full" };
+  process.env.PRESENTATIONS_EMAILS = "admin@exemple.test";
+  session = { email: "admin@exemple.test", role: "full" };
 });
 
 test("commentaires et actions par marque : clés connues seulement, texte borné, lignes vides retirées", async () => {
