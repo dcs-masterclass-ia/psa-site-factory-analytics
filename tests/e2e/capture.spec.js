@@ -4,7 +4,7 @@ const { test, expect } = require("@playwright/test");
 const fs = require("fs");
 
 test.beforeEach(async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "prenom.nom%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "prenom.nom%40exemple.test", url: "http://localhost:8199" }]);
   await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://localhost:8199" });
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); if (!sessionStorage.getItem("psf_cap_init")) { sessionStorage.setItem("psf_cap_init", "1"); if (!window.__sansCapture) localStorage.setItem("psf_capture", "1"); } } catch (e) {} });
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));

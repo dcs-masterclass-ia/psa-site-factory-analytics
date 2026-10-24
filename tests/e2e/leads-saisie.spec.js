@@ -5,7 +5,7 @@ const { test, expect } = require("@playwright/test");
 test("projet d'achat : la saisie du véhicule (immatriculation / marque et modèle) s'affiche et fait 100 %", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await page.evaluate(() => sessionStorage.setItem("psf_ui_state", JSON.stringify({ source: "tb", sites: ["PEUGEOT FR"], from: null, to: null, cmpMode: "none" })));

@@ -11,7 +11,7 @@ const DATA = path.join(__dirname, "..", "..", "data");
 
 test.beforeEach(async ({ context, page }) => {
   await context.addCookies([
-    { name: "psf_user_email", value: "limite%40autobiz.com", url: "http://localhost:8199" },
+    { name: "psf_user_email", value: "limite%40exemple.test", url: "http://localhost:8199" },
     { name: "psf_role", value: "limited", url: "http://localhost:8199" },
   ]);
   await page.route("**/api/data?f=*", async (route) => {

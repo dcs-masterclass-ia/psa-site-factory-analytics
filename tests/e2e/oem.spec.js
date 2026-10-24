@@ -8,7 +8,7 @@ async function ouvre(context, page, avant) {
   const erreurs = [];
   page.on("console", (m) => { if (/renderVals|FAILED/.test(m.text())) erreurs.push(m.text().slice(0, 200)); });
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   if (avant) await page.addInitScript(avant);
   await page.goto("/", { waitUntil: "networkidle" });

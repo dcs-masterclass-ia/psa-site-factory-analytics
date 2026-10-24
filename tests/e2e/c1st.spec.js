@@ -16,7 +16,7 @@ const FIN = new Date(Date.UTC(+MOIS.slice(0, 4), +MOIS.slice(5, 7), 0)).toISOStr
 test("C1ST : onglet, cartes, entonnoirs, évolution et chiffres du fichier", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   // périmètre : un seul site (PEUGEOT FR), source C1ST
@@ -37,7 +37,7 @@ test("C1ST : onglet, cartes, entonnoirs, évolution et chiffres du fichier", asy
 });
 
 test("C1ST : Spoticar affiché n.d. et exclu du total ; marques non suivies signalées", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
@@ -48,7 +48,7 @@ test("C1ST : Spoticar affiché n.d. et exclu du total ; marques non suivies sign
 });
 
 test("C1ST : sans l'accès des Présentations (même liste d'adresses), pas d'onglet C1ST", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator('div[title="C1ST"]')).toHaveCount(0);
@@ -56,7 +56,7 @@ test("C1ST : sans l'accès des Présentations (même liste d'adresses), pas d'on
 });
 
 test("C1ST : Allemagne, Pologne, Autriche et Royaume-Uni sont suivis (mise en garde sur le suivi des concessionnaires)", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
@@ -69,7 +69,7 @@ test("C1ST : Allemagne, Pologne, Autriche et Royaume-Uni sont suivis (mise en ga
 test("C1ST : onglet « Leads Funnel » avec les six graphiques de C1ST et les taux clés face à la comparaison", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
@@ -91,7 +91,7 @@ test("C1ST : onglet « Leads Funnel » avec les six graphiques de C1ST et les ta
 });
 
 test("C1ST : sans données par contrat, pas d'onglet « Leads Network Vision »", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.route("**/data/c1st/reseau.json", (r) => r.fulfill({ status: 404, body: "" }));
@@ -105,7 +105,7 @@ test("C1ST : sans données par contrat, pas d'onglet « Leads Network Vision »"
 test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à traiter, tableau par contrat)", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   const contrats = [
@@ -135,7 +135,7 @@ test("C1ST : onglet « Leads Network Vision » (bandeau, entonnoir, contrats à 
 test("C1ST : code d'accès mensuel requis, l'onglet se déverrouille avec le bon code", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   let ouvert = false, essais = 0;
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
@@ -166,7 +166,7 @@ test("C1ST : code d'accès mensuel requis, l'onglet se déverrouille avec le bon
 test("C1ST : l'administrateur voit le code du mois et peut révoquer les accès (avec confirmation)", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   const appels = [];
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
@@ -190,7 +190,7 @@ test("C1ST : l'administrateur voit le code du mois et peut révoquer les accès 
 test("C1ST : verrouillage automatique après 5 minutes sans activité, et bouton « Verrouiller »", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   const appels = [];
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
@@ -210,7 +210,7 @@ test("C1ST : verrouillage automatique après 5 minutes sans activité, et bouton
 });
 
 test("C1ST : le bouton « Verrouiller » ferme tout de suite, sans mention de durée", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.route("**/api/c1st-acces", async (r) => { await new Promise((x) => setTimeout(x, 1500)); await r.fulfill({ json: { ouvert: true, admin: false } }); });   // réseau lent : l'écran ne doit pas attendre
@@ -223,7 +223,7 @@ test("C1ST : le bouton « Verrouiller » ferme tout de suite, sans mention de du
 });
 
 test("C1ST : F12 ou clic droit verrouille aussitôt l'onglet et trace la tentative", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });
   const alertes = [];
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));

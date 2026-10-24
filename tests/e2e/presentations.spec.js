@@ -4,13 +4,13 @@
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }, { name: "psf_feat", value: "pres", url: "http://localhost:8199" }]);
   await context.addInitScript(() => { try { localStorage.setItem("psf_nouveau_v1", "1"); } catch (e) {} });   // pas de fenêtre « Du nouveau » devant les clics
 });
 
 test("verrouillé : sans l'autorisation, l'onglet Présentations n'apparaît pas", async ({ browser }) => {
   const ctx = await browser.newContext({ baseURL: "http://localhost:8199" });
-  await ctx.addCookies([{ name: "psf_user_email", value: "autre%40autobiz.com", url: "http://localhost:8199" }]);
+  await ctx.addCookies([{ name: "psf_user_email", value: "autre%40exemple.test", url: "http://localhost:8199" }]);
   const page = await ctx.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.locator('div[title="Google Analytics 4"]').first()).toBeVisible();

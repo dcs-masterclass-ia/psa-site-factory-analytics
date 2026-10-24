@@ -3,7 +3,7 @@
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
 });
 
 test("alertes proactives : liste de la sélection et réglage des seuils", async ({ page }) => {

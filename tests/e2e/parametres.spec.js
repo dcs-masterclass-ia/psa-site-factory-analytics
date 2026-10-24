@@ -6,7 +6,7 @@ test("Paramètres : ouverture par l'avatar et enregistrement d'une préférence"
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
   let sauve = null;
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => {
     const u = r.request().url();
     if (u.includes("/api/preferences")) {
@@ -29,7 +29,7 @@ test("Paramètres : ouverture par l'avatar et enregistrement d'une préférence"
 });
 
 test("Paramètres : les préférences enregistrées s'appliquent à l'ouverture", async ({ context, page }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => {
     if (r.request().url().includes("/api/preferences")) return r.fulfill({ json: { prefs: { accueil: "tb", periode: "14", comparaison: "none" } } });
     return r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } });

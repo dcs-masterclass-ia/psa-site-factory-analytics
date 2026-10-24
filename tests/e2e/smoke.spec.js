@@ -9,7 +9,7 @@ const { test, expect } = require("@playwright/test");
 // cookie -> reload utilise pendant le developpement manuel.
 test.beforeEach(async ({ context }) => {
   await context.addCookies([
-    { name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" },
+    { name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" },
   ]);
 });
 
@@ -195,7 +195,7 @@ test.describe("pivot pages -> requêtes", () => {
 });
 
 test("thème : suit la préférence système, bascule manuelle, mémorisé", async ({ page, context }) => {
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   const theme = () => page.evaluate(() => document.documentElement.getAttribute("data-theme"));
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/", { waitUntil: "networkidle" });

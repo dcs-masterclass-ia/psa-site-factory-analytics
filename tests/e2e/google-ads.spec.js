@@ -5,7 +5,7 @@ const { test, expect } = require("@playwright/test");
 test("Google Ads : onglet en cours de construction", async ({ context, page }) => {
   const erreurs = [];
   page.on("pageerror", (e) => erreurs.push(e.message));
-  await context.addCookies([{ name: "psf_user_email", value: "e2e%40autobiz.com", url: "http://localhost:8199" }]);
+  await context.addCookies([{ name: "psf_user_email", value: "e2e%40exemple.test", url: "http://localhost:8199" }]);
   await page.route("**/api/**", (r) => r.fulfill({ json: { events: [], peutEcrire: false, tickets: [] } }));
   await page.goto("/", { waitUntil: "networkidle" });
   await expect(page.getByText("Google Ads", { exact: true }).first()).toBeVisible();   // libellé du menu
