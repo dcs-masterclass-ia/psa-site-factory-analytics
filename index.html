@@ -250,6 +250,14 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     <span style="{{ lblGA }}">GA4</span>
     </div>
+    <sc-if value="{{ isOem }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ pickTB }}" title="Pilotage des leads" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
+    <div style="{{ srcTB }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
+      <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
+    </div>
+    <span style="{{ lblTB }}">Leads</span>
+    </div>
+    </sc-if>
     <sc-if value="{{ !isOem }}" hint-placeholder-val="{{ true }}">
     <div onClick="{{ pickSC }}" title="Search Console" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
     <div style="{{ srcSC }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
@@ -275,16 +283,6 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
     </div>
     </sc-if>
     </div>
-    <sc-if value="{{ isOem }}" hint-placeholder-val="{{ false }}">
-    <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.1vh,12px)">
-    <div onClick="{{ pickTB }}" title="Pilotage des leads" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(2px,.5vh,6px);cursor:pointer">
-    <div style="{{ srcTB }}" style-hover="border-color:#cdbffb;transform:translateY(-1px)">
-      <img src="https://img.icons8.com/color/512/tableau-software.png" data-keep alt="" width="22" height="22" style="display:block;object-fit:contain">
-    </div>
-    <span style="{{ lblTB }}">Leads</span>
-    </div>
-    </div>
-    </sc-if>
     <sc-if value="{{ !isLimited }}" hint-placeholder-val="{{ true }}">
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(4px,1.1vh,12px)">
     <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:clamp(3px,.5vh,6px);margin-top:0"><span style="width:44px;height:1px;background:#ececee"></span><span style="font-size:9.5px;font-weight:600;letter-spacing:.09em;color:#a9aeb6;white-space:nowrap">LEADS &amp; CRM</span></div>
