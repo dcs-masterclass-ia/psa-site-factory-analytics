@@ -131,7 +131,13 @@ def verrouiller(sim):
     rapport(bilan)
 
 
-def deverrouiller(sim, republier):
+def deverrouiller(sim, republier, pause_seule=False):
+    if pause_seule:       # après un verrouillage AUTOMATIQUE de la sentinelle : seule la pause Vercel a été posée, rien d'autre à rétablir
+        bilan = []
+        print("DÉVERROUILLAGE (pause seule)" + (" (SIMULATION, rien n'est modifié)" if sim else ""))
+        etape(bilan, "projet Vercel relancé", lambda: sh(["vercel", "api", f"/v1/projects/{projet_id()}/unpause", "-X", "POST"], simulation=sim))
+        rapport(bilan)
+        return
     try:
         adresses = json.loads(ETAT.read_text(encoding="utf-8"))["adresses"]
     except Exception:
@@ -201,6 +207,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=("etat", "verrouiller", "deverrouiller"))
     ap.add_argument("--executer", action="store_true", help="agit vraiment (sinon simulation)")
+    ap.add_argument("--pause-seule", action="store_true", help="déverrouiller : relance seulement le projet Vercel (verrouillage automatique de la sentinelle)")
     ap.add_argument("--republier", action="store_true", help="déverrouiller : repasse aussi le dépôt de code en public")
     a = ap.parse_args()
     if a.action == "etat":
@@ -210,7 +217,7 @@ def main():
         mot = "VERROUILLER" if a.action == "verrouiller" else "ROUVRIR"
         if input(f"Action réelle sur la production. Tape {mot} pour confirmer : ").strip() != mot:
             sys.exit("Annulé.")
-    verrouiller(sim) if a.action == "verrouiller" else deverrouiller(sim, a.republier)
+    verrouiller(sim) if a.action == "verrouiller" else deverrouiller(sim, a.republier, a.pause_seule)
 
 
 if __name__ == "__main__":

@@ -191,11 +191,14 @@ def main():
     dernier = etat_prec.get("dernier", 0)
     depuis = max(dernier, now - 2 * 3600 * 1000) if dernier else now - 35 * 60 * 1000
     constats = analyse(evts, depuis)
-    res = sonde()
-    nouvel, c_sonde, pannes = etat_sonde(res, etat_prec.get("sonde", {}))
-    constats = c_sonde + constats
-    print("sonde : " + ", ".join(f"{ch.split('?')[0]} {st}" for ch, st in res) + f" -> {nouvel}")
-    ETAT.write_text(json.dumps({"dernier": now, "sonde": {"etat": nouvel, "pannes": pannes}}), encoding="utf-8")
+    if os.environ.get("SONDE", "1") == "1":       # désactivée dans securite-veille.yml : la sentinelle (toutes les 10 min) s'en charge
+        res = sonde()
+        nouvel, c_sonde, pannes = etat_sonde(res, etat_prec.get("sonde", {}))
+        constats = c_sonde + constats
+        print("sonde : " + ", ".join(f"{ch.split('?')[0]} {st}" for ch, st in res) + f" -> {nouvel}")
+        ETAT.write_text(json.dumps({"dernier": now, "sonde": {"etat": nouvel, "pannes": pannes}}), encoding="utf-8")
+    else:
+        ETAT.write_text(json.dumps({"dernier": now}), encoding="utf-8")
     if not constats:
         print("RAS")
         return 0
