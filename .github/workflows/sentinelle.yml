@@ -1,0 +1,37 @@
+name: Sentinelle de sécurité
+
+# Toutes les 10 minutes : sonde externe, changements sensibles (GitHub, Vercel) et verrouillage automatique (pause du projet Vercel) si la liste d'adresses cède
+# deux contrôles de suite ou si un commit direct apparaît sur main. Voir pipeline/sentinelle.py. Secrets : SECURITE_WEBHOOK_URL, VERCEL_TOKEN (facultatif : sans lui, alertes seulement).
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sentinelle
+  cancel-in-progress: false
+
+jobs:
+  sentinelle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Restaurer l'état
+        uses: actions/cache@v4
+        with:
+          path: sentinelle_state.json
+          key: sentinelle-state-${{ github.run_id }}
+          restore-keys: sentinelle-state-
+      - name: Sentinelle
+        env:
+          SECURITE_WEBHOOK_URL: ${{ secrets.SECURITE_WEBHOOK_URL }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m pipeline.sentinelle
