@@ -35,12 +35,21 @@ def api(url, jeton=None, methode="GET"):
 
 
 def commits_directs(commits, dernier_sha):
-    """Commits de main postérieurs à `dernier_sha` (liste du plus récent au plus ancien) : [(sha, direct?)]. Fusion de PR = 2 parents."""
+    """Commits de la ligne principale de main postérieurs à `dernier_sha` (du plus récent au plus ancien) : [(sha, direct?)].
+
+    On ne suit que le PREMIER parent depuis la tête : une fusion de PR (2 parents) est un commit de la ligne principale, mais les commits de la branche fusionnée
+    (un seul parent, côté 2e parent) n'en font pas partie. L'API GitHub les liste pourtant tous : sans ce filtre, chaque PR de plusieurs commits était prise
+    pour des commits directs sur main (fausse alerte critique et verrouillage automatique du 28/10/2026). Direct = commit de la ligne principale à un seul parent."""
+    par_sha = {c["sha"]: c for c in commits}
     nouveaux = []
-    for c in commits:
-        if c["sha"] == dernier_sha:
+    sha = commits[0]["sha"] if commits else None
+    while sha in par_sha:
+        c = par_sha[sha]
+        if sha == dernier_sha:
             break
-        nouveaux.append((c["sha"], len(c.get("parents", [])) < 2))
+        parents = c.get("parents", [])
+        nouveaux.append((sha, len(parents) < 2))
+        sha = parents[0]["sha"] if parents else None
     return nouveaux
 
 

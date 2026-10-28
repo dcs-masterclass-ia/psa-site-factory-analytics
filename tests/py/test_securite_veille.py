@@ -67,11 +67,29 @@ class Sonde(unittest.TestCase):
 
 
 class Sentinelle(unittest.TestCase):
+    @staticmethod
+    def _c(sha, *parents):
+        return {"sha": sha, "parents": [{"sha": p} for p in parents]}
+
     def test_commit_direct_et_fusion(self):
         from pipeline import sentinelle as st
-        commits = [{"sha": "c3", "parents": [1]}, {"sha": "c2", "parents": [1, 2]}, {"sha": "c1", "parents": [1]}]
+        # c3 = commit direct (1 parent) ; c2 = fusion de PR (2 parents : c1 puis b1) ; c1 = ancien commit de la ligne principale
+        commits = [self._c("c3", "c2"), self._c("c2", "c1", "b1"), self._c("b1", "c1"), self._c("c1", "c0")]
         self.assertEqual(st.commits_directs(commits, "c1"), [("c3", True), ("c2", False)])
         self.assertEqual(st.commits_directs(commits, "c3"), [])
+
+    def test_commits_d_une_branche_fusionnee_ne_sont_pas_directs(self):
+        """Fausse alerte du 28/10/2026 : l'API liste aussi les commits de la branche d'une PR fusionnée (un seul parent), qui ne sont pas des commits directs."""
+        from pipeline import sentinelle as st
+        # fusion m (parents : tête précédente p, branche b2) ; la branche a deux commits b2 -> b1 -> p
+        commits = [self._c("m", "p", "b2"), self._c("b2", "b1"), self._c("b1", "p"), self._c("p", "q")]
+        self.assertEqual(st.commits_directs(commits, "p"), [("m", False)])           # ni b2 ni b1
+        self.assertFalse([sha for sha, direct in st.commits_directs(commits, "p") if direct])
+
+    def test_commit_direct_apres_une_fusion_reste_detecte(self):
+        from pipeline import sentinelle as st
+        commits = [self._c("d", "m"), self._c("m", "p", "b1"), self._c("b1", "p"), self._c("p", "q")]
+        self.assertEqual(st.commits_directs(commits, "p"), [("d", True), ("m", False)])
 
     def test_sonde_ouverte_confirmee_en_deux_passages(self):
         e1, _, _ = sv.etat_sonde([("/", 200)], {})
