@@ -24,7 +24,7 @@ FICHIER = RACINE / "data" / "ads" / "ga4.json"
 PARIS = ZoneInfo("Europe/Paris")
 MOIS_HISTORIQUE = 13          # mois civils collectés (dont le mois en cours)
 JOURS_CAMPAGNES = 30          # fenêtre des campagnes et du total « 30 derniers jours »
-TOP_CAMPAGNES = 8             # campagnes gardées par compte (par clics)
+TOP_CAMPAGNES = 12            # campagnes gardées par compte (par clics, sur la période courante ou la précédente)
 SANS_COMPTE = ("", "(not set)")
 
 
@@ -43,41 +43,56 @@ def debut_historique(aujourdhui):
     return date(a, m, 1)
 
 
-def agrege(lignes_mois, lignes_camp):
-    """Fusionne les deux requêtes GA4 d'une propriété en liste de comptes.
+def agrege(lignes_mois, lignes_camp, lignes_camp_prec=()):
+    """Fusionne les requêtes GA4 d'une propriété en liste de comptes.
 
-    lignes_mois : [(mois 'AAAAMM', compte, coût, clics, impressions)] ; lignes_camp : [(compte, campagne, coût, clics, impressions)] sur les JOURS_CAMPAGNES derniers jours.
-    Un compte garde ses séries mensuelles, ses totaux 30 j, son nombre de campagnes, ses TOP_CAMPAGNES premières campagnes et `clics_sans_cout` : les clics des campagnes
-    dont le coût est nul (coût non transmis par la liaison GA4 vers Ads, ou campagne réellement gratuite : on ne peut pas les distinguer d'ici)."""
+    lignes_mois : [(mois 'AAAAMM', compte, coût, clics, impressions)] ; lignes_camp : [(compte, campagne, coût, clics, impressions)] sur les JOURS_CAMPAGNES derniers jours ;
+    lignes_camp_prec : même format sur les JOURS_CAMPAGNES jours d'avant (comparaison). Un compte garde ses séries mensuelles, ses totaux de la période et de la précédente
+    (`cout_prec`, `clics_prec`, `impressions_prec`), son nombre de campagnes, ses TOP_CAMPAGNES premières campagnes [nom, coût, clics, impressions, clics période précédente] et
+    `clics_sans_cout` : les clics des campagnes dont le coût est nul (coût non transmis par la liaison GA4 vers Ads, ou campagne réellement gratuite : on ne peut pas les distinguer d'ici)."""
+    def neuf(compte):
+        return {"nom": compte, "mensuel": {}, "cout": 0.0, "clics": 0, "impressions": 0, "cout_prec": 0.0, "clics_prec": 0, "impressions_prec": 0, "campagnes": 0, "clics_sans_cout": 0, "top": []}
     comptes = {}
     for mois, compte, cout, clics, impr in lignes_mois:
         if compte in SANS_COMPTE:
             continue
-        c = comptes.setdefault(compte, {"nom": compte, "mensuel": {}, "cout": 0.0, "clics": 0, "impressions": 0, "campagnes": 0, "clics_sans_cout": 0, "top": []})
+        c = comptes.setdefault(compte, neuf(compte))
         cle = f"{mois[:4]}-{mois[4:6]}"
         m = c["mensuel"].setdefault(cle, [0.0, 0, 0])
         m[0] += cout
         m[1] += clics
         m[2] += impr
-    par_compte = defaultdict(list)
+    nom_camp = lambda camp: camp if camp not in ("", "(not set)") else "(sans campagne)"
+    camps, prec = defaultdict(dict), defaultdict(dict)
     for compte, camp, cout, clics, impr in lignes_camp:
         if compte in SANS_COMPTE:
             continue
-        c = comptes.setdefault(compte, {"nom": compte, "mensuel": {}, "cout": 0.0, "clics": 0, "impressions": 0, "campagnes": 0, "clics_sans_cout": 0, "top": []})
+        c = comptes.setdefault(compte, neuf(compte))
         c["cout"] += cout
         c["clics"] += int(clics)
         c["impressions"] += int(impr)
         if cout == 0 and clics > 0:
             c["clics_sans_cout"] += int(clics)
-        par_compte[compte].append([camp if camp not in ("", "(not set)") else "(sans campagne)", round(cout, 2), int(clics), int(impr)])
+        camps[compte][nom_camp(camp)] = [round(cout, 2), int(clics), int(impr)]
+    for compte, camp, cout, clics, impr in lignes_camp_prec:
+        if compte in SANS_COMPTE:
+            continue
+        c = comptes.setdefault(compte, neuf(compte))
+        c["cout_prec"] += cout
+        c["clics_prec"] += int(clics)
+        c["impressions_prec"] += int(impr)
+        prec[compte][nom_camp(camp)] = int(clics)
     out = []
     for compte, c in comptes.items():
-        camps = sorted(par_compte.get(compte, []), key=lambda x: (-x[2], -x[1]))
-        c["campagnes"] = len(camps)
-        c["top"] = camps[:TOP_CAMPAGNES]
+        noms = set(camps.get(compte, {})) | set(prec.get(compte, {}))
+        lignes = [[n, *camps.get(compte, {}).get(n, [0.0, 0, 0]), prec.get(compte, {}).get(n, 0)] for n in noms]
+        lignes.sort(key=lambda x: (-max(x[2], x[4]), -x[1], x[0]))
+        c["campagnes"] = len(camps.get(compte, {}))
+        c["top"] = lignes[:TOP_CAMPAGNES]
         c["cout"] = round(c["cout"], 2)
+        c["cout_prec"] = round(c["cout_prec"], 2)
         c["mensuel"] = {k: [round(v[0], 2), int(v[1]), int(v[2])] for k, v in sorted(c["mensuel"].items())}
-        if c["clics"] or c["cout"] or any(v[1] or v[0] for v in c["mensuel"].values()):
+        if c["clics"] or c["cout"] or c["clics_prec"] or any(v[1] or v[0] for v in c["mensuel"].values()):
             out.append(c)
     return sorted(out, key=lambda c: (-c["clics"], -c["cout"], c["nom"]))
 
@@ -110,8 +125,12 @@ def collecte_site(cli, site, aujourdhui):
     for cle, d1, d2 in mois_a_collecter(aujourdhui):
         lignes, devise = _rapport(cli, site.propriete, ["sessionGoogleAdsAccountName"], d1, d2)
         mois += [(cle, d[0], m[0], m[1], m[2]) for d, m in lignes]
-    camps, _ = _rapport(cli, site.propriete, ["sessionGoogleAdsAccountName", "sessionGoogleAdsCampaignName"], (aujourdhui - timedelta(days=JOURS_CAMPAGNES)).isoformat(), fin)
-    comptes = agrege(mois, [(d[0], d[1], m[0], m[1], m[2]) for d, m in camps])
+    dims = ["sessionGoogleAdsAccountName", "sessionGoogleAdsCampaignName"]
+    debut_p = aujourdhui - timedelta(days=JOURS_CAMPAGNES)
+    camps, _ = _rapport(cli, site.propriete, dims, debut_p.isoformat(), fin)
+    prec, _ = _rapport(cli, site.propriete, dims, (debut_p - timedelta(days=JOURS_CAMPAGNES)).isoformat(), (debut_p - timedelta(days=1)).isoformat())
+    f = lambda rows: [(d[0], d[1], m[0], m[1], m[2]) for d, m in rows]
+    comptes = agrege(mois, f(camps), f(prec))
     return {"nom": site.nom, "noms": [site.nom], "pays": site.pays, "propriete": site.propriete, "devise": devise, "comptes": comptes}
 
 
