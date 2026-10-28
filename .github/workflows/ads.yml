@@ -1,0 +1,52 @@
+name: Collecte Google Ads (via GA4)
+
+# Chaque nuit : lit dans GA4 les comptes, campagnes, clics, impressions et coûts Google Ads liés aux propriétés des sites (pipeline/ads.py, compte de service GA4 habituel)
+# et publie data/ads/ga4.json dans le repo de données privé. Secret requis : GA4_SERVICE_ACCOUNT (déjà utilisé par refresh.yml). Sans lui le workflow s'arrête sans échec.
+on:
+  schedule:
+    - cron: "15 4 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ads
+  cancel-in-progress: false
+
+jobs:
+  collecte:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Récupérer les données (repo séparé)
+        uses: actions/checkout@v4
+        with:
+          repository: dcs-masterclass-ia/psa-site-factory-data
+          path: data
+          ref: main
+          token: ${{ secrets.PIPELINE_PUSH_TOKEN }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install google-analytics-data==0.18.19 google-auth==2.35.0
+      - name: Collecter les données Google Ads (GA4)
+        env:
+          CLE: ${{ secrets.GA4_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$CLE" ]; then echo "GA4_SERVICE_ACCOUNT absent : collecte Google Ads non configurée"; exit 0; fi
+          printf '%s' "$CLE" > "$RUNNER_TEMP/ga4.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/ga4.json"
+          python -m pipeline.ads --ecrire
+      - name: Publier (repo de données)
+        working-directory: data
+        run: |
+          if [ -z "$(git status --porcelain -- ads)" ]; then echo "rien à publier"; exit 0; fi
+          git config user.name "converge-auto"; git config user.email "converge-auto@users.noreply.github.com"
+          git add ads
+          git commit -m "chore(ads): collecte Google Ads via GA4"
+          for i in 1 2 3; do git pull -q --rebase && git push -q && exit 0; sleep 5; done
+          exit 1
