@@ -1,5 +1,5 @@
 // @ts-check
-// Onglet Google Ads : « en cours de construction » ; sans données publiées il le dit, avec data/ads/ga4.json (collecte GA4 de la nuit) il affiche clics, impressions, coût et l'avertissement sur le coût non transmis.
+// Onglet Google Ads : sans données publiées il le dit, avec data/ads/ga4.json (collecte GA4 de la nuit) il affiche clics, impressions, coût et l'avertissement sur le coût non transmis.
 const { test, expect } = require("@playwright/test");
 
 const FIXTURE = {
@@ -26,16 +26,15 @@ async function ouvre(context, page, ads) {
   return erreurs;
 }
 
-test("Google Ads : onglet en cours de construction, sans données publiées", async ({ context, page }) => {
+test("Google Ads : sans données publiées, l'onglet l'indique", async ({ context, page }) => {
   const erreurs = await ouvre(context, page, null);
-  await expect(page.getByText("En cours de construction")).toBeVisible();
   await expect(page.getByText("La collecte de la nuit n'a pas encore publié de données")).toBeVisible();
   expect(erreurs).toEqual([]);
 });
 
 test("Google Ads : chiffres du fichier, coût non transmis signalé, comptes par site", async ({ context, page }) => {
   const erreurs = await ouvre(context, page, FIXTURE);
-  await expect(page.getByText("En cours de construction")).toBeVisible();
+  await expect(page.getByText("En cours de construction")).toHaveCount(0);
   await expect(page.getByText("Clics · 30 derniers jours")).toBeVisible();
   await expect(page.getByText("135 000", { exact: true })).toBeVisible();           // 120 000 + 10 000 + 5 000
   await expect(page.getByText("coût non transmis").first()).toBeVisible();          // PEUGEOT FR : 120 000 clics sur 130 000 sans coût
