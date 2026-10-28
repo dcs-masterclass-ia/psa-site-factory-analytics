@@ -13,8 +13,21 @@ class AgregeAds(unittest.TestCase):
         self.assertEqual(a["mensuel"], {"2026-09": [100.0, 1000, 20000], "2026-10": [50.0, 400, 9000]})
         self.assertEqual((a["cout"], a["clics"], a["impressions"], a["campagnes"]), (120.0, 1000, 20000, 2))
         self.assertEqual(a["clics_sans_cout"], 100)                                  # Camp 2 : des clics mais aucun coût transmis
-        self.assertEqual(a["top"][0], ["Camp 1", 120.0, 900, 18000])
+        self.assertEqual(a["top"][0], ["Camp 1", 120.0, 900, 18000, 0])
         self.assertEqual(r[1]["clics_sans_cout"], 300)                               # tout le compte B est sans coût
+
+    def test_periode_precedente(self):
+        from pipeline.ads import agrege
+        camps = [("A", "Camp 1", 10.0, 500, 9000)]
+        prec = [("A", "Camp 1", 8.0, 400, 8000), ("A", "Camp 2", 3.0, 300, 5000), ("B", "Camp 9", 0.0, 50, 500)]
+        r = {c["nom"]: c for c in agrege([("202610", "A", 10, 500, 9000)], camps, prec)}
+        a = r["A"]
+        self.assertEqual((a["clics_prec"], a["impressions_prec"], a["cout_prec"]), (700, 13000, 11.0))
+        tops = {t[0]: t for t in a["top"]}
+        self.assertEqual(tops["Camp 1"][4], 400)                                    # clics de la période précédente
+        self.assertEqual(tops["Camp 2"], ["Camp 2", 0.0, 0, 0, 300])                # campagne arrêtée : gardée pour les « perdantes »
+        self.assertEqual(r["B"]["clics"], 0)                                        # compte actif seulement avant : conservé avec ses clics précédents
+        self.assertEqual(r["B"]["clics_prec"], 50)
 
     def test_top_limite_et_compte_vide_ecarte(self):
         from pipeline.ads import TOP_CAMPAGNES, agrege

@@ -3180,7 +3180,7 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <sc-for list="{{ adsKpis }}" as="k" hint-placeholder-count="4">
             <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:18px 20px">
               <div style="font-size:12.5px;font-weight:600;color:#6d727a">{{ k.title }}</div>
-              <div style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;margin-top:6px;font-variant-numeric:tabular-nums">{{ k.big }}</div>
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:6px"><span style="font-size:28px;font-weight:600;letter-spacing:-.02em;color:#121214;font-variant-numeric:tabular-nums">{{ k.big }}</span><span style="{{ k.pillStyle }}">{{ k.pill }}</span></div>
               <div style="font-size:12.5px;color:#9a9fa6;margin-top:4px">{{ k.sub }}</div>
             </div>
           </sc-for>
@@ -3191,11 +3191,54 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
           <div style="font-size:13.5px;color:#4a4f57;margin-top:6px;line-height:1.5">{{ adsNote }}</div>
         </div>
         </sc-if>
+        <sc-if value="{{ adsHasIns }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#f7f6fe;border:1px solid #e4defc;border-radius:16px;padding:16px 20px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;color:#7c63ee">À RETENIR</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
+            <sc-for list="{{ adsInsights }}" as="i" hint-placeholder-count="4">
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="{{ i.dot }}"></span><span style="font-size:14px;line-height:1.55;color:#2f2f33">{{ i.text }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(380px,100%),1fr));gap:15px;align-items:start">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Par pays</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">part des clics · évolution vs 30 jours précédents</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ adsPays }}" as="r" hint-placeholder-count="8">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="flex:none;width:90px;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <div style="flex:1;height:8px;border-radius:4px;background:#f1f1f3;overflow:hidden"><div style="{{ r.bar }}"></div></div>
+                  <span style="flex:none;width:96px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:#121214">{{ r.clics }}</span>
+                  <span style="flex:none;width:52px;text-align:right;font-size:13px;font-weight:600;color:#6d727a;font-variant-numeric:tabular-nums">{{ r.share }}</span>
+                  <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Par marque</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 14px">part des clics · évolution vs 30 jours précédents</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ adsMarques }}" as="r" hint-placeholder-count="8">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="flex:none;width:130px;font-size:14px;color:#121214;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                  <div style="flex:1;height:8px;border-radius:4px;background:#f1f1f3;overflow:hidden"><div style="{{ r.bar }}"></div></div>
+                  <span style="flex:none;width:96px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;color:#121214">{{ r.clics }}</span>
+                  <span style="flex:none;width:52px;text-align:right;font-size:13px;font-weight:600;color:#6d727a;font-variant-numeric:tabular-nums">{{ r.share }}</span>
+                  <span style="{{ r.deltaStyle }}">{{ r.delta }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
         <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
-          <div><div style="font-size:15px;font-weight:600;color:#121214">Clics par mois</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">tous les comptes Ads des sites sélectionnés · * mois en cours, incomplet</div></div>
+          <div><div style="font-size:15px;font-weight:600;color:#121214">Clics par mois</div><div style="font-size:12.5px;color:#9a9fa6;margin-top:2px">tous les comptes Ads des sites sélectionnés · au-dessus : évolution vs même mois de l'année précédente · * mois en cours, incomplet</div></div>
           <div style="display:flex;align-items:flex-end;gap:6px;height:190px;margin-top:16px;overflow-x:auto">
             <sc-for list="{{ adsBars }}" as="m" hint-placeholder-count="13">
               <div title="{{ m.tip }}" style="flex:1 1 0;min-width:44px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px">
+                <span style="{{ m.yoyStyle }}">{{ m.yoy }}</span>
                 <div style="width:100%;flex:1;display:flex;align-items:flex-end;justify-content:center;min-height:0"><div style="{{ m.bar }}"></div></div>
                 <span style="font-size:11.5px;color:#6d727a;white-space:nowrap">{{ m.label }}</span>
                 <span style="font-size:11px;color:#9a9fa6">{{ m.volume }}</span>
@@ -3203,6 +3246,48 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
             </sc-for>
           </div>
         </div>
+        <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+          <div style="font-size:15px;font-weight:600;color:#121214">Campagnes les plus fortes</div>
+          <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px">30 derniers jours · classées par clics · évolution vs 30 jours précédents</div>
+          <div style="overflow-x:auto">
+            <sc-for list="{{ adsTopCamps }}" as="t" hint-placeholder-count="8">
+              <div title="{{ t.full }}" style="display:flex;align-items:center;gap:12px;padding:7px 0;border-top:1px solid #f1f1f3;font-size:13.5px;min-width:640px">
+                <span style="flex:1 1 260px;min-width:0;color:#121214;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.nom }}</span>
+                <span style="flex:none;width:130px;color:#6d727a">{{ t.site }}</span>
+                <span style="flex:none;width:100px;text-align:right;font-variant-numeric:tabular-nums">{{ t.clics }}</span>
+                <span style="flex:none;width:60px;text-align:right;font-variant-numeric:tabular-nums;color:#6d727a">{{ t.ctr }}</span>
+                <span style="flex:none;width:78px;text-align:right"><span style="{{ t.deltaStyle }}">{{ t.delta }}</span></span>
+                <span style="flex:none;width:100px;text-align:right;font-variant-numeric:tabular-nums">{{ t.cout }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ adsHasVar }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:15px;align-items:start">
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Campagnes en hausse</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px">variation des clics vs 30 jours précédents</div>
+            <sc-for list="{{ adsGagn }}" as="t" hint-placeholder-count="5">
+              <div title="{{ t.full }}" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f1f1f3;font-size:13.5px">
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#121214">{{ t.nom }}<span style="color:#9a9fa6"> · {{ t.site }}</span></span>
+                <span style="flex:none;font-weight:600;color:#1f9254;font-variant-numeric:tabular-nums">{{ t.var }}</span>
+                <span style="{{ t.deltaStyle }}">{{ t.delta }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
+            <div style="font-size:15px;font-weight:600;color:#121214">Campagnes en baisse</div>
+            <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px">variation des clics vs 30 jours précédents</div>
+            <sc-for list="{{ adsPerd }}" as="t" hint-placeholder-count="5">
+              <div title="{{ t.full }}" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f1f1f3;font-size:13.5px">
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#121214">{{ t.nom }}<span style="color:#9a9fa6"> · {{ t.site }}</span></span>
+                <span style="flex:none;font-weight:600;color:#a33c39;font-variant-numeric:tabular-nums">{{ t.var }}</span>
+                <span style="{{ t.deltaStyle }}">{{ t.delta }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
         <div class="psf-card" style="background:#fff;border:1px solid #efeff1;border-radius:16px;padding:19px 21px">
           <div style="font-size:15px;font-weight:600;color:#121214">Par site</div>
           <div style="font-size:12.5px;color:#9a9fa6;margin:2px 0 12px">30 derniers jours · cliquer sur un site pour voir ses comptes Google Ads</div>
@@ -3212,17 +3297,21 @@ a{color:#7c63ee;text-decoration:none}a:hover{color:#5f45d4}
                 <span style="flex:1 1 170px;font-weight:600">{{ r.name }}</span>
                 <span style="flex:none;width:90px;color:#6d727a;font-size:13px">{{ r.comptes }}</span>
                 <span style="flex:none;width:110px;text-align:right;font-variant-numeric:tabular-nums">{{ r.clics }} clics</span>
+                <span style="flex:none;width:74px;text-align:right"><span style="{{ r.deltaStyle }}">{{ r.delta }}</span></span>
                 <span style="flex:none;width:140px;text-align:right;font-variant-numeric:tabular-nums;color:#6d727a">{{ r.impr }} impr.</span>
+                <span style="flex:none;width:64px;text-align:right;font-variant-numeric:tabular-nums;color:#6d727a">{{ r.ctr }}</span>
                 <span style="flex:none;width:110px;text-align:right;font-variant-numeric:tabular-nums">{{ r.cout }}</span>
                 <span style="{{ r.badgeStyle }}">{{ r.badge }}</span>
               </summary>
               <div style="margin:8px 0 4px 18px;overflow-x:auto">
                 <sc-for list="{{ r.rows }}" as="a" hint-placeholder-count="3">
-                  <div title="{{ a.tip }}" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 0;border-top:1px solid #f6f6f8;font-size:13px;min-width:560px">
+                  <div title="{{ a.tip }}" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:5px 0;border-top:1px solid #f6f6f8;font-size:13px;min-width:700px">
                     <span style="flex:1 1 220px;min-width:0;color:#2f2f33;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.nom }}</span>
                     <span style="flex:none;width:70px;color:#9a9fa6">{{ a.camps }}</span>
                     <span style="flex:none;width:90px;text-align:right;font-variant-numeric:tabular-nums">{{ a.clics }}</span>
+                    <span style="flex:none;width:74px;text-align:right"><span style="{{ a.deltaStyle }}">{{ a.delta }}</span></span>
                     <span style="flex:none;width:110px;text-align:right;font-variant-numeric:tabular-nums;color:#6d727a">{{ a.impr }}</span>
+                    <span style="flex:none;width:64px;text-align:right;font-variant-numeric:tabular-nums;color:#6d727a">{{ a.ctr }}</span>
                     <span style="flex:none;width:100px;text-align:right;font-variant-numeric:tabular-nums">{{ a.cout }}</span>
                     <span style="{{ a.flagStyle }}">{{ a.flag }}</span>
                   </div>
@@ -6606,44 +6695,92 @@ class Component extends DCLogic {
     const c1Vide=c1Ok&&(!c1Cur.length||!c1Mapped.pairs.length||c1A.manque||!A.leads);
     const c1Pend=c1Ok&&!c1Cur.length?T('La période choisie ne couvre aucun mois entier terminé disponible dans C1ST : élargis-la dans le calendrier du haut de page.'):c1Ok&&!c1Mapped.pairs.length?T('Aucun site sélectionné n\'est suivi par C1ST : choisis des sites de France, Belgique, Espagne, Portugal ou Italie.'):(c1Ok&&(c1A.manque||!A.leads)?T('Pas de données C1ST pour tout ou partie de cette période.'):'');
     const c1SubPer=c1PeriodeLabel+(c1CmpLabel&&c1CmpOk?' · '+T('comparée à')+' '+c1CmpLabel:'')+(c1Cur.length&&(c1Touches.length>c1Cur.length||debut.slice(8)!=='01'||fin!==c1Finmois(fin.slice(0,7)))?' · '+T('période arrondie aux mois entiers'):'');
-    // ---------- Google Ads (data/ads/ga4.json, collecte GA4 de la nuit) : comptes, clics, impressions et coût quand la liaison GA4 vers Ads le transmet
+    // ---------- Google Ads (data/ads/ga4.json, collecte GA4 de la nuit) : comptes, clics, impressions et coût quand la liaison GA4 vers Ads le transmet ; comparaison aux 30 jours précédents
     const adsD=this._ads||null, adsOk=!!(adsD&&adsD.sites&&adsD.sites.length);
     const adsNf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
     const adsMon=(v,dev)=>adsNf(v)+' '+({EUR:'€',GBP:'£',PLN:'zł'}[dev]||dev||'');
     const ADS_MOIS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    const adsPc=(a,b)=>b>0?(a-b)/b*100:null;
+    const adsSg=v=>v===null||v===undefined?'':(v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(Math.abs(v)>=10?0:1).replace('.',',')+' %';
+    const adsPill=v=>v===null||v===undefined?'display:none':`font-size:12px;font-weight:600;border-radius:9px;padding:2px 8px;white-space:nowrap;${v>=0?'color:#1f9254;background:#eaf7ef':'color:#a33c39;background:#fce9e8'}`;
+    const adsLib=n=>String(n).length>38?String(n).slice(0,37)+'…':String(n);
     const adsSel=st.sites||[];
     const adsSites=adsOk?adsD.sites.filter(x=>!adsSel.length||(x.noms||[x.nom]).some(n=>adsSel.includes(n))):[];
-    let adsClics=0, adsImpr=0, adsCout=0, adsSans=0, adsNbCmp=0, adsHorsEur=0;
-    const adsParMois={};
+    const adsA=adsSites.some(x=>(x.comptes||[]).some(a=>a.clics_prec!==undefined));       // fichier avec la période précédente
+    let adsClics=0, adsImpr=0, adsCout=0, adsCoutP=0, adsSans=0, adsNbCmp=0, adsHorsEur=0, adsClicsP=0, adsImprP=0;
+    const adsParMois={}, adsParPays={}, adsParMarque={}, adsCamps=[];
+    const adsMarque=n=>String(n).replace(/\s+[A-Z]{2}$/,'');
     const adsRows=adsSites.map(x=>{
-      let c=0,i=0,k=0,sz=0,ncamp=0;
+      let c=0,i=0,k=0,sz=0,cp=0,ip=0,kp=0;
       const lignes=(x.comptes||[]).map(a=>{
-        c+=a.clics; i+=a.impressions; k+=a.cout; sz+=a.clics_sans_cout; ncamp+=a.campagnes;
+        c+=a.clics; i+=a.impressions; k+=a.cout; sz+=a.clics_sans_cout; cp+=(a.clics_prec||0); ip+=(a.impressions_prec||0); kp+=(a.cout_prec||0);
         Object.keys(a.mensuel||{}).forEach(m=>{ adsParMois[m]=(adsParMois[m]||0)+a.mensuel[m][1]; });
-        const part=a.clics?a.clics_sans_cout/a.clics:0;
-        return {nom:a.nom, camps:a.campagnes+' camp.', clics:adsNf(a.clics), impr:adsNf(a.impressions), cout:a.cout>0?adsMon(a.cout,x.devise):'—',
+        (a.top||[]).forEach(t=>adsCamps.push({nom:t[0], site:x.nom, compte:a.nom, cout:t[1], clics:t[2], impr:t[3], prec:t[4]||0, dev:x.devise}));
+        const part=a.clics?a.clics_sans_cout/a.clics:0, dl=adsA?adsPc(a.clics,a.clics_prec||0):null;
+        return {nom:a.nom, camps:a.campagnes+' camp.', clics:adsNf(a.clics), impr:adsNf(a.impressions), ctr:a.impressions?(a.clics/a.impressions*100).toFixed(1).replace('.',',')+' %':'—', delta:adsSg(dl), deltaStyle:adsPill(dl),
+                cout:a.cout>0?adsMon(a.cout,x.devise):'—',
                 flag:part>.5?'coût non transmis':(part>0?'coût partiel':''), flagStyle:(part>0?'':'display:none;')+'font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap;'+(part>.5?'color:#a33c39;background:#fce9e8':'color:#9a6b00;background:#fdf3d6'),
                 tip:(a.top||[]).slice(0,3).map(t=>t[0]+' · '+adsNf(t[2])+' clics').join('\n')};
       });
-      adsClics+=c; adsImpr+=i; adsSans+=sz; adsNbCmp+=(x.comptes||[]).length;
-      if(x.devise==='EUR') adsCout+=k; else adsHorsEur+=k;
-      const part=c?sz/c:0;
-      return {name:x.nom, comptes:(x.comptes||[]).length+' compte'+((x.comptes||[]).length>1?'s':''), clics:adsNf(c), impr:adsNf(i), cout:k>0?adsMon(k,x.devise):'—', brut:c, rows:lignes,
-              badge:part>.5?'coût non transmis':(part>0?'coût partiel':'coût complet'), badgeStyle:'font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;'+(part>.5?'color:#a33c39;background:#fce9e8':part>0?'color:#9a6b00;background:#fdf3d6':'color:#1f9254;background:#eaf7ef')};
+      adsClics+=c; adsImpr+=i; adsSans+=sz; adsNbCmp+=(x.comptes||[]).length; adsClicsP+=cp; adsImprP+=ip;
+      if(x.devise==='EUR'){ adsCout+=k; adsCoutP+=kp; } else adsHorsEur+=k;
+      const pk=x.pays||'—', mk=adsMarque(x.nom);
+      [[adsParPays,pk],[adsParMarque,mk]].forEach(([o,key])=>{ const e=o[key]||(o[key]={c:0,cp:0}); e.c+=c; e.cp+=cp; });
+      const part=c?sz/c:0, dl=adsA?adsPc(c,cp):null;
+      return {name:x.nom, comptes:(x.comptes||[]).length+' compte'+((x.comptes||[]).length>1?'s':''), clics:adsNf(c), impr:adsNf(i), ctr:i?(c/i*100).toFixed(1).replace('.',',')+' %':'—', delta:adsSg(dl), deltaStyle:adsPill(dl),
+              cout:k>0?adsMon(k,x.devise):'—', brut:c, c, cp, rows:lignes,
+              badge:part>.5?'coût non transmis':(part>0?'coût partiel':'coût complet'), badgeStyle:'font-size:12px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;'+(part>.5?'color:#a33c39;background:#fce9e8':part>0?'color:#9a6b00;background:#fdf3d6':'color:#1f9254;background:#eaf7ef'), part};
     }).sort((a,b)=>b.brut-a.brut);
     const adsMoisCles=Object.keys(adsParMois).sort();
     const adsMax=Math.max(1,...adsMoisCles.map(m=>adsParMois[m]));
     const adsFin=adsOk?String(adsD.jusqua||'').slice(0,7):'';
-    const adsBars=adsMoisCles.map(m=>{ const enCours=m===adsFin; return {label:ADS_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)+(enCours?'*':''), volume:adsNf(adsParMois[m]/1000)+'k',
-      tip:ADS_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(0,4)+' — '+adsNf(adsParMois[m])+' clics'+(enCours?' (mois en cours, incomplet)':''), bar:`width:62%;max-width:46px;height:${Math.max(3,adsParMois[m]/adsMax*100)}%;border-radius:6px;background:${enCours?'#c9bdf7':'#7c63ee'}`}; });
+    const adsBars=adsMoisCles.map(m=>{ const enCours=m===adsFin, nm1=(parseInt(m.slice(0,4),10)-1)+m.slice(4), yo=(!enCours&&adsParMois[nm1])?adsPc(adsParMois[m],adsParMois[nm1]):null;
+      return {label:ADS_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(2,4)+(enCours?'*':''), volume:adsNf(adsParMois[m]/1000)+'k', yoy:adsSg(yo), yoyStyle:yo===null?'display:none':`font-size:11.5px;font-weight:600;color:${yo<0?'#a33c39':'#1f9254'}`,
+      tip:ADS_MOIS[parseInt(m.slice(5,7),10)-1]+' '+m.slice(0,4)+' — '+adsNf(adsParMois[m])+' clics'+(enCours?' (mois en cours, incomplet)':'')+(yo!==null?' ('+adsSg(yo)+' vs même mois '+(parseInt(m.slice(0,4),10)-1)+')':''), bar:`width:62%;max-width:46px;height:${Math.max(3,adsParMois[m]/adsMax*100)}%;border-radius:6px;background:${enCours?'#c9bdf7':'#7c63ee'}`}; });
     const adsPartSans=adsClics?adsSans/adsClics*100:0;
+    const adsDC=adsA?adsPc(adsClics,adsClicsP):null, adsDI=adsA?adsPc(adsImpr,adsImprP):null, adsCtr=adsImpr?adsClics/adsImpr*100:0, adsCtrP=adsImprP?adsClicsP/adsImprP*100:0;
+    const adsDK=(adsA&&adsCout>0&&adsCoutP>0)?adsPc(adsCout,adsCoutP):null;
     const adsKpis=adsOk?[
-      {title:'Clics · 30 derniers jours',big:adsNf(adsClics),sub:adsNbCmp+' comptes Ads, '+adsSites.length+' sites'},
-      {title:'Impressions',big:adsNf(adsImpr),sub:adsImpr?('CTR '+(adsClics/adsImpr*100).toFixed(1).replace('.',',')+' %'):''},
-      {title:'Coût déclaré (EUR)',big:adsMon(adsCout,'EUR'),sub:adsHorsEur?'hors devises autres que l\'euro':'partiel : voir l\'avertissement'},
-      {title:'Clics sans coût transmis',big:adsPartSans.toFixed(0).replace('.',',')+' %',sub:'campagnes dont GA4 ne reçoit pas le coût'}]:[];
-    const adsSub=adsOk?('30 derniers jours jusqu\'au '+String(adsD.jusqua||'').split('-').reverse().join('/')+' · source GA4 (liaison Google Ads), mise à jour chaque nuit'):'';
+      {title:'Clics · 30 derniers jours',big:adsNf(adsClics),pill:adsSg(adsDC),pillStyle:adsPill(adsDC),sub:adsNbCmp+' comptes Ads, '+adsSites.length+' sites'},
+      {title:'Impressions',big:adsNf(adsImpr),pill:adsSg(adsDI),pillStyle:adsPill(adsDI),sub:adsImpr?('CTR '+adsCtr.toFixed(1).replace('.',',')+' %'):''},
+      {title:'Coût déclaré (EUR)',big:adsMon(adsCout,'EUR'),pill:adsSg(adsDK),pillStyle:adsPill(adsDK),sub:adsHorsEur?'hors devises autres que l\'euro':'partiel : voir l\'avertissement'},
+      {title:'Clics sans coût transmis',big:adsPartSans.toFixed(0).replace('.',',')+' %',pill:'',pillStyle:'display:none',sub:'campagnes dont GA4 ne reçoit pas le coût'}]:[];
+    const adsFr=d=>String(d||'').split('-').reverse().join('/');
+    const adsSub=adsOk?('30 derniers jours jusqu\'au '+adsFr(adsD.jusqua)+' · source GA4 (liaison Google Ads), mise à jour chaque nuit'):'';
     const adsNote='Les clics et les impressions sont ceux des comptes Google Ads liés aux sites dans GA4. Le coût n\'est pas transmis par toutes les liaisons : un compte « coût non transmis » a des clics mais un coût nul dans GA4, ce n\'est pas une dépense nulle. Seuls les comptes liés à un site apparaissent (pas la vue des comptes gestionnaires).';
+    // répartitions (part des clics, évolution vs 30 jours précédents)
+    const adsRepart=o=>Object.keys(o).map(n=>({n,c:o[n].c,cp:o[n].cp})).filter(e=>e.c>0).sort((a,b)=>b.c-a.c).slice(0,12).map(e=>{ const dl=adsA?adsPc(e.c,e.cp):null;
+      return {name:e.n, clics:adsNf(e.c), share:(adsClics?e.c/adsClics*100:0).toFixed(1).replace('.',',')+' %', delta:adsSg(dl), deltaStyle:adsPill(dl), bar:`height:100%;width:${Math.max(1,adsClics?e.c/(Math.max(...Object.values(o).map(z=>z.c))||1)*100:0)}%;border-radius:4px;background:#7c63ee`}; });
+    const adsPays=adsRepart(adsParPays), adsMarques=adsRepart(adsParMarque);
+    // campagnes : les plus fortes, gagnantes et perdantes (variation absolue des clics, base d'au moins 5 000 clics sur l'une des deux périodes)
+    const adsCampRow=t=>{ const dl=adsPc(t.clics,t.prec); return {nom:adsLib(t.nom), full:t.nom, site:t.site, compte:adsLib(t.compte), clics:adsNf(t.clics), ctr:t.impr?(t.clics/t.impr*100).toFixed(1).replace('.',',')+' %':'—', delta:adsA?(t.prec?adsSg(dl):(t.clics?'nouvelle':'')):'', deltaStyle:adsA?(t.prec?adsPill(dl):(t.clics?'font-size:12px;font-weight:600;border-radius:9px;padding:2px 8px;color:#5b43d6;background:#f1eefe':'display:none')):'display:none', cout:t.cout>0?adsMon(t.cout,t.dev):'—'}; };
+    const adsTopCamps=adsCamps.filter(t=>t.clics>0).sort((a,b)=>b.clics-a.clics).slice(0,12).map(adsCampRow);
+    const adsVar=adsCamps.filter(t=>adsA&&Math.max(t.clics,t.prec)>=5000).map(t=>({t,d:t.clics-t.prec})).sort((a,b)=>b.d-a.d);
+    const adsGagn=adsVar.filter(e=>e.d>0).slice(0,6).map(e=>Object.assign(adsCampRow(e.t),{var:'+'+adsNf(e.d)}));
+    const adsPerd=adsVar.filter(e=>e.d<0).slice(-6).reverse().map(e=>Object.assign(adsCampRow(e.t),{var:'−'+adsNf(-e.d)}));
+    // À retenir : constats calculés (jamais rédigés par un modèle)
+    const adsIns=[];
+    if(adsOk){
+      const pt=n=>String(n).replace(/\s+/g,' ');
+      if(adsA&&adsDC!==null){
+        const mv=adsRows.map(r=>({n:r.name,d:r.c-r.cp})).filter(e=>e.d!==0), pos=mv.filter(e=>e.d>0).sort((a,b)=>b.d-a.d).slice(0,2), neg=mv.filter(e=>e.d<0).sort((a,b)=>a.d-b.d).slice(0,2);
+        let t='Clics '+adsSg(adsDC)+' vs les 30 jours précédents ('+adsNf(adsClics)+' contre '+adsNf(adsClicsP)+')';
+        if(pos.length) t+=' ; hausse portée par '+pos.map(e=>e.n+' (+'+adsNf(e.d)+')').join(', ');
+        if(neg.length) t+=' ; en recul : '+neg.map(e=>e.n+' (−'+adsNf(-e.d)+')').join(', ');
+        adsIns.push({tone:adsDC>=0?'#1f9254':'#a33c39', text:t+'.'});
+      }
+      const top3=adsRows.slice(0,3);
+      if(adsRows.length>3&&adsClics) adsIns.push({tone:'#7c63ee', text:'Les 3 premiers sites ('+top3.map(r=>r.name).join(', ')+') concentrent '+(top3.reduce((a,r)=>a+r.c,0)/adsClics*100).toFixed(0)+' % des clics.'});
+      const sansCout=adsRows.filter(r=>r.part>.5).slice(0,3);
+      if(sansCout.length) adsIns.push({tone:'#9a6b00', text:'Le coût n\'est transmis que pour '+(100-adsPartSans).toFixed(0)+' % des clics : '+sansCout.map(r=>r.name).join(', ')+(adsRows.filter(r=>r.part>.5).length>3?' et d\'autres sites':'')+' n\'en remontent aucun alors que ces comptes diffusent.'});
+      const cmp=[]; adsSites.forEach(x=>(x.comptes||[]).forEach(a=>{ if(a.impressions>=200000) cmp.push({n:a.nom,s:x.nom,v:a.clics/a.impressions*100}); }));
+      if(cmp.length>=4){ cmp.sort((a,b)=>b.v-a.v); const h=cmp[0], l=cmp[cmp.length-1];
+        adsIns.push({tone:'#7c63ee', text:'CTR : le plus élevé sur « '+adsLib(h.n)+' » ('+h.s+', '+h.v.toFixed(1).replace('.',',')+' %), le plus bas sur « '+adsLib(l.n)+' » ('+l.s+', '+l.v.toFixed(1).replace('.',',')+' %), pour une médiane de '+cmp[Math.floor(cmp.length/2)].v.toFixed(1).replace('.',',')+' % (comptes de plus de 200 000 impressions).'}); }
+      if(adsGagn.length&&adsPerd.length) adsIns.push({tone:'#7c63ee', text:'Campagne la plus en hausse : « '+adsGagn[0].nom+' » ('+adsGagn[0].site+', '+adsGagn[0].var+' clics) ; la plus en baisse : « '+adsPerd[0].nom+' » ('+adsPerd[0].site+', '+adsPerd[0].var+' clics).'});
+      const mc=adsMoisCles.filter(m=>m<adsFin); const dm=mc[mc.length-1];
+      if(dm){ const nm1=(parseInt(dm.slice(0,4),10)-1)+dm.slice(4); if(adsParMois[nm1]) adsIns.push({tone:'#7c63ee', text:'Dernier mois entier ('+ADS_MOIS[parseInt(dm.slice(5,7),10)-1]+' '+dm.slice(0,4)+') : '+adsNf(adsParMois[dm])+' clics, '+adsSg(adsPc(adsParMois[dm],adsParMois[nm1]))+' vs '+ADS_MOIS[parseInt(dm.slice(5,7),10)-1]+' '+(parseInt(dm.slice(0,4),10)-1)+'.'}); }
+    }
+    const adsInsights=adsIns.map(e=>({text:e.text, dot:`flex:none;width:8px;height:8px;border-radius:50%;margin-top:7px;background:${e.tone}`}));
     // ---------- AAA Data (marché automobile, data/market.json) : mêmes blocs que la page « AAA Data » de la newsletter
     const aaaMk=this._market||null, aaaMkOk=!!(aaaMk&&aaaMk.france&&aaaMk.europe);
     const aaaNf=n=>Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'\u00a0');
@@ -8103,7 +8240,7 @@ class Component extends DCLogic {
       dateLabel:`${fmtFr(debut)} → ${fmtFr(fin)}${cmpMode==='none'?'':' · vs '+{previous:'préc.',year:'N-1',custom:'perso.'}[cmpMode]}`,
       c1RappDesc:c1RappRepli?"Leads de reprise avec un projet d'achat VN dans le back-office (le décompte des leads envoyés n'est pas encore disponible pour tous les mois), face aux leads VN vus par C1ST, sur la même période.":"Leads VN envoyés au réseau (Lead sent = YES) dans le back-office, face aux leads VN vus par C1ST, sur la même période : c'est le périmètre que C1ST affiche.", c1RappBoLabel:c1RappRepli?'Back-office (VN)':'Back-office (VN envoyés)',
       isGA:st.source==='ga'&&!compareActive, isSC:st.source==='sc'&&!compareActive, isPS:st.source==='ps'&&!compareActive, isAAA:st.source==='aaa'&&!this.estLimite(), c1Verrou:!!this._c1Verrou, c1Admin:!!this._c1Admin&&!this._c1Verrou, c1HasAlertes:(this._c1Alertes||[]).length>0, c1AlertesTxt:(this._c1Alertes||[]).map(a=>String(a.email).split('@')[0]+' ('+new Date(a.at).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+')').join(' · '), c1Suspendus:(this._c1Suspendus||[]).map(m=>({email:m,pick:()=>this.c1Bans(m)})), c1HasSuspendus:(this._c1Suspendus||[]).length>0, c1Ouvert:!this._c1Verrou&&c1Ok, c1Verrouiller:()=>this.c1Verrouille(), c1CodeMois:st.c1CodeMois||'', c1AdmCode:()=>this.c1AdminAction('code'), c1AdmRevoque:()=>this.c1AdminAction('revoque'), c1AdmRevoqueLabel:st.c1Confirm?T('Confirmer : tout le monde devra ressaisir le nouveau code'):T('Révoquer tous les accès'), c1AdmNote:st.c1Revoque?T('Accès révoqués : voici le nouveau code, à communiquer à l\'équipe.'):'', c1Indispo:!c1Ok&&!this._c1Verrou, c1Code:st.c1Code||'', c1CodeMsg:st.c1CodeMsg||'', c1CodeInput:e=>this.setState({c1Code:e.target.value}), c1CodeKey:e=>{ if(e.key==='Enter') this.c1Deverrouille(); }, c1CodeOk:()=>this.c1Deverrouille(),
-      isC1ST:st.source==='c1st'&&!this.estLimite()&&this.presentationsOuvertes(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), adsOk, adsVide:!adsOk, adsKpis, adsBars, adsRows, adsSub, adsNote, adsAvert:adsOk&&adsPartSans>0, aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFiches, aaaHasFiches:aaaFiches.length>0, aaaNoData, aaaHasNoData:aaaNoData.length>0, aaaNoSel:!aaaSel.length, aaaShowEu, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel des sources nationales (AAA Data, KBA, UNRAE, ANFAC, SMMT, Samar, ACAP), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
+      isC1ST:st.source==='c1st'&&!this.estLimite()&&this.presentationsOuvertes(), c1Ok, c1Logo, c1LogoMini, c1Date, c1PeriodeLabel, c1Perim, c1HasHors:!!c1Hors, c1Hors, c1Vide, c1Pend, c1SubPer, c1Cards, c1Suivi, c1Conv, c1Mois, c1ChipsVue, c1Rows, c1Tot, c1HasRapp:c1Rapp.length>0, c1Rapp, c1HasLectures:c1Lectures.length>0, c1Lectures, isADS:st.source==='ads'&&!this.estLimite(), adsOk, adsVide:!adsOk, adsKpis, adsBars, adsRows, adsSub, adsNote, adsAvert:adsOk&&adsPartSans>0, adsInsights, adsHasIns:adsInsights.length>0, adsPays, adsMarques, adsTopCamps, adsGagn, adsPerd, adsHasVar:adsGagn.length+adsPerd.length>0, aaaOk:aaaMkOk, aaaDate:aaaMkOk&&aaaMk.generated_at?aaaMk.generated_at.slice(8,10)+'/'+aaaMk.generated_at.slice(5,7)+'/'+aaaMk.generated_at.slice(0,4):'—', aaaFiches, aaaHasFiches:aaaFiches.length>0, aaaNoData, aaaHasNoData:aaaNoData.length>0, aaaNoSel:!aaaSel.length, aaaShowEu, aaaEuAnnual, aaaHasGroups:aaaGr.length>0, aaaGroups, aaaGroupsTitle:'Top groupes · '+(aaaEuLast.year||''), aaaGroupsFoot:aaaGr.map(g=>g.group.replace(' Group','')+' '+aaaP(g.share_pct)).join(' · '), aaaGroupsSrc:aaaEuLast.source_url||'', aaaPeriods, aaaCountriesTop, aaaCountriesRows, aaaEuHas, aaaEuTitle, aaaEuHead, aaaEuMix, aaaEuCountries, aaaCountriesSrc:aaaC25?aaaC25.source_url:'', aaaCountriesSub:aaaC25?aaaC25.items.length+' pays couverts · '+aaaNf(aaaC25.total/1000000)+' M d\'immatriculations':'', aaaNote:'Les séries annuelles France viennent du SDES, le mensuel des sources nationales (AAA Data, KBA, UNRAE, ANFAC, SMMT, Samar, ACAP), l\'Europe de l\'ACEA. Les chiffres 2026 sont provisoires et révisés à chaque publication.', isPR:st.source==='pr'&&!this.estLimite()&&this.presentationsOuvertes(), canPres:this.presentationsOuvertes(), isTB:(st.source==='tb'||st.source==='gcp')&&!compareActive,
       isCompare:compareActive, compareFrames, compareGridStyle,
       compareEligible, compareOpen:compareActive, compareBtnStyle, toggleCompare,
       psVitals, psSites, psGridSubtitle, psHistory, psHistorySubtitle, psMobileRing, psDesktopRing,

@@ -10,7 +10,6 @@
  "LECTURE DES CHIFFRES": "HOW TO READ THE FIGURES",
  "Les clics et les impressions sont ceux des comptes Google Ads liés aux sites dans GA4. Le coût n'est pas transmis par toutes les liaisons : un compte « coût non transmis » a des clics mais un coût nul dans GA4, ce n'est pas une dépense nulle. Seuls les comptes liés à un site apparaissent (pas la vue des comptes gestionnaires).": "Clicks and impressions come from the Google Ads accounts linked to the sites in GA4. Not every link passes the cost on: an account marked \"cost not passed on\" has clicks but a zero cost in GA4, which does not mean zero spend. Only accounts linked to a site appear (not the manager-account view).",
  "Clics par mois": "Clicks per month",
- "tous les comptes Ads des sites sélectionnés · * mois en cours, incomplet": "all Ads accounts of the selected sites · * current month, incomplete",
  "Par site": "By site",
  "30 derniers jours · cliquer sur un site pour voir ses comptes Google Ads": "Last 30 days · click a site to see its Google Ads accounts",
  "coût non transmis": "cost not passed on",
@@ -23,5 +22,16 @@
  "{0} compte": "{0} account",
  "{0} comptes": "{0} accounts",
  "{0} camp.": "{0} camp.",
- "CTR {0} %": "CTR {0}%"
+ "CTR {0} %": "CTR {0}%",
+ "À RETENIR": "KEY TAKEAWAYS",
+ "Par pays": "By country",
+ "Par marque": "By brand",
+ "part des clics · évolution vs 30 jours précédents": "share of clicks · change vs previous 30 days",
+ "Campagnes les plus fortes": "Top campaigns",
+ "30 derniers jours · classées par clics · évolution vs 30 jours précédents": "Last 30 days · ranked by clicks · change vs previous 30 days",
+ "Campagnes en hausse": "Rising campaigns",
+ "Campagnes en baisse": "Falling campaigns",
+ "variation des clics vs 30 jours précédents": "change in clicks vs previous 30 days",
+ "tous les comptes Ads des sites sélectionnés · au-dessus : évolution vs même mois de l'année précédente · * mois en cours, incomplet": "all Ads accounts of the selected sites · above: change vs same month last year · * current month, incomplete",
+ "nouvelle": "new"
 }
