@@ -258,6 +258,31 @@ def _valide(ligne):
             and ligne.get(COL_MODE) == "MODE_PRODUCTION")
 
 
+# Rattrapage de leads reels mal flagues dans le back-office (ex. 20-22/10/2026 : leads Spoticar DE crees en MODE_PREVIEW par un bug). Fichier `leads_rattrapage.json` du repo de
+# donnees prive : {"<SITE>": {"motif": "...", "ids": ["<LEAD ID>", ...]}}. Un lead liste est compte comme valide meme si ses drapeaux disent le contraire ; il reste compte UNE SEULE
+# fois quand le back-office aura corrige ses drapeaux (meme ligne, meme identifiant : aucun double comptage). Jamais de donnee personnelle : des identifiants seulement.
+_RATTRAPAGE = None
+
+
+def _rattrapage(site_nom):
+    global _RATTRAPAGE
+    if _RATTRAPAGE is None:
+        import json
+        from pathlib import Path
+        f = Path(os.environ.get("LEADS_RATTRAPAGE", Path(__file__).resolve().parent.parent / "data" / "leads_rattrapage.json"))
+        try:
+            brut = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            brut = {}
+        _RATTRAPAGE = {k: {str(i) for i in (v or {}).get("ids", [])} for k, v in brut.items()}
+    return _RATTRAPAGE.get(site_nom, set())
+
+
+def valide_ou_rattrape(site_nom, ligne):
+    """Lead valide selon les regles habituelles, ou lead reel mal flague liste dans leads_rattrapage.json."""
+    return _valide(ligne) or str(ligne.get("LEAD ID")) in _rattrapage(site_nom)
+
+
 def _top(compteur, limite=20):
     return [[nom, n] for nom, n in compteur.most_common(limite) if nom]
 
@@ -276,7 +301,7 @@ def bloc_leads_mois(site_nom, mois, jours_du_mois, jours_reels=None):
     bornes = jours_reels if jours_reels is not None else jours_du_mois
     debut = f"{mois}-01"
     fin = f"{mois}-{max(1, bornes):02d}"
-    lignes = [l for l in _telecharge(site_nom, debut, fin) if _valide(l)] if bornes > 0 else []
+    lignes = [l for l in _telecharge(site_nom, debut, fin) if valide_ou_rattrape(site_nom, l)] if bornes > 0 else []
 
     daily = [0] * bornes
     brand, fuel, project, source, code, device, pdv = (Counter() for _ in range(7))
